@@ -34,20 +34,55 @@ export async function POST(req: Request) {
       }
     `;
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "model": "google/gemini-2.0-flash-exp:free",
-        "messages": [
-          { "role": "system", "content": systemPrompt }
-        ],
-        "response_format": { "type": "json_object" }
-      })
-    });
+    let response;
+    const models = [
+        "anthropic/claude-sonnet-4.5", 
+        "google/gemini-2.0-flash-exp:free",
+        "meta-llama/llama-3.3-70b-instruct:free"
+    ];
+
+    // let response; // Removed duplicate
+    const errors = [];
+    for (const model of models) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 40000); // 40s Limit
+
+            response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": "http://localhost:3000",
+                "X-Title": "Karnex"
+              },
+              body: JSON.stringify({
+                "model": model,
+                "messages": [
+                  { "role": "system", "content": systemPrompt }
+                ],
+                // Only send response_format for models that support it well (like Claude/GPT) to avoid 400s on Free models
+                "response_format": model.includes("claude") || model.includes("gpt") ? { "type": "json_object" } : undefined 
+              }),
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (response.ok) break;
+            
+            const errText = await response.text();
+            errors.push(`${model}: Status ${response.status} - ${errText}`);
+            console.warn(`Legal model ${model} failed: ${response.status} - ${errText}`);
+
+        } catch (e: any) {
+            console.warn(`Legal model ${model} error:`, e.name || e.message);
+            errors.push(`${model}: ${e.name || e.message}`);
+        }
+    }
+
+    if (!response || !response.ok) {
+        throw new Error(`All legal models failed. Details: ${errors.join(" | ")}`);
+    }
 
     const data = await response.json();
     let rawContent = data.choices[0].message.content;
@@ -57,6 +92,9 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error("Legal AI Error:", error);
-    return NextResponse.json({ error: 'Failed' }, { status: 500 });
+    return NextResponse.json(
+      { error: `Legal Gen Failed: ${error instanceof Error ? error.message : String(error)}` }, 
+      { status: 500 }
+    );
   }
 }

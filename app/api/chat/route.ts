@@ -31,21 +31,56 @@ export async function POST(req: Request) {
     `;
 
     // Call OpenRouter (Using a fast, free/cheap model)
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        "model": "google/gemini-2.0-flash-exp:free", // Or any other fast model
-        "messages": [
-          { "role": "system", "content": systemPrompt },
-          { "role": "user", "content": message }
-        ],
-        "temperature": 0.7,
-      })
-    });
+    let response;
+    // List of models to try
+    const models = [
+        "anthropic/claude-sonnet-4.5", 
+        "google/gemini-2.0-flash-exp:free", 
+        "meta-llama/llama-3.3-70b-instruct:free"
+    ];
+
+    // let response; // Removed duplicate declaration
+    let successfulModel = '';
+
+    for (const model of models) {
+        try {
+            console.log(`Chat attempts: ${model}`);
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 40000); // 40s Limit
+
+            response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": "http://localhost:3000",
+                "X-Title": "Karnex"
+              },
+              body: JSON.stringify({
+                "model": model,
+                "messages": [
+                  { "role": "system", "content": systemPrompt },
+                  { "role": "user", "content": message }
+                ],
+                "temperature": 0.7,
+              }),
+              signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+
+            if (response.ok) {
+                successfulModel = model;
+                break; // Success!
+            }
+            console.warn(`Chat model ${model} failed: ${response.status}`);
+        } catch (e: any) {
+            console.warn(`Chat model ${model} error:`, e.name || e.message);
+        }
+    }
+
+    if (!response || !response.ok) {
+        return NextResponse.json({ reply: "متاسفانه سرویس هوش مصنوعی در حال حاضر پاسخگو نیست. لطفا دقایقی دیگر تلاش کنید." });
+    }
 
     const data = await response.json();
     const reply = data.choices?.[0]?.message?.content || "متاسفانه مشکلی پیش آمد. لطفا دوباره تلاش کنید.";

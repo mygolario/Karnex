@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AiAssistant } from "@/components/dashboard/ai-assistant";
 import { InstallPwa } from "@/components/shared/install-pwa";
+import { ClaimAccountModal } from "@/components/auth/claim-account-modal";
+import { UpgradeModal } from "@/components/dashboard/upgrade-modal";
 import { 
   LayoutDashboard, 
   Map, 
@@ -16,15 +18,22 @@ import {
   X,
   UserCircle,
   Scale, 
-  HelpCircle
+  HelpCircle,
+  ShieldAlert,
+  Save
 } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user } = useAuth();
+  const isAnonymous = user?.isAnonymous;
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showClaimModal, setShowClaimModal] = useState(false);
   const pathname = usePathname();
 
   const menuItems = [
@@ -89,15 +98,30 @@ export default function DashboardLayout({
           {/* PWA Install Button Area */}
           <div className="px-4 pb-2">
             <InstallPwa />
+             {isAnonymous && (
+                <Button 
+                  onClick={() => setShowClaimModal(true)}
+                  variant="outline" 
+                  className="w-full gap-2 border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 mt-2"
+                >
+                  <Save size={16} />
+                  ذخیره پیشرفت (ثبت نام)
+                </Button>
+             )}
           </div>
 
           {/* User Profile Snippet */}
-          <div className="p-4 border-t border-slate-100">
+          <div className="p-4 border-t border-slate-100 space-y-3">
+            <UpgradeModal />
             <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
               <UserCircle className="text-slate-400" size={36} />
               <div className="overflow-hidden">
-                <div className="text-sm font-bold text-slate-700 truncate">کاربر مهمان</div>
-                <div className="text-xs text-slate-400">طرح رایگان</div>
+                <div className="text-sm font-bold text-slate-700 truncate">
+                  {user?.isAnonymous ? "کاربر مهمان" : (user?.email?.split('@')[0] || "کاربر عزیز")}
+                </div>
+                <div className="text-xs text-slate-400">
+                  {user?.isAnonymous ? "ذخیره نشده" : "طرح رایگان"}
+                </div>
               </div>
             </div>
           </div>
@@ -116,6 +140,9 @@ export default function DashboardLayout({
       <main className="flex-1 overflow-x-hidden relative">
         {children}
       </main>
+
+      {/* Global Modals */}
+      <ClaimAccountModal isOpen={showClaimModal} onClose={() => setShowClaimModal(false)} />
 
       {/* The AI Consultant Injection */}
       <AiAssistant />

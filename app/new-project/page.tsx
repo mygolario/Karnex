@@ -24,10 +24,13 @@ export default function NewProjectPage() {
   const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
   const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
+  const [error, setError] = useState<string | null>(null);
+
   // The Core Logic: Generate & Save to Cloud
   const handleSubmit = async () => {
+    setError(null);
     if (!user) {
-      alert("در حال بارگذاری سیستم امنیتی... لطفا چند لحظه صبر کنید.");
+      setError("لطفا ابتدا وارد حساب کاربری شوید.");
       return;
     }
 
@@ -39,26 +42,46 @@ export default function NewProjectPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idea, audience, budget }),
+        // signal: AbortSignal.timeout(60000) <-- Removed to let Server handle timeout via 40s internal logic
       });
-
-      if (!response.ok) throw new Error('AI Generation failed');
-
+      
       const planData = await response.json();
 
+      if (!response.ok) {
+         throw new Error(planData.error || 'AI Generation failed');
+      }
+
       // 2. Save to Cloud (Firebase)
-      await savePlanToCloud(user.uid, {
-        ...planData,
-        budget, // Save the raw budget choice too
-        audience, // Save the target audience
-        ideaInput: idea // Save the original prompt for reference
-      });
+      // We wrap this in a timeout so the user isn't stuck if Firestore is slow/blocked
+      try {
+        const timeoutMs = 5000;
+        const savePromise = savePlanToCloud(user.uid, {
+            ...planData,
+            budget,
+            audience,
+            ideaInput: idea
+        });
+        
+        const timerPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Cloud Save Timeout")), timeoutMs)
+        );
+
+        await Promise.race([savePromise, timerPromise]);
+      } catch (saveErr) {
+        console.warn("Warning: Cloud save took too long or failed. Proceeding to dashboard anyway.", saveErr);
+        // We proceed intentionally so the user feels "progress"
+      }
 
       // 3. Redirect to Dashboard
       router.push('/dashboard/overview');
 
-    } catch (error) {
-      console.error(error);
-      alert("متاسفانه خطایی رخ داد. لطفا دوباره تلاش کنید.");
+    } catch (err: any) {
+      console.error(err);
+      let msg = err.message || "متاسفانه خطایی رخ داد. لطفا دوباره تلاش کنید.";
+      if (err.name === 'TimeoutError' || err.name === 'AbortError') {
+         msg = "زمان پاسخ‌دهی طولانی شد. لطفا دوباره تلاش کنید.";
+      }
+      setError(msg);
     } finally {
       setIsGenerating(false);
     }
@@ -208,6 +231,14 @@ export default function NewProjectPage() {
                 </button>
               ))}
             </div>
+
+            {error && (
+              <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-xl border border-red-200 text-right animate-in fade-in slide-in-from-top-2">
+                {error === 'OpenRouter API Failed' || error.includes('429') 
+                  ? 'سرویس هوش مصنوعی شلوغ است (Rate Limit). لطفا ۳۰ ثانیه دیگر تلاش کنید.' 
+                  : error}
+              </div>
+            )}
 
             <div className="mt-8 flex justify-between items-center">
               <button

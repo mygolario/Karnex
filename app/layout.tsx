@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     description: 'AI-Powered Business Builder for the Iranian Market.',
     images: ['https://placehold.co/1200x630/2563eb/white?text=Karnex+App'], 
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.json?v=2',
 };
 
 export default function RootLayout({
@@ -22,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fa" dir="rtl">
+    <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body className={vazir.className}>
         <AuthProvider>
           {children}
