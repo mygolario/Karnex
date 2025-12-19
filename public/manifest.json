@@ -9,12 +9,12 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "https://placehold.co/192x192/2563eb/white.png?text=Karnex",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "https://placehold.co/512x512/2563eb/white.png?text=Karnex",
       "sizes": "512x512",
       "type": "image/png"
     }

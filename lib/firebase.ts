@@ -1,34 +1,34 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getAnalytics, isSupported } from "firebase/analytics";
 
-// 1. Setup Configuration
-const getFirebaseConfig = () => {
-  // A. Try Environment Variable (Production / Standard Local)
-  if (process.env.NEXT_PUBLIC_FIREBASE_CONFIG) {
-    try {
-      return JSON.parse(process.env.NEXT_PUBLIC_FIREBASE_CONFIG);
-    } catch (e) {
-      console.error("Error parsing firebase config from env:", e);
-    }
-  }
-
-  // B. Fallback to injected global (WebContainers / Legacy)
-  if (typeof (global as any).__firebase_config !== 'undefined') {
-    return JSON.parse((global as any).__firebase_config);
-  }
-
-  return {}; // Will cause initialization error if reached
+const firebaseConfig = {
+  apiKey: "AIzaSyCmCyXBlANcuBZhRIF9QZemzC4-UcFgVoY",
+  authDomain: "karnex-aaec4.firebaseapp.com",
+  projectId: "karnex-aaec4",
+  storageBucket: "karnex-aaec4.firebasestorage.app",
+  messagingSenderId: "882483651592",
+  appId: "1:882483651592:web:f08f1ed916453cb2a19dbd",
+  measurementId: "G-KMVWDV0PLM"
 };
 
-const firebaseConfig = getFirebaseConfig();
-
-// 2. Initialize App (Singleton Pattern)
+// Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// 3. Export Services
+// Initialize Analytics (Client-side only)
+let analytics;
+if (typeof window !== 'undefined') {
+  isSupported().then((supported) => {
+    if (supported) {
+      analytics = getAnalytics(app);
+    }
+  });
+}
+
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export { app, analytics };
 
 // Helper to get the App ID for storage paths
 export const appId = 'karnex-live'; 

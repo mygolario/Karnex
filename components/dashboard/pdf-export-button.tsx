@@ -4,7 +4,8 @@ import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { BusinessPlan } from "@/lib/db";
-import { Loader2, Download, Check, LayoutGrid, Map, Palette, TrendingUp } from "lucide-react";
+import { Loader2, Download, Check, LayoutGrid, Map, Palette, TrendingUp, Lock } from "lucide-react";
+import { UpgradeModal } from "@/components/dashboard/upgrade-modal";
 
 interface PdfExportButtonProps {
   plan: BusinessPlan;
@@ -13,6 +14,18 @@ interface PdfExportButtonProps {
 export function PdfExportButton({ plan }: PdfExportButtonProps) {
   const reportRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  
+  // TODO: Connect to real subscription status
+  const isPro = false; 
+
+  const handleClick = () => {
+    if (!isPro) {
+      setShowUpgrade(true);
+      return;
+    }
+    handleDownload();
+  };
 
   const handleDownload = async () => {
     if (!reportRef.current) return;
@@ -54,23 +67,34 @@ export function PdfExportButton({ plan }: PdfExportButtonProps) {
   return (
     <>
       {/* 1. The Trigger Button */}
-      <button
-        onClick={handleDownload}
-        disabled={isGenerating}
-        className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-sm disabled:opacity-50"
-      >
-        {isGenerating ? (
-          <>
-            <Loader2 size={18} className="animate-spin" />
-            <span>در حال ساخت...</span>
-          </>
-        ) : (
-          <>
-            <Download size={18} />
-            <span>دانلود PDF</span>
-          </>
-        )}
-      </button>
+      {isPro ? (
+        <button
+          onClick={handleDownload}
+          disabled={isGenerating}
+          className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-sm disabled:opacity-50"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              <span>در حال ساخت...</span>
+            </>
+          ) : (
+            <>
+              <Download size={18} />
+              <span>دانلود PDF</span>
+            </>
+          )}
+        </button>
+      ) : (
+        <UpgradeModal>
+          <button
+            className="flex items-center gap-2 bg-gray-100 text-gray-500 hover:bg-gray-200 px-4 py-2 rounded-lg font-medium transition-all shadow-sm group"
+          >
+            <Lock size={18} className="text-gray-400 group-hover:text-purple-600 transition-colors" />
+            <span>دانلود PDF (نسخه حرفه‌ای)</span>
+          </button>
+        </UpgradeModal>
+      )}
 
       {/* 2. The Hidden Report Template (A4 Layout) */}
       <div className="absolute top-0 left-[-9999px] w-[210mm] min-h-[297mm] bg-white text-slate-900" ref={reportRef}>

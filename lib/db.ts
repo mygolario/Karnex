@@ -2,6 +2,7 @@ import {
   doc, 
   setDoc, 
   getDoc, 
+  getDocFromCache, // Added for offline fallback
   updateDoc,
   deleteDoc,
   arrayUnion,
@@ -82,17 +83,52 @@ export const savePlanToCloud = async (userId: string, planData: any) => {
 
 // Get Plan from Cloud
 export const getPlanFromCloud = async (userId: string) => {
-  try {
-    const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', 'current');
-    const docSnap = await getDoc(planRef);
+  const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', 'current');
 
-    if (docSnap.exists()) {
+  try {
+    // 1. Try fetching from server with a lenient timeout (15s)
+    const timeoutMs = 15000;
+    const fetchPromise = getDoc(planRef);
+    
+    const timerPromise = new Promise<any>((_, reject) => 
+        setTimeout(() => reject(new Error("Firestore Read Timeout")), timeoutMs)
+    );
+
+    const docSnap = await Promise.race([fetchPromise, timerPromise]);
+
+    if (docSnap && docSnap.exists()) {
       return docSnap.data() as BusinessPlan;
-    } else {
-      return null;
+    } 
+    // If successful but empty, it might mean it really doesn't exist, OR 
+    // it returned from cache empty. Return null.
+    return null;
+
+  } catch (error: any) {
+    // 2. Fallback to Local Cache
+    // This is normal behavior for offline/slow connections, so we use logic to recover.
+    if (!error.message.includes("Firestore Read Timeout")) {
+         console.warn("Network read failed. Attempting logic cache read...", error.message);
     }
-  } catch (error) {
-    console.error("Error fetching plan:", error);
+    
+    try {
+        // Force read from local cache (offline support)
+        const cachedSnap = await getDocFromCache(planRef);
+        if (cachedSnap && cachedSnap.exists()) {
+            console.log("✓ Retrieved plan from local device cache (Offline Mode Active).");
+            return cachedSnap.data() as BusinessPlan;
+        }
+    } catch (cacheError) {
+        // Only log if cache also fails, which means user has NO data at all.
+        // console.warn("Cache read also failed:", cacheError);
+    }
+
+    // 3. If here, both network and cache failed
+    if (error.message.includes("offline") || error.code === 'unavailable' || error.message.includes("Timeout")) {
+        console.warn("Could not load plan (Offline & No Cache). Returning empty state.");
+        return null;
+    }
+    
+    console.error("Critical Error fetching plan:", error);
     throw error;
   }
 };
