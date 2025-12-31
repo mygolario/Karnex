@@ -1,12 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { 
-  User, 
-  signInAnonymously, 
-  signInWithCustomToken, 
-  onAuthStateChanged 
-} from "firebase/auth";
+import { User, onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
 // Define the Context Shape
@@ -24,25 +19,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. Initialize Authentication
-    const initAuth = async () => {
-      try {
-        // If the environment provides a token, use it (Simulates logged in user)
-        if (typeof (window as any).__initial_auth_token !== 'undefined' && (window as any).__initial_auth_token) {
-          await signInWithCustomToken(auth, (window as any).__initial_auth_token);
-        } else {
-          // Otherwise, create a secure anonymous session
-          // This allows users to start using the app immediately without signup friction
-          await signInAnonymously(auth);
-        }
-      } catch (error) {
-        console.error("Auth Initialization Error:", error);
-      }
-    };
-
-    initAuth();
-
-    // 2. Listen for User State Changes
+    // Listen for User State Changes
+    // User starts as null (not authenticated) until they sign up or log in
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
@@ -57,3 +35,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </AuthContext.Provider>
   );
 }
+

@@ -21,13 +21,17 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // Success! AuthContext will pick it up and redirect if we want, or we force it:
-      router.push("/dashboard/overview");
+      // Success! Redirect to create project or dashboard
+      router.push("/new-project");
     } catch (err: any) {
       console.error("Login Error:", err);
-      if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+      if (
+        err.code === "auth/invalid-credential" ||
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/wrong-password"
+      ) {
         setError("ایمیل یا رمز عبور اشتباه است.");
-      } else if (err.code === 'auth/too-many-requests') {
+      } else if (err.code === "auth/too-many-requests") {
         setError("دفعات تلاش بیش از حد مجاز. لطفا دقایقی دیگر تلاش کنید.");
       } else {
         setError("خطایی در ورود رخ داد. لطفا دوباره تلاش کنید.");
@@ -38,22 +42,24 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4" dir="rtl">
-      
+    <div
+      className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4"
+      dir="rtl"
+    >
       {/* Brand */}
       <div className="mb-8 text-center">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">کارنکس</h1>
+        <h1 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">
+          کارنکس
+        </h1>
         <p className="text-slate-500">ورود به حساب کاربری</p>
       </div>
 
       <div className="w-full max-w-[400px] bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
-        
         <form onSubmit={handleLogin} className="space-y-5">
-          
           <div className="space-y-2">
             <label className="text-sm font-bold text-slate-700">ایمیل</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -63,12 +69,19 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-             <div className="flex justify-between items-center">
-                <label className="text-sm font-bold text-slate-700">رمز عبور</label>
-                <Link href="/reset-password" className="text-xs text-blue-600 hover:underline">فراموشی رمز؟</Link>
-             </div>
-            <input 
-              type="password" 
+            <div className="flex justify-between items-center">
+              <label className="text-sm font-bold text-slate-700">
+                رمز عبور
+              </label>
+              <Link
+                href="/reset-password"
+                className="text-xs text-blue-600 hover:underline"
+              >
+                فراموشی رمز؟
+              </Link>
+            </div>
+            <input
+              type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -84,32 +97,35 @@ export default function LoginPage() {
             </div>
           )}
 
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             disabled={loading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-12 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2"
           >
             {loading ? <Loader2 className="animate-spin" /> : "ورود به سیستم"}
           </button>
-
         </form>
 
         <div className="mt-6 pt-6 border-t border-slate-100 text-center text-sm text-slate-500">
           حساب کاربری ندارید؟{" "}
-          <Link href="/new-project" className="text-blue-600 font-bold hover:underline">
+          <Link
+            href="/new-project"
+            className="text-blue-600 font-bold hover:underline"
+          >
             شروع رایگان
           </Link>
         </div>
-
       </div>
 
       <div className="mt-8">
-        <Link href="/" className="text-slate-400 hover:text-slate-600 flex items-center gap-2 text-sm transition-colors">
+        <Link
+          href="/"
+          className="text-slate-400 hover:text-slate-600 flex items-center gap-2 text-sm transition-colors"
+        >
           <ArrowLeft size={16} />
           بازگشت به صفحه اصلی
         </Link>
       </div>
-
     </div>
   );
 }

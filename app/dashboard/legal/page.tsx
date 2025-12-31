@@ -104,7 +104,7 @@ export default function LegalPage() {
           </h3>
           
           <div className="space-y-4">
-            {plan.legalAdvice.requirements.map((req, i) => (
+            {(plan.legalAdvice.requirements || []).map((req, i) => (
               <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex gap-4">
                 <div className={`
                   w-1 shrink-0 rounded-full my-1
@@ -124,7 +124,9 @@ export default function LegalPage() {
                   </p>
                 </div>
               </div>
-            ))}
+            ))}                {(!plan.legalAdvice.requirements || plan.legalAdvice.requirements.length === 0) && (
+              <p className="text-slate-400 text-sm">الزامات خاصی شناسایی نشد.</p>
+            )}
           </div>
         </div>
 
@@ -138,13 +140,13 @@ export default function LegalPage() {
               مجوزهای احتمالی
             </h3>
             <ul className="space-y-3">
-              {plan.legalAdvice.permits.map((permit, i) => (
+              {(plan.legalAdvice.permits || []).map((permit, i) => (
                 <li key={i} className="flex items-center gap-2 text-slate-600 text-sm">
                   <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
                   {permit}
                 </li>
               ))}
-              {plan.legalAdvice.permits.length === 0 && (
+              {(!plan.legalAdvice.permits || plan.legalAdvice.permits.length === 0) && (
                 <li className="text-slate-400 text-sm">مجوز خاصی شناسایی نشد.</li>
               )}
             </ul>
@@ -159,11 +161,14 @@ export default function LegalPage() {
               نکته وکیل
             </h3>
             <ul className="space-y-4">
-              {plan.legalAdvice.tips.map((tip, i) => (
+              {(plan.legalAdvice.tips || []).map((tip, i) => (
                 <li key={i} className="text-sm text-slate-300 leading-6 border-b border-white/10 last:border-0 pb-3 last:pb-0">
                   {tip}
                 </li>
               ))}
+              {(!plan.legalAdvice.tips || plan.legalAdvice.tips.length === 0) && (
+                <li className="text-slate-400 text-sm">نکته‌ای موجود نیست.</li>
+              )}
             </ul>
           </div>
 

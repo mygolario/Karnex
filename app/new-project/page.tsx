@@ -52,24 +52,26 @@ export default function NewProjectPage() {
       }
 
       // 2. Save to Cloud (Firebase)
-      // We wrap this in a timeout so the user isn't stuck if Firestore is slow/blocked
-      try {
-        const timeoutMs = 5000;
-        const savePromise = savePlanToCloud(user.uid, {
-            ...planData,
-            budget,
-            audience,
-            ideaInput: idea
-        });
-        
-        const timerPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error("Cloud Save Timeout")), timeoutMs)
-        );
+      // Give Firebase 30 seconds to save - this must succeed
+      const timeoutMs = 30000;
+      const savePromise = savePlanToCloud(user.uid, {
+          ...planData,
+          budget,
+          audience,
+          ideaInput: idea,
+          createdAt: new Date().toISOString()
+      });
+      
+      const timerPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("ذخیره‌سازی در ابر زمان‌بر شد. لطفا دوباره امتحان کنید.")), timeoutMs)
+      );
 
+      try {
         await Promise.race([savePromise, timerPromise]);
-      } catch (saveErr) {
-        console.warn("Warning: Cloud save took too long or failed. Proceeding to dashboard anyway.", saveErr);
-        // We proceed intentionally so the user feels "progress"
+        console.log("✓ Project saved to cloud successfully");
+      } catch (saveErr: any) {
+        console.error("Failed to save project:", saveErr);
+        throw new Error(saveErr.message || "خطا در ذخیره پروژه. لطفا دوباره تلاش کنید.");
       }
 
       // 3. Redirect to Dashboard
@@ -96,6 +98,46 @@ export default function NewProjectPage() {
     return (
       <div className="flex items-center justify-center h-screen bg-slate-50">
         <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+      </div>
+    );
+  }
+
+  // Require authentication before project creation
+  if (!user || user.isAnonymous) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4" dir="rtl">
+        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8 text-center">
+          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Sparkles className="w-8 h-8 text-blue-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800 mb-3">
+            برای ساخت پروژه، ابتدا وارد شوید
+          </h1>
+          <p className="text-slate-500 mb-6">
+            برای ذخیره امن پروژه‌هایتان، لطفا ابتدا یک حساب کاربری بسازید یا وارد شوید.
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => router.push('/login')}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-12 rounded-xl transition-all shadow-lg hover:shadow-xl"
+            >
+              ورود به حساب کاربری
+            </button>
+            <button
+              onClick={() => router.push('/signup')}
+              className="w-full bg-white border-2 border-slate-200 hover:border-blue-500 text-slate-700 font-bold h-12 rounded-xl transition-all"
+            >
+              ساخت حساب جدید
+            </button>
+          </div>
+          <button
+            onClick={() => router.push('/')}
+            className="mt-6 text-slate-400 hover:text-slate-600 text-sm flex items-center gap-2 justify-center transition-colors"
+          >
+            <ArrowRight size={16} />
+            بازگشت به صفحه اصلی
+          </button>
+        </div>
       </div>
     );
   }
