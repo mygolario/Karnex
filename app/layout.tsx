@@ -8,12 +8,27 @@ const vazir = Vazirmatn({ subsets: ['arabic', 'latin'] });
 export const metadata: Metadata = {
   title: 'کارنکس | دستیار هوشمند کارآفرینی',
   description: 'با هوش مصنوعی، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
+  metadataBase: new URL('https://www.karnex.ir'),
   openGraph: {
-    title: 'Karnex - Build Your Empire',
-    description: 'AI-Powered Business Builder for the Iranian Market.',
-    images: ['https://placehold.co/1200x630/2563eb/white?text=Karnex+App'], 
+    title: 'کارنکس | دستیار هوشمند کارآفرینی',
+    description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید.',
+    url: 'https://www.karnex.ir',
+    siteName: 'Karnex',
+    images: ['/logo-light.png'],
+    locale: 'fa_IR',
+    type: 'website',
   },
-  manifest: '/manifest.json?v=2',
+  twitter: {
+    card: 'summary_large_image',
+    title: 'کارنکس | دستیار هوشمند کارآفرینی',
+    description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید.',
+    images: ['/logo-light.png'],
+  },
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/logo-dark.png',
+    apple: '/logo-dark.png',
+  },
 };
 
 export default function RootLayout({
