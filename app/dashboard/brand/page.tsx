@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
+import { useProject } from "@/contexts/project-context";
 import { getPlanFromCloud, BusinessPlan } from "@/lib/db";
 import { Copy, Check, Palette, Type, Image as ImageIcon, Sparkles } from "lucide-react";
 import { Card, CardIcon } from "@/components/ui/card";
@@ -9,15 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export default function BrandKitPage() {
-  const { user, loading: authLoading } = useAuth();
-  const [plan, setPlan] = useState<BusinessPlan | null>(null);
+  const { user } = useAuth();
+  const { activeProject: plan, loading } = useProject(); // Use context
   const [copied, setCopied] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (user && !authLoading) {
-      getPlanFromCloud(user.uid).then(setPlan);
-    }
-  }, [user, authLoading]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -25,7 +20,7 @@ export default function BrandKitPage() {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  if (!plan) {
+  if (loading || !plan) {
     return (
       <div className="p-12 flex flex-col items-center justify-center min-h-[400px] gap-4">
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center animate-pulse">

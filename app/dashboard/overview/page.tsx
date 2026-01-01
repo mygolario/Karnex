@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
-import { getPlanFromCloud } from "@/lib/db";
+import { useProject } from "@/contexts/project-context";
+import { getPlanFromCloud, BusinessPlan } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardIcon, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,35 +25,9 @@ import {
   Plus
 } from "lucide-react";
 
-interface PlanData {
-  projectName?: string;
-  idea?: string;
-  executionPlan?: { phase: string; tasks: string[] }[];
-  brandKit?: {
-    primaryColorHex?: string;
-    secondaryColorHex?: string;
-    colorPsychology?: string;
-    suggestedFont?: string;
-    logoConcepts?: any[];
-  };
-  businessCanvas?: { problem?: string };
-}
-
 export default function DashboardOverviewPage() {
   const { user } = useAuth();
-  const [plan, setPlan] = useState<PlanData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (user) {
-      getPlanFromCloud(user.uid)
-        .then((data) => {
-          setPlan(data);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-    }
-  }, [user]);
+  const { activeProject: plan, loading } = useProject(); // Use context
 
   const quickActions = [
     { icon: Map, label: "نقشه راه", href: "/dashboard/roadmap", color: "primary" },
@@ -62,9 +37,9 @@ export default function DashboardOverviewPage() {
   ];
 
   const stats = [
-    { label: "مراحل کل", value: plan?.executionPlan?.length || 0, icon: Target },
-    { label: "تسک‌ها", value: plan?.executionPlan?.reduce((acc, p) => acc + p.tasks.length, 0) || 0, icon: CheckCircle2 },
-    { label: "پیشرفت", value: "۰٪", icon: TrendingUp },
+    { label: "مراحل کل", value: plan?.roadmap?.length || 0, icon: Target },
+    { label: "تسک‌ها", value: plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 0, icon: CheckCircle2 },
+    { label: "پیشرفت", value: plan?.completedSteps && plan?.roadmap ? Math.round((plan.completedSteps.length / (plan.roadmap.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1)) * 100) + "٪" : "۰٪", icon: TrendingUp },
   ];
 
   // Empty State
@@ -200,7 +175,7 @@ export default function DashboardOverviewPage() {
             </div>
           </div>
           <p className="text-muted-foreground leading-relaxed line-clamp-4">
-            {plan?.idea || "توضیحاتی برای این پروژه ثبت نشده است."}
+            {plan?.overview || "توضیحاتی برای این پروژه ثبت نشده است."}
           </p>
         </Card>
 
@@ -216,7 +191,7 @@ export default function DashboardOverviewPage() {
             </div>
           </div>
           <div className="space-y-3">
-            {plan?.executionPlan?.[0]?.tasks?.slice(0, 3).map((task, i) => (
+            {plan?.roadmap?.[0]?.steps?.slice(0, 3).map((task: any, i: number) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center text-secondary shrink-0 mt-0.5">
                   <CheckCircle2 size={14} />

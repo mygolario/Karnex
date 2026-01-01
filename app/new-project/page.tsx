@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import { useProject } from "@/contexts/project-context";
 import { savePlanToCloud } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -67,6 +68,8 @@ export default function NewProjectPage() {
     setStep((prev) => (prev - 1) as Step);
   };
 
+  const { createNewProject } = useProject(); // New hook usage
+
   const handleGenerate = async () => {
     if (!user) return;
     
@@ -90,10 +93,10 @@ export default function NewProjectPage() {
 
       const data = await res.json();
       
-      // Save to cloud
-      await savePlanToCloud(user.uid, data.plan);
+      // Create new project via context (generates new ID)
+      await createNewProject(data);
       
-      // Redirect to dashboard
+      // Redirect to dashboard (activeProject is now set)
       router.push("/dashboard/overview");
     } catch (err) {
       console.error(err);

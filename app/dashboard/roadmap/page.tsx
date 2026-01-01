@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
+import { useProject } from "@/contexts/project-context";
 import { getPlanFromCloud, toggleStepCompletion, BusinessPlan } from "@/lib/db";
 import { Map, CheckCircle2, Circle, Sparkles, Trophy } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -9,32 +10,22 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export default function RoadmapPage() {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
+  const { activeProject: plan, loading } = useProject(); // Use context
   const router = useRouter();
   
-  const [plan, setPlan] = useState<BusinessPlan | null>(null);
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // Load Data
+  // Update completed steps when plan changes
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) { router.push('/new-project'); return; }
-
-    const init = async () => {
-      const data = await getPlanFromCloud(user.uid);
-      if (data) {
-        setPlan(data);
-        setCompletedSteps(data.completedSteps || []);
-      }
-      setLoading(false);
-    };
-    init();
-  }, [user, authLoading, router]);
+    if (plan) {
+      setCompletedSteps(plan.completedSteps || []);
+    }
+  }, [plan]);
 
   // Handle Check/Uncheck
   const handleToggle = async (step: string) => {
-    if (!user) return;
+    if (!user || !plan) return;
 
     // 1. Optimistic UI Update (Instant feel)
     const isNowCompleted = !completedSteps.includes(step);
@@ -44,7 +35,7 @@ export default function RoadmapPage() {
 
     // 2. Sync with Cloud
     try {
-      await toggleStepCompletion(user.uid, step, isNowCompleted);
+      await toggleStepCompletion(user.uid, step, isNowCompleted, plan.id || 'current');
     } catch (error) {
       // Revert if error
       console.error("Sync failed", error);

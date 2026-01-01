@@ -54,6 +54,7 @@ export default function DashboardLayout({
   ];
 
   const bottomMenuItems = [
+    { icon: LayoutGrid, label: "پروژه‌ها", href: "/projects" }, // Added Projects Link
     { icon: HelpCircle, label: "راهنما", href: "/dashboard/help" },
     { icon: Settings, label: "تنظیمات", href: "/dashboard/settings" },
   ];

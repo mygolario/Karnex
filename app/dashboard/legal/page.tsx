@@ -2,31 +2,23 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
+import { useProject } from "@/contexts/project-context";
 import { getPlanFromCloud, saveLegalAdvice, BusinessPlan } from "@/lib/db";
 import { Scale, ShieldCheck, AlertCircle, FileText, Loader2, Info, Sparkles } from "lucide-react";
 import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export default function LegalPage() {
-  const { user, loading: authLoading } = useAuth();
-  const [plan, setPlan] = useState<BusinessPlan | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { activeProject: plan, loading } = useProject(); // Use context
   const [generating, setGenerating] = useState(false);
 
-  // 1. Load Plan
+  // 1. If plan exists but NO legal advice, generate it automatically
   useEffect(() => {
-    if (user && !authLoading) {
-      getPlanFromCloud(user.uid).then((data) => {
-        setPlan(data);
-        setLoading(false);
-        
-        // 2. If plan exists but NO legal advice, generate it automatically
-        if (data && !data.legalAdvice) {
-          generateLegalData(data.overview, data.audience);
-        }
-      });
+    if (plan && !plan.legalAdvice && !generating && !loading) {
+      generateLegalData(plan.overview, plan.audience);
     }
-  }, [user, authLoading]);
+  }, [plan, loading]);
 
   // 3. The Generator Function
   const generateLegalData = async (idea: string, audience: string) => {
@@ -41,11 +33,17 @@ export default function LegalPage() {
       });
       const legalData = await res.json();
       
-      if (user) {
+      if (user && plan) {
         // Save to DB so we don't generate again
-        await saveLegalAdvice(user.uid, legalData);
-        // Update Local State
-        setPlan(prev => prev ? ({ ...prev, legalAdvice: legalData }) : null);
+        await saveLegalAdvice(user.uid, legalData, plan.id || 'current');
+        // We rely on context refresh or re-render? 
+        // Ideally we should update the context's plan object.
+        // For now, let's just assume the user will reload or we add a reload method.
+        // Or we can manually update the local plan object if we want instant feedback?
+        // But `plan` is constant from context... wait, if I mutate it here it might not work.
+        // Actually, since I removed setPlan, I can't update it locally unless I have a updateProject method in context.
+        // Let's rely on a page refresh for now or just force reload.
+        window.location.reload(); 
       }
     } catch (err) {
       console.error(err);

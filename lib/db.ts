@@ -2,18 +2,20 @@ import {
   doc, 
   setDoc, 
   getDoc, 
-  getDocFromCache, // Added for offline fallback
+  getDocFromCache, 
   updateDoc,
   deleteDoc,
   arrayUnion,
   arrayRemove,
-  collection 
+  collection,
+  getDocs,
+  addDoc
 } from "firebase/firestore";
 import { db, appId } from "@/lib/firebase";
 
 // Define the Data Structure (TypeScript Interface)
-// This matches your AI Output
 export interface BusinessPlan {
+  id?: string; // Document ID
   projectName: string;
   tagline: string;
   overview: string;
@@ -44,16 +46,50 @@ export interface BusinessPlan {
     tips: string[];
   };
   budget: string;
-  audience: string; // Added to fix type error
-  ideaInput?: string; // Optional since it might be legacy
-  completedSteps?: string[]; // Track checking off items
+  audience: string;
+  ideaInput?: string;
+  completedSteps?: string[];
   createdAt: string;
+  updatedAt?: string;
 }
 
-// Save Legal Advice to Cloud
-export const saveLegalAdvice = async (userId: string, legalData: any) => {
+// Get All User Projects
+export const getUserProjects = async (userId: string): Promise<BusinessPlan[]> => {
   try {
-     const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', 'current');
+    const colRef = collection(db, 'artifacts', appId, 'users', userId, 'plans');
+    const snap = await getDocs(colRef); // Fetch all
+    
+    return snap.docs.map(d => ({
+        id: d.id,
+        ...(d.data() as any)
+    })) as BusinessPlan[];
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    return [];
+  }
+};
+
+// Create New Project (Auto ID)
+export const createProject = async (userId: string, planData: any) => {
+    try {
+        const colRef = collection(db, 'artifacts', appId, 'users', userId, 'plans');
+        // We use addDoc for auto-generated UUIDs
+        const docRef = await addDoc(colRef, {
+            ...planData,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        });
+        return docRef.id;
+    } catch (error) {
+        console.error("Error creating project:", error);
+        throw error;
+    }
+}
+
+// Save Legal Advice 
+export const saveLegalAdvice = async (userId: string, legalData: any, projectId: string = 'current') => {
+  try {
+     const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
      await updateDoc(planRef, { legalAdvice: legalData });
      return true;
   } catch (error) {
@@ -62,17 +98,16 @@ export const saveLegalAdvice = async (userId: string, legalData: any) => {
   }
 };
 
-// Save Plan to Cloud
-export const savePlanToCloud = async (userId: string, planData: any) => {
+// Save Plan (Update existing) 
+export const savePlanToCloud = async (userId: string, planData: any, merge: boolean = true, projectId: string = 'current') => {
   try {
-    // Path: /artifacts/{appId}/users/{userId}/plans/current
-    // We use a fixed ID 'current' for the MVP so the user always finds their active project
-    const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', 'current');
+    const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
     
+    // Ensure we don't accidentally overwrite 'current' if we meant a specific ID, but here projectId handles that.
     await setDoc(planRef, {
       ...planData,
       updatedAt: new Date().toISOString()
-    }, { merge: true }); // Merge updates, don't overwrite if not needed
+    }, { merge });
 
     return true;
   } catch (error) {
@@ -81,12 +116,11 @@ export const savePlanToCloud = async (userId: string, planData: any) => {
   }
 };
 
-// Get Plan from Cloud
-export const getPlanFromCloud = async (userId: string) => {
-  const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', 'current');
+// Get Single Plan
+export const getPlanFromCloud = async (userId: string, projectId: string = 'current') => {
+  const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
 
   try {
-    // 1. Try fetching from server with a lenient timeout (15s)
     const timeoutMs = 15000;
     const fetchPromise = getDoc(planRef);
     
@@ -97,34 +131,24 @@ export const getPlanFromCloud = async (userId: string) => {
     const docSnap = await Promise.race([fetchPromise, timerPromise]);
 
     if (docSnap && docSnap.exists()) {
-      return docSnap.data() as BusinessPlan;
+      return { id: docSnap.id, ...docSnap.data() } as BusinessPlan;
     } 
-    // If successful but empty, it might mean it really doesn't exist, OR 
-    // it returned from cache empty. Return null.
     return null;
 
   } catch (error: any) {
-    // 2. Fallback to Local Cache
-    // This is normal behavior for offline/slow connections, so we use logic to recover.
     if (!error.message.includes("Firestore Read Timeout")) {
-         console.warn("Network read failed. Attempting logic cache read...", error.message);
+         console.warn("Network read failed. Attempting logic cache check...", error.message);
     }
     
     try {
-        // Force read from local cache (offline support)
         const cachedSnap = await getDocFromCache(planRef);
         if (cachedSnap && cachedSnap.exists()) {
-            console.log("✓ Retrieved plan from local device cache (Offline Mode Active).");
-            return cachedSnap.data() as BusinessPlan;
+            console.log("✓ Retrieved plan from cache.");
+            return { id: cachedSnap.id, ...cachedSnap.data() } as BusinessPlan;
         }
-    } catch (cacheError) {
-        // Only log if cache also fails, which means user has NO data at all.
-        // console.warn("Cache read also failed:", cacheError);
-    }
+    } catch (cacheError) {}
 
-    // 3. If here, both network and cache failed
     if (error.message.includes("offline") || error.code === 'unavailable' || error.message.includes("Timeout")) {
-        console.warn("Could not load plan (Offline & No Cache). Returning empty state.");
         return null;
     }
     
@@ -133,10 +157,10 @@ export const getPlanFromCloud = async (userId: string) => {
   }
 };
 
-// Toggle a Step Checkbox
-export const toggleStepCompletion = async (userId: string, stepName: string, isCompleted: boolean) => {
+// Toggle Step
+export const toggleStepCompletion = async (userId: string, stepName: string, isCompleted: boolean, projectId: string = 'current') => {
   try {
-    const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', 'current');
+    const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
     
     await updateDoc(planRef, {
       completedSteps: isCompleted ? arrayUnion(stepName) : arrayRemove(stepName)
@@ -150,9 +174,9 @@ export const toggleStepCompletion = async (userId: string, stepName: string, isC
 };
 
 // Delete Project
-export const deleteProject = async (userId: string) => {
+export const deleteProject = async (userId: string, projectId: string = 'current') => {
   try {
-     const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', 'current');
+     const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
      await deleteDoc(planRef);
      return true;
   } catch (error) {

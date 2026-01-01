@@ -36,8 +36,8 @@ export async function POST(req: Request) {
 
     let response;
     const models = [
-        "anthropic/claude-sonnet-4.5", 
         "google/gemini-2.0-flash-exp:free",
+        "deepseek/deepseek-chat:free", 
         "meta-llama/llama-3.3-70b-instruct:free"
     ];
 

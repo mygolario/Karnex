@@ -33,14 +33,16 @@ export async function POST(req: Request) {
     // Call OpenRouter (Using a fast, free/cheap model)
     let response;
     // List of models to try
+    // List of models to try
     const models = [
-        "anthropic/claude-sonnet-4.5", 
-        "google/gemini-2.0-flash-exp:free", 
-        "meta-llama/llama-3.3-70b-instruct:free"
+        "google/gemini-2.0-flash-thinking-exp:free",
+        "deepseek/deepseek-chat:free",             // V3 is often more stable than R1
+        "google/gemini-2.0-flash-exp:free",
+        "meta-llama/llama-3.3-70b-instruct:free"   // Very robust fallback
     ];
 
-    // let response; // Removed duplicate declaration
     let successfulModel = '';
+    let lastError = '';
 
     for (const model of models) {
         try {
@@ -72,8 +74,11 @@ export async function POST(req: Request) {
                 successfulModel = model;
                 break; // Success!
             }
-            console.warn(`Chat model ${model} failed: ${response.status}`);
+            const errText = await response.text();
+            lastError = `${model}: ${response.status} - ${errText}`;
+            console.warn(`Chat model ${model} failed: ${response.status} - ${errText}`);
         } catch (e: any) {
+            lastError = `${model}: ${e.name || e.message}`;
             console.warn(`Chat model ${model} error:`, e.name || e.message);
         }
     }

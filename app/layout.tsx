@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Vazirmatn } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
+import { ProjectProvider } from '@/contexts/project-context';
 import { ThemeProvider } from '@/components/shared/theme-provider';
 
 const vazir = Vazirmatn({ subsets: ['arabic', 'latin'] });
@@ -47,7 +48,9 @@ export default function RootLayout({
           disableTransitionOnChange={false}
         >
           <AuthProvider>
-            {children}
+            <ProjectProvider>
+              {children}
+            </ProjectProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
