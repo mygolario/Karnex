@@ -4,14 +4,17 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { getPlanFromCloud, BusinessPlan } from "@/lib/db";
-import { Copy, Check, Palette, Type, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Copy, Check, Palette, Type, Image as ImageIcon, Sparkles, Lightbulb, HelpCircle } from "lucide-react";
 import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { HoverExplainer } from "@/components/ui/explainer";
+import { LearnMore } from "@/components/ui/learn-more";
+import { brandKitExplanations, featureExplanations } from "@/lib/knowledge-base";
 
 export default function BrandKitPage() {
   const { user } = useAuth();
-  const { activeProject: plan, loading } = useProject(); // Use context
+  const { activeProject: plan, loading } = useProject();
   const [copied, setCopied] = useState<string | null>(null);
 
   const copyToClipboard = (text: string) => {
@@ -34,6 +37,17 @@ export default function BrandKitPage() {
   return (
     <div className="p-6 max-w-6xl mx-auto space-y-10">
       
+      {/* Feature Explanation Banner */}
+      <LearnMore title="هویت بصری چیست؟" variant="secondary">
+        <p className="text-muted-foreground text-sm leading-7 mb-3">
+          {featureExplanations.brand.description}
+        </p>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Lightbulb size={14} className="text-secondary" />
+          نکته: این رنگ‌ها و فونت را در همه جا استفاده کنید - سایت، پست‌ها، کارت ویزیت و...
+        </div>
+      </LearnMore>
+
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -43,6 +57,7 @@ export default function BrandKitPage() {
               <Sparkles size={12} />
               هوش مصنوعی
             </Badge>
+            <HoverExplainer text="این رنگ‌ها و فونت‌ها بر اساس نوع کسب‌وکار و مخاطب شما انتخاب شده‌اند" />
           </div>
           <p className="text-muted-foreground text-lg">
             طراحی شده بر اساس روانشناسی مخاطب: <span className="text-foreground font-bold">{plan.audience}</span>
@@ -57,12 +72,13 @@ export default function BrandKitPage() {
             <Palette size={20} />
           </CardIcon>
           <span className="font-bold text-sm uppercase tracking-wider">پالت رنگی اختصاصی</span>
+          <HoverExplainer text={brandKitExplanations.colors.tip} />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {[
-            { label: "رنگ اصلی", hex: plan.brandKit.primaryColorHex, gradient: "from-primary to-purple-600" },
-            { label: "رنگ مکمل", hex: plan.brandKit.secondaryColorHex, gradient: "from-secondary to-emerald-600" }
+            { label: "رنگ اصلی", hex: plan.brandKit.primaryColorHex, gradient: "from-primary to-purple-600", usage: "برای دکمه‌ها، لینک‌ها و عناصر مهم" },
+            { label: "رنگ مکمل", hex: plan.brandKit.secondaryColorHex, gradient: "from-secondary to-emerald-600", usage: "برای پس‌زمینه‌ها و تأکید ثانویه" }
           ].map((color, idx) => (
             <Card 
               key={idx} 
@@ -75,30 +91,49 @@ export default function BrandKitPage() {
                 className="h-40 w-full rounded-xl shadow-inner transition-transform hover:scale-[1.02] relative overflow-hidden" 
                 style={{ backgroundColor: color.hex }}
               >
-                {/* Shine Effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
               </div>
-              <div className="p-4 flex justify-between items-center">
-                <div>
-                  <div className="text-muted-foreground text-sm mb-1">{color.label}</div>
-                  <div className="text-2xl font-mono font-bold text-foreground">{color.hex}</div>
+              <div className="p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <div>
+                    <div className="text-muted-foreground text-sm mb-1">{color.label}</div>
+                    <div className="text-2xl font-mono font-bold text-foreground">{color.hex}</div>
+                  </div>
+                  <Button 
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => copyToClipboard(color.hex)}
+                    className="hover:bg-muted"
+                  >
+                    {copied === color.hex ? (
+                      <Check size={20} className="text-secondary" />
+                    ) : (
+                      <Copy size={20} />
+                    )}
+                  </Button>
                 </div>
-                <Button 
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => copyToClipboard(color.hex)}
-                  className="hover:bg-muted"
-                >
-                  {copied === color.hex ? (
-                    <Check size={20} className="text-secondary" />
-                  ) : (
-                    <Copy size={20} />
-                  )}
-                </Button>
+                
+                {/* Usage Tip */}
+                <div className="bg-muted/50 rounded-lg p-3 text-xs text-muted-foreground flex items-center gap-2">
+                  <Lightbulb size={14} className="text-accent shrink-0" />
+                  <span>کجا استفاده کنم؟ {color.usage}</span>
+                </div>
               </div>
             </Card>
           ))}
         </div>
+
+        {/* Color Usage Guide */}
+        <LearnMore title="چطور از این رنگ‌ها استفاده کنم؟" variant="accent">
+          <ul className="space-y-2">
+            {brandKitExplanations.colors.usage.map((item, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <span className="text-accent">•</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </LearnMore>
 
         {/* Psychology Note */}
         <Card variant="muted" className="border-l-4 border-l-accent">
@@ -118,6 +153,7 @@ export default function BrandKitPage() {
             <Type size={20} />
           </CardIcon>
           <span className="font-bold text-sm uppercase tracking-wider">تایپوگرافی</span>
+          <HoverExplainer text={brandKitExplanations.typography.tip} />
         </div>
         
         <Card variant="default" hover="glow" className="overflow-hidden">
@@ -139,6 +175,18 @@ export default function BrandKitPage() {
             </p>
           </div>
         </Card>
+
+        {/* Typography Usage */}
+        <LearnMore title="چطور از فونت استفاده کنم؟" variant="primary">
+          <ul className="space-y-2">
+            {brandKitExplanations.typography.usage.map((item, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <span className="text-primary">•</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </LearnMore>
       </section>
 
       {/* 3. Logo Concepts */}
@@ -148,6 +196,7 @@ export default function BrandKitPage() {
             <ImageIcon size={20} />
           </CardIcon>
           <span className="font-bold text-sm uppercase tracking-wider">ایده‌های لوگو</span>
+          <HoverExplainer text={brandKitExplanations.logo.tip} />
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -168,6 +217,18 @@ export default function BrandKitPage() {
             </Card>
           ))}
         </div>
+
+        {/* Logo Usage Tips */}
+        <LearnMore title="چطور از لوگو استفاده کنم؟" variant="secondary">
+          <ul className="space-y-2">
+            {brandKitExplanations.logo.usage.map((item, i) => (
+              <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
+                <span className="text-secondary">•</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </LearnMore>
       </section>
     </div>
   );

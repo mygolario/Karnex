@@ -32,12 +32,10 @@ export async function POST(req: Request) {
 
     // Call OpenRouter (Using a fast, free/cheap model)
     let response;
-    // List of models to try
-    // List of models to try
+    // Using only Google Gemini model as per user request
     const models = [
-        "google/gemini-2.0-flash-exp:free",      // Primary
-        "deepseek/deepseek-chat:free",           // Fallback 1
-        "meta-llama/llama-3.3-70b-instruct:free" // Fallback 2
+        "google/gemini-2.0-flash-exp:free",
+        "deepseek/deepseek-chat:free"           // Fallback
     ];
 
     let successfulModel = '';

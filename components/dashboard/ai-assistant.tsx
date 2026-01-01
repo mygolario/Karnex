@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { getPlanFromCloud } from "@/lib/db";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,9 @@ import {
   Loader2, 
   Bot,
   Minimize2,
-  Maximize2
+  Maximize2,
+  HelpCircle,
+  Lightbulb
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,14 +25,76 @@ interface Message {
   text: string;
 }
 
+// Context-aware suggestions based on current page
+const pageSuggestions: Record<string, { title: string; questions: string[] }> = {
+  "/dashboard/overview": {
+    title: "سوالات درباره داشبورد",
+    questions: [
+      "از کجا شروع کنم؟",
+      "بوم کسب‌وکار چیست؟",
+      "چطور پیشرفتم را ببینم؟"
+    ]
+  },
+  "/dashboard/roadmap": {
+    title: "سوالات درباره نقشه راه",
+    questions: [
+      "این مرحله یعنی چی؟",
+      "چطور سایت بسازم؟",
+      "اول کدوم کار رو انجام بدم؟"
+    ]
+  },
+  "/dashboard/canvas": {
+    title: "سوالات درباره بوم کسب‌وکار",
+    questions: [
+      "مشکل مشتری یعنی چی؟",
+      "ارزش پیشنهادی چیه؟",
+      "چطور ویرایش کنم؟"
+    ]
+  },
+  "/dashboard/brand": {
+    title: "سوالات درباره برند",
+    questions: [
+      "چطور لوگو بسازم؟",
+      "از رنگ‌ها کجا استفاده کنم؟",
+      "فونت مناسب چیه؟"
+    ]
+  },
+  "/dashboard/marketing": {
+    title: "سوالات درباره بازاریابی",
+    questions: [
+      "چطور مشتری پیدا کنم؟",
+      "اینستاگرام یا سایت؟",
+      "بدون بودجه چیکار کنم؟"
+    ]
+  },
+  "/dashboard/legal": {
+    title: "سوالات حقوقی",
+    questions: [
+      "نماد اعتماد چیه؟",
+      "آیا ثبت شرکت لازمه؟",
+      "بدون مجوز شروع کنم؟"
+    ]
+  }
+};
+
+const defaultSuggestions = {
+  title: "سوالات پرتکرار",
+  questions: [
+    "از کجا شروع کنم؟",
+    "چطور مشتری پیدا کنم؟",
+    "بودجه‌بندی"
+  ]
+};
+
 export function AiAssistant() {
   const { user } = useAuth();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   
   // Initial Welcome Message
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', text: 'سلام! من مشاور هوشمند کارنکس هستم. 👋\n\nدر مورد پروژه‌تون سوالی دارید؟ می‌تونم در مورد نقشه راه، بازاریابی، یا هر چیز دیگه‌ای کمکتون کنم.' }
+    { role: 'assistant', text: 'سلام! من مشاور هوشمند کارنکس هستم. 👋\n\nدر مورد پروژه‌تون سوالی دارید؟ می‌تونم در مورد نقشه راه، بازاریابی، یا هر چیز دیگه‌ای کمکتون کنم.\n\n💡 نکته: هر سوالی داشتید بپرسید - من با زبان ساده توضیح می‌دم!' }
   ]);
   
   const [input, setInput] = useState("");
@@ -38,44 +103,43 @@ export function AiAssistant() {
   
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // 1. Load the Business Plan Context silently in the background
+  // Get suggestions based on current page
+  const currentSuggestions = pageSuggestions[pathname] || defaultSuggestions;
+
+  // Load the Business Plan Context
   useEffect(() => {
     if (user) {
       getPlanFromCloud(user.uid).then(setPlanContext);
     }
   }, [user]);
 
-  // 2. Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, isOpen]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const handleSend = async (customMessage?: string) => {
+    const messageToSend = customMessage || input;
+    if (!messageToSend.trim() || isLoading) return;
 
-    const userMsg = input;
     setInput("");
-    
-    // Add User Message immediately
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setMessages(prev => [...prev, { role: 'user', text: messageToSend }]);
     setIsLoading(true);
 
     try {
-      // Send to API
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: userMsg,
+          message: messageToSend,
           planContext: planContext || {}
         })
       });
 
       const data = await res.json();
       
-      // Add AI Response
       if (data.reply) {
         setMessages(prev => [...prev, { role: 'assistant', text: data.reply }]);
       }
@@ -107,11 +171,11 @@ export function AiAssistant() {
             <Sparkles size={24} className="group-hover:animate-pulse" />
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full animate-pulse" />
           </div>
-          <span className="font-bold hidden md:inline">مشاور هوشمند</span>
+          <span className="font-bold hidden md:inline">سوال دارید؟</span>
         </button>
       )}
 
-      {/* Chat Window Popup */}
+      {/* Chat Window */}
       {isOpen && (
         <div 
           className={cn(
@@ -141,7 +205,7 @@ export function AiAssistant() {
                 {!isMinimized && (
                   <p className="text-xs text-white/80 flex items-center gap-1.5">
                     <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
-                    آنلاین و آگاه به پروژه
+                    آنلاین - سوالاتتون رو بپرسید!
                   </p>
                 )}
               </div>
@@ -203,18 +267,18 @@ export function AiAssistant() {
                 )}
               </div>
 
-              {/* Suggestions */}
-              {messages.length === 1 && (
+              {/* Context-Aware Suggestions */}
+              {messages.length <= 2 && (
                 <div className="relative z-10 px-4 pb-2">
+                  <div className="flex items-center gap-2 mb-2 text-xs text-muted-foreground">
+                    <Lightbulb size={12} className="text-accent" />
+                    <span>{currentSuggestions.title}</span>
+                  </div>
                   <div className="flex flex-wrap gap-2">
-                    {[
-                      "نقشه راه رو توضیح بده",
-                      "چطور شروع کنم؟",
-                      "بودجه‌بندی",
-                    ].map((suggestion, i) => (
+                    {currentSuggestions.questions.map((suggestion, i) => (
                       <button
                         key={i}
-                        onClick={() => setInput(suggestion)}
+                        onClick={() => handleSend(suggestion)}
                         className="text-xs bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground px-3 py-1.5 rounded-full transition-colors border border-border/50"
                       >
                         {suggestion}
@@ -234,7 +298,7 @@ export function AiAssistant() {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="سوال خود را بپرسید..."
+                    placeholder="هر سوالی بپرسید..."
                     className="input-premium flex-1"
                     dir="rtl"
                   />

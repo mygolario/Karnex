@@ -4,23 +4,24 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { getPlanFromCloud, saveLegalAdvice, BusinessPlan } from "@/lib/db";
-import { Scale, ShieldCheck, AlertCircle, FileText, Loader2, Info, Sparkles } from "lucide-react";
+import { Scale, ShieldCheck, AlertCircle, FileText, Loader2, Info, Sparkles, Lightbulb, HelpCircle, ExternalLink } from "lucide-react";
 import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { HoverExplainer } from "@/components/ui/explainer";
+import { LearnMore } from "@/components/ui/learn-more";
+import { featureExplanations, legalExplanations } from "@/lib/knowledge-base";
 
 export default function LegalPage() {
   const { user } = useAuth();
-  const { activeProject: plan, loading } = useProject(); // Use context
+  const { activeProject: plan, loading } = useProject();
   const [generating, setGenerating] = useState(false);
 
-  // 1. If plan exists but NO legal advice, generate it automatically
   useEffect(() => {
     if (plan && !plan.legalAdvice && !generating && !loading) {
       generateLegalData(plan.overview, plan.audience);
     }
   }, [plan, loading]);
 
-  // 3. The Generator Function
   const generateLegalData = async (idea: string, audience: string) => {
     setGenerating(true);
     try {
@@ -34,15 +35,7 @@ export default function LegalPage() {
       const legalData = await res.json();
       
       if (user && plan) {
-        // Save to DB so we don't generate again
         await saveLegalAdvice(user.uid, legalData, plan.id || 'current');
-        // We rely on context refresh or re-render? 
-        // Ideally we should update the context's plan object.
-        // For now, let's just assume the user will reload or we add a reload method.
-        // Or we can manually update the local plan object if we want instant feedback?
-        // But `plan` is constant from context... wait, if I mutate it here it might not work.
-        // Actually, since I removed setPlan, I can't update it locally unless I have a updateProject method in context.
-        // Let's rely on a page refresh for now or just force reload.
         window.location.reload(); 
       }
     } catch (err) {
@@ -50,6 +43,17 @@ export default function LegalPage() {
     } finally {
       setGenerating(false);
     }
+  };
+
+  // Get explanation for legal term if available
+  const getLegalExplanation = (title: string) => {
+    const lowerTitle = title.toLowerCase();
+    for (const [key, explanation] of Object.entries(legalExplanations)) {
+      if (lowerTitle.includes(key)) {
+        return explanation;
+      }
+    }
+    return null;
   };
 
   if (loading) {
@@ -64,7 +68,6 @@ export default function LegalPage() {
   }
   if (!plan) return null;
 
-  // 4. Loading State (The "Consulting" Animation)
   if (generating || !plan.legalAdvice) {
     return (
       <div className="p-12 max-w-2xl mx-auto text-center space-y-6">
@@ -80,10 +83,20 @@ export default function LegalPage() {
     );
   }
 
-  // 5. The Content UI
   return (
     <div className="p-6 max-w-5xl mx-auto space-y-8">
       
+      {/* Feature Explanation Banner */}
+      <LearnMore title="الزامات قانونی چیست؟" variant="primary">
+        <p className="text-muted-foreground text-sm leading-7 mb-3">
+          {featureExplanations.legal.description}
+        </p>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Lightbulb size={14} className="text-primary" />
+          نکته: همه این موارد در روز اول لازم نیست! ابتدا شروع کنید و با رشد کسب‌وکار، رسمی‌تر شوید.
+        </div>
+      </LearnMore>
+
       {/* Header */}
       <div className="flex items-start gap-4">
         <div className="w-14 h-14 bg-gradient-to-br from-primary to-purple-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20">
@@ -96,17 +109,24 @@ export default function LegalPage() {
               <Sparkles size={12} />
               AI
             </Badge>
+            <HoverExplainer text="این اطلاعات توسط هوش مصنوعی و بر اساس قوانین کلی ایران تولید شده است" />
           </div>
           <p className="text-muted-foreground">راهنمای شروع فعالیت قانونی برای {plan.projectName}</p>
         </div>
       </div>
 
-      {/* Warning Box */}
+      {/* Warning Box - Simplified */}
       <Card variant="muted" className="border-l-4 border-l-accent flex gap-3">
         <Info className="shrink-0 text-accent" size={20} />
-        <p className="text-muted-foreground text-sm">
-          این اطلاعات توسط هوش مصنوعی و بر اساس قوانین کلی ایران تولید شده است. برای موارد حساس حتماً با یک وکیل مشورت کنید.
-        </p>
+        <div>
+          <p className="text-muted-foreground text-sm mb-2">
+            این اطلاعات راهنمای کلی است، نه مشاوره حقوقی رسمی. برای موارد حساس با یک وکیل مشورت کنید.
+          </p>
+          <p className="text-xs text-muted-foreground flex items-center gap-1">
+            <Lightbulb size={12} className="text-accent" />
+            <strong>نکته مهم:</strong> بیشتر کسب‌وکارهای کوچک می‌توانند بدون مجوز شروع کنند و بعداً رسمی شوند!
+          </p>
+        </div>
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -118,36 +138,51 @@ export default function LegalPage() {
               <ShieldCheck size={20} />
             </CardIcon>
             <span className="font-bold text-sm uppercase tracking-wider">اقدامات ضروری</span>
+            <HoverExplainer text="مواردی که باید انجام دهید (بعضی فوری و بعضی بعداً)" />
           </div>
           
           <div className="space-y-4">
-            {(plan.legalAdvice.requirements || []).map((req, i) => (
-              <Card 
-                key={i} 
-                variant="default"
-                hover="lift"
-                className="relative overflow-hidden"
-              >
-                {/* Priority Bar */}
-                <div className={`absolute top-0 bottom-0 right-0 w-1 ${
-                  req.priority === 'High' ? 'bg-destructive' : 'bg-primary'
-                }`} />
-                
-                <div className="pr-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-bold text-foreground text-lg">{req.title}</h4>
-                    {req.priority === 'High' && (
-                      <Badge variant="danger" size="sm">
-                        الزامی
-                      </Badge>
+            {(plan.legalAdvice.requirements || []).map((req, i) => {
+              const explanation = getLegalExplanation(req.title);
+              
+              return (
+                <Card 
+                  key={i} 
+                  variant="default"
+                  hover="lift"
+                  className="relative overflow-hidden"
+                >
+                  {/* Priority Bar */}
+                  <div className={`absolute top-0 bottom-0 right-0 w-1 ${
+                    req.priority === 'High' ? 'bg-destructive' : 'bg-primary'
+                  }`} />
+                  
+                  <div className="pr-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h4 className="font-bold text-foreground text-lg">{req.title}</h4>
+                      {req.priority === 'High' ? (
+                        <Badge variant="danger" size="sm">الزامی</Badge>
+                      ) : (
+                        <Badge variant="muted" size="sm">بعداً کافی است</Badge>
+                      )}
+                    </div>
+                    <p className="text-muted-foreground leading-relaxed text-sm mb-3">
+                      {req.description}
+                    </p>
+
+                    {/* Simple Explanation */}
+                    {explanation && (
+                      <div className="bg-muted/50 rounded-lg p-3 text-xs">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Lightbulb size={12} className="text-accent shrink-0" />
+                          <span><strong>یعنی چی؟</strong> {explanation}</span>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <p className="text-muted-foreground leading-relaxed text-sm">
-                    {req.description}
-                  </p>
-                </div>
-              </Card>
-            ))}
+                </Card>
+              );
+            })}
             {(!plan.legalAdvice.requirements || plan.legalAdvice.requirements.length === 0) && (
               <p className="text-muted-foreground text-sm">الزامات خاصی شناسایی نشد.</p>
             )}
@@ -164,6 +199,7 @@ export default function LegalPage() {
                 <FileText size={16} />
               </CardIcon>
               <h3 className="font-bold text-foreground">مجوزهای احتمالی</h3>
+              <HoverExplainer text="مجوزهایی که ممکن است در آینده نیاز داشته باشید" />
             </div>
             <ul className="space-y-3">
               {(plan.legalAdvice.permits || []).map((permit, i) => (
@@ -173,14 +209,13 @@ export default function LegalPage() {
                 </li>
               ))}
               {(!plan.legalAdvice.permits || plan.legalAdvice.permits.length === 0) && (
-                <li className="text-muted-foreground text-sm">مجوز خاصی شناسایی نشد.</li>
+                <li className="text-muted-foreground text-sm">مجوز خاصی شناسایی نشد. عالی است! 🎉</li>
               )}
             </ul>
           </Card>
 
           {/* Expert Tips */}
           <Card variant="gradient" padding="lg" className="text-white relative overflow-hidden">
-            {/* Decorative Element */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16" />
             
             <div className="relative">
@@ -199,6 +234,35 @@ export default function LegalPage() {
                 )}
               </ul>
             </div>
+          </Card>
+
+          {/* Helpful Links */}
+          <Card variant="default">
+            <h3 className="font-bold text-foreground mb-4">لینک‌های مفید</h3>
+            <ul className="space-y-3">
+              <li>
+                <a 
+                  href="https://enamad.ir" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-primary hover:underline text-sm"
+                >
+                  <ExternalLink size={14} />
+                  سامانه ای‌نماد
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://tax.gov.ir" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-primary hover:underline text-sm"
+                >
+                  <ExternalLink size={14} />
+                  سامانه مالیات
+                </a>
+              </li>
+            </ul>
           </Card>
 
         </div>

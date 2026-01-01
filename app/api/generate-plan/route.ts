@@ -137,12 +137,10 @@ export async function POST(req: Request) {
     let structuredPlan;
 
     try {
-        // MOdELS TO TRY (Strict Policy: Claude 3.5 Sonnet ONLY)
-        // User requested to ONLY use this specific model for maximum quality.
+        // Using only Google Gemini model as per user request
         const FALLBACK_MODELS = [
-             "google/gemini-2.0-flash-exp:free",      // Primary (User Request)
-             "deepseek/deepseek-chat:free",           // Fallback 1
-             "meta-llama/llama-3.3-70b-instruct:free" // Fallback 2
+             "google/gemini-2.0-flash-exp:free",
+             "deepseek/deepseek-chat:free"           // Fallback
         ];
 
         // We ignore the env var if it differs, or we can leave it. 
