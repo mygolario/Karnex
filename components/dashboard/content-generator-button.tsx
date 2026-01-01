@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { PenTool, Check, Loader2, Copy, X, Sparkles, Instagram, Mail, Layout, Type } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,6 +18,12 @@ export function ContentGeneratorButton({ strategy, projectName, audience }: Cont
   const [generatedContent, setGeneratedContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure portal only renders on client
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const generate = async () => {
     setLoading(true);
@@ -73,16 +80,18 @@ export function ContentGeneratorButton({ strategy, projectName, audience }: Cont
         تولید محتوا
       </Button>
 
-      {isOpen && (
+      {mounted && isOpen && createPortal(
         <div 
-          className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in" 
+          className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in isolate" 
           onClick={() => setIsOpen(false)}
+          onMouseMove={(e) => e.stopPropagation()}
+          onMouseEnter={(e) => e.stopPropagation()}
+          onMouseLeave={(e) => e.stopPropagation()}
         >
-          <Card 
-            variant="default" 
-            className="max-w-xl w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95" 
-            padding="lg"
-            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          <div 
+            className="bg-card border border-border rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95 p-6 shadow-2xl" 
+            onClick={(e) => e.stopPropagation()}
+            onMouseMove={(e) => e.stopPropagation()}
           >
             <button 
               onClick={() => setIsOpen(false)}
@@ -157,8 +166,9 @@ export function ContentGeneratorButton({ strategy, projectName, audience }: Cont
                 </div>
               </div>
             )}
-          </Card>
-        </div>
+          </div>
+        </div>,
+        document.body
       )}
     </>
   );
