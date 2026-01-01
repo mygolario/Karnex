@@ -14,7 +14,7 @@ import { findGuideForStep, featureExplanations } from "@/lib/knowledge-base";
 
 export default function RoadmapPage() {
   const { user } = useAuth();
-  const { activeProject: plan, loading } = useProject();
+  const { activeProject: plan, loading, updateActiveProject } = useProject();
   const router = useRouter();
   
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
@@ -33,14 +33,23 @@ export default function RoadmapPage() {
     if (!user || !plan) return;
 
     const isNowCompleted = !completedSteps.includes(step);
-    setCompletedSteps(prev => 
-      isNowCompleted ? [...prev, step] : prev.filter(s => s !== step)
-    );
+    const newCompletedSteps = isNowCompleted 
+      ? [...completedSteps, step] 
+      : completedSteps.filter(s => s !== step);
+    
+    // Update local state immediately
+    setCompletedSteps(newCompletedSteps);
+    
+    // Update context immediately for UI sync
+    updateActiveProject({ completedSteps: newCompletedSteps });
 
     try {
       await toggleStepCompletion(user.uid, step, isNowCompleted, plan.id || 'current');
     } catch (error) {
       console.error("Sync failed", error);
+      // Revert on error
+      setCompletedSteps(completedSteps);
+      updateActiveProject({ completedSteps: completedSteps });
     }
   };
 

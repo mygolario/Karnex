@@ -15,13 +15,18 @@ import { canvasExplanations, featureExplanations } from "@/lib/knowledge-base";
 
 export default function CanvasPage() {
   const { user } = useAuth();
-  const { activeProject: plan, loading } = useProject();
+  const { activeProject: plan, loading, updateActiveProject } = useProject();
 
   const handleSectionUpdate = async (field: keyof BusinessPlan['leanCanvas'], newContent: string) => {
     if (!plan || !user) return;
     
+    // Update context immediately for UI feedback
+    const updatedLeanCanvas = { ...plan.leanCanvas, [field]: newContent };
+    updateActiveProject({ leanCanvas: updatedLeanCanvas });
+    
+    // Then save to DB
     await savePlanToCloud(user.uid, { 
-        leanCanvas: { ...plan.leanCanvas, [field]: newContent } 
+        leanCanvas: updatedLeanCanvas 
     }, true, plan.id || 'current');
   };
 

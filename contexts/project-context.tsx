@@ -12,6 +12,7 @@ interface ProjectContextType {
   refreshProjects: () => Promise<void>;
   createNewProject: (planData: any) => Promise<string>; // Returns ID
   switchProject: (projectId: string) => void;
+  updateActiveProject: (updates: Partial<BusinessPlan>) => void; // NEW: Update active project in-place
 }
 
 const ProjectContext = createContext<ProjectContextType>({
@@ -21,6 +22,7 @@ const ProjectContext = createContext<ProjectContextType>({
   refreshProjects: async () => {},
   createNewProject: async () => "",
   switchProject: () => {},
+  updateActiveProject: () => {}, // NEW
 });
 
 export const useProject = () => useContext(ProjectContext);
@@ -106,6 +108,18 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // NEW: Update active project in-place for immediate UI feedback
+  const updateActiveProject = (updates: Partial<BusinessPlan>) => {
+    if (!activeProject) return;
+    setActiveProject(prev => prev ? { ...prev, ...updates } : null);
+    // Also update in projects array
+    setProjects(prevProjects => 
+      prevProjects.map(p => 
+        p.id === activeProject.id ? { ...p, ...updates } : p
+      )
+    );
+  };
+
   return (
     <ProjectContext.Provider value={{
       projects,
@@ -113,7 +127,8 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       loading,
       refreshProjects,
       createNewProject,
-      switchProject
+      switchProject,
+      updateActiveProject
     }}>
       {children}
     </ProjectContext.Provider>
