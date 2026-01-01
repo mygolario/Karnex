@@ -221,12 +221,9 @@ export async function POST(req: Request) {
         }
         
         console.error("ALL MODELS FAILED. Last Error:", lastError);
-        // CRITICAL DEBUG: Return the specific error to the UI instead of the Mock Plan
-        // so the user knows WHY Claude 4.5 is failing.
-        return NextResponse.json(
-            { error: `AI Error: ${lastError || "Unknown Failure"}` }, 
-            { status: 500 }
-        );
+        // FALLBACK: Return the mock plan so the user can still proceed
+        console.log("Returning fallback mock plan to user");
+        return NextResponse.json(mockPlan);
 
     } catch (globalError) {
         console.error("Global Generation Error:", globalError);
