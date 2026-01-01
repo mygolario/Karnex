@@ -123,7 +123,7 @@ export default function BrandKitPage() {
 
         {/* Psychology Note */}
         <div className="mt-8 bg-muted/50 rounded-2xl p-6 border-r-4 border-r-primary">
-          <span className="font-bold text-foreground block mb-2 flex items-center gap-2">
+          <span className="font-bold text-foreground mb-2 flex items-center gap-2">
             <Lightbulb size={18} className="text-amber-500" />
             فلسفه رنگ‌ها
           </span>

@@ -534,7 +534,7 @@ export default function NewProjectPage() {
 
                     {/* Audience Selection */}
                     <div>
-                      <label className="block text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                      <label className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                         <Users size={16} />
                         مخاطب هدف
                       </label>
@@ -558,7 +558,7 @@ export default function NewProjectPage() {
 
                     {/* Budget Selection */}
                     <div>
-                      <label className="block text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                      <label className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                         <Wallet size={16} />
                         بودجه اولیه
                       </label>
