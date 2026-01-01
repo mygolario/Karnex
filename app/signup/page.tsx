@@ -101,6 +101,10 @@ export default function SignupPage() {
     
     try {
       const provider = new GoogleAuthProvider();
+      // Force account selection every time
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
       await signInWithPopup(auth, provider);
       router.push("/new-project");
     } catch (err: any) {

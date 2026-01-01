@@ -70,6 +70,10 @@ export default function LoginPage() {
     
     try {
       const provider = new GoogleAuthProvider();
+      // Force account selection every time
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
       await signInWithPopup(auth, provider);
       router.push("/dashboard/overview");
     } catch (err: any) {
