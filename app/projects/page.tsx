@@ -2,15 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
+import { deleteProject } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { HoverExplainer } from "@/components/ui/explainer";
 import { LearnMore } from "@/components/ui/learn-more";
 import { 
-  Rocket, 
   Plus, 
   ArrowLeft, 
   CheckCircle2, 
@@ -19,18 +20,61 @@ import {
   LayoutGrid,
   Lightbulb,
   TrendingUp,
-  HelpCircle
+  Trash2,
+  AlertTriangle,
+  X
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function ProjectsPage() {
   const { user } = useAuth();
-  const { projects, activeProject, switchProject, loading } = useProject();
+  const { projects, activeProject, switchProject, loading, refreshProjects } = useProject();
   const router = useRouter();
+  
+  // Delete confirmation state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<any>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const handleSelectProject = (projectId: string) => {
     switchProject(projectId);
     router.push("/dashboard/overview");
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, project: any) => {
+    e.stopPropagation(); // Prevent card click
+    setProjectToDelete(project);
+    setDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!user || !projectToDelete?.id) return;
+    
+    setDeleting(true);
+    try {
+      await deleteProject(user.uid, projectToDelete.id);
+      
+      // If we deleted the active project, clear it
+      if (activeProject?.id === projectToDelete.id) {
+        // Switch to first remaining project or null
+        const remaining = projects.filter(p => p.id !== projectToDelete.id);
+        if (remaining.length > 0) {
+          switchProject(remaining[0].id!);
+        }
+      }
+      
+      // Refresh the projects list
+      if (refreshProjects) {
+        await refreshProjects();
+      }
+      
+      setDeleteModalOpen(false);
+      setProjectToDelete(null);
+    } catch (error) {
+      console.error("Failed to delete project:", error);
+    } finally {
+      setDeleting(false);
+    }
   };
 
   // Calculate project stage
@@ -64,9 +108,13 @@ export default function ProjectsPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <Link href="/" className="flex items-center gap-3">
-             <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg">
-                <Rocket size={20} />
-             </div>
+             <Image 
+               src="/logo-icon-dark.png" 
+               alt="Karnex Logo" 
+               width={40} 
+               height={40} 
+               className="rounded-xl shadow-lg dark:invert-0 invert"
+             />
              <span className="font-black text-xl text-foreground">کارنکس</span>
           </Link>
           
@@ -176,7 +224,16 @@ export default function ProjectsPage() {
                             </Badge>
                           </div>
 
-                          <div className="flex items-start justify-between mb-4">
+                          {/* Delete Button */}
+                          <button
+                            onClick={(e) => handleDeleteClick(e, project)}
+                            className="absolute top-4 right-4 z-10 w-8 h-8 rounded-lg bg-muted/80 hover:bg-destructive/10 hover:text-destructive flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all"
+                            title="حذف پروژه"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+
+                          <div className="flex items-start justify-between mb-4 pt-2">
                               <div className="flex items-center gap-4">
                                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-bold
                                        ${activeProject?.id === project.id ? "bg-primary text-white" : "bg-muted text-foreground"}
@@ -231,6 +288,71 @@ export default function ProjectsPage() {
             </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModalOpen && projectToDelete && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setDeleteModalOpen(false)}
+        >
+          <Card 
+            variant="default" 
+            padding="lg" 
+            className="max-w-md w-full animate-in zoom-in-95"
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle size={24} className="text-destructive" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">حذف پروژه</h3>
+                <p className="text-sm text-muted-foreground">این عملیات قابل بازگشت نیست</p>
+              </div>
+              <button 
+                onClick={() => setDeleteModalOpen(false)}
+                className="mr-auto text-muted-foreground hover:text-foreground"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <p className="text-muted-foreground mb-6">
+              آیا مطمئن هستید که می‌خواهید پروژه <strong className="text-foreground">"{projectToDelete.projectName}"</strong> را حذف کنید؟ 
+              تمام داده‌های این پروژه پاک خواهند شد.
+            </p>
+
+            <div className="flex gap-3">
+              <Button
+                variant="ghost"
+                onClick={() => setDeleteModalOpen(false)}
+                className="flex-1"
+                disabled={deleting}
+              >
+                انصراف
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleConfirmDelete}
+                className="flex-1"
+                disabled={deleting}
+              >
+                {deleting ? (
+                  <>
+                    <span className="animate-spin">⏳</span>
+                    در حال حذف...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={16} />
+                    حذف پروژه
+                  </>
+                )}
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
