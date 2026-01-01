@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { AiAssistant } from "@/components/dashboard/ai-assistant";
@@ -24,7 +25,6 @@ import {
   HelpCircle,
   ChevronRight,
   ChevronLeft,
-  Rocket,
   LogOut,
   Sparkles,
   Crown
@@ -70,9 +70,13 @@ export default function DashboardLayout({
       {/* Mobile Header */}
       <div className="md:hidden glass-strong border-b border-border/50 p-4 flex justify-between items-center sticky top-0 z-20">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-9 h-9 bg-gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-            <Rocket size={16} />
-          </div>
+          <Image 
+            src="/logo-icon-dark.png" 
+            alt="Karnex Logo" 
+            width={36} 
+            height={36} 
+            className="rounded-xl shadow-lg dark:invert-0 invert"
+          />
           <span className="font-bold text-lg text-foreground">کارنکس</span>
         </Link>
         <div className="flex items-center gap-2">
@@ -107,9 +111,13 @@ export default function DashboardLayout({
           )}>
             {!sidebarCollapsed && (
               <Link href="/" className="flex items-center gap-2.5">
-                <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                  <Rocket size={18} />
-                </div>
+                <Image 
+                  src="/logo-icon-dark.png" 
+                  alt="Karnex Logo" 
+                  width={40} 
+                  height={40} 
+                  className="rounded-xl shadow-lg dark:invert-0 invert"
+                />
                 <div>
                   <span className="text-lg font-black text-foreground tracking-tight">کارنکس</span>
                   <Badge variant="gradient" size="sm" className="mr-2">

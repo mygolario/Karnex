@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { Menu, X, Rocket, Sparkles } from "lucide-react";
+import { Menu, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
@@ -43,9 +44,13 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
             <div className="relative">
-              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-shadow">
-                <Rocket size={20} />
-              </div>
+              <Image 
+                src="/logo-icon-dark.png" 
+                alt="Karnex Logo" 
+                width={40} 
+                height={40} 
+                className="rounded-xl shadow-lg dark:invert-0 invert group-hover:scale-105 transition-transform"
+              />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full animate-pulse" />
             </div>
             <span className="text-xl font-black text-foreground tracking-tight">

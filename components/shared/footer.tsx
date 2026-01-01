@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Rocket, Heart, Mail, MapPin } from "lucide-react";
+import Image from "next/image";
+import { Heart, Mail, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function Footer() {
@@ -30,9 +31,13 @@ export function Footer() {
           {/* Brand Column */}
           <div className="lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-4">
-              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/25">
-                <Rocket size={20} />
-              </div>
+              <Image 
+                src="/logo-icon-dark.png" 
+                alt="Karnex Logo" 
+                width={40} 
+                height={40} 
+                className="rounded-xl shadow-lg dark:invert-0 invert"
+              />
               <span className="text-xl font-black text-foreground tracking-tight">
                 کارنکس
               </span>
