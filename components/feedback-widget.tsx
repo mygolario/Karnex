@@ -30,13 +30,18 @@ export function FeedbackWidget() {
     { id: "ui", label: "طراحی و ظاهر" },
   ];
 
+  const [error, setError] = useState<string | null>(null);
+
   const handleSubmit = async () => {
     if (rating === 0) return;
     
     setLoading(true);
+    setError(null);
+    
     try {
-      const feedbackRef = collection(db, "artifacts", appId, "feedback");
-      await addDoc(feedbackRef, {
+      // Store feedback under the user's collection for proper permissions
+      // If no user, store under a public feedback collection
+      const feedbackData = {
         userId: user?.uid || "anonymous",
         userEmail: user?.email || "anonymous",
         rating,
@@ -45,12 +50,21 @@ export function FeedbackWidget() {
         createdAt: new Date().toISOString(),
         userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
         page: typeof window !== "undefined" ? window.location.pathname : "unknown"
-      });
+      };
+
+      if (user) {
+        // Store under user's plans/feedback for permission
+        const feedbackRef = collection(db, "artifacts", appId, "users", user.uid, "feedback");
+        await addDoc(feedbackRef, feedbackData);
+      } else {
+        // For anonymous users, try the public path
+        const feedbackRef = collection(db, "artifacts", appId, "feedback");
+        await addDoc(feedbackRef, feedbackData);
+      }
       
       setSubmitted(true);
       setTimeout(() => {
         setIsOpen(false);
-        // Reset after close
         setTimeout(() => {
           setRating(0);
           setComment("");
@@ -58,8 +72,9 @@ export function FeedbackWidget() {
           setSubmitted(false);
         }, 300);
       }, 2000);
-    } catch (error) {
-      console.error("Error submitting feedback:", error);
+    } catch (err: any) {
+      console.error("Error submitting feedback:", err);
+      setError("خطا در ارسال بازخورد. لطفاً دوباره تلاش کنید.");
     } finally {
       setLoading(false);
     }
@@ -150,6 +165,13 @@ export function FeedbackWidget() {
               className="w-full h-24 p-3 bg-muted/50 border border-border rounded-xl text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/20 mb-4"
               dir="rtl"
             />
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-700 text-center">
+                {error}
+              </div>
+            )}
 
             {/* Submit */}
             <Button
