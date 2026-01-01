@@ -4,13 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { getPlanFromCloud, BusinessPlan } from "@/lib/db";
 import { Button } from "@/components/ui/button";
-import { Card, CardIcon, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StatsCard } from "@/components/dashboard/stats-card";
+import { ProgressRing } from "@/components/dashboard/progress-ring";
 import { HoverExplainer } from "@/components/ui/explainer";
-import { LearnMore, FeatureGuide } from "@/components/ui/learn-more";
-import { featureExplanations } from "@/lib/knowledge-base";
 import { 
   Rocket, 
   Map, 
@@ -20,91 +19,47 @@ import {
   ArrowLeft,
   TrendingUp,
   Target,
-  Clock,
   CheckCircle2,
   Sparkles,
   Zap,
-  FileText,
   Plus,
-  Lightbulb,
-  HelpCircle,
-  Scale,
-  BookOpen
+  Calendar,
+  ChevronLeft,
+  Activity,
+  Award
 } from "lucide-react";
 
 export default function DashboardOverviewPage() {
   const { user } = useAuth();
   const { activeProject: plan, loading } = useProject();
-  const [showWelcome, setShowWelcome] = useState(false);
+  const [greeting, setGreeting] = useState("سلام");
 
-  // Show welcome guide for first visit
   useEffect(() => {
-    if (plan && !localStorage.getItem('karnex_welcomed')) {
-      setShowWelcome(true);
-    }
-  }, [plan]);
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("صبح بخیر");
+    else if (hour < 18) setGreeting("ظهر بخیر");
+    else setGreeting("شب بخیر");
+  }, []);
 
-  const dismissWelcome = () => {
-    localStorage.setItem('karnex_welcomed', 'true');
-    setShowWelcome(false);
-  };
-
-  const quickActions = [
-    { 
-      icon: Map, 
-      label: "نقشه راه", 
-      href: "/dashboard/roadmap", 
-      color: "primary",
-      description: featureExplanations.roadmap.description
-    },
-    { 
-      icon: LayoutGrid, 
-      label: "بوم کسب‌وکار", 
-      href: "/dashboard/canvas", 
-      color: "accent",
-      description: featureExplanations.canvas.description
-    },
-    { 
-      icon: Palette, 
-      label: "هویت بصری", 
-      href: "/dashboard/brand", 
-      color: "secondary",
-      description: featureExplanations.brand.description
-    },
-    { 
-      icon: Megaphone, 
-      label: "بازاریابی", 
-      href: "/dashboard/marketing", 
-      color: "primary",
-      description: featureExplanations.marketing.description
-    },
-  ];
-
-  const stats = [
-    { label: "مراحل کل", value: plan?.roadmap?.length || 0, icon: Target, tip: "تعداد فازهای اصلی نقشه راه شما" },
-    { label: "تسک‌ها", value: plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 0, icon: CheckCircle2, tip: "مجموع کارهایی که باید انجام دهید" },
-    { label: "پیشرفت", value: plan?.completedSteps && plan?.roadmap ? Math.round((plan.completedSteps.length / (plan.roadmap.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1)) * 100) + "٪" : "۰٪", icon: TrendingUp, tip: "درصد تسک‌هایی که تکمیل کرده‌اید" },
-  ];
-
-  // Empty State
+  // Show welcome if empty project
   if (!loading && !plan) {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="text-center max-w-md">
-          <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Rocket size={40} className="text-primary" />
+          <div className="w-24 h-24 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-3xl flex items-center justify-center mx-auto mb-8 animate-pulse">
+            <Rocket size={48} className="text-primary" />
           </div>
-          <h2 className="text-2xl font-bold text-foreground mb-3">
+          <h2 className="text-3xl font-black text-foreground mb-4">
             هنوز پروژه‌ای نساخته‌اید
           </h2>
-          <p className="text-muted-foreground mb-6">
+          <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
             برای شروع، یک ایده را توصیف کنید و بگذارید هوش مصنوعی طرح کسب‌وکار کامل بسازد.
           </p>
           <Link href="/new-project">
-            <Button variant="gradient" size="lg" rounded="full">
-              <Plus size={18} />
+            <Button variant="gradient" size="xl" rounded="full" className="px-8 shadow-xl shadow-primary/20 hover:shadow-primary/40 transition-all hover:scale-105">
+              <Plus size={20} />
               ساخت پروژه جدید
-              <ArrowLeft size={16} />
+              <ArrowLeft size={20} />
             </Button>
           </Link>
         </div>
@@ -112,252 +67,194 @@ export default function DashboardOverviewPage() {
     );
   }
 
-  // Loading State
   if (loading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-32 bg-muted rounded-2xl" />
-        <div className="grid md:grid-cols-3 gap-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-24 bg-muted rounded-2xl" />
-          ))}
-        </div>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-32 bg-muted rounded-2xl" />
-          ))}
+    return ( // Skeleton
+      <div className="space-y-8 animate-pulse">
+        <div className="h-40 bg-muted/50 rounded-3xl" />
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1,2,3,4].map(i => <div key={i} className="h-32 bg-muted/50 rounded-3xl" />)}
         </div>
       </div>
     );
   }
+
+  // Calculate Stats
+  const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1;
+  const completedCount = plan?.completedSteps?.length || 0;
+  const progressPercent = Math.round((completedCount / totalSteps) * 100);
+  
+  // Calculate Health Score (Mock logic for now + progress)
+  const healthScore = Math.min(100, Math.round(progressPercent * 0.8 + 20)); // Base 20 + progress factor
+
+  // Find next actionable step
+  const nextStep = plan?.roadmap?.flatMap((p: any) => p.steps).find((s: string) => !plan?.completedSteps?.includes(s));
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 pb-12">
+      
+      {/* 1. Hero Section */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Welcome & Daily Focus */}
+        <Card variant="gradient" className="lg:col-span-2 relative overflow-hidden text-white flex flex-col justify-between min-h-[240px]">
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-4">
+              <Badge className="bg-white/20 text-white border-white/20 hover:bg-white/30 backdrop-blur-md">
+                <Calendar size={12} className="mr-1" />
+                {new Date().toLocaleDateString('fa-IR')}
+              </Badge>
+              <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-100 border-none">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />
+                وضعیت: فعال
+              </Badge>
+            </div>
+            
+            <h1 className="text-3xl md:text-4xl font-black mb-2">
+              {greeting}، {user?.displayName || "دوست من"}! 👋
+            </h1>
+            <p className="text-lg text-white/80 max-w-xl">
+              امروز روی رشد <strong className="text-white border-b-2 border-white/30">{plan?.projectName}</strong> تمرکز کنیم.
+            </p>
+          </div>
 
-      {/* Welcome Guide Modal */}
-      {showWelcome && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-          <Card variant="default" padding="xl" className="max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in zoom-in-95">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <Sparkles size={32} className="text-white" />
+          {/* Daily Focus Box */}
+          <div className="relative z-10 mt-8 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-white text-primary flex items-center justify-center font-bold shrink-0 shadow-lg">
+                <Target size={20} />
               </div>
-              <h2 className="text-2xl font-black text-foreground mb-2">به کارنکس خوش آمدید! 🎉</h2>
-              <p className="text-muted-foreground">اینجا همه چیز درباره اجرای ایده شما آماده است</p>
+              <div>
+                <span className="text-xs font-bold text-white/60 uppercase tracking-wider">تمرکز امروز</span>
+                <p className="font-bold text-lg md:text-xl mt-1 line-clamp-1">
+                  {nextStep || "تبریک! تمام مراحل انجام شده است 🎉"}
+                </p>
+                {nextStep && (
+                  <Link href="/dashboard/roadmap" className="inline-flex items-center gap-1 text-sm mt-2 hover:underline opacity-90">
+                    انجام تسک <ChevronLeft size={14} />
+                  </Link>
+                )}
+              </div>
             </div>
+          </div>
 
-            <div className="space-y-4 mb-6">
-              <FeatureGuide
-                icon={<Map size={20} />}
-                title="نقشه راه"
-                description="قدم به قدم بهتون میگه چیکار کنید. هر قدم رو انجام بدید و تیک بزنید!"
-                variant="primary"
-              />
-              <FeatureGuide
-                icon={<LayoutGrid size={20} />}
-                title="بوم کسب‌وکار"
-                description="خلاصه کل کسب‌وکارتون در یک نگاه: مشکل، راه‌حل، و درآمد"
-                variant="accent"
-              />
-              <FeatureGuide
-                icon={<Sparkles size={20} />}
-                title="دستیار هوشمند"
-                description="هر سوالی داشتید، روی دکمه گوشه پایین کلیک کنید!"
-                variant="secondary"
-              />
-            </div>
+          {/* Background Decor */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-black/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+        </Card>
 
-            <div className="flex gap-3">
-              <Button variant="gradient" className="flex-1" onClick={dismissWelcome}>
-                فهمیدم، بزن بریم!
-                <ArrowLeft size={16} />
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
-
-      {/* Welcome Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-purple-600 to-secondary p-8 text-white">
-        <div className="absolute inset-0 pattern-dots opacity-10" />
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-        
-        <div className="relative z-10">
-          <Badge className="bg-white/20 backdrop-blur-sm text-white border-white/20 mb-4">
-            <Sparkles size={12} />
-            داشبورد
-          </Badge>
+        {/* Project Health Score */}
+        <Card variant="default" className="flex flex-col items-center justify-center text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-muted/20 pointer-events-none" />
           
-          <h1 className="text-3xl font-black mb-2">
-            سلام، خوش آمدید! 👋
-          </h1>
-          <p className="text-white/80 text-lg mb-6">
-            پروژه <span className="font-bold text-white">{plan?.projectName || "شما"}</span> آماده توسعه است
-          </p>
+          <h3 className="font-bold text-muted-foreground mb-6 flex items-center gap-2">
+            <Activity size={18} className="text-primary" />
+            سلامت پروژه
+          </h3>
           
-          <div className="flex flex-wrap gap-3">
+          <div className="relative mb-6">
+            <ProgressRing progress={healthScore} size={160} strokeWidth={12}>
+              <div className="text-center">
+                <span className="text-4xl font-black text-foreground block">{healthScore}</span>
+                <span className="text-xs text-muted-foreground font-medium uppercase">امتیاز</span>
+              </div>
+            </ProgressRing>
+          </div>
+
+          <div className="flex gap-2">
             <Link href="/dashboard/roadmap">
-              <Button className="bg-white text-primary hover:bg-white/90">
-                <Map size={16} />
-                مشاهده نقشه راه
+              <Button variant="outline" size="sm" className="h-8 text-xs">
+                بهبود امتیاز
               </Button>
             </Link>
-            <Link href="/new-project">
-              <Button variant="ghost" className="text-white border-white/20 hover:bg-white/10">
-                <Plus size={16} />
-                پروژه جدید
-              </Button>
-            </Link>
-            <Button 
-              variant="ghost" 
-              className="text-white border-white/20 hover:bg-white/10"
-              onClick={() => setShowWelcome(true)}
-            >
-              <HelpCircle size={16} />
-              راهنما
-            </Button>
           </div>
-        </div>
+        </Card>
       </div>
 
-      {/* Stats with Tooltips */}
-      <div className="grid md:grid-cols-3 gap-4">
-        {stats.map((stat, i) => (
-          <Card key={i} variant="default" hover="lift" className="flex items-center gap-4">
-            <CardIcon variant={i === 0 ? "primary" : i === 1 ? "accent" : "secondary"}>
-              <stat.icon size={20} />
-            </CardIcon>
-            <div className="flex-1">
-              <div className="text-2xl font-black text-foreground">{stat.value}</div>
-              <div className="text-sm text-muted-foreground flex items-center gap-1">
-                {stat.label}
-                <HoverExplainer text={stat.tip} />
-              </div>
-            </div>
-          </Card>
-        ))}
+      {/* 2. Key Metrics Grid */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard 
+          title="پیشرفت کل" 
+          value={`${progressPercent}%`} 
+          icon={TrendingUp} 
+          trend="up" 
+          trendValue="+12%" 
+          trendLabel="نسبت به هفته قبل"
+          variant="primary"
+        />
+        <StatsCard 
+          title="فاز فعلی" 
+          value={plan?.roadmap?.find((p:any) => p.steps.some((s: string) => !plan.completedSteps?.includes(s)))?.phase.split(':')[0] || "تکمیل"} 
+          icon={Map} 
+          variant="accent"
+        />
+         <StatsCard 
+          title="مراحل باقیمانده" 
+          value={totalSteps - completedCount} 
+          icon={CheckCircle2} 
+          variant="secondary"
+        />
+        <StatsCard 
+          title="دستاوردهای کسب‌شده" 
+          value="۳" 
+          icon={Award} 
+          variant="glass"
+          trend="neutral"
+          trendLabel="۱ نشان جدید در انتظار"
+        />
       </div>
 
-      {/* Getting Started Guide */}
-      <LearnMore title="چطور شروع کنم؟" variant="accent" defaultOpen={true}>
-        <div className="space-y-4">
-          <p className="text-muted-foreground text-sm leading-7 mb-4">
-            از نقشه راه شروع کنید! هر مرحله را بخوانید، انجام دهید و تیک بزنید. نگران نباشید - هر قدم توضیحات کامل دارد.
-          </p>
-          <div className="grid md:grid-cols-3 gap-3">
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl">
-              <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center font-bold">۱</div>
-              <span className="text-sm text-foreground">نقشه راه را ببینید</span>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl">
-              <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center font-bold">۲</div>
-              <span className="text-sm text-foreground">اولین تسک را انجام دهید</span>
-            </div>
-            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-xl">
-              <div className="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center font-bold">۳</div>
-              <span className="text-sm text-foreground">تیک بزنید و ادامه دهید!</span>
-            </div>
-          </div>
-        </div>
-      </LearnMore>
-
-      {/* Quick Actions with Descriptions */}
+      {/* 3. Quick Actions */}
       <div>
-        <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-lg font-bold text-foreground">دسترسی سریع</h2>
-          <HoverExplainer text="اینجا همه ابزارهای مهم داشبورد را می‌بینید" />
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-1 h-6 bg-primary rounded-full" />
+          <h2 className="text-xl font-bold text-foreground">دسترسی سریع</h2>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {quickActions.map((action, i) => (
-            <Link key={i} href={action.href}>
-              <Card 
-                variant="default" 
-                hover="lift"
-                className="flex flex-col items-center text-center py-6 h-full"
-              >
-                <CardIcon variant={action.color as any} className="mb-3 h-14 w-14">
-                  <action.icon size={24} />
-                </CardIcon>
-                <span className="font-bold text-foreground mb-2">{action.label}</span>
-                <span className="text-xs text-muted-foreground line-clamp-2 px-2">
-                  {action.description}
-                </span>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Project Summary */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Idea Summary */}
-        <Card variant="default" padding="lg">
-          <div className="flex items-start gap-4 mb-4">
-            <CardIcon variant="primary">
-              <FileText size={20} />
-            </CardIcon>
-            <div>
-              <CardTitle>خلاصه ایده</CardTitle>
-              <CardDescription>توضیحات اولیه پروژه شما</CardDescription>
-            </div>
-          </div>
-          <p className="text-muted-foreground leading-relaxed line-clamp-4">
-            {plan?.overview || "توضیحاتی برای این پروژه ثبت نشده است."}
-          </p>
-        </Card>
-
-        {/* Next Steps */}
-        <Card variant="default" padding="lg">
-          <div className="flex items-start gap-4 mb-4">
-            <CardIcon variant="secondary">
-              <Zap size={20} />
-            </CardIcon>
-            <div>
-              <CardTitle>قدم‌های بعدی</CardTitle>
-              <CardDescription>اولین کارهایی که باید انجام دهید</CardDescription>
-            </div>
-          </div>
-          <div className="space-y-3">
-            {plan?.roadmap?.[0]?.steps?.slice(0, 3).map((task: any, i: number) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="w-6 h-6 rounded-full bg-secondary/10 flex items-center justify-center text-secondary shrink-0 mt-0.5">
-                  <CheckCircle2 size={14} />
-                </div>
-                <span className="text-sm text-muted-foreground">{task}</span>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+           {/* Roadmap */}
+           <Link href="/dashboard/roadmap">
+            <Card variant="default" hover="glow" className="group h-full flex flex-col items-center text-center p-6 border-2 border-transparent hover:border-primary/10 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                <Map size={28} />
               </div>
-            )) || (
-              <p className="text-muted-foreground text-sm">
-                هنوز تسکی تعریف نشده است.
-              </p>
-            )}
-          </div>
-          <Link href="/dashboard/roadmap" className="block mt-4">
-            <Button variant="outline" size="sm" className="w-full">
-              مشاهده همه مراحل
-              <ArrowLeft size={14} />
-            </Button>
+              <h3 className="font-bold text-foreground mb-1">نقشه راه</h3>
+              <p className="text-xs text-muted-foreground line-clamp-2">مسیر قدم به قدم اجرا</p>
+            </Card>
           </Link>
-        </Card>
-      </div>
 
-      {/* Tips */}
-      <Card variant="muted" className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent shrink-0">
-          <Sparkles size={24} />
+          {/* Canvas */}
+          <Link href="/dashboard/canvas">
+            <Card variant="default" hover="glow" className="group h-full flex flex-col items-center text-center p-6 border-2 border-transparent hover:border-amber-500/10 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                <LayoutGrid size={28} />
+              </div>
+              <h3 className="font-bold text-foreground mb-1">بوم کسب‌وکار</h3>
+              <p className="text-xs text-muted-foreground line-clamp-2">مدل بیزینس و درآمد</p>
+            </Card>
+          </Link>
+
+          {/* Brand */}
+          <Link href="/dashboard/brand">
+            <Card variant="default" hover="glow" className="group h-full flex flex-col items-center text-center p-6 border-2 border-transparent hover:border-purple-500/10 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                <Palette size={28} />
+              </div>
+              <h3 className="font-bold text-foreground mb-1">هویت بصری</h3>
+              <p className="text-xs text-muted-foreground line-clamp-2">رنگ‌ها و لوگو</p>
+            </Card>
+          </Link>
+
+          {/* Marketing */}
+          <Link href="/dashboard/marketing">
+            <Card variant="default" hover="glow" className="group h-full flex flex-col items-center text-center p-6 border-2 border-transparent hover:border-rose-500/10 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                <Megaphone size={28} />
+              </div>
+              <h3 className="font-bold text-foreground mb-1">بازاریابی</h3>
+              <p className="text-xs text-muted-foreground line-clamp-2">استراتژی رشد و تبلیغات</p>
+            </Card>
+          </Link>
         </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-foreground mb-1">نکته روز</h3>
-          <p className="text-sm text-muted-foreground">
-            با کلیک روی دستیار هوشمند در گوشه پایین صفحه، می‌توانید در مورد هر بخش از پروژه سوال بپرسید!
-          </p>
-        </div>
-        <Link href="/dashboard/help">
-          <Button variant="ghost" size="sm">
-            <BookOpen size={14} />
-            مرکز راهنما
-          </Button>
-        </Link>
-      </Card>
+      </div>
     </div>
   );
 }

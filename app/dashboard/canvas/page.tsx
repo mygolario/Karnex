@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { getPlanFromCloud, savePlanToCloud, BusinessPlan } from "@/lib/db";
-import { AlertTriangle, Lightbulb, Gem, Banknote, LayoutGrid, Sparkles, HelpCircle, Info } from "lucide-react";
+import { savePlanToCloud, BusinessPlan } from "@/lib/db";
+import { AlertTriangle, Lightbulb, Gem, Banknote, LayoutGrid, Sparkles, Info, ArrowUpRight } from "lucide-react";
 import { PdfExportButton } from "@/components/dashboard/pdf-export-button";
+import { AnalyzerButton } from "@/components/dashboard/analyzer-button";
 import { SectionRegenerator } from "@/components/shared/section-regenerator";
 import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +21,11 @@ export default function CanvasPage() {
   const handleSectionUpdate = async (field: keyof BusinessPlan['leanCanvas'], newContent: string) => {
     if (!plan || !user) return;
     
-    // Update context immediately for UI feedback
+    // Update context immediately
     const updatedLeanCanvas = { ...plan.leanCanvas, [field]: newContent };
     updateActiveProject({ leanCanvas: updatedLeanCanvas });
     
-    // Then save to DB
+    // Save to DB
     await savePlanToCloud(user.uid, { 
         leanCanvas: updatedLeanCanvas 
     }, true, plan.id || 'current');
@@ -33,10 +34,10 @@ export default function CanvasPage() {
   if (loading || !plan) {
     return (
       <div className="p-12 flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center animate-pulse">
-          <LayoutGrid size={32} className="text-white" />
+        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center animate-pulse shadow-lg shadow-primary/20">
+          <LayoutGrid size={40} className="text-white" />
         </div>
-        <p className="text-muted-foreground">در حال بارگذاری بوم کسب‌وکار...</p>
+        <p className="text-muted-foreground font-medium animate-pulse">در حال بارگذاری بوم استراتژیک...</p>
       </div>
     );
   }
@@ -48,7 +49,8 @@ export default function CanvasPage() {
       icon: AlertTriangle,
       variant: "accent" as const,
       gradient: "from-amber-500 to-orange-500",
-      explanation: canvasExplanations.problem
+      explanation: canvasExplanations.problem,
+      connectedTo: "solution" // visual hint
     },
     {
       key: 'solution' as const,
@@ -77,112 +79,96 @@ export default function CanvasPage() {
   ];
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-8 pb-12">
       
-      {/* Feature Explanation Banner */}
-      <LearnMore title="بوم کسب‌وکار چیست؟" variant="primary">
-        <p className="text-muted-foreground text-sm leading-7 mb-3">
-          {featureExplanations.canvas.description}
-        </p>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Lightbulb size={14} className="text-primary" />
-          نکته: ماوس را روی عنوان هر بخش نگه دارید تا توضیحات آن را ببینید!
-        </div>
-      </LearnMore>
-
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-2xl font-black text-foreground">بوم کسب‌وکار</h1>
-            <Badge variant="gradient" size="sm">
-              <Sparkles size={12} />
-              قابل ویرایش
-            </Badge>
-            <HoverExplainer text="این بخش خلاصه‌ای از کل مدل کسب‌وکار شماست. می‌توانید هر بخش را ویرایش کنید." />
-          </div>
-          <p className="text-muted-foreground">نقشه استراتژیک {plan.projectName}</p>
-        </div>
+      <div className="bg-card border border-border rounded-3xl p-8 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         
-        <PdfExportButton plan={plan} />
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                <LayoutGrid size={24} />
+              </div>
+              <div>
+                <h1 className="text-3xl font-black text-foreground">بوم کسب‌وکار</h1>
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="outline" className="text-xs">نسخه ۱.۰</Badge>
+                  <span className="text-sm text-muted-foreground">استراتژی {plan.projectName}</span>
+                </div>
+              </div>
+            </div>
+            <p className="text-muted-foreground max-w-lg mt-4">
+              این نقشه راه استراتژیک شماست. هر بخش را به دقت بررسی کنید و با بازخوردهای واقعی آن را به‌روز نگه دارید.
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap gap-3">
+            <AnalyzerButton plan={plan} />
+            <PdfExportButton plan={plan} />
+          </div>
+        </div>
       </div>
 
       {/* Canvas Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
+        {/* Connection Line (Visual Idea - optional, keeping simple for now) */}
+        
         {cardConfig.map((card, idx) => (
           <Card 
             key={idx} 
             variant="default"
             hover="lift"
-            className="group relative overflow-hidden"
+            className="group relative overflow-hidden border-2 border-transparent hover:border-primary/5 transition-all duration-300"
+            padding="lg"
           >
-            {/* Gradient Top Border */}
-            <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${card.gradient}`} />
-            
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <CardIcon variant={card.variant} className="shadow-lg">
-                  <card.icon size={20} />
-                </CardIcon>
-                <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-lg text-foreground">
+            {/* Header */}
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center text-white shadow-lg shadow-black/5`}>
+                  <card.icon size={24} />
+                </div>
+                <div>
+                  <h3 className="font-exrabold text-xl text-foreground flex items-center gap-2">
                     {card.title}
+                    <HoverExplainer text={card.explanation.simple} />
                   </h3>
-                  <HoverExplainer text={card.explanation.simple} />
+                  <div className="h-1 w-12 rounded-full bg-gradient-to-r from-border to-transparent mt-2" />
                 </div>
               </div>
               
-              {/* AI Regenerator */}
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                <SectionRegenerator 
-                  sectionTitle={card.title}
-                  currentContent={plan.leanCanvas[card.key]}
-                  onUpdate={(newContent) => handleSectionUpdate(card.key, newContent)}
-                />
-              </div>
+              <SectionRegenerator 
+                sectionTitle={card.title}
+                currentContent={plan.leanCanvas[card.key]}
+                onUpdate={(newContent) => handleSectionUpdate(card.key, newContent)}
+              />
             </div>
             
-            {/* Content */}
-            <p className="text-muted-foreground leading-8 whitespace-pre-wrap mb-4">
-              {plan.leanCanvas[card.key]}
-            </p>
+            {/* Content Area */}
+            <div className="min-h-[120px] bg-muted/30 rounded-2xl p-4 border border-border/50 group-hover:bg-muted/50 transition-colors">
+               <p className="text-foreground/80 leading-8 whitespace-pre-wrap text-lg">
+                {plan.leanCanvas[card.key]}
+              </p>
+            </div>
 
-            {/* Expandable Explanation */}
-            <div className="border-t border-border pt-4 mt-4">
-              <LearnMore title="این بخش چیست؟" variant="muted">
-                <div className="space-y-3">
-                  <p className="text-muted-foreground text-sm leading-7">
-                    {card.explanation.detailed}
-                  </p>
-                  
-                  {/* Example */}
-                  <div className="bg-muted/50 rounded-lg p-3 border border-border">
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-                      <Info size={12} className="text-primary" />
-                      مثال:
-                    </div>
-                    <p className="text-sm text-foreground">{card.explanation.example}</p>
-                  </div>
-                </div>
-              </LearnMore>
+            {/* Footer / Tip */}
+            <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+               <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                 <Info size={14} />
+                 <span>مثال: {card.explanation.example.substring(0, 30)}...</span>
+               </div>
+               
+               {card.connectedTo && (
+                 <div className="flex items-center gap-1 text-primary/60 font-medium">
+                   <span>مرتبط با راه‌حل</span>
+                   <ArrowUpRight size={14} />
+                 </div>
+               )}
             </div>
           </Card>
         ))}
       </div>
-
-      {/* Bottom Tips */}
-      <Card variant="muted" className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center text-accent shrink-0">
-          <Lightbulb size={24} />
-        </div>
-        <div>
-          <h3 className="font-bold text-foreground mb-1">نکته مهم</h3>
-          <p className="text-sm text-muted-foreground">
-            بوم کسب‌وکار یک سند زنده است! با پیشرفت کار و یادگیری بیشتر درباره مشتریان، برگردید و این بخش‌ها را به‌روزرسانی کنید. 
-            برای ویرایش، روی دکمه جادویی (✨) هر بخش کلیک کنید.
-          </p>
-        </div>
-      </Card>
     </div>
   );
 }
