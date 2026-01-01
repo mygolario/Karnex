@@ -1,79 +1,146 @@
 "use client";
 
-import { useState } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useState, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Check, Zap } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Crown, 
+  X, 
+  Check, 
+  Sparkles,
+  Zap,
+  Shield,
+  Users,
+  Infinity,
+  ArrowLeft
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export function UpgradeModal({ children }: { children?: React.ReactNode }) {
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
+interface UpgradeModalProps {
+  children?: ReactNode;
+}
 
-  const handleUpgrade = () => {
-    router.push("/pay/mock?planId=pro_monthly");
-    setOpen(false);
-  };
+export function UpgradeModal({ children }: UpgradeModalProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const features = [
+    { icon: Infinity, label: "نسل‌های نامحدود" },
+    { icon: Zap, label: "دسترسی به مدل‌های پیشرفته" },
+    { icon: Shield, label: "پشتیبانی اولویت‌دار" },
+    { icon: Users, label: "همکاری تیمی" },
+  ];
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
-        {children || (
-          <Button className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 shadow-md">
-            <Zap className="ml-2 h-4 w-4" />
-            ارتقا به نسخه حرفه‌ای
-          </Button>
-        )}
-      </SheetTrigger>
-      {/* Side "bottom" for mobile, "left" or "right" for desktop depending on RTL. 
-          Given it's Global RTL, "right" in code (sheet default) appears on right? 
-          Actually Sheet default is right. In RTL it might mean left visually if not handled.
-          I'll just let it be default or set side specifically if needed. 
-          ClaimAccountModal used side="bottom" then sm:side-right. 
-          I'll use similar styling. */}
-      <SheetContent className="sm:max-w-[425px] text-right" side="left">
-        <SheetHeader className="text-right">
-          <SheetTitle className="text-2xl font-bold flex items-center gap-2 justify-end">
-             <span>کارنکس</span>
-             <span className="text-purple-600">نسخه حرفه‌ای</span>
-          </SheetTitle>
-        </SheetHeader>
-        <div className="py-8 space-y-6">
-          <p className="text-slate-600 leading-7">
-            با ارتقا به نسخه حرفه‌ای، به تمام امکانات دسترسی داشته باشید:
-          </p>
-          <ul className="space-y-4">
-            {[
-              "دسترسی نامحدود به هوش مصنوعی",
-              "خروجی PDF بدون واترمارک",
-              "تحلیل‌های پیشرفته بازار",
-              "پشتیبانی اختصاصی"
-            ].map((feature, i) => (
-              <li key={i} className="flex items-center gap-3 text-sm text-slate-700 font-medium">
-                <div className="bg-green-100 text-green-600 rounded-full p-1">
-                  <Check className="h-3 w-3" />
-                </div>
-                {feature}
-              </li>
-            ))}
-          </ul>
-          
-          <div className="mt-8 pt-6 border-t border-slate-100 flex items-end justify-between">
-            <div>
-                <span className="text-3xl font-black text-slate-900">299,000</span>
-                <span className="text-xs text-slate-500 mr-1">تومان / ماهانه</span>
-            </div>
-            <div className="line-through text-slate-400 text-sm mb-1">450,000</div>
-          </div>
-          
-          <Button 
-            onClick={handleUpgrade} 
-            className="w-full mt-6 bg-purple-600 hover:bg-purple-700 text-white h-12 text-lg shadow-lg shadow-purple-200"
-          >
-            پرداخت و ارتقا
-          </Button>
+    <>
+      {/* Trigger: either children or default button */}
+      {children ? (
+        <div onClick={() => setIsOpen(true)} className="cursor-pointer">
+          {children}
         </div>
-      </SheetContent>
-    </Sheet>
+      ) : (
+        <Button
+          variant="gradient"
+          size="sm"
+          className="w-full"
+          onClick={() => setIsOpen(true)}
+        >
+          <Crown size={14} />
+          ارتقا به پرو
+        </Button>
+      )}
+
+      {/* Modal Overlay */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsOpen(false)}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+          
+          {/* Modal Content */}
+          <div 
+            className="relative w-full max-w-lg animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Card variant="default" padding="none" className="overflow-hidden">
+              {/* Header */}
+              <div className="relative bg-gradient-to-br from-primary via-purple-600 to-secondary p-8 text-white text-center">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 pattern-dots opacity-10" />
+                
+                {/* Close Button */}
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => setIsOpen(false)}
+                  className="absolute top-4 left-4 text-white/80 hover:text-white hover:bg-white/10"
+                >
+                  <X size={18} />
+                </Button>
+                
+                {/* Icon */}
+                <div className="relative inline-flex mb-4">
+                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                    <Crown size={32} />
+                  </div>
+                  <div className="absolute -top-1 -right-1">
+                    <Badge variant="gradient" size="sm" className="bg-accent text-accent-foreground">
+                      <Sparkles size={10} />
+                      ویژه
+                    </Badge>
+                  </div>
+                </div>
+                
+                <h2 className="text-2xl font-black mb-2">ارتقا به نسخه پرو</h2>
+                <p className="text-white/80">دسترسی کامل به همه امکانات</p>
+              </div>
+
+              {/* Features */}
+              <div className="p-6 space-y-4">
+                {features.map((feature, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                      <feature.icon size={20} />
+                    </div>
+                    <span className="font-medium text-foreground">{feature.label}</span>
+                    <Check size={18} className="mr-auto text-secondary" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Pricing */}
+              <div className="px-6 pb-6">
+                <div className="bg-muted/50 rounded-2xl p-6 text-center mb-4">
+                  <div className="text-sm text-muted-foreground mb-1">فقط با</div>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-4xl font-black text-foreground">۹۹,۰۰۰</span>
+                    <span className="text-muted-foreground">تومان/ماه</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-2">
+                    با خرید سالانه ۲۰٪ تخفیف بگیرید
+                  </div>
+                </div>
+
+                <Button
+                  variant="gradient"
+                  size="xl"
+                  className="w-full"
+                  onClick={() => alert("به زودی!")}
+                >
+                  شروع دوره آزمایشی رایگان
+                  <ArrowLeft size={18} />
+                </Button>
+
+                <p className="text-xs text-center text-muted-foreground mt-4">
+                  ۷ روز استفاده رایگان • لغو در هر زمان
+                </p>
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

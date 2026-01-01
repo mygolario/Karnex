@@ -4,7 +4,11 @@ import { useAuth } from "@/contexts/auth-context";
 import { deleteProject } from "@/lib/db";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { User, Shield, Moon, Bell, Trash2, LogOut, Loader2 } from "lucide-react";
+import { User, Shield, Moon, Bell, Trash2, LogOut, Loader2, Settings, Crown } from "lucide-react";
+import { Card, CardIcon } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -32,71 +36,99 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500">
-      <h1 className="text-2xl font-bold text-slate-900">تنظیمات حساب کاربری</h1>
+    <div className="p-6 max-w-4xl mx-auto space-y-8">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <h1 className="text-2xl font-black text-foreground">تنظیمات حساب کاربری</h1>
+        <Badge variant="muted" size="sm">
+          <Settings size={12} />
+          پروفایل
+        </Badge>
+      </div>
 
-      {/* Profile */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-6">
-        <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+      {/* Profile Card */}
+      <Card variant="glass" className="flex items-center gap-6">
+        <div className="w-20 h-20 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/20">
           <User size={40} />
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-slate-800">کاربر مهمان</h2>
-          <div className="flex items-center gap-2 text-slate-500 mt-1">
-            <Shield size={16} className="text-emerald-500" />
-            <span className="text-sm">شناسه امنیتی: {user?.uid.slice(0, 8)}...</span>
+        <div className="flex-1">
+          <h2 className="text-xl font-bold text-foreground">کاربر مهمان</h2>
+          <div className="flex items-center gap-2 text-muted-foreground mt-1">
+            <Shield size={16} className="text-secondary" />
+            <span className="text-sm font-mono">شناسه: {user?.uid.slice(0, 12)}...</span>
           </div>
-          <div className="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold">
-            طرح رایگان
+          <div className="flex items-center gap-2 mt-3">
+            <Badge variant="info" size="lg">
+              طرح رایگان
+            </Badge>
+            <Button variant="gradient" size="sm">
+              <Crown size={14} />
+              ارتقا به پرو
+            </Button>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Preferences */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex justify-between items-center hover:bg-slate-50 transition-colors cursor-pointer">
+      <Card variant="default" padding="none" className="overflow-hidden">
+        {/* Theme Toggle */}
+        <div className="p-4 border-b border-border flex justify-between items-center hover:bg-muted/50 transition-colors">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-              <Moon size={20} />
+            <CardIcon variant="primary" className="w-10 h-10">
+              <Moon size={18} />
+            </CardIcon>
+            <div>
+              <span className="font-medium text-foreground block">حالت تاریک</span>
+              <span className="text-sm text-muted-foreground">تغییر تم ظاهری برنامه</span>
             </div>
-            <span className="font-medium text-slate-700">حالت شب (به زودی)</span>
           </div>
-          <div className="w-10 h-6 bg-slate-200 rounded-full relative">
-            <div className="w-4 h-4 bg-white rounded-full absolute top-1 left-1 shadow-sm"></div>
+          <ThemeToggle />
+        </div>
+        
+        {/* Email Toggle */}
+        <div className="p-4 flex justify-between items-center hover:bg-muted/50 transition-colors">
+          <div className="flex items-center gap-3">
+            <CardIcon variant="accent" className="w-10 h-10">
+              <Bell size={18} />
+            </CardIcon>
+            <div>
+              <span className="font-medium text-foreground block">دریافت ایمیل‌های آموزشی</span>
+              <span className="text-sm text-muted-foreground">نکات رشد کسب‌وکار</span>
+            </div>
+          </div>
+          {/* Custom Toggle */}
+          <div className="w-12 h-7 bg-secondary rounded-full relative cursor-pointer">
+            <div className="w-5 h-5 bg-white rounded-full absolute top-1 right-1 shadow-sm transition-all" />
           </div>
         </div>
-        <div className="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors cursor-pointer">
-           <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-              <Bell size={20} />
-            </div>
-            <span className="font-medium text-slate-700">دریافت ایمیل‌های آموزشی</span>
-          </div>
-          <div className="w-10 h-6 bg-blue-600 rounded-full relative">
-            <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1 shadow-sm"></div>
-          </div>
-        </div>
-      </div>
+      </Card>
 
       {/* Danger Zone */}
-      <div className="bg-rose-50 rounded-2xl border border-rose-100 p-6">
-        <h3 className="text-rose-700 font-bold mb-2 flex items-center gap-2">
-          <Trash2 size={20} />
-          ناحیه خطر
-        </h3>
-        <p className="text-rose-600/80 text-sm mb-6">
+      <Card variant="default" className="border-destructive/30 bg-destructive/5">
+        <div className="flex items-center gap-2 mb-4">
+          <CardIcon variant="primary" className="w-10 h-10 bg-destructive/10 text-destructive">
+            <Trash2 size={18} />
+          </CardIcon>
+          <div>
+            <h3 className="text-destructive font-bold">ناحیه خطر</h3>
+            <p className="text-destructive/70 text-sm">این اقدامات غیرقابل بازگشت هستند</p>
+          </div>
+        </div>
+        
+        <p className="text-muted-foreground text-sm mb-6">
           اگر می‌خواهید ایده جدیدی را شروع کنید، باید پروژه فعلی را حذف کنید. این کار تمام اطلاعات ذخیره شده در فضای ابری را پاک می‌کند.
         </p>
         
-        <button 
+        <Button 
+          variant="destructive"
           onClick={handleDelete}
           disabled={isDeleting}
-          className="flex items-center gap-2 bg-white border border-rose-200 text-rose-600 px-6 py-3 rounded-xl font-bold hover:bg-rose-600 hover:text-white transition-all shadow-sm"
+          loading={isDeleting}
         >
-          {isDeleting ? <Loader2 className="animate-spin" /> : <LogOut size={18} />}
+          {!isDeleting && <LogOut size={18} />}
           حذف پروژه و شروع مجدد
-        </button>
-      </div>
+        </Button>
+      </Card>
     </div>
   );
 }

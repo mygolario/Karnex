@@ -1,13 +1,126 @@
+import Link from "next/link";
+import { Rocket, Heart, Mail, MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 export function Footer() {
+  const currentYear = new Date().getFullYear();
+
+  const footerLinks = {
+    product: [
+      { label: "ویژگی‌ها", href: "#features" },
+      { label: "قیمت‌ها", href: "#pricing" },
+      { label: "نقشه راه", href: "#roadmap" },
+    ],
+    company: [
+      { label: "درباره ما", href: "/about" },
+      { label: "تماس با ما", href: "/contact" },
+      { label: "وبلاگ", href: "/blog" },
+    ],
+    legal: [
+      { label: "حریم خصوصی", href: "/privacy" },
+      { label: "شرایط استفاده", href: "/terms" },
+    ],
+  };
+
   return (
-    <footer className="w-full border-t bg-background py-6 md:py-0">
-      <div className="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row px-4 md:px-8 max-w-screen-2xl">
-        <p className="text-center text-sm leading-loose text-muted-foreground md:text-right">
-          © 2024 Karnex. تمامی حقوق محفوظ است.
-        </p>
-        <div className="flex gap-4 text-sm text-muted-foreground">
-          <a href="#" className="hover:underline hover:text-primary">قوانین و مقررات</a>
-          <a href="#" className="hover:underline hover:text-primary">حریم خصوصی</a>
+    <footer className="bg-muted/30 border-t border-border">
+      {/* Main Footer */}
+      <div className="section-container py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+          {/* Brand Column */}
+          <div className="lg:col-span-1">
+            <Link href="/" className="flex items-center gap-2.5 mb-4">
+              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/25">
+                <Rocket size={20} />
+              </div>
+              <span className="text-xl font-black text-foreground tracking-tight">
+                کارنکس
+              </span>
+            </Link>
+            <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+              دستیار هوشمند کارآفرینی که ایده شما را به یک کسب‌وکار واقعی تبدیل می‌کند.
+            </p>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin size={14} />
+              <span>تهران، ایران</span>
+            </div>
+          </div>
+
+          {/* Product Links */}
+          <div>
+            <h3 className="font-bold text-foreground mb-4">محصول</h3>
+            <ul className="space-y-3">
+              {footerLinks.product.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company Links */}
+          <div>
+            <h3 className="font-bold text-foreground mb-4">شرکت</h3>
+            <ul className="space-y-3">
+              {footerLinks.company.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div>
+            <h3 className="font-bold text-foreground mb-4">خبرنامه</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              از آخرین اخبار و آپدیت‌ها باخبر شوید
+            </p>
+            <form className="flex gap-2">
+              <input
+                type="email"
+                placeholder="ایمیل شما"
+                className="input-premium flex-1 text-sm"
+              />
+              <Button variant="gradient" size="icon">
+                <Mail size={16} />
+              </Button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Bar */}
+      <div className="border-t border-border">
+        <div className="section-container py-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-sm text-muted-foreground flex items-center gap-1">
+              © {currentYear} کارنکس. ساخته شده با
+              <Heart size={14} className="text-red-500 fill-red-500" />
+              در ایران
+            </p>
+            <div className="flex items-center gap-6">
+              {footerLinks.legal.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </footer>

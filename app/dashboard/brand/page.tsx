@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { getPlanFromCloud, BusinessPlan } from "@/lib/db";
-import { Copy, Check, Palette, Type, Image as ImageIcon } from "lucide-react";
+import { Copy, Check, Palette, Type, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Card, CardIcon } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export default function BrandKitPage() {
   const { user, loading: authLoading } = useAuth();
@@ -22,106 +25,152 @@ export default function BrandKitPage() {
     setTimeout(() => setCopied(null), 2000);
   };
 
-  if (!plan) return <div className="p-12 text-center text-slate-400">در حال بارگذاری هویت بصری...</div>;
+  if (!plan) {
+    return (
+      <div className="p-12 flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center animate-pulse">
+          <Palette size={32} className="text-white" />
+        </div>
+        <p className="text-muted-foreground">در حال بارگذاری هویت بصری...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-10 animate-in fade-in duration-500">
+    <div className="p-6 max-w-6xl mx-auto space-y-10">
       
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">هویت بصری برند</h1>
-        <p className="text-slate-500 text-lg">
-          طراحی شده بر اساس روانشناسی مخاطب: <span className="text-slate-800 font-bold">{plan.audience}</span>
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-black text-foreground">هویت بصری برند</h1>
+            <Badge variant="gradient" size="sm">
+              <Sparkles size={12} />
+              هوش مصنوعی
+            </Badge>
+          </div>
+          <p className="text-muted-foreground text-lg">
+            طراحی شده بر اساس روانشناسی مخاطب: <span className="text-foreground font-bold">{plan.audience}</span>
+          </p>
+        </div>
       </div>
 
       {/* 1. Colors */}
-      <section>
-        <div className="flex items-center gap-2 mb-6 text-slate-400 uppercase tracking-wider font-bold text-sm">
-          <Palette size={18} />
-          پالت رنگی اختصاصی
+      <section className="space-y-6">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <CardIcon variant="accent" className="w-10 h-10">
+            <Palette size={20} />
+          </CardIcon>
+          <span className="font-bold text-sm uppercase tracking-wider">پالت رنگی اختصاصی</span>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {[
-            { label: "رنگ اصلی", hex: plan.brandKit.primaryColorHex },
-            { label: "رنگ مکمل", hex: plan.brandKit.secondaryColorHex }
+            { label: "رنگ اصلی", hex: plan.brandKit.primaryColorHex, gradient: "from-primary to-purple-600" },
+            { label: "رنگ مکمل", hex: plan.brandKit.secondaryColorHex, gradient: "from-secondary to-emerald-600" }
           ].map((color, idx) => (
-            <div key={idx} className="group relative bg-white p-2 rounded-3xl border border-slate-100 shadow-sm hover:shadow-lg transition-all">
+            <Card 
+              key={idx} 
+              variant="glass" 
+              hover="lift"
+              padding="sm"
+              className="overflow-hidden"
+            >
               <div 
-                className="h-40 w-full rounded-2xl shadow-inner transition-transform group-hover:scale-[1.02]" 
+                className="h-40 w-full rounded-xl shadow-inner transition-transform hover:scale-[1.02] relative overflow-hidden" 
                 style={{ backgroundColor: color.hex }}
-              />
+              >
+                {/* Shine Effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
+              </div>
               <div className="p-4 flex justify-between items-center">
                 <div>
-                  <div className="text-slate-400 text-sm mb-1">{color.label}</div>
-                  <div className="text-2xl font-mono font-bold text-slate-800">{color.hex}</div>
+                  <div className="text-muted-foreground text-sm mb-1">{color.label}</div>
+                  <div className="text-2xl font-mono font-bold text-foreground">{color.hex}</div>
                 </div>
-                <button 
+                <Button 
+                  variant="ghost"
+                  size="icon"
                   onClick={() => copyToClipboard(color.hex)}
-                  className="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors"
+                  className="hover:bg-muted"
                 >
-                  {copied === color.hex ? <Check size={20} className="text-emerald-600" /> : <Copy size={20} />}
-                </button>
+                  {copied === color.hex ? (
+                    <Check size={20} className="text-secondary" />
+                  ) : (
+                    <Copy size={20} />
+                  )}
+                </Button>
               </div>
-            </div>
+            </Card>
           ))}
         </div>
 
         {/* Psychology Note */}
-        <div className="mt-6 bg-slate-50 p-6 rounded-2xl border border-slate-100 text-slate-600 leading-relaxed">
-          <span className="font-bold text-slate-800 block mb-2">چرا این رنگ‌ها؟</span>
-          {plan.brandKit.colorPsychology}
-        </div>
+        <Card variant="muted" className="border-l-4 border-l-accent">
+          <span className="font-bold text-foreground block mb-2">چرا این رنگ‌ها؟</span>
+          <p className="text-muted-foreground leading-relaxed">
+            {plan.brandKit.colorPsychology}
+          </p>
+        </Card>
       </section>
 
-      <hr className="border-slate-100" />
+      <hr className="border-border" />
 
       {/* 2. Typography */}
-      <section>
-        <div className="flex items-center gap-2 mb-6 text-slate-400 uppercase tracking-wider font-bold text-sm">
-          <Type size={18} />
-          تایپوگرافی
+      <section className="space-y-6">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <CardIcon variant="primary" className="w-10 h-10">
+            <Type size={20} />
+          </CardIcon>
+          <span className="font-bold text-sm uppercase tracking-wider">تایپوگرافی</span>
         </div>
-        <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+        
+        <Card variant="default" hover="glow" className="overflow-hidden">
           <div className="flex justify-between items-start mb-8">
             <div>
-              <h3 className="text-2xl font-bold text-slate-900">وزیرمتن (Vazirmatn)</h3>
-              <p className="text-slate-400">استاندارد وب فارسی</p>
+              <h3 className="text-2xl font-bold text-foreground">وزیرمتن (Vazirmatn)</h3>
+              <p className="text-muted-foreground">استاندارد وب فارسی</p>
             </div>
-            <div className="px-4 py-2 bg-slate-100 rounded-lg font-mono text-sm text-slate-500">
+            <Badge variant="muted" className="font-mono text-xs">
               font-family: 'Vazirmatn', sans-serif;
-            </div>
+            </Badge>
           </div>
           
-          <div className="space-y-6 p-6 bg-slate-50 rounded-2xl border border-slate-100">
-            <h1 className="text-4xl font-bold text-slate-900">تیترهای جذاب و خوانا</h1>
-            <h2 className="text-2xl font-semibold text-slate-800">زیرتیترها با وزن متوسط</h2>
-            <p className="text-slate-600 leading-8">
+          <div className="space-y-6 p-6 bg-muted/50 rounded-2xl">
+            <h1 className="text-4xl font-bold text-foreground">تیترهای جذاب و خوانا</h1>
+            <h2 className="text-2xl font-semibold text-foreground/80">زیرتیترها با وزن متوسط</h2>
+            <p className="text-muted-foreground leading-8">
               این یک نمونه متن پاراگراف است. فونت وزیرمتن به دلیل خوانایی بالا و ساختار هندسی مدرن، حس اعتماد و حرفه‌ای بودن را به کاربران شما منتقل می‌کند. اعداد در این فونت کاملا فارسی هستند: ۱۲۳۴۵۶
             </p>
           </div>
-        </div>
+        </Card>
       </section>
 
       {/* 3. Logo Concepts */}
-      <section className="pb-12">
-        <div className="flex items-center gap-2 mb-6 text-slate-400 uppercase tracking-wider font-bold text-sm">
-          <ImageIcon size={18} />
-          ایده‌های لوگو
+      <section className="space-y-6 pb-12">
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <CardIcon variant="secondary" className="w-10 h-10">
+            <ImageIcon size={20} />
+          </CardIcon>
+          <span className="font-bold text-sm uppercase tracking-wider">ایده‌های لوگو</span>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {plan.brandKit.logoConcepts?.map((logo: any, i: number) => (
-            <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mb-4">
-                <span className="font-bold text-xl">{i + 1}</span>
+            <Card 
+              key={i} 
+              variant="default"
+              hover="lift"
+              className="text-center"
+            >
+              <div className="w-14 h-14 bg-gradient-to-br from-primary to-secondary text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <span className="font-black text-xl">{i + 1}</span>
               </div>
-              <h3 className="font-bold text-lg text-slate-900 mb-2">{logo.conceptName}</h3>
-              <p className="text-slate-500 text-sm leading-relaxed">
+              <h3 className="font-bold text-lg text-foreground mb-2">{logo.conceptName}</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">
                 {logo.description}
               </p>
-            </div>
+            </Card>
           ))}
         </div>
       </section>

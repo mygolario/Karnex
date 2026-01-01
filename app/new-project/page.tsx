@@ -1,325 +1,298 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { savePlanToCloud } from "@/lib/db";
-import { Loader2, ArrowRight, ArrowLeft, Wallet, Sparkles, Target } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { GenerationLoader } from "@/components/shared/generation-loader";
+import { 
+  Rocket, 
+  ArrowLeft, 
+  ArrowRight,
+  Lightbulb,
+  FileText,
+  Sparkles,
+  CheckCircle2,
+  Loader2
+} from "lucide-react";
+import Link from "next/link";
+
+type Step = 1 | 2 | 3;
 
 export default function NewProjectPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-
-  // Form States
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState<Step>(1);
+  const [projectName, setProjectName] = useState("");
+  const [projectIdea, setProjectIdea] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
-  
-  // Data States
-  const [idea, setIdea] = useState("");
-  const [audience, setAudience] = useState("");
-  const [budget, setBudget] = useState("");
+  const [error, setError] = useState("");
 
-  // Navigation Logic
-  const nextStep = () => setStep((prev) => Math.min(prev + 1, 3));
-  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/signup");
+    }
+  }, [user, authLoading, router]);
 
-  const [error, setError] = useState<string | null>(null);
+  const steps = [
+    { number: 1, title: "نام پروژه", icon: FileText },
+    { number: 2, title: "توضیح ایده", icon: Lightbulb },
+    { number: 3, title: "تولید طرح", icon: Sparkles },
+  ];
 
-  // The Core Logic: Generate & Save to Cloud
-  const handleSubmit = async () => {
-    setError(null);
-    if (!user) {
-      setError("لطفا ابتدا وارد حساب کاربری شوید.");
+  const handleNextStep = () => {
+    if (step === 1 && !projectName.trim()) {
+      setError("لطفاً نام پروژه را وارد کنید");
       return;
     }
-
-    setIsGenerating(true);
-
-    try {
-      // 1. Call the AI Brain
-      const response = await fetch('/api/generate-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idea, audience, budget }),
-        // signal: AbortSignal.timeout(60000) <-- Removed to let Server handle timeout via 40s internal logic
-      });
-      
-      const planData = await response.json();
-
-      if (!response.ok) {
-         throw new Error(planData.error || 'AI Generation failed');
-      }
-
-      // 2. Save to Cloud (Firebase)
-      // Give Firebase 30 seconds to save - this must succeed
-      const timeoutMs = 30000;
-      const savePromise = savePlanToCloud(user.uid, {
-          ...planData,
-          budget,
-          audience,
-          ideaInput: idea,
-          createdAt: new Date().toISOString()
-      });
-      
-      const timerPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("ذخیره‌سازی در ابر زمان‌بر شد. لطفا دوباره امتحان کنید.")), timeoutMs)
-      );
-
-      try {
-        await Promise.race([savePromise, timerPromise]);
-        console.log("✓ Project saved to cloud successfully");
-      } catch (saveErr: any) {
-        console.error("Failed to save project:", saveErr);
-        throw new Error(saveErr.message || "خطا در ذخیره پروژه. لطفا دوباره تلاش کنید.");
-      }
-
-      // 3. Redirect to Dashboard
-      router.push('/dashboard/overview');
-
-    } catch (err: any) {
-      console.error(err);
-      let msg = err.message || "متاسفانه خطایی رخ داد. لطفا دوباره تلاش کنید.";
-      if (err.name === 'TimeoutError' || err.name === 'AbortError') {
-         msg = "زمان پاسخ‌دهی طولانی شد. لطفا دوباره تلاش کنید.";
-      }
-      setError(msg);
-    } finally {
-      setIsGenerating(false);
+    if (step === 2 && !projectIdea.trim()) {
+      setError("لطفاً ایده خود را توضیح دهید");
+      return;
+    }
+    setError("");
+    
+    if (step === 2) {
+      handleGenerate();
+    } else {
+      setStep((prev) => (prev + 1) as Step);
     }
   };
 
-  // Loading Screen for Auth
-  if (isGenerating) {
-    return <GenerationLoader />;
-  }
+  const handlePrevStep = () => {
+    setError("");
+    setStep((prev) => (prev - 1) as Step);
+  };
+
+  const handleGenerate = async () => {
+    if (!user) return;
+    
+    setStep(3);
+    setIsGenerating(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/generate-plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectName,
+          projectIdea,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to generate plan");
+      }
+
+      const data = await res.json();
+      
+      // Save to cloud
+      await savePlanToCloud(user.uid, data.plan);
+      
+      // Redirect to dashboard
+      router.push("/dashboard/overview");
+    } catch (err) {
+      console.error(err);
+      setError("خطا در تولید طرح. لطفاً دوباره تلاش کنید.");
+      setIsGenerating(false);
+      setStep(2);
+    }
+  };
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-slate-50">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
-
-  // Require authentication before project creation
-  if (!user || user.isAnonymous) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4" dir="rtl">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8 text-center">
-          <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Sparkles className="w-8 h-8 text-blue-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-3">
-            برای ساخت پروژه، ابتدا وارد شوید
-          </h1>
-          <p className="text-slate-500 mb-6">
-            برای ذخیره امن پروژه‌هایتان، لطفا ابتدا یک حساب کاربری بسازید یا وارد شوید.
-          </p>
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => router.push('/login')}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-12 rounded-xl transition-all shadow-lg hover:shadow-xl"
-            >
-              ورود به حساب کاربری
-            </button>
-            <button
-              onClick={() => router.push('/signup')}
-              className="w-full bg-white border-2 border-slate-200 hover:border-blue-500 text-slate-700 font-bold h-12 rounded-xl transition-all"
-            >
-              ساخت حساب جدید
-            </button>
-          </div>
-          <button
-            onClick={() => router.push('/')}
-            className="mt-6 text-slate-400 hover:text-slate-600 text-sm flex items-center gap-2 justify-center transition-colors"
-          >
-            <ArrowRight size={16} />
-            بازگشت به صفحه اصلی
-          </button>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background relative overflow-hidden" dir="rtl">
+      {/* Background Elements */}
+      <div className="absolute inset-0 bg-gradient-hero" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
       
-      {/* Progress Bar */}
-      <div className="w-full max-w-2xl mb-8">
-        <div className="flex justify-between text-sm text-slate-500 mb-2 px-1">
-          <span>گام {step} از ۳</span>
-          <span>ساخت نقشه راه</span>
-        </div>
-        <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-blue-600 transition-all duration-500 ease-out"
-            style={{ width: `${(step / 3) * 100}%` }}
-          />
-        </div>
-      </div>
-
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden">
-        
-        {/* Step 1: The Idea */}
-        {step === 1 && (
-          <div className="p-8 animate-in fade-in slide-in-from-right-4 duration-300">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-                <Sparkles size={24} />
-              </div>
-              <h1 className="text-2xl font-bold text-slate-800">ایده شما چیست؟</h1>
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {/* Header */}
+        <header className="p-6">
+          <Link href="/" className="inline-flex items-center gap-2">
+            <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg">
+              <Rocket size={20} />
             </div>
-            
-            <p className="text-slate-500 mb-4">
-              اصلاً نگران ادبیات نباشید. خیلی ساده و خودمونی بنویسید که چه چیزی تو ذهنتونه.
-            </p>
-            
-            <textarea
-              value={idea}
-              onChange={(e) => setIdea(e.target.value)}
-              placeholder="مثال: من میخوام یه سرویس غذای خونگی راه بندازم برای دانشجوهایی که وقت آشپزی ندارن..."
-              className="w-full h-40 p-4 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all text-lg resize-none placeholder:text-slate-300"
-              autoFocus
-            />
+            <span className="text-xl font-black text-foreground">کارنکس</span>
+          </Link>
+        </header>
 
-            <div className="mt-8 flex justify-end">
-              <button
-                onClick={nextStep}
-                disabled={!idea.trim()}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                مرحله بعد
-                <ArrowLeft size={20} />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: The Audience */}
-        {step === 2 && (
-          <div className="p-8 animate-in fade-in slide-in-from-right-4 duration-300">
-             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-purple-50 text-purple-600 rounded-xl">
-                <Target size={24} />
-              </div>
-              <h1 className="text-2xl font-bold text-slate-800">برای چه کسانی؟</h1>
-            </div>
-
-            <p className="text-slate-500 mb-6">
-              مشتری اصلی شما کیست؟ (مثال: مادران شاغل، گیمرها، مغازه‌دارها)
-            </p>
-
-            <input
-              type="text"
-              value={audience}
-              onChange={(e) => setAudience(e.target.value)}
-              placeholder="مخاطب هدف خود را بنویسید..."
-              className="w-full p-4 rounded-xl border-2 border-slate-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-50/50 transition-all text-lg"
-              autoFocus
-            />
-
-            <div className="mt-8 flex justify-between">
-              <button
-                onClick={prevStep}
-                className="flex items-center gap-2 text-slate-500 hover:text-slate-800 px-4 py-3 font-medium transition-colors"
-              >
-                <ArrowRight size={20} />
-                قبلی
-              </button>
-              <button
-                onClick={nextStep}
-                disabled={!audience.trim()}
-                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-xl font-bold transition-all disabled:opacity-50"
-              >
-                مرحله بعد
-                <ArrowLeft size={20} />
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Step 3: The Budget */}
-        {step === 3 && (
-          <div className="p-8 animate-in fade-in slide-in-from-right-4 duration-300">
-             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-                <Wallet size={24} />
-              </div>
-              <h1 className="text-2xl font-bold text-slate-800">بودجه فعلی شما؟</h1>
-            </div>
-
-            <p className="text-slate-500 mb-6">
-              این انتخاب به هوش مصنوعی کمک می‌کند تا ابزارهای مناسب جیب شما را پیشنهاد دهد.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[
-                { id: 'zero', label: 'صفر! (۰ تومان)', sub: 'شروع بدون هزینه', color: 'border-slate-200 hover:border-emerald-500' },
-                { id: 'low', label: 'کم', sub: 'زیر ۵ میلیون', color: 'border-slate-200 hover:border-blue-500' },
-                { id: 'medium', label: 'متوسط', sub: 'سرمایه دارم', color: 'border-slate-200 hover:border-purple-500' },
-              ].map((opt) => (
-                <button
-                  key={opt.id}
-                  onClick={() => setBudget(opt.id)}
-                  className={`p-4 rounded-xl border-2 text-right transition-all duration-200 ${
-                    budget === opt.id 
-                      ? 'border-emerald-500 bg-emerald-50 ring-2 ring-emerald-200' 
-                      : `${opt.color} bg-white hover:bg-slate-50`
-                  }`}
-                >
-                  <div className="font-bold text-lg text-slate-800">{opt.label}</div>
-                  <div className="text-sm text-slate-400 mt-1">{opt.sub}</div>
-                </button>
+        {/* Main Content */}
+        <main className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-2xl">
+            {/* Step Indicator */}
+            <div className="flex items-center justify-center mb-12">
+              {steps.map((s, i) => (
+                <div key={s.number} className="flex items-center">
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`
+                        w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300
+                        ${step >= s.number 
+                          ? "bg-gradient-primary text-white shadow-lg shadow-primary/25" 
+                          : "bg-muted text-muted-foreground"}
+                      `}
+                    >
+                      {step > s.number ? (
+                        <CheckCircle2 size={20} />
+                      ) : (
+                        <s.icon size={20} />
+                      )}
+                    </div>
+                    <span className={`text-xs mt-2 font-medium ${step >= s.number ? "text-foreground" : "text-muted-foreground"}`}>
+                      {s.title}
+                    </span>
+                  </div>
+                  {i < steps.length - 1 && (
+                    <div
+                      className={`
+                        w-16 h-0.5 mx-2 rounded-full transition-all duration-300
+                        ${step > s.number ? "bg-primary" : "bg-border"}
+                      `}
+                    />
+                  )}
+                </div>
               ))}
             </div>
 
-            {error && (
-              <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-xl border border-red-200 text-right animate-in fade-in slide-in-from-top-2">
-                {error === 'OpenRouter API Failed' || error.includes('429') 
-                  ? 'سرویس هوش مصنوعی شلوغ است (Rate Limit). لطفا ۳۰ ثانیه دیگر تلاش کنید.' 
-                  : error}
-              </div>
+            {/* Step Content */}
+            {step === 3 && isGenerating ? (
+              <GenerationLoader projectName={projectName} />
+            ) : (
+              <Card variant="glass" padding="xl" className="animate-fade-in-up">
+                {step === 1 && (
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <Badge variant="info" size="lg" className="mb-4">
+                        مرحله ۱ از ۳
+                      </Badge>
+                      <h2 className="text-2xl font-bold text-foreground mb-2">
+                        پروژه خود را نام‌گذاری کنید
+                      </h2>
+                      <p className="text-muted-foreground">
+                        یک نام کوتاه و به‌یادماندنی برای پروژه انتخاب کنید
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">
+                        نام پروژه
+                      </label>
+                      <input
+                        type="text"
+                        value={projectName}
+                        onChange={(e) => setProjectName(e.target.value)}
+                        placeholder="مثال: کتاب‌یار، فودهاب، سلام‌تراپی"
+                        className="input-premium text-lg py-4"
+                        autoFocus
+                      />
+                    </div>
+
+                    {error && (
+                      <p className="text-destructive text-sm text-center">{error}</p>
+                    )}
+
+                    <Button
+                      variant="gradient"
+                      size="xl"
+                      className="w-full"
+                      onClick={handleNextStep}
+                    >
+                      مرحله بعد
+                      <ArrowLeft size={18} />
+                    </Button>
+                  </div>
+                )}
+
+                {step === 2 && (
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <Badge variant="info" size="lg" className="mb-4">
+                        مرحله ۲ از ۳
+                      </Badge>
+                      <h2 className="text-2xl font-bold text-foreground mb-2">
+                        ایده خود را شرح دهید
+                      </h2>
+                      <p className="text-muted-foreground">
+                        هرچه جزئیات بیشتری بدهید، طرح دقیق‌تری دریافت می‌کنید
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-2">
+                        توضیح ایده
+                      </label>
+                      <textarea
+                        value={projectIdea}
+                        onChange={(e) => setProjectIdea(e.target.value)}
+                        placeholder="مثال: یک اپلیکیشن موبایل که به افراد کمک می‌کند کتاب‌های مورد علاقه خود را پیدا کنند، با دوستان به اشتراک بگذارند و از تخفیفات ویژه کتابفروشی‌های محلی استفاده کنند..."
+                        className="input-premium min-h-[200px] resize-none"
+                        autoFocus
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Lightbulb size={16} className="text-accent" />
+                      <span>
+                        نگران نباشید! هوش مصنوعی به شما کمک می‌کند ایده را کامل کنید.
+                      </span>
+                    </div>
+
+                    {error && (
+                      <p className="text-destructive text-sm text-center">{error}</p>
+                    )}
+
+                    <div className="flex gap-4">
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="flex-1"
+                        onClick={handlePrevStep}
+                      >
+                        <ArrowRight size={18} />
+                        مرحله قبل
+                      </Button>
+                      <Button
+                        variant="gradient"
+                        size="lg"
+                        className="flex-1"
+                        onClick={handleNextStep}
+                      >
+                        <Sparkles size={18} />
+                        تولید طرح کسب‌وکار
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </Card>
             )}
 
-            <div className="mt-8 flex justify-between items-center">
-              <button
-                onClick={prevStep}
-                disabled={isGenerating}
-                className="flex items-center gap-2 text-slate-500 hover:text-slate-800 px-4 py-3 font-medium transition-colors"
-              >
-                <ArrowRight size={20} />
-                قبلی
-              </button>
-              
-              <button
-                onClick={handleSubmit}
-                disabled={!budget || isGenerating}
-                className="flex items-center gap-3 bg-emerald-600 hover:bg-emerald-700 text-white px-10 py-3 rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all disabled:opacity-70 disabled:cursor-wait"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="animate-spin" size={20} />
-                    در حال تفکر...
-                  </>
-                ) : (
-                  <>
-                    ساخت پروژه
-                    <Sparkles size={20} />
-                  </>
-                )}
-              </button>
-            </div>
+            {/* Hints */}
+            {step !== 3 && (
+              <div className="mt-8 text-center">
+                <p className="text-sm text-muted-foreground">
+                  نیاز به الهام دارید؟{" "}
+                  <Link href="/examples" className="text-primary hover:underline">
+                    نمونه‌های موفق را ببینید
+                  </Link>
+                </p>
+              </div>
+            )}
           </div>
-        )}
-
+        </main>
       </div>
-      
-      {/* Trust Message */}
-      <p className="mt-6 text-slate-400 text-sm flex items-center gap-2">
-        <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
-        اطلاعات شما در فضای ابری امن ذخیره می‌شود
-      </p>
     </div>
   );
 }

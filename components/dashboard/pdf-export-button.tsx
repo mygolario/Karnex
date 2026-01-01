@@ -4,8 +4,9 @@ import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { BusinessPlan } from "@/lib/db";
-import { Loader2, Download, Check, LayoutGrid, Map, Palette, TrendingUp, Lock } from "lucide-react";
+import { Loader2, Download, Check, Lock } from "lucide-react";
 import { UpgradeModal } from "@/components/dashboard/upgrade-modal";
+import { Button } from "@/components/ui/button";
 
 interface PdfExportButtonProps {
   plan: BusinessPlan;
@@ -14,18 +15,9 @@ interface PdfExportButtonProps {
 export function PdfExportButton({ plan }: PdfExportButtonProps) {
   const reportRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [showUpgrade, setShowUpgrade] = useState(false);
   
   // TODO: Connect to real subscription status
   const isPro = false; 
-
-  const handleClick = () => {
-    if (!isPro) {
-      setShowUpgrade(true);
-      return;
-    }
-    handleDownload();
-  };
 
   const handleDownload = async () => {
     if (!reportRef.current) return;
@@ -68,31 +60,21 @@ export function PdfExportButton({ plan }: PdfExportButtonProps) {
     <>
       {/* 1. The Trigger Button */}
       {isPro ? (
-        <button
+        <Button
+          variant="default"
           onClick={handleDownload}
           disabled={isGenerating}
-          className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-sm disabled:opacity-50"
+          loading={isGenerating}
         >
-          {isGenerating ? (
-            <>
-              <Loader2 size={18} className="animate-spin" />
-              <span>در حال ساخت...</span>
-            </>
-          ) : (
-            <>
-              <Download size={18} />
-              <span>دانلود PDF</span>
-            </>
-          )}
-        </button>
+          {!isGenerating && <Download size={18} />}
+          دانلود PDF
+        </Button>
       ) : (
         <UpgradeModal>
-          <button
-            className="flex items-center gap-2 bg-gray-100 text-gray-500 hover:bg-gray-200 px-4 py-2 rounded-lg font-medium transition-all shadow-sm group"
-          >
-            <Lock size={18} className="text-gray-400 group-hover:text-purple-600 transition-colors" />
-            <span>دانلود PDF (نسخه حرفه‌ای)</span>
-          </button>
+          <Button variant="outline" className="group">
+            <Lock size={16} className="text-muted-foreground group-hover:text-primary transition-colors" />
+            دانلود PDF (نسخه حرفه‌ای)
+          </Button>
         </UpgradeModal>
       )}
 

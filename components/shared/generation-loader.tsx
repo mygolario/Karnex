@@ -1,93 +1,141 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { CheckCircle2, Loader2, Server, BrainCircuit, PenTool, Rocket } from "lucide-react";
+import { useState, useEffect } from "react";
+import { 
+  Sparkles, 
+  Brain, 
+  FileText, 
+  Palette, 
+  Map,
+  Target,
+  Megaphone,
+  CheckCircle2
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-const STEPS = [
-  { icon: Server, text: "برقراری ارتباط با سرورهای امن..." },
-  { icon: BrainCircuit, text: "تحلیل ایده با هوش مصنوعی..." },
-  { icon: PenTool, text: "طراحی بوم مدل کسب‌وکار..." },
-  { icon: Rocket, text: "تدوین استراتژی‌های رشد..." },
-  { icon: CheckCircle2, text: "نهایی‌سازی نقشه راه..." },
-];
+interface GenerationLoaderProps {
+  projectName?: string;
+}
 
-export function GenerationLoader() {
+export function GenerationLoader({ projectName }: GenerationLoaderProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
+  const steps = [
+    { icon: Brain, label: "تحلیل ایده شما", color: "from-primary to-purple-600" },
+    { icon: Target, label: "بررسی بازار و رقبا", color: "from-purple-600 to-pink-500" },
+    { icon: FileText, label: "تولید بوم کسب‌وکار", color: "from-pink-500 to-rose-500" },
+    { icon: Map, label: "طراحی نقشه راه", color: "from-rose-500 to-orange-500" },
+    { icon: Palette, label: "ساخت هویت بصری", color: "from-orange-500 to-amber-500" },
+    { icon: Megaphone, label: "استراتژی بازاریابی", color: "from-amber-500 to-secondary" },
+  ];
+
   useEffect(() => {
-    // Simulate progress through the steps
     const interval = setInterval(() => {
-      setCurrentStep((prev) => {
-        if (prev < STEPS.length - 1) return prev + 1;
-        return prev;
-      });
-    }, 2500); // Change step every 2.5 seconds
+      setCurrentStep((prev) => (prev < steps.length - 1 ? prev + 1 : prev));
+    }, 2500);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-white/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <div className="bg-white border border-slate-200 shadow-2xl rounded-3xl p-8 max-w-md w-full relative overflow-hidden">
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      {/* Main Animation */}
+      <div className="relative mb-12">
+        {/* Outer Glow */}
+        <div className="absolute inset-0 bg-gradient-to-r from-primary to-secondary blur-3xl opacity-20 scale-150 animate-pulse" />
         
-        {/* Animated Background Gradient */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500 animate-gradient"></div>
-
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl mx-auto flex items-center justify-center mb-4 relative">
-             <BrainCircuit size={32} className="animate-pulse" />
-             <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white animate-bounce"></div>
+        {/* Circle Background */}
+        <div className={cn(
+          "relative w-32 h-32 rounded-3xl flex items-center justify-center",
+          "bg-gradient-to-br",
+          steps[currentStep].color,
+          "shadow-2xl transition-all duration-500"
+        )}>
+          {/* Inner Icon */}
+          <div className="text-white">
+            {(() => {
+              const Icon = steps[currentStep].icon;
+              return <Icon size={48} className="animate-pulse" />;
+            })()}
           </div>
-          <h2 className="text-2xl font-bold text-slate-800 mb-2">در حال ساخت امپراتوری شما</h2>
-          <p className="text-slate-500 text-sm">لطفا صفحه را نبندید، این فرآیند حدود ۳۰ ثانیه زمان می‌برد.</p>
+          
+          {/* Spinning Ring */}
+          <div className="absolute inset-0 rounded-3xl border-4 border-white/20 animate-spin-slow" 
+            style={{ 
+              borderTopColor: 'transparent', 
+              borderRightColor: 'white',
+              animationDuration: '3s' 
+            }} 
+          />
         </div>
-
-        <div className="space-y-4 relative">
-          {/* Connecting Line */}
-          <div className="absolute right-[19px] top-4 bottom-4 w-0.5 bg-slate-100 -z-10"></div>
-
-          {STEPS.map((step, index) => {
-            const isActive = index === currentStep;
-            const isCompleted = index < currentStep;
-            const isPending = index > currentStep;
-
-            return (
-              <div 
-                key={index} 
-                className={`flex items-center gap-4 transition-all duration-500 ${
-                  isPending ? 'opacity-40 grayscale' : 'opacity-100'
-                }`}
-              >
-                <div 
-                  className={`
-                    w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300
-                    ${isActive ? 'bg-blue-600 border-blue-600 text-white scale-110 shadow-lg shadow-blue-200' : ''}
-                    ${isCompleted ? 'bg-emerald-500 border-emerald-500 text-white' : ''}
-                    ${isPending ? 'bg-white border-slate-200 text-slate-300' : ''}
-                  `}
-                >
-                  {isCompleted ? (
-                    <CheckCircle2 size={20} />
-                  ) : isActive ? (
-                    <Loader2 size={20} className="animate-spin" />
-                  ) : (
-                    <step.icon size={18} />
-                  )}
-                </div>
-                
-                <span className={`
-                  text-sm font-medium transition-colors duration-300
-                  ${isActive ? 'text-blue-700 font-bold' : 'text-slate-600'}
-                  ${isCompleted ? 'text-emerald-600' : ''}
-                `}>
-                  {step.text}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-
+        
+        {/* Floating Particles */}
+        <div className="absolute -top-4 -left-4 w-6 h-6 bg-primary/30 rounded-full blur-sm animate-float" />
+        <div className="absolute -bottom-4 -right-4 w-4 h-4 bg-secondary/30 rounded-full blur-sm animate-float" style={{ animationDelay: "-1s" }} />
+        <div className="absolute top-1/2 -right-8 w-3 h-3 bg-accent/30 rounded-full blur-sm animate-float" style={{ animationDelay: "-2s" }} />
       </div>
+
+      {/* Project Name */}
+      {projectName && (
+        <h2 className="text-2xl font-black text-foreground mb-3">
+          {projectName}
+        </h2>
+      )}
+
+      {/* Current Step */}
+      <p className="text-lg text-muted-foreground mb-8">
+        در حال <span className="text-foreground font-bold">{steps[currentStep].label}</span>...
+      </p>
+
+      {/* Progress Steps */}
+      <div className="w-full max-w-md space-y-3">
+        {steps.map((step, i) => (
+          <div
+            key={i}
+            className={cn(
+              "flex items-center gap-3 p-3 rounded-xl transition-all duration-500",
+              i < currentStep && "opacity-50",
+              i === currentStep && "bg-muted/50"
+            )}
+          >
+            <div
+              className={cn(
+                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-500",
+                i <= currentStep
+                  ? `bg-gradient-to-br ${step.color} text-white shadow-lg`
+                  : "bg-muted text-muted-foreground"
+              )}
+            >
+              {i < currentStep ? (
+                <CheckCircle2 size={16} />
+              ) : (
+                <step.icon size={16} />
+              )}
+            </div>
+            <span
+              className={cn(
+                "text-sm font-medium transition-colors",
+                i <= currentStep ? "text-foreground" : "text-muted-foreground"
+              )}
+            >
+              {step.label}
+            </span>
+            {i === currentStep && (
+              <div className="mr-auto flex gap-1">
+                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Tip */}
+      <p className="mt-8 text-sm text-muted-foreground flex items-center gap-2">
+        <Sparkles size={14} className="text-accent" />
+        این فرایند معمولاً ۳۰ تا ۶۰ ثانیه طول می‌کشد
+      </p>
     </div>
   );
 }

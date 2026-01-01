@@ -1,41 +1,85 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
 
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+  "inline-flex items-center gap-1.5 rounded-full font-medium transition-colors",
   {
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+          "bg-primary/10 text-primary",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-foreground",
+          "bg-secondary/10 text-secondary",
+        accent:
+          "bg-accent/10 text-accent",
+        info:
+          "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+        success:
+          "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+        warning:
+          "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+        danger:
+          "bg-red-500/10 text-red-600 dark:text-red-400",
+        outline:
+          "border border-border bg-transparent text-foreground",
+        muted:
+          "bg-muted text-muted-foreground",
+        gradient:
+          "bg-gradient-to-r from-primary to-purple-600 text-white",
       },
       size: {
-        default: "px-2.5 py-0.5 text-xs",
-        lg: "px-3 py-1 text-sm",
+        sm: "px-2 py-0.5 text-[10px]",
+        default: "px-2.5 py-1 text-xs",
+        lg: "px-3 py-1.5 text-sm",
+      },
+      animated: {
+        none: "",
+        pulse: "animate-pulse",
+        bounce: "animate-bounce-gentle",
       },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
+      animated: "none",
     },
   }
-)
+);
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
-
-function Badge({ className, variant, size, ...props }: BadgeProps) {
-  return (
-    <div className={cn(badgeVariants({ variant, size }), className)} {...props} />
-  )
+    VariantProps<typeof badgeVariants> {
+  dot?: boolean;
+  dotColor?: string;
 }
 
-export { Badge, badgeVariants }
+function Badge({
+  className,
+  variant,
+  size,
+  animated,
+  dot,
+  dotColor,
+  children,
+  ...props
+}: BadgeProps) {
+  return (
+    <div
+      className={cn(badgeVariants({ variant, size, animated }), className)}
+      {...props}
+    >
+      {dot && (
+        <span
+          className={cn(
+            "h-1.5 w-1.5 rounded-full",
+            dotColor || "bg-current"
+          )}
+        />
+      )}
+      {children}
+    </div>
+  );
+}
+
+export { Badge, badgeVariants };

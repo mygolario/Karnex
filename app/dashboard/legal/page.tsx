@@ -3,7 +3,9 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { getPlanFromCloud, saveLegalAdvice, BusinessPlan } from "@/lib/db";
-import { Scale, ShieldCheck, AlertCircle, FileText, Loader2, Info } from "lucide-react";
+import { Scale, ShieldCheck, AlertCircle, FileText, Loader2, Info, Sparkles } from "lucide-react";
+import { Card, CardIcon } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 export default function LegalPage() {
   const { user, loading: authLoading } = useAuth();
@@ -52,20 +54,29 @@ export default function LegalPage() {
     }
   };
 
-  if (loading) return <div className="p-12 text-center text-slate-400">در حال بارگذاری...</div>;
+  if (loading) {
+    return (
+      <div className="p-12 flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center animate-pulse">
+          <Scale size={32} className="text-white" />
+        </div>
+        <p className="text-muted-foreground">در حال بارگذاری...</p>
+      </div>
+    );
+  }
   if (!plan) return null;
 
   // 4. Loading State (The "Consulting" Animation)
   if (generating || !plan.legalAdvice) {
     return (
-      <div className="p-12 max-w-2xl mx-auto text-center space-y-6 animate-in fade-in duration-700">
-        <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto animate-pulse">
-          <Scale size={40} />
+      <div className="p-12 max-w-2xl mx-auto text-center space-y-6">
+        <div className="w-24 h-24 bg-gradient-to-br from-primary to-purple-600 text-white rounded-3xl flex items-center justify-center mx-auto shadow-2xl shadow-primary/30 animate-pulse">
+          <Scale size={48} />
         </div>
-        <h2 className="text-2xl font-bold text-slate-800">در حال مشاوره با وکیل هوشمند...</h2>
-        <p className="text-slate-500">ما در حال بررسی قوانین و مجوزهای مورد نیاز برای ایده "{plan.projectName}" هستیم.</p>
-        <div className="w-full max-w-xs mx-auto h-2 bg-slate-100 rounded-full overflow-hidden">
-           <div className="h-full bg-blue-600 animate-[loading_2s_ease-in-out_infinite] w-1/2"></div>
+        <h2 className="text-2xl font-black text-foreground">در حال مشاوره با وکیل هوشمند...</h2>
+        <p className="text-muted-foreground">ما در حال بررسی قوانین و مجوزهای مورد نیاز برای ایده "{plan.projectName}" هستیم.</p>
+        <div className="w-full max-w-xs mx-auto h-3 bg-muted rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-primary to-secondary animate-pulse w-2/3 rounded-full" />
         </div>
       </div>
     );
@@ -73,59 +84,74 @@ export default function LegalPage() {
 
   // 5. The Content UI
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="p-6 max-w-5xl mx-auto space-y-8">
       
       {/* Header */}
       <div className="flex items-start gap-4">
-        <div className="p-3 bg-slate-900 text-white rounded-xl shadow-lg shadow-slate-200">
-          <Scale size={32} />
+        <div className="w-14 h-14 bg-gradient-to-br from-primary to-purple-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20">
+          <Scale size={28} />
         </div>
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">الزامات قانونی و حقوقی</h1>
-          <p className="text-slate-500">راهنمای شروع فعالیت قانونی برای {plan.projectName}</p>
+          <div className="flex items-center gap-3 mb-1">
+            <h1 className="text-2xl font-black text-foreground">الزامات قانونی و حقوقی</h1>
+            <Badge variant="gradient" size="sm">
+              <Sparkles size={12} />
+              AI
+            </Badge>
+          </div>
+          <p className="text-muted-foreground">راهنمای شروع فعالیت قانونی برای {plan.projectName}</p>
         </div>
       </div>
 
       {/* Warning Box */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-800 text-sm">
-        <Info className="shrink-0" size={20} />
-        <p>
+      <Card variant="muted" className="border-l-4 border-l-accent flex gap-3">
+        <Info className="shrink-0 text-accent" size={20} />
+        <p className="text-muted-foreground text-sm">
           این اطلاعات توسط هوش مصنوعی و بر اساس قوانین کلی ایران تولید شده است. برای موارد حساس حتماً با یک وکیل مشورت کنید.
         </p>
-      </div>
+      </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         
         {/* Main Column: Requirements */}
         <div className="md:col-span-2 space-y-6">
-          <h3 className="font-bold text-slate-700 flex items-center gap-2">
-            <ShieldCheck size={20} className="text-emerald-600" />
-            اقدامات ضروری
-          </h3>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <CardIcon variant="secondary" className="w-10 h-10">
+              <ShieldCheck size={20} />
+            </CardIcon>
+            <span className="font-bold text-sm uppercase tracking-wider">اقدامات ضروری</span>
+          </div>
           
           <div className="space-y-4">
             {(plan.legalAdvice.requirements || []).map((req, i) => (
-              <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex gap-4">
-                <div className={`
-                  w-1 shrink-0 rounded-full my-1
-                  ${req.priority === 'High' ? 'bg-rose-500' : 'bg-blue-400'}
-                `}></div>
-                <div>
+              <Card 
+                key={i} 
+                variant="default"
+                hover="lift"
+                className="relative overflow-hidden"
+              >
+                {/* Priority Bar */}
+                <div className={`absolute top-0 bottom-0 right-0 w-1 ${
+                  req.priority === 'High' ? 'bg-destructive' : 'bg-primary'
+                }`} />
+                
+                <div className="pr-4">
                   <div className="flex items-center gap-3 mb-2">
-                    <h4 className="font-bold text-slate-800 text-lg">{req.title}</h4>
+                    <h4 className="font-bold text-foreground text-lg">{req.title}</h4>
                     {req.priority === 'High' && (
-                      <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-bold">
+                      <Badge variant="danger" size="sm">
                         الزامی
-                      </span>
+                      </Badge>
                     )}
                   </div>
-                  <p className="text-slate-600 leading-relaxed text-sm">
+                  <p className="text-muted-foreground leading-relaxed text-sm">
                     {req.description}
                   </p>
                 </div>
-              </div>
-            ))}                {(!plan.legalAdvice.requirements || plan.legalAdvice.requirements.length === 0) && (
-              <p className="text-slate-400 text-sm">الزامات خاصی شناسایی نشد.</p>
+              </Card>
+            ))}
+            {(!plan.legalAdvice.requirements || plan.legalAdvice.requirements.length === 0) && (
+              <p className="text-muted-foreground text-sm">الزامات خاصی شناسایی نشد.</p>
             )}
           </div>
         </div>
@@ -134,43 +160,48 @@ export default function LegalPage() {
         <div className="space-y-6">
           
           {/* Permits Box */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-            <h3 className="font-bold text-slate-700 mb-4 flex items-center gap-2">
-              <FileText size={20} className="text-blue-600" />
-              مجوزهای احتمالی
-            </h3>
+          <Card variant="default">
+            <div className="flex items-center gap-2 mb-4">
+              <CardIcon variant="primary" className="w-8 h-8">
+                <FileText size={16} />
+              </CardIcon>
+              <h3 className="font-bold text-foreground">مجوزهای احتمالی</h3>
+            </div>
             <ul className="space-y-3">
               {(plan.legalAdvice.permits || []).map((permit, i) => (
-                <li key={i} className="flex items-center gap-2 text-slate-600 text-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                <li key={i} className="flex items-center gap-2 text-muted-foreground text-sm">
+                  <div className="w-2 h-2 rounded-full bg-primary" />
                   {permit}
                 </li>
               ))}
               {(!plan.legalAdvice.permits || plan.legalAdvice.permits.length === 0) && (
-                <li className="text-slate-400 text-sm">مجوز خاصی شناسایی نشد.</li>
+                <li className="text-muted-foreground text-sm">مجوز خاصی شناسایی نشد.</li>
               )}
             </ul>
-          </div>
+          </Card>
 
           {/* Expert Tips */}
-          <div className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full blur-2xl -mr-10 -mt-10"></div>
+          <Card variant="gradient" padding="lg" className="text-white relative overflow-hidden">
+            {/* Decorative Element */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16" />
             
-            <h3 className="font-bold mb-4 flex items-center gap-2">
-              <AlertCircle size={20} className="text-amber-400" />
-              نکته وکیل
-            </h3>
-            <ul className="space-y-4">
-              {(plan.legalAdvice.tips || []).map((tip, i) => (
-                <li key={i} className="text-sm text-slate-300 leading-6 border-b border-white/10 last:border-0 pb-3 last:pb-0">
-                  {tip}
-                </li>
-              ))}
-              {(!plan.legalAdvice.tips || plan.legalAdvice.tips.length === 0) && (
-                <li className="text-slate-400 text-sm">نکته‌ای موجود نیست.</li>
-              )}
-            </ul>
-          </div>
+            <div className="relative">
+              <div className="flex items-center gap-2 mb-4">
+                <AlertCircle size={20} className="text-accent" />
+                <h3 className="font-bold">نکته وکیل</h3>
+              </div>
+              <ul className="space-y-4">
+                {(plan.legalAdvice.tips || []).map((tip, i) => (
+                  <li key={i} className="text-sm text-white/80 leading-6 border-b border-white/10 last:border-0 pb-3 last:pb-0">
+                    {tip}
+                  </li>
+                ))}
+                {(!plan.legalAdvice.tips || plan.legalAdvice.tips.length === 0) && (
+                  <li className="text-white/60 text-sm">نکته‌ای موجود نیست.</li>
+                )}
+              </ul>
+            </div>
+          </Card>
 
         </div>
       </div>

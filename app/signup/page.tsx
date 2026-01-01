@@ -1,147 +1,302 @@
 "use client";
 
 import { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
-import { Loader2, AlertCircle, ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Rocket, 
+  Mail, 
+  Lock, 
+  Eye, 
+  EyeOff, 
+  ArrowLeft,
+  Sparkles,
+  Loader2,
+  CheckCircle2
+} from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError(null);
+    setError("");
 
-    // Validate passwords match
     if (password !== confirmPassword) {
-      setError("رمز عبور و تکرار آن یکسان نیستند.");
-      setLoading(false);
+      setError("رمز عبور و تکرار آن مطابقت ندارند");
       return;
     }
 
-    // Validate password length
     if (password.length < 6) {
-      setError("رمز عبور باید حداقل ۶ کاراکتر باشد.");
-      setLoading(false);
+      setError("رمز عبور باید حداقل ۶ کاراکتر باشد");
       return;
     }
+
+    setLoading(true);
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      // Success! Redirect to create project
       router.push("/new-project");
     } catch (err: any) {
-      console.error("Signup Error:", err);
-      if (err.code === 'auth/email-already-in-use') {
-        setError("این ایمیل قبلاً ثبت شده است. لطفاً وارد شوید.");
-      } else if (err.code === 'auth/invalid-email') {
-        setError("فرمت ایمیل نامعتبر است.");
-      } else if (err.code === 'auth/weak-password') {
-        setError("رمز عبور باید حداقل ۶ کاراکتر باشد.");
+      if (err.code === "auth/email-already-in-use") {
+        setError("این ایمیل قبلاً ثبت شده است");
       } else {
-        setError("خطایی در ثبت نام رخ داد. لطفا دوباره تلاش کنید.");
+        setError("خطا در ثبت‌نام. لطفاً دوباره تلاش کنید");
       }
     } finally {
       setLoading(false);
     }
   };
 
+  const handleGoogleSignup = async () => {
+    setError("");
+    setLoading(true);
+    
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      router.push("/new-project");
+    } catch (err: any) {
+      setError("خطا در ثبت‌نام با گوگل");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const benefits = [
+    "طرح کسب‌وکار کامل با هوش مصنوعی",
+    "نقشه راه اجرایی قدم‌به‌قدم",
+    "هویت بصری و برندینگ",
+    "مشاور هوشمند ۲۴/۷",
+  ];
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4" dir="rtl">
-      
-      {/* Brand */}
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tighter mb-2">کارنکس</h1>
-        <p className="text-slate-500">ساخت حساب کاربری</p>
-      </div>
-
-      <div className="w-full max-w-[400px] bg-white rounded-2xl shadow-xl border border-slate-100 p-8">
+    <div className="min-h-screen flex" dir="rtl">
+      {/* Left Side - Visual */}
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
+        {/* Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary via-emerald-600 to-primary" />
         
-        {/* Benefits */}
-        <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-3 py-2 rounded-lg mb-6 text-sm">
-          <Sparkles size={16} />
-          <span>پروژه‌هایتان برای همیشه ذخیره می‌شود!</span>
-        </div>
-
-        <form onSubmit={handleSignup} className="space-y-5">
+        {/* Pattern Overlay */}
+        <div className="absolute inset-0 pattern-dots opacity-20" />
+        
+        {/* Floating Shapes */}
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-white/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "-3s" }} />
+        
+        {/* Content */}
+        <div className="relative z-10 flex flex-col justify-center p-12 text-white">
+          <Badge variant="gradient" className="w-fit mb-6 bg-white/10 backdrop-blur-sm border-white/20">
+            <Sparkles size={12} />
+            شروع رایگان
+          </Badge>
           
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">ایمیل</label>
-            <input 
-              type="email" 
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all ltr text-left"
-              placeholder="name@example.com"
-            />
+          <h1 className="text-4xl font-black mb-4">
+            سفر کارآفرینی خود را شروع کنید
+          </h1>
+          
+          <p className="text-lg text-white/80 mb-8">
+            با ثبت‌نام، به همه امکانات کارنکس دسترسی پیدا می‌کنید
+          </p>
+          
+          <div className="space-y-4">
+            {benefits.map((benefit, i) => (
+              <div key={i} className="flex items-center gap-3 text-white/90">
+                <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                  <CheckCircle2 size={14} />
+                </div>
+                {benefit}
+              </div>
+            ))}
           </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">رمز عبور</label>
-            <input 
-              type="password" 
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all ltr text-left"
-              placeholder="حداقل ۶ کاراکتر"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-bold text-slate-700">تکرار رمز عبور</label>
-            <input 
-              type="password" 
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="w-full p-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-50/50 transition-all ltr text-left"
-              placeholder="تکرار رمز عبور"
-            />
-          </div>
-
-          {error && (
-            <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm flex items-center gap-2">
-              <AlertCircle size={16} />
-              {error}
-            </div>
-          )}
-
-          <button 
-            type="submit" 
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold h-12 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-wait flex items-center justify-center gap-2"
-          >
-            {loading ? <Loader2 className="animate-spin" /> : "ساخت حساب کاربری"}
-          </button>
-
-        </form>
-
-        <div className="mt-6 pt-6 border-t border-slate-100 text-center text-sm text-slate-500">
-          قبلاً حساب دارید؟{" "}
-          <Link href="/login" className="text-blue-600 font-bold hover:underline">
-            وارد شوید
-          </Link>
         </div>
-
       </div>
 
-      <div className="mt-8">
-        <Link href="/" className="text-slate-400 hover:text-slate-600 flex items-center gap-2 text-sm transition-colors">
-          <ArrowLeft size={16} />
-          بازگشت به صفحه اصلی
-        </Link>
-      </div>
+      {/* Right Side - Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background">
+        <div className="w-full max-w-md">
+          {/* Mobile Logo */}
+          <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
+            <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg">
+              <Rocket size={20} />
+            </div>
+            <span className="text-xl font-black text-foreground">کارنکس</span>
+          </div>
 
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
+              ساخت حساب کاربری
+            </h2>
+            <p className="text-muted-foreground">
+              حساب دارید؟{" "}
+              <Link href="/login" className="text-primary hover:underline font-medium">
+                وارد شوید
+              </Link>
+            </p>
+          </div>
+
+          <Card variant="default" padding="lg">
+            {/* Google Signup */}
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full mb-6"
+              onClick={handleGoogleSignup}
+              disabled={loading}
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path
+                  fill="currentColor"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                />
+                <path
+                  fill="currentColor"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                />
+              </svg>
+              ثبت‌نام با گوگل
+            </Button>
+
+            {/* Divider */}
+            <div className="relative mb-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">یا</span>
+              </div>
+            </div>
+
+            {/* Email Form */}
+            <form onSubmit={handleEmailSignup} className="space-y-4">
+              {error && (
+                <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-xl text-center">
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  ایمیل
+                </label>
+                <div className="relative">
+                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="example@email.com"
+                    className="input-premium pr-10"
+                    required
+                    dir="ltr"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  رمز عبور
+                </label>
+                <div className="relative">
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="حداقل ۶ کاراکتر"
+                    className="input-premium pr-10 pl-10"
+                    required
+                    dir="ltr"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  تکرار رمز عبور
+                </label>
+                <div className="relative">
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="تکرار رمز عبور"
+                    className="input-premium pr-10"
+                    required
+                    dir="ltr"
+                  />
+                </div>
+              </div>
+
+              <div className="text-sm text-muted-foreground">
+                با ثبت‌نام، با{" "}
+                <Link href="/terms" className="text-primary hover:underline">
+                  شرایط استفاده
+                </Link>{" "}
+                و{" "}
+                <Link href="/privacy" className="text-primary hover:underline">
+                  حریم خصوصی
+                </Link>{" "}
+                موافقت می‌کنید.
+              </div>
+
+              <Button
+                type="submit"
+                variant="gradient"
+                size="lg"
+                className="w-full"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="animate-spin" />
+                    در حال ثبت‌نام...
+                  </>
+                ) : (
+                  <>
+                    ساخت حساب کاربری
+                    <ArrowLeft size={18} />
+                  </>
+                )}
+              </Button>
+            </form>
+          </Card>
+
+          {/* Back to Home */}
+          <div className="text-center mt-6">
+            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              ← بازگشت به صفحه اصلی
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

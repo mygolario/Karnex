@@ -1,84 +1,155 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Hexagon, Menu } from "lucide-react";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { Menu, X, Rocket, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
-  const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navLinks = [
-    { name: "ویژگی‌ها", href: "#features" },
-    { name: "درباره ما", href: "#about" },
-    { name: "تعرفه‌ها", href: "#pricing" },
+    { label: "ویژگی‌ها", href: "#features" },
+    { label: "نحوه کار", href: "#how-it-works" },
+    { label: "قیمت‌ها", href: "#pricing" },
   ];
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 md:px-8">
-        {/* Logo */}
-        <div className="flex items-center gap-2">
-          <Link href="/" className="flex items-center gap-2">
-            <Hexagon className="h-8 w-8 text-primary fill-primary/10" />
-            <span className="text-xl font-bold text-primary tracking-tight">Karnex</span>
+    <header
+      className={cn(
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
+        scrolled
+          ? "glass-strong shadow-lg py-3"
+          : "bg-transparent py-5"
+      )}
+    >
+      <div className="section-container">
+        <nav className="flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-shadow">
+                <Rocket size={20} />
+              </div>
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full animate-pulse" />
+            </div>
+            <span className="text-xl font-black text-foreground tracking-tight">
+              کارنکس
+            </span>
+            <Badge variant="gradient" size="sm" className="hidden sm:flex">
+              <Sparkles size={10} />
+              BETA
+            </Badge>
           </Link>
-        </div>
 
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8">
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              {link.name}
-            </Link>
-          ))}
-        </div>
-
-        {/* CTA Button */}
-        <div className="hidden md:flex">
-          <Link href="/new-project">
-            <Button className="rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/90 font-bold px-6">
-              شروع رایگان
-            </Button>
-          </Link>
-        </div>
-
-        {/* Mobile Menu Button */}
-        <button
-          className="md:hidden p-2 text-muted-foreground"
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          <Menu className="h-6 w-6" />
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      {isOpen && (
-        <div className="md:hidden border-t p-4 bg-background">
-          <div className="flex flex-col space-y-4">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-primary"
-                onClick={() => setIsOpen(false)}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors relative group"
               >
-                {link.name}
+                {link.label}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary rounded-full transition-all group-hover:w-full" />
               </Link>
             ))}
-            <Link href="/new-project" onClick={() => setIsOpen(false)}>
-              <Button className="w-full rounded-full bg-secondary text-secondary-foreground font-bold">
-                شروع رایگان
-              </Button>
-            </Link>
+          </div>
+
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-3">
+            <ThemeToggle />
+            {user ? (
+              <Link href="/dashboard/overview">
+                <Button variant="gradient" rounded="full">
+                  داشبورد من
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link href="/login">
+                  <Button variant="ghost">ورود</Button>
+                </Link>
+                <Link href="/signup">
+                  <Button variant="gradient" rounded="full">
+                    شروع رایگان
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Menu Toggle */}
+          <div className="flex md:hidden items-center gap-2">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </Button>
+          </div>
+        </nav>
+
+        {/* Mobile Menu */}
+        <div
+          className={cn(
+            "md:hidden overflow-hidden transition-all duration-300 ease-out",
+            mobileMenuOpen ? "max-h-96 mt-4" : "max-h-0"
+          )}
+        >
+          <div className="glass rounded-2xl p-4 space-y-2">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="border-t border-border my-2" />
+            {user ? (
+              <Link href="/dashboard/overview">
+                <Button variant="gradient" className="w-full" rounded="full">
+                  داشبورد من
+                </Button>
+              </Link>
+            ) : (
+              <div className="space-y-2">
+                <Link href="/login">
+                  <Button variant="outline" className="w-full">
+                    ورود
+                  </Button>
+                </Link>
+                <Link href="/signup">
+                  <Button variant="gradient" className="w-full" rounded="full">
+                    شروع رایگان
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
-      )}
-    </nav>
+      </div>
+    </header>
   );
 }
