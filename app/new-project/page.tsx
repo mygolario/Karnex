@@ -295,9 +295,9 @@ export default function NewProjectPage() {
               <div className="mt-8 text-center">
                 <p className="text-sm text-muted-foreground">
                   نیاز به الهام دارید؟{" "}
-                  <Link href="/examples" className="text-primary hover:underline">
-                    نمونه‌های موفق را ببینید
-                  </Link>
+                  <span className="text-primary font-bold">
+                    یک ایده ساده کافیست!
+                  </span>
                 </p>
               </div>
             )}
