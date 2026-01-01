@@ -81,9 +81,13 @@ export default function NewProjectPage() {
       const res = await fetch("/api/generate-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // Fix: Send 'idea' instead of 'projectIdea' to match API expectation
         body: JSON.stringify({
-          projectName,
-          projectIdea,
+          idea: projectIdea,
+          projectName: projectName, 
+          // Add default audience/budget if not collected yet to avoid undefined in prompt
+          audience: "عموم مردم",
+          budget: "کم‌هزینه"
         }),
       });
 
@@ -93,6 +97,10 @@ export default function NewProjectPage() {
 
       const data = await res.json();
       
+      // Fix: Force the project name to match what the user typed
+      // (The AI often renames it, but we should respect the user's choice)
+      data.projectName = projectName;
+
       // Create new project via context (generates new ID)
       await createNewProject(data);
       
