@@ -36,9 +36,7 @@ export async function POST(req: Request) {
 
     let response;
     const models = [
-        "google/gemini-2.0-flash-exp:free",
-        "deepseek/deepseek-chat:free", 
-        "meta-llama/llama-3.3-70b-instruct:free"
+        "google/gemini-2.0-flash-exp:free" // User Requested Strict Single Model
     ];
 
     // let response; // Removed duplicate

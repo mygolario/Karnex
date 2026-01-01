@@ -35,10 +35,7 @@ export async function POST(req: Request) {
     // List of models to try
     // List of models to try
     const models = [
-        "google/gemini-2.0-flash-thinking-exp:free",
-        "deepseek/deepseek-chat:free",             // V3 is often more stable than R1
-        "google/gemini-2.0-flash-exp:free",
-        "meta-llama/llama-3.3-70b-instruct:free"   // Very robust fallback
+        "google/gemini-2.0-flash-exp:free", // User Requested Strict Single Model
     ];
 
     let successfulModel = '';

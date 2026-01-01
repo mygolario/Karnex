@@ -140,9 +140,7 @@ export async function POST(req: Request) {
         // MOdELS TO TRY (Strict Policy: Claude 3.5 Sonnet ONLY)
         // User requested to ONLY use this specific model for maximum quality.
         const FALLBACK_MODELS = [
-             "google/gemini-2.0-flash-exp:free",      // Reliable JSON
-             "deepseek/deepseek-chat:free",           // High quality V3
-             "meta-llama/llama-3.3-70b-instruct:free" // Robust
+             "google/gemini-2.0-flash-exp:free"      // User Requested Strict Single Model
         ];
 
         // We ignore the env var if it differs, or we can leave it. 
