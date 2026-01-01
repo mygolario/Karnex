@@ -139,11 +139,11 @@ export async function POST(req: Request) {
     try {
         // Best FREE models on OpenRouter (updated January 2026)
         const FALLBACK_MODELS = [
-             "google/gemini-2.0-flash-exp:free",      // Best: Fast, smart, free
-             "meta-llama/llama-3.3-70b-instruct:free", // Llama 3.3 70B free
-             "qwen/qwen-2.5-72b-instruct:free",       // Qwen 2.5 72B free
-             "deepseek/deepseek-chat:free",           // DeepSeek free tier
-             "mistralai/mistral-7b-instruct:free",    // Mistral 7B fallback
+             "google/gemini-2.0-flash-exp:free",      // 1. Best: Fast, smart, free
+             "qwen/qwen-2.5-72b-instruct:free",       // 2. Qwen 2.5 72B free
+             "deepseek/deepseek-chat:free",           // 3. DeepSeek free tier
+             "mistralai/mistral-7b-instruct:free",    // 4. Mistral 7B
+             "meta-llama/llama-3.3-70b-instruct:free", // 5. Llama 3.3 70B
         ];
 
         const UNIQUE_MODELS = FALLBACK_MODELS;
