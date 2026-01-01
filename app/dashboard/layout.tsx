@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { AiAssistant } from "@/components/dashboard/ai-assistant";
 import { InstallPwa } from "@/components/shared/install-pwa";
+import { FeedbackWidget } from "@/components/feedback-widget";
 import { UpgradeModal } from "@/components/dashboard/upgrade-modal";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Button } from "@/components/ui/button";
@@ -285,6 +286,9 @@ export default function DashboardLayout({
 
       {/* AI Assistant */}
       <AiAssistant />
+
+      {/* Feedback Widget */}
+      <FeedbackWidget />
     </div>
   );
 }
