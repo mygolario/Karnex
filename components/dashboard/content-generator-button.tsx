@@ -74,8 +74,16 @@ export function ContentGeneratorButton({ strategy, projectName, audience }: Cont
       </Button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in" onClick={(e) => e.stopPropagation()}>
-          <Card variant="default" className="max-w-xl w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95" padding="lg">
+        <div 
+          className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in" 
+          onClick={() => setIsOpen(false)}
+        >
+          <Card 
+            variant="default" 
+            className="max-w-xl w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95" 
+            padding="lg"
+            onClick={(e: React.MouseEvent) => e.stopPropagation()}
+          >
             <button 
               onClick={() => setIsOpen(false)}
               className="absolute left-4 top-4 text-muted-foreground hover:text-foreground"
