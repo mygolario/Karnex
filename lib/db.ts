@@ -14,37 +14,63 @@ import {
 import { db, appId } from "@/lib/firebase";
 
 // Define the Data Structure (TypeScript Interface)
+
+// Roadmap Phase structure
+export interface RoadmapPhase {
+  phase: string;
+  steps: string[];
+}
+
+// Logo concept structure
+export interface LogoConcept {
+  conceptName: string;
+  description: string;
+}
+
+// Competitor structure
+export interface Competitor {
+  name: string;
+  strength: string;
+  weakness: string;
+  channel: string;
+}
+
+// Legal advice structure
+export interface LegalAdvice {
+  requirements: { title: string; description: string; priority: string }[];
+  permits: string[];
+  tips: string[];
+}
+
+// Brand Kit structure
+export interface BrandKit {
+  primaryColorHex: string;
+  secondaryColorHex: string;
+  colorPsychology: string;
+  suggestedFont: string;
+  logoConcepts: LogoConcept[];
+}
+
+// Lean Canvas structure
+export interface LeanCanvas {
+  problem: string;
+  solution: string;
+  uniqueValue: string;
+  revenueStream: string;
+}
+
+// Main Business Plan interface
 export interface BusinessPlan {
-  id?: string; // Document ID
+  id?: string;
   projectName: string;
   tagline: string;
   overview: string;
-  leanCanvas: {
-    problem: string;
-    solution: string;
-    uniqueValue: string;
-    revenueStream: string;
-  };
-  brandKit: {
-    primaryColorHex: string;
-    secondaryColorHex: string;
-    colorPsychology: string;
-    suggestedFont: string;
-    logoConcepts: any[];
-  };
-  roadmap: any[];
-  marketingStrategy: any[];
-  competitors: {
-    name: string;
-    strength: string;
-    weakness: string;
-    channel: string;
-  }[];
-  legalAdvice?: {
-    requirements: { title: string; description: string; priority: string; }[];
-    permits: string[];
-    tips: string[];
-  };
+  leanCanvas: LeanCanvas;
+  brandKit: BrandKit;
+  roadmap: RoadmapPhase[];
+  marketingStrategy: string[];
+  competitors: Competitor[];
+  legalAdvice?: LegalAdvice;
   budget: string;
   audience: string;
   ideaInput?: string;
