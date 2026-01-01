@@ -137,14 +137,15 @@ export async function POST(req: Request) {
     let structuredPlan;
 
     try {
-        // Using only Google Gemini model as per user request
+        // Best FREE models on OpenRouter (updated January 2026)
         const FALLBACK_MODELS = [
-             "google/gemini-2.0-flash-exp:free",
-             "deepseek/deepseek-chat:free"           // Fallback
+             "google/gemini-2.0-flash-exp:free",      // Best: Fast, smart, free
+             "meta-llama/llama-3.3-70b-instruct:free", // Llama 3.3 70B free
+             "qwen/qwen-2.5-72b-instruct:free",       // Qwen 2.5 72B free
+             "deepseek/deepseek-chat:free",           // DeepSeek free tier
+             "mistralai/mistral-7b-instruct:free",    // Mistral 7B fallback
         ];
 
-        // We ignore the env var if it differs, or we can leave it. 
-        // Best to force the user's wish.
         const UNIQUE_MODELS = FALLBACK_MODELS;
 
         let lastError = null;

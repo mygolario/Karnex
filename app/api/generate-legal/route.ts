@@ -35,10 +35,12 @@ export async function POST(req: Request) {
     `;
 
     let response;
-    // Using only Google Gemini model as per user request
+    // Best FREE models on OpenRouter (January 2026)
     const models = [
-        "google/gemini-2.0-flash-exp:free",
-        "deepseek/deepseek-chat:free"           // Fallback
+        "google/gemini-2.0-flash-exp:free",      // Best: Fast, smart, free
+        "meta-llama/llama-3.3-70b-instruct:free", // Llama 3.3 70B free
+        "qwen/qwen-2.5-72b-instruct:free",       // Qwen 2.5 72B free
+        "deepseek/deepseek-chat:free",           // DeepSeek free tier
     ];
 
     // let response; // Removed duplicate
