@@ -14,7 +14,7 @@ const cardVariants = cva(
         glass:
           "glass text-foreground",
         gradient:
-          "bg-card text-card-foreground border-gradient",
+          "bg-gradient-to-br from-primary via-purple-600 to-secondary text-white",
         ghost:
           "bg-transparent text-foreground",
         muted:

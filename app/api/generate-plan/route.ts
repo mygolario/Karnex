@@ -68,16 +68,22 @@ export async function POST(req: Request) {
         ],
         "competitors": [
           { 
-            "name": "Name of competitor type (e.g. Traditional Bazaar)", 
+            "name": "Name of ACTUAL competitor company in Iran (e.g. Digikala, Snapp, Torob, Basalam, Tap30)", 
             "strength": "Their main advantage", 
             "weakness": "Their main weakness you can exploit", 
-            "channel": "Where they sell (e.g. Offline, Instagram)" 
+            "channel": "Where they sell (Website/App/Instagram/Physical)" 
           },
           { 
-            "name": "Name of competitor type (e.g. Digikala/Snapp)", 
+            "name": "Another REAL Iranian competitor company name", 
             "strength": "Their main advantage", 
             "weakness": "Their main weakness", 
-            "channel": "Web/App" 
+            "channel": "Their main channel" 
+          },
+          { 
+            "name": "Third REAL competitor (can be international if relevant)", 
+            "strength": "Their advantage", 
+            "weakness": "Their weakness", 
+            "channel": "Their channel" 
           }
         ]
       }
@@ -118,16 +124,22 @@ export async function POST(req: Request) {
       ],
       competitors: [
         { 
-          name: "فروشگاه‌های زنجیره‌ای", 
-          strength: "دسترسی آسان", 
-          weakness: "عدم اعتماد به کیفیت", 
-          channel: "فیزیکی" 
+          name: "دیجی‌کالا فرش", 
+          strength: "تنوع بالا و ارسال سریع", 
+          weakness: "عدم تضمین اصالت محصولات محلی", 
+          channel: "وبسایت/اپلیکیشن" 
         },
         { 
-          name: "عسل محلی", 
-          strength: "کیفیت خوب", 
-          weakness: "بسته‌بندی ضعیف", 
-          channel: "سنتی" 
+          name: "باسلام", 
+          strength: "پشتیبانی از تولیدکنندگان محلی", 
+          weakness: "قیمت‌گذاری بالاتر", 
+          channel: "اپلیکیشن" 
+        },
+        { 
+          name: "اینستاشاپ‌های عسل فروشی", 
+          strength: "ارتباط مستقیم با مشتری", 
+          weakness: "عدم اعتماد و تضمین کیفیت", 
+          channel: "اینستاگرام" 
         }
       ]
     };
