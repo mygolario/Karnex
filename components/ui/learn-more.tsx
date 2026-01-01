@@ -11,7 +11,7 @@ interface LearnMoreProps {
   title?: string;
   children: ReactNode;
   defaultOpen?: boolean;
-  variant?: "default" | "accent" | "muted";
+  variant?: "default" | "primary" | "secondary" | "accent" | "muted";
   className?: string;
 }
 
@@ -26,8 +26,10 @@ export function LearnMore({
 
   const variantStyles = {
     default: "bg-primary/5 border-primary/20 hover:bg-primary/10",
+    primary: "bg-primary/5 border-primary/20 hover:bg-primary/10",
     accent: "bg-accent/5 border-accent/20 hover:bg-accent/10",
     muted: "bg-muted/50 border-border hover:bg-muted",
+    secondary: "bg-secondary/5 border-secondary/20 hover:bg-secondary/10",
   };
 
   return (
@@ -44,7 +46,9 @@ export function LearnMore({
         <div className="flex items-center gap-3">
           <div className={cn(
             "w-8 h-8 rounded-lg flex items-center justify-center",
-            variant === "accent" ? "bg-accent/20 text-accent" : "bg-primary/20 text-primary"
+            variant === "accent" ? "bg-accent/20 text-accent" 
+              : variant === "secondary" ? "bg-secondary/20 text-secondary"
+              : "bg-primary/20 text-primary"
           )}>
             <Lightbulb size={16} />
           </div>
@@ -63,6 +67,7 @@ export function LearnMore({
           "border border-t-0 rounded-b-xl p-4 animate-in slide-in-from-top-2 duration-200",
           variant === "accent" ? "border-accent/20 bg-accent/5" 
             : variant === "muted" ? "border-border bg-muted/30"
+            : variant === "secondary" ? "border-secondary/20 bg-secondary/5"
             : "border-primary/20 bg-primary/5"
         )}>
           {children}
