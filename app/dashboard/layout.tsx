@@ -5,11 +5,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
+import { useLocale } from "@/hooks/use-translations";
+import { useTranslations } from "next-intl";
 import { AiAssistant } from "@/components/dashboard/ai-assistant";
 import { InstallPwa } from "@/components/shared/install-pwa";
 import { FeedbackWidget } from "@/components/feedback-widget";
 import { UpgradeModal } from "@/components/dashboard/upgrade-modal";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { NotificationCenter } from "@/components/shared/notification-center";
+import { PushNotificationPrompt } from "@/components/shared/push-notification-prompt";
+import { LocaleSwitcher } from "@/components/shared/locale-switcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -22,6 +27,7 @@ import {
   Menu, 
   X,
   UserCircle,
+  Users,
   Scale, 
   HelpCircle,
   ChevronRight,
@@ -44,20 +50,25 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const pathname = usePathname();
+  const t = useTranslations('dashboard.sidebar');
+  const { locale, isRTL } = useLocale();
+  
+  const brandName = locale === 'fa' ? 'کارنکس' : 'Karnex';
 
   const menuItems = [
-    { icon: LayoutDashboard, label: "نمای کلی", href: "/dashboard/overview" },
-    { icon: Map, label: "نقشه راه", href: "/dashboard/roadmap" },
-    { icon: LayoutGrid, label: "بوم کسب‌وکار", href: "/dashboard/canvas" },
-    { icon: Palette, label: "هویت بصری", href: "/dashboard/brand" },
-    { icon: Megaphone, label: "بازاریابی", href: "/dashboard/marketing" },
-    { icon: Scale, label: "حقوقی و مجوز", href: "/dashboard/legal" },
+    { icon: LayoutDashboard, label: t('overview'), href: "/dashboard/overview" },
+    { icon: Map, label: t('roadmap'), href: "/dashboard/roadmap" },
+    { icon: LayoutGrid, label: t('canvas'), href: "/dashboard/canvas" },
+    { icon: Palette, label: t('brand'), href: "/dashboard/brand" },
+    { icon: Megaphone, label: t('marketing'), href: "/dashboard/marketing" },
+    { icon: Scale, label: t('legal'), href: "/dashboard/legal" },
+    { icon: Users, label: t('team'), href: "/dashboard/team" },
   ];
 
   const bottomMenuItems = [
-    { icon: LayoutGrid, label: "پروژه‌ها", href: "/projects" }, // Added Projects Link
-    { icon: HelpCircle, label: "راهنما", href: "/dashboard/help" },
-    { icon: Settings, label: "تنظیمات", href: "/dashboard/settings" },
+    { icon: LayoutGrid, label: t('projects'), href: "/projects" },
+    { icon: HelpCircle, label: t('help'), href: "/dashboard/help" },
+    { icon: Settings, label: t('settings'), href: "/dashboard/settings" },
   ];
 
   const handleLogout = async () => {
@@ -66,7 +77,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:flex-row" dir="rtl">
+    <div className="min-h-screen bg-background flex flex-col md:flex-row" dir={isRTL ? 'rtl' : 'ltr'}>
       
       {/* Mobile Header */}
       <div className="md:hidden glass-strong border-b border-border/50 p-4 flex justify-between items-center sticky top-0 z-20">
@@ -78,9 +89,11 @@ export default function DashboardLayout({
             height={36} 
             className="rounded-xl shadow-lg dark:invert-0 invert"
           />
-          <span className="font-bold text-lg text-foreground">کارنکس</span>
+          <span className="font-bold text-lg text-foreground">{brandName}</span>
         </Link>
         <div className="flex items-center gap-2">
+          <NotificationCenter />
+          <LocaleSwitcher />
           <ThemeToggle />
           <Button 
             variant="ghost"
@@ -120,8 +133,8 @@ export default function DashboardLayout({
                   className="rounded-xl shadow-lg dark:invert-0 invert"
                 />
                 <div>
-                  <span className="text-lg font-black text-foreground tracking-tight">کارنکس</span>
-                  <Badge variant="gradient" size="sm" className="mr-2">
+                  <span className="text-lg font-black text-foreground tracking-tight">{brandName}</span>
+                  <Badge variant="gradient" size="sm" className={isRTL ? "mr-2" : "ml-2"}>
                     <Sparkles size={10} />
                     BETA
                   </Badge>
@@ -135,9 +148,12 @@ export default function DashboardLayout({
               size="icon-sm"
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               className="hidden md:flex"
-              title={sidebarCollapsed ? "گسترش منو" : "جمع کردن منو"}
+              title={locale === 'fa' ? (sidebarCollapsed ? "گسترش منو" : "جمع کردن منو") : (sidebarCollapsed ? "Expand menu" : "Collapse menu")}
             >
-              {sidebarCollapsed ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+              {isRTL 
+                ? (sidebarCollapsed ? <ChevronLeft size={16} /> : <ChevronRight size={16} />)
+                : (sidebarCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />)
+              }
             </Button>
           </div>
 
@@ -223,10 +239,10 @@ export default function DashboardLayout({
               <div className="bg-gradient-to-br from-primary/10 to-secondary/10 rounded-xl p-4 border border-primary/20">
                 <div className="flex items-center gap-2 mb-2">
                   <Crown size={16} className="text-accent" />
-                  <span className="font-bold text-sm text-foreground">ارتقا به پرو</span>
+                  <span className="font-bold text-sm text-foreground">{t('upgradeToPro')}</span>
                 </div>
                 <p className="text-xs text-muted-foreground mb-3">
-                  دسترسی به همه امکانات پیشرفته
+                  {t('accessAllFeatures')}
                 </p>
                 <UpgradeModal />
               </div>
@@ -243,11 +259,11 @@ export default function DashboardLayout({
               {!sidebarCollapsed && (
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-bold text-foreground truncate">
-                    {user?.email?.split('@')[0] || "کاربر عزیز"}
+                    {user?.email?.split('@')[0] || (locale === 'fa' ? "کاربر عزیز" : "User")}
                   </div>
                   <div className="text-xs text-muted-foreground flex items-center gap-1">
                     <span className="w-1.5 h-1.5 bg-secondary rounded-full" />
-                    طرح رایگان
+                    {t('freePlan')}
                   </div>
                 </div>
               )}
@@ -262,7 +278,7 @@ export default function DashboardLayout({
                 className="w-full justify-start text-muted-foreground hover:text-destructive"
               >
                 <LogOut size={16} />
-                خروج از حساب
+                {t('logout')}
               </Button>
             )}
           </div>
@@ -289,6 +305,9 @@ export default function DashboardLayout({
 
       {/* Feedback Widget */}
       <FeedbackWidget />
+
+      {/* Push Notification Prompt */}
+      <PushNotificationPrompt />
     </div>
   );
 }

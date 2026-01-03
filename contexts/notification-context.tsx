@@ -1,7 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { X, CheckCircle2, AlertTriangle, Info, Loader2 } from "lucide-react";
+import { automationEngine } from "@/lib/automation";
 
 type NotificationType = "success" | "error" | "info" | "loading";
 
@@ -46,6 +47,26 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
 
+  // Connect automation engine to notification system
+  useEffect(() => {
+    automationEngine.setNotificationHandler((smartNotification) => {
+      // Map smart notification to simple notification
+      const typeMap: Record<string, NotificationType> = {
+        welcome: 'success',
+        milestone: 'success',
+        achievement: 'success',
+        reminder: 'info',
+        suggestion: 'info',
+        update: 'info',
+        warning: 'error',
+        system: 'info',
+      };
+      
+      const notificationType = typeMap[smartNotification.type] || 'info';
+      showNotification(notificationType, smartNotification.message, 6000);
+    });
+  }, [showNotification]);
+
   return (
     <NotificationContext.Provider value={{ notifications, showNotification, removeNotification }}>
       {children}
@@ -53,6 +74,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     </NotificationContext.Provider>
   );
 }
+
 
 function NotificationContainer({ 
   notifications, 

@@ -1,30 +1,49 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Heart, Mail, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/hooks/use-translations";
+import { useTranslations } from "next-intl";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const t = useTranslations();
+  const { locale, isRTL } = useLocale();
 
   const footerLinks = {
     product: [
-      { label: "ویژگی‌ها", href: "#features" },
-      { label: "قیمت‌ها", href: "#pricing" },
-      { label: "نقشه راه", href: "#roadmap" },
+      { label: t('nav.features'), href: "#features" },
+      { label: t('nav.howItWorks'), href: "#how-it-works" },
+      { label: t('nav.pricing'), href: "#pricing" },
     ],
     company: [
-      { label: "درباره ما", href: "/about" },
-      { label: "تماس با ما", href: "/contact" },
-      { label: "وبلاگ", href: "/blog" },
+      { label: t('footer.about'), href: "/about" },
+      { label: t('footer.contact'), href: "/contact" },
+      { label: t('footer.blog'), href: "/blog" },
     ],
     legal: [
-      { label: "حریم خصوصی", href: "/privacy" },
-      { label: "شرایط استفاده", href: "/terms" },
+      { label: t('footer.privacy'), href: "/privacy" },
+      { label: t('footer.terms'), href: "/terms" },
     ],
   };
 
+  const labels = {
+    brandName: locale === 'fa' ? 'کارنکس' : 'Karnex',
+    tagline: t('footer.tagline'),
+    location: locale === 'fa' ? 'تهران، ایران' : 'Tehran, Iran',
+    product: t('footer.product'),
+    company: t('footer.company'),
+    newsletter: locale === 'fa' ? 'خبرنامه' : 'Newsletter',
+    newsletterDesc: locale === 'fa' ? 'از آخرین اخبار و آپدیت‌ها باخبر شوید' : 'Get the latest news and updates',
+    emailPlaceholder: locale === 'fa' ? 'ایمیل شما' : 'Your email',
+    madeWith: locale === 'fa' ? 'ساخته شده با' : 'Made with',
+    inIran: locale === 'fa' ? 'در ایران' : 'in Iran',
+  };
+
   return (
-    <footer className="bg-muted/30 border-t border-border">
+    <footer className="bg-muted/30 border-t border-border" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Main Footer */}
       <div className="section-container py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -39,21 +58,21 @@ export function Footer() {
                 className="rounded-xl shadow-lg dark:invert-0 invert"
               />
               <span className="text-xl font-black text-foreground tracking-tight">
-                کارنکس
+                {labels.brandName}
               </span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-              دستیار هوشمند کارآفرینی که ایده شما را به یک کسب‌وکار واقعی تبدیل می‌کند.
+              {labels.tagline}
             </p>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <MapPin size={14} />
-              <span>تهران، ایران</span>
+              <span>{labels.location}</span>
             </div>
           </div>
 
           {/* Product Links */}
           <div>
-            <h3 className="font-bold text-foreground mb-4">محصول</h3>
+            <h3 className="font-bold text-foreground mb-4">{labels.product}</h3>
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.href}>
@@ -70,7 +89,7 @@ export function Footer() {
 
           {/* Company Links */}
           <div>
-            <h3 className="font-bold text-foreground mb-4">شرکت</h3>
+            <h3 className="font-bold text-foreground mb-4">{labels.company}</h3>
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.href}>
@@ -87,15 +106,16 @@ export function Footer() {
 
           {/* Newsletter */}
           <div>
-            <h3 className="font-bold text-foreground mb-4">خبرنامه</h3>
+            <h3 className="font-bold text-foreground mb-4">{labels.newsletter}</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              از آخرین اخبار و آپدیت‌ها باخبر شوید
+              {labels.newsletterDesc}
             </p>
             <form className="flex gap-2">
               <input
                 type="email"
-                placeholder="ایمیل شما"
+                placeholder={labels.emailPlaceholder}
                 className="input-premium flex-1 text-sm"
+                dir="ltr"
               />
               <Button variant="gradient" size="icon">
                 <Mail size={16} />
@@ -110,9 +130,9 @@ export function Footer() {
         <div className="section-container py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground flex items-center gap-1">
-              © {currentYear} کارنکس. ساخته شده با
+              © {currentYear} {labels.brandName}. {labels.madeWith}
               <Heart size={14} className="text-red-500 fill-red-500" />
-              در ایران
+              {labels.inIran}
             </p>
             <div className="flex items-center gap-6">
               {footerLinks.legal.map((link) => (

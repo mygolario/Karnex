@@ -4,6 +4,7 @@ import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
+import { useLocale } from "@/hooks/use-translations";
 import { cn } from "@/lib/utils";
 
 interface ThemeToggleProps {
@@ -14,6 +15,17 @@ interface ThemeToggleProps {
 export function ThemeToggle({ className, showLabel }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
+  const { locale, isRTL } = useLocale();
+
+  const labels = locale === 'fa' ? {
+    theme: 'تم',
+    light: 'تم روشن',
+    dark: 'تم تاریک',
+  } : {
+    theme: 'Theme',
+    light: 'Light mode',
+    dark: 'Dark mode',
+  };
 
   React.useEffect(() => {
     setMounted(true);
@@ -28,7 +40,7 @@ export function ThemeToggle({ className, showLabel }: ThemeToggleProps) {
         disabled
       >
         <Sun size={18} />
-        {showLabel && <span className="mr-2">تم</span>}
+        {showLabel && <span className={isRTL ? "mr-2" : "ml-2"}>{labels.theme}</span>}
       </Button>
     );
   }
@@ -46,7 +58,7 @@ export function ThemeToggle({ className, showLabel }: ThemeToggleProps) {
         "relative overflow-hidden",
         className
       )}
-      title={theme === "dark" ? "تم روشن" : "تم تاریک"}
+      title={theme === "dark" ? labels.light : labels.dark}
     >
       <div className="relative w-5 h-5">
         {/* Sun Icon */}
@@ -71,8 +83,8 @@ export function ThemeToggle({ className, showLabel }: ThemeToggleProps) {
         />
       </div>
       {showLabel && (
-        <span className="mr-2">
-          {theme === "dark" ? "تم تاریک" : "تم روشن"}
+        <span className={isRTL ? "mr-2" : "ml-2"}>
+          {theme === "dark" ? labels.dark : labels.light}
         </span>
       )}
     </Button>

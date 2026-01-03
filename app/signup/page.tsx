@@ -8,6 +8,7 @@ import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useLocale } from "@/hooks/use-translations";
 import { 
   Rocket, 
   Mail, 
@@ -15,15 +16,16 @@ import {
   Eye, 
   EyeOff, 
   ArrowLeft,
+  ArrowRight,
   Sparkles,
   Loader2,
   CheckCircle2,
-  AlertCircle,
-  X
+  AlertCircle
 } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
+  const { locale, isRTL } = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -31,6 +33,101 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [touched, setTouched] = useState({ email: false, password: false, confirm: false });
+
+  const brandName = locale === 'fa' ? 'کارنکس' : 'Karnex';
+  const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
+
+  // Labels
+  const labels = locale === 'fa' ? {
+    freeStart: 'شروع رایگان',
+    heroTitle: 'سفر کارآفرینی خود را شروع کنید',
+    heroDesc: 'با ثبت‌نام، به همه امکانات کارنکس دسترسی پیدا می‌کنید',
+    signupTitle: 'ساخت حساب کاربری',
+    hasAccount: 'حساب دارید؟',
+    loginLink: 'وارد شوید',
+    googleSignup: 'ثبت‌نام با گوگل',
+    or: 'یا',
+    emailLabel: 'ایمیل',
+    passwordLabel: 'رمز عبور',
+    confirmLabel: 'تکرار رمز عبور',
+    minChars: 'حداقل ۶ کاراکتر',
+    passwordStrength: 'قدرت رمز',
+    weak: 'ضعیف',
+    medium: 'متوسط',
+    good: 'خوب',
+    strong: 'قوی',
+    invalidEmail: 'فرمت ایمیل نامعتبر است',
+    passwordMismatch: 'رمز عبور مطابقت ندارد',
+    termsText: 'با ثبت‌نام، با',
+    terms: 'شرایط استفاده',
+    and: 'و',
+    privacy: 'حریم خصوصی',
+    agree: 'موافقت می‌کنید.',
+    signingUp: 'در حال ثبت‌نام...',
+    createAccount: 'ساخت حساب کاربری',
+    backToHome: '← بازگشت به صفحه اصلی',
+    benefits: [
+      'طرح کسب‌وکار کامل با هوش مصنوعی',
+      'نقشه راه اجرایی قدم‌به‌قدم',
+      'هویت بصری و برندینگ',
+      'مشاور هوشمند ۲۴/۷',
+    ],
+  } : {
+    freeStart: 'Start Free',
+    heroTitle: 'Start Your Entrepreneurship Journey',
+    heroDesc: 'Sign up to access all Karnex features',
+    signupTitle: 'Create Account',
+    hasAccount: 'Already have an account?',
+    loginLink: 'Sign in',
+    googleSignup: 'Sign up with Google',
+    or: 'or',
+    emailLabel: 'Email',
+    passwordLabel: 'Password',
+    confirmLabel: 'Confirm Password',
+    minChars: 'Minimum 6 characters',
+    passwordStrength: 'Password strength',
+    weak: 'Weak',
+    medium: 'Medium',
+    good: 'Good',
+    strong: 'Strong',
+    invalidEmail: 'Invalid email format',
+    passwordMismatch: 'Passwords do not match',
+    termsText: 'By signing up, you agree to our',
+    terms: 'Terms of Service',
+    and: 'and',
+    privacy: 'Privacy Policy',
+    agree: '.',
+    signingUp: 'Creating account...',
+    createAccount: 'Create Account',
+    backToHome: '← Back to home',
+    benefits: [
+      'Complete AI-powered business plan',
+      'Step-by-step execution roadmap',
+      'Visual identity & branding',
+      'Smart 24/7 advisor',
+    ],
+  };
+
+  // Error messages
+  const errorMessages = locale === 'fa' ? {
+    mismatch: 'رمز عبور و تکرار آن مطابقت ندارند',
+    shortPassword: 'رمز عبور باید حداقل ۶ کاراکتر باشد',
+    emailExists: 'این ایمیل قبلاً ثبت شده است. آیا می‌خواهید وارد شوید؟',
+    invalidEmail: 'فرمت ایمیل نامعتبر است',
+    weakPassword: 'رمز عبور باید قوی‌تر باشد',
+    generic: 'خطا در ثبت‌نام. لطفاً دوباره تلاش کنید',
+    googleError: 'خطا در ثبت‌نام با گوگل',
+    login: 'ورود',
+  } : {
+    mismatch: 'Passwords do not match',
+    shortPassword: 'Password must be at least 6 characters',
+    emailExists: 'This email is already registered. Would you like to sign in?',
+    invalidEmail: 'Invalid email format',
+    weakPassword: 'Password is too weak',
+    generic: 'Error creating account. Please try again',
+    googleError: 'Error signing up with Google',
+    login: 'Sign in',
+  };
 
   // Clear error when inputs change
   useEffect(() => {
@@ -48,11 +145,11 @@ export default function SignupPage() {
     if (/[0-9]/.test(password)) score++;
     if (/[^A-Za-z0-9]/.test(password)) score++;
 
-    if (score <= 1) return { score: 1, label: "ضعیف", color: "bg-destructive" };
-    if (score <= 2) return { score: 2, label: "متوسط", color: "bg-amber-500" };
-    if (score <= 3) return { score: 3, label: "خوب", color: "bg-primary" };
-    return { score: 4, label: "قوی", color: "bg-secondary" };
-  }, [password]);
+    if (score <= 1) return { score: 1, label: labels.weak, color: "bg-destructive" };
+    if (score <= 2) return { score: 2, label: labels.medium, color: "bg-amber-500" };
+    if (score <= 3) return { score: 3, label: labels.good, color: "bg-primary" };
+    return { score: 4, label: labels.strong, color: "bg-secondary" };
+  }, [password, labels]);
 
   // Validation checks
   const validations = {
@@ -66,12 +163,12 @@ export default function SignupPage() {
     setError("");
 
     if (password !== confirmPassword) {
-      setError("رمز عبور و تکرار آن مطابقت ندارند");
+      setError(errorMessages.mismatch);
       return;
     }
 
     if (password.length < 6) {
-      setError("رمز عبور باید حداقل ۶ کاراکتر باشد");
+      setError(errorMessages.shortPassword);
       return;
     }
 
@@ -82,13 +179,13 @@ export default function SignupPage() {
       router.push("/new-project");
     } catch (err: any) {
       if (err.code === "auth/email-already-in-use") {
-        setError("این ایمیل قبلاً ثبت شده است. آیا می‌خواهید وارد شوید؟");
+        setError(errorMessages.emailExists);
       } else if (err.code === "auth/invalid-email") {
-        setError("فرمت ایمیل نامعتبر است");
+        setError(errorMessages.invalidEmail);
       } else if (err.code === "auth/weak-password") {
-        setError("رمز عبور باید قوی‌تر باشد");
+        setError(errorMessages.weakPassword);
       } else {
-        setError("خطا در ثبت‌نام. لطفاً دوباره تلاش کنید");
+        setError(errorMessages.generic);
       }
     } finally {
       setLoading(false);
@@ -101,63 +198,47 @@ export default function SignupPage() {
     
     try {
       const provider = new GoogleAuthProvider();
-      // Force account selection every time
       provider.setCustomParameters({
         prompt: 'select_account'
       });
       await signInWithPopup(auth, provider);
       router.push("/new-project");
     } catch (err: any) {
-      if (err.code === "auth/popup-closed-by-user") {
+      if (err.code === "auth/popup-closed-by-user" || err.code === "auth/cancelled-popup-request") {
         // User closed popup, no error needed
-      } else if (err.code === "auth/cancelled-popup-request") {
-        // Ignore
       } else {
-        setError("خطا در ثبت‌نام با گوگل");
+        setError(errorMessages.googleError);
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const benefits = [
-    "طرح کسب‌وکار کامل با هوش مصنوعی",
-    "نقشه راه اجرایی قدم‌به‌قدم",
-    "هویت بصری و برندینگ",
-    "مشاور هوشمند ۲۴/۷",
-  ];
-
   return (
-    <div className="min-h-screen flex" dir="rtl">
+    <div className="min-h-screen flex" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Left Side - Visual */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        {/* Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-secondary via-emerald-600 to-primary" />
-        
-        {/* Pattern Overlay */}
         <div className="absolute inset-0 pattern-dots opacity-20" />
-        
-        {/* Floating Shapes */}
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-float" />
         <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-white/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "-3s" }} />
         
-        {/* Content */}
         <div className="relative z-10 flex flex-col justify-center p-12 text-white">
           <Badge variant="gradient" className="w-fit mb-6 bg-white/10 backdrop-blur-sm border-white/20">
             <Sparkles size={12} />
-            شروع رایگان
+            {labels.freeStart}
           </Badge>
           
           <h1 className="text-4xl font-black mb-4">
-            سفر کارآفرینی خود را شروع کنید
+            {labels.heroTitle}
           </h1>
           
           <p className="text-lg text-white/80 mb-8">
-            با ثبت‌نام، به همه امکانات کارنکس دسترسی پیدا می‌کنید
+            {labels.heroDesc}
           </p>
           
           <div className="space-y-4">
-            {benefits.map((benefit, i) => (
+            {labels.benefits.map((benefit, i) => (
               <div key={i} className="flex items-center gap-3 text-white/90">
                 <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
                   <CheckCircle2 size={14} />
@@ -177,17 +258,17 @@ export default function SignupPage() {
             <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg">
               <Rocket size={20} />
             </div>
-            <span className="text-xl font-black text-foreground">کارنکس</span>
+            <span className="text-xl font-black text-foreground">{brandName}</span>
           </div>
 
           <div className="text-center mb-8">
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              ساخت حساب کاربری
+              {labels.signupTitle}
             </h2>
             <p className="text-muted-foreground">
-              حساب دارید؟{" "}
+              {labels.hasAccount}{" "}
               <Link href="/login" className="text-primary hover:underline font-medium">
-                وارد شوید
+                {labels.loginLink}
               </Link>
             </p>
           </div>
@@ -207,7 +288,7 @@ export default function SignupPage() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
-              ثبت‌نام با گوگل
+              {labels.googleSignup}
             </Button>
 
             {/* Divider */}
@@ -216,7 +297,7 @@ export default function SignupPage() {
                 <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">یا</span>
+                <span className="bg-card px-2 text-muted-foreground">{labels.or}</span>
               </div>
             </div>
 
@@ -225,8 +306,10 @@ export default function SignupPage() {
               <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-xl mb-4 flex items-center gap-2">
                 <AlertCircle size={16} className="shrink-0" />
                 <span>{error}</span>
-                {error.includes("وارد شوید") && (
-                  <Link href="/login" className="underline mr-auto">ورود</Link>
+                {error.includes(errorMessages.login) && (
+                  <Link href="/login" className={`underline ${isRTL ? 'mr-auto' : 'ml-auto'}`}>
+                    {errorMessages.login}
+                  </Link>
                 )}
               </div>
             )}
@@ -236,24 +319,23 @@ export default function SignupPage() {
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  ایمیل
+                  {labels.emailLabel}
                 </label>
                 <div className="relative">
-                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Mail className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     onBlur={() => setTouched(t => ({ ...t, email: true }))}
                     placeholder="example@email.com"
-                    className={`input-premium pr-10 ${touched.email && !validations.email ? 'border-destructive' : ''}`}
+                    className={`input-premium ${isRTL ? 'pr-10' : 'pl-10'} ${touched.email && !validations.email ? 'border-destructive' : ''}`}
                     required
                     dir="ltr"
                     autoComplete="email"
-                    aria-label="ایمیل"
                   />
                   {touched.email && email && (
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    <div className={`absolute ${isRTL ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2`}>
                       {validations.email ? (
                         <CheckCircle2 size={18} className="text-secondary" />
                       ) : (
@@ -263,34 +345,32 @@ export default function SignupPage() {
                   )}
                 </div>
                 {touched.email && !validations.email && email && (
-                  <p className="text-destructive text-xs mt-1">فرمت ایمیل نامعتبر است</p>
+                  <p className="text-destructive text-xs mt-1">{labels.invalidEmail}</p>
                 )}
               </div>
 
               {/* Password */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  رمز عبور
+                  {labels.passwordLabel}
                 </label>
                 <div className="relative">
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Lock className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     onBlur={() => setTouched(t => ({ ...t, password: true }))}
-                    placeholder="حداقل ۶ کاراکتر"
-                    className="input-premium pr-10 pl-10"
+                    placeholder={labels.minChars}
+                    className="input-premium px-10"
                     required
                     dir="ltr"
                     autoComplete="new-password"
-                    aria-label="رمز عبور"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label={showPassword ? "پنهان کردن رمز" : "نمایش رمز"}
+                    className={`absolute ${isRTL ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors`}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -316,7 +396,7 @@ export default function SignupPage() {
                       : passwordStrength.score <= 2 ? 'text-amber-500'
                       : 'text-secondary'
                     }`}>
-                      قدرت رمز: {passwordStrength.label}
+                      {labels.passwordStrength}: {passwordStrength.label}
                     </p>
                   </div>
                 )}
@@ -325,24 +405,23 @@ export default function SignupPage() {
               {/* Confirm Password */}
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">
-                  تکرار رمز عبور
+                  {labels.confirmLabel}
                 </label>
                 <div className="relative">
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Lock className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground`} />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     onBlur={() => setTouched(t => ({ ...t, confirm: true }))}
-                    placeholder="تکرار رمز عبور"
-                    className={`input-premium pr-10 ${touched.confirm && !validations.passwordsMatch ? 'border-destructive' : ''}`}
+                    placeholder={labels.confirmLabel}
+                    className={`input-premium ${isRTL ? 'pr-10' : 'pl-10'} ${touched.confirm && !validations.passwordsMatch ? 'border-destructive' : ''}`}
                     required
                     dir="ltr"
                     autoComplete="new-password"
-                    aria-label="تکرار رمز عبور"
                   />
                   {touched.confirm && confirmPassword && (
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                    <div className={`absolute ${isRTL ? 'left-3' : 'right-3'} top-1/2 -translate-y-1/2`}>
                       {validations.passwordsMatch ? (
                         <CheckCircle2 size={18} className="text-secondary" />
                       ) : (
@@ -352,20 +431,20 @@ export default function SignupPage() {
                   )}
                 </div>
                 {touched.confirm && !validations.passwordsMatch && confirmPassword && (
-                  <p className="text-destructive text-xs mt-1">رمز عبور مطابقت ندارد</p>
+                  <p className="text-destructive text-xs mt-1">{labels.passwordMismatch}</p>
                 )}
               </div>
 
               <div className="text-sm text-muted-foreground">
-                با ثبت‌نام، با{" "}
+                {labels.termsText}{" "}
                 <Link href="/terms" className="text-primary hover:underline">
-                  شرایط استفاده
+                  {labels.terms}
                 </Link>{" "}
-                و{" "}
+                {labels.and}{" "}
                 <Link href="/privacy" className="text-primary hover:underline">
-                  حریم خصوصی
+                  {labels.privacy}
                 </Link>{" "}
-                موافقت می‌کنید.
+                {labels.agree}
               </div>
 
               <Button
@@ -378,12 +457,12 @@ export default function SignupPage() {
                 {loading ? (
                   <>
                     <Loader2 className="animate-spin" />
-                    در حال ثبت‌نام...
+                    {labels.signingUp}
                   </>
                 ) : (
                   <>
-                    ساخت حساب کاربری
-                    <ArrowLeft size={18} />
+                    {labels.createAccount}
+                    <ArrowIcon size={18} />
                   </>
                 )}
               </Button>
@@ -393,7 +472,7 @@ export default function SignupPage() {
           {/* Back to Home */}
           <div className="text-center mt-6">
             <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              ← بازگشت به صفحه اصلی
+              {labels.backToHome}
             </Link>
           </div>
         </div>

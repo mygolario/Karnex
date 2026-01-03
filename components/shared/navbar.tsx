@@ -7,11 +7,16 @@ import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { LocaleSwitcher } from "@/components/shared/locale-switcher";
+import { useTranslations, useLocale } from "@/hooks/use-translations";
 import { Menu, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const { user } = useAuth();
+  const { locale, isRTL } = useLocale();
+  const t = useTranslations('nav');
+  const tLanding = useTranslations('landing');
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -24,11 +29,24 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navLinks = [
-    { label: "ویژگی‌ها", href: "#features" },
-    { label: "نحوه کار", href: "#how-it-works" },
-    { label: "قیمت‌ها", href: "#pricing" },
-  ];
+  // Localized nav links
+  const navLinks = locale === 'fa' 
+    ? [
+        { label: "ویژگی‌ها", href: "#features" },
+        { label: "نحوه کار", href: "#how-it-works" },
+        { label: "قیمت‌ها", href: "#pricing" },
+      ]
+    : [
+        { label: "Features", href: "#features" },
+        { label: "How It Works", href: "#how-it-works" },
+        { label: "Pricing", href: "#pricing" },
+      ];
+
+  // Localized brand name
+  const brandName = locale === 'fa' ? 'کارنکس' : 'Karnex';
+  const dashboardLabel = locale === 'fa' ? 'داشبورد من' : 'My Dashboard';
+  const loginLabel = locale === 'fa' ? 'ورود' : 'Login';
+  const signupLabel = locale === 'fa' ? 'شروع رایگان' : 'Start Free';
 
   return (
     <header
@@ -54,7 +72,7 @@ export function Navbar() {
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full animate-pulse" />
             </div>
             <span className="text-xl font-black text-foreground tracking-tight">
-              کارنکس
+              {brandName}
             </span>
             <Badge variant="gradient" size="sm" className="hidden sm:flex">
               <Sparkles size={10} />
@@ -78,21 +96,22 @@ export function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <LocaleSwitcher variant="minimal" />
             <ThemeToggle />
             {user ? (
               <Link href="/dashboard/overview">
                 <Button variant="gradient" rounded="full">
-                  داشبورد من
+                  {dashboardLabel}
                 </Button>
               </Link>
             ) : (
               <>
                 <Link href="/login">
-                  <Button variant="ghost">ورود</Button>
+                  <Button variant="ghost">{loginLabel}</Button>
                 </Link>
                 <Link href="/signup">
                   <Button variant="gradient" rounded="full">
-                    شروع رایگان
+                    {signupLabel}
                   </Button>
                 </Link>
               </>
@@ -101,6 +120,7 @@ export function Navbar() {
 
           {/* Mobile Menu Toggle */}
           <div className="flex md:hidden items-center gap-2">
+            <LocaleSwitcher variant="icon" />
             <ThemeToggle />
             <Button
               variant="ghost"
@@ -135,19 +155,19 @@ export function Navbar() {
             {user ? (
               <Link href="/dashboard/overview">
                 <Button variant="gradient" className="w-full" rounded="full">
-                  داشبورد من
+                  {dashboardLabel}
                 </Button>
               </Link>
             ) : (
               <div className="space-y-2">
                 <Link href="/login">
                   <Button variant="outline" className="w-full">
-                    ورود
+                    {loginLabel}
                   </Button>
                 </Link>
                 <Link href="/signup">
                   <Button variant="gradient" className="w-full" rounded="full">
-                    شروع رایگان
+                    {signupLabel}
                   </Button>
                 </Link>
               </div>

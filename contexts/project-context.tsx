@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { BusinessPlan, getUserProjects, getPlanFromCloud, savePlanToCloud, createProject } from "@/lib/db";
 import { useRouter, usePathname } from "next/navigation";
+import { emitAutomationEvent } from "@/lib/automation";
 
 interface ProjectContextType {
   projects: BusinessPlan[];
@@ -95,7 +96,17 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     
     // Set as active
     const newProject = await getPlanFromCloud(user.uid, newId);
-    if (newProject) setActiveProject(newProject);
+    if (newProject) {
+      setActiveProject(newProject);
+      
+      // Emit automation event for project creation
+      emitAutomationEvent('project_created', {
+        userId: user.uid,
+        projectId: newId,
+        projectName: newProject.projectName,
+        locale: 'fa', // TODO: Get from locale context
+      });
+    }
     
     return newId;
   };

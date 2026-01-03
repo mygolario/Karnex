@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from 'next-intl/plugin';
+import { withSentryConfig } from "@sentry/nextjs";
+
+const withNextIntl = createNextIntlPlugin('./lib/i18n.ts');
 
 const nextConfig: NextConfig = {
   // Enable React strict mode for better development experience
@@ -43,4 +47,27 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Apply next-intl first
+const configWithIntl = withNextIntl(nextConfig);
+
+// Sentry configuration options
+const sentryWebpackPluginOptions = {
+  // Suppresses source map uploading logs during build
+  silent: true,
+  
+  // Organization and project settings (from environment)
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  
+  // Upload source maps only in production
+  hideSourceMaps: true,
+  
+  // Disable source map upload if no auth token
+  disableServerWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+  disableClientWebpackPlugin: !process.env.SENTRY_AUTH_TOKEN,
+};
+
+// Export with Sentry if DSN is configured
+export default process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(configWithIntl, sentryWebpackPluginOptions)
+  : configWithIntl;

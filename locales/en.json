@@ -1,0 +1,307 @@
+{
+  "metadata": {
+    "title": "Karnex | Smart Entrepreneurship Assistant",
+    "description": "Transform your idea into a business in 30 seconds with AI. Free business canvas, roadmap, and marketing strategy."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Try Again",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "viewAll": "View All",
+    "seeMore": "See More",
+    "close": "Close",
+    "confirm": "Confirm",
+    "success": "Success!",
+    "copied": "Copied to clipboard!"
+  },
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "howItWorks": "How It Works",
+    "pricing": "Pricing",
+    "login": "Login",
+    "signup": "Start Free",
+    "dashboard": "My Dashboard",
+    "logout": "Logout",
+    "profile": "Profile",
+    "settings": "Settings"
+  },
+  "landing": {
+    "hero": {
+      "badge": "Public Beta is Live",
+      "title1": "Your Idea,",
+      "title2": "Execution Path with Karnex",
+      "subtitle": "No initial capital or technical knowledge needed. Our AI guides you step-by-step from a raw idea to complete business launch.",
+      "cta": "Create Free Project",
+      "ctaSecondary": "How Does It Work?",
+      "trustBadge": "100% data security guaranteed",
+      "stats": {
+        "ideas": "500+",
+        "ideasLabel": "Ideas Registered",
+        "time": "30 Seconds",
+        "timeLabel": "Plan Generation Time",
+        "free": "Free",
+        "freeLabel": "Instant Start"
+      }
+    },
+    "problems": {
+      "badge": "Problem",
+      "title": "Why Do Ideas Fail?",
+      "subtitle": "Most great ideas never get executed because...",
+      "noBudget": {
+        "title": "You think you have no budget",
+        "desc": "You assume you need heavy capital to start, while solutions are cheaper than ever."
+      },
+      "noPath": {
+        "title": "You don't know where to start",
+        "desc": "The path is unclear and complex. Thousands of tasks to do and prioritization is hard."
+      },
+      "noTech": {
+        "title": "You lack technical knowledge",
+        "desc": "You think you need to be a programmer or have a tech team to build your first product."
+      }
+    },
+    "howItWorks": {
+      "badge": "Karnex Solution",
+      "title": "Success Path, Simplified",
+      "subtitle": "Transform your idea into an actionable plan in just 3 simple steps",
+      "step1": {
+        "number": "1",
+        "title": "Define Your Idea",
+        "desc": "Answer our smart questions to clarify the core of your business."
+      },
+      "step2": {
+        "number": "2",
+        "title": "AI Processing",
+        "desc": "Our intelligent engine analyzes the market, competitors, and affordable tools for you."
+      },
+      "step3": {
+        "number": "3",
+        "title": "Get Your Roadmap",
+        "desc": "Receive a precise execution plan, branding kit, and business canvas ready to use."
+      }
+    },
+    "features": {
+      "badge": "Features",
+      "title": "Everything in One Platform",
+      "subtitle": "Professional tools to start, grow, and manage your business",
+      "canvas": {
+        "title": "Business Canvas",
+        "desc": "Complete Business Model Canvas plan"
+      },
+      "brand": {
+        "title": "Visual Identity",
+        "desc": "Colors, logo, and brand guide"
+      },
+      "roadmap": {
+        "title": "Roadmap",
+        "desc": "Execution steps with smart prioritization"
+      },
+      "marketing": {
+        "title": "Marketing Strategy",
+        "desc": "Targeted channels, content, and ads"
+      },
+      "legal": {
+        "title": "Legal Guide",
+        "desc": "Permits, contracts, and company registration"
+      },
+      "assistant": {
+        "title": "Smart Assistant",
+        "desc": "24/7 chat with project-aware advisor"
+      }
+    },
+    "trust": {
+      "title": "Your Idea, Your Asset",
+      "desc": "We know how important confidentiality is to you. Karnex uses the most advanced encryption protocols, and your information and ideas are processed in isolated environments and will never be publicly shared.",
+      "encryption": "End-to-End Encryption",
+      "cloudStorage": "Secure Cloud Storage",
+      "noSharing": "No Data Sharing"
+    },
+    "cta": {
+      "badge": "Completely Free Start",
+      "title": "Ready to Turn Your Idea Into Reality?",
+      "subtitle": "Create your project now and get a complete business plan in less than 30 seconds.",
+      "button": "Start Free — No Credit Card Required",
+      "time": "Takes less than 2 minutes"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your account",
+      "email": "Email Address",
+      "password": "Password",
+      "forgotPassword": "Forgot Password?",
+      "noAccount": "Don't have an account?",
+      "signUp": "Sign Up",
+      "or": "or",
+      "googleLogin": "Continue with Google"
+    },
+    "signup": {
+      "title": "Create Account",
+      "subtitle": "Start your entrepreneurship journey",
+      "name": "Full Name",
+      "email": "Email Address",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "hasAccount": "Already have an account?",
+      "signIn": "Sign In",
+      "terms": "By signing up, you agree to our",
+      "termsLink": "Terms of Service",
+      "and": "and",
+      "privacyLink": "Privacy Policy"
+    }
+  },
+  "dashboard": {
+    "overview": {
+      "title": "Dashboard",
+      "welcome": "Welcome back",
+      "quickActions": "Quick Actions",
+      "recentActivity": "Recent Activity",
+      "noProjects": "You don't have any projects yet",
+      "createFirst": "Create Your First Project"
+    },
+    "sidebar": {
+      "overview": "Overview",
+      "roadmap": "Roadmap",
+      "brand": "Brand Kit",
+      "canvas": "Business Canvas",
+      "marketing": "Marketing",
+      "legal": "Legal",
+      "team": "Team",
+      "analytics": "Analytics",
+      "help": "Help",
+      "settings": "Settings",
+      "projects": "Projects",
+      "upgradeToPro": "Upgrade to Pro",
+      "accessAllFeatures": "Access all advanced features",
+      "freePlan": "Free Plan",
+      "logout": "Logout"
+    },
+    "projects": {
+      "title": "Your Projects",
+      "new": "New Project",
+      "empty": "No projects yet",
+      "createFirst": "Create your first startup plan"
+    }
+  },
+  "newProject": {
+    "title": "Create New Project",
+    "step1": {
+      "title": "What's Your Idea?",
+      "placeholder": "Describe your business idea in a few sentences...",
+      "help": "Be specific about the problem you're solving"
+    },
+    "step2": {
+      "title": "Target Audience",
+      "placeholder": "Who is your ideal customer?",
+      "help": "Example: Young professionals aged 25-35 in urban areas"
+    },
+    "step3": {
+      "title": "Budget Range",
+      "options": {
+        "zero": "$0 - Bootstrap",
+        "low": "$1 - $1,000",
+        "medium": "$1,000 - $10,000",
+        "high": "$10,000+"
+      }
+    },
+    "generating": "AI is crafting your business plan...",
+    "success": "Your business plan is ready!"
+  },
+  "roadmap": {
+    "title": "Execution Roadmap",
+    "progress": "Progress",
+    "completed": "completed",
+    "markComplete": "Mark as Complete",
+    "markIncomplete": "Mark as Incomplete"
+  },
+  "brand": {
+    "title": "Brand Kit",
+    "colors": "Brand Colors",
+    "primary": "Primary Color",
+    "secondary": "Secondary Color",
+    "psychology": "Color Psychology",
+    "typography": "Typography",
+    "font": "Suggested Font",
+    "logoConceptsTitle": "Logo Concepts"
+  },
+  "canvas": {
+    "title": "Business Canvas",
+    "problem": "Problem",
+    "solution": "Solution",
+    "uniqueValue": "Unique Value Proposition",
+    "revenue": "Revenue Streams"
+  },
+  "marketing": {
+    "title": "Marketing Strategy",
+    "strategies": "Strategies",
+    "competitors": "Competitor Analysis"
+  },
+  "team": {
+    "title": "Project Team",
+    "subtitle": "Manage team members and access levels",
+    "members": "Team Members",
+    "pendingInvites": "Pending Invitations",
+    "invite": "Invite New Member",
+    "inviteButton": "Send Invitation",
+    "email": "Email Address",
+    "role": "Role",
+    "noMembers": "No members added yet",
+    "noPending": "No pending invitations",
+    "you": "(You)",
+    "cancel": "Cancel",
+    "remove": "Remove",
+    "copyLink": "Copy invite link",
+    "resend": "Resend",
+    "expires": "Expires",
+    "invitedBy": "Invited by",
+    "comingSoon": "Team feature coming soon",
+    "comingSoonDesc": "This feature is under development and will be available soon."
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile Settings",
+    "notifications": "Notifications",
+    "language": "Language",
+    "theme": "Theme",
+    "themes": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "danger": "Danger Zone",
+    "deleteAccount": "Delete Account"
+  },
+  "errors": {
+    "general": "Something went wrong. Please try again.",
+    "network": "Network error. Please check your connection.",
+    "auth": "Authentication failed. Please sign in again.",
+    "notFound": "Page not found",
+    "unauthorized": "You don't have permission to access this"
+  },
+  "footer": {
+    "tagline": "Smart entrepreneurship assistant",
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "about": "About",
+    "blog": "Blog",
+    "careers": "Careers",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "copyright": "© {year} Karnex. All rights reserved."
+  }
+}
