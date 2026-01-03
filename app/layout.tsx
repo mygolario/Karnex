@@ -51,14 +51,6 @@ export const metadata: Metadata = {
     description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
     url: 'https://www.karnex.ir',
     siteName: 'Karnex',
-    images: [
-      {
-        url: '/logo-full-light.png',
-        width: 1200,
-        height: 630,
-        alt: 'کارنکس - دستیار هوشمند کارآفرینی',
-      },
-    ],
     locale: 'fa_IR',
     type: 'website',
   },
@@ -66,23 +58,10 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'کارنکس | دستیار هوشمند کارآفرینی',
     description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید.',
-    images: ['/logo-full-light.png'],
     creator: '@karnex_ir',
   },
   manifest: '/manifest.json',
-  icons: {
-    icon: [
-      { url: '/favicon.ico', sizes: 'any' },
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icons/icon-512x512.png', sizes: '512x512', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
-    ],
-    shortcut: '/favicon.ico',
-  },
+
   verification: {
     // Add your verification codes here when you have them
     // google: 'your-google-verification-code',
