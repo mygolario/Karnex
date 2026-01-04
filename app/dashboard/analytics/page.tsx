@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { BarChart3, TrendingUp, CheckCircle2, Sparkles, Calendar, Target, ArrowUp, ArrowDown } from "lucide-react";
+import { BarChart3, TrendingUp, CheckCircle2, Sparkles, Calendar, Target, ArrowUp, ArrowDown, Activity } from "lucide-react";
 import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ProgressRing } from "@/components/dashboard/progress-ring";
+import { SimpleLineChart, SimpleBarChart } from "@/components/ui/charts";
 
 export default function AnalyticsPage() {
   const { user } = useAuth();
@@ -167,6 +168,52 @@ export default function AnalyticsPage() {
           هر فاز تقریباً ۲-۴ هفته زمان می‌برد. سرعت شما بستگی به زمانی دارد که صرف می‌کنید.
         </p>
       </Card>
+
+      {/* Weekly Activity Chart */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card variant="default" className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Activity size={20} className="text-primary" />
+              فعالیت هفتگی
+            </h2>
+            <Badge variant="outline" className="text-xs">آخرین ۷ روز</Badge>
+          </div>
+          <SimpleLineChart 
+            data={[3, 5, 2, 8, 4, 7, 6]} 
+            height={120}
+            color="#3B82F6"
+          />
+          <div className="flex justify-between mt-4 text-xs text-muted-foreground">
+            <span>شنبه</span>
+            <span>یکشنبه</span>
+            <span>دوشنبه</span>
+            <span>سه‌شنبه</span>
+            <span>چهارشنبه</span>
+            <span>پنج‌شنبه</span>
+            <span>جمعه</span>
+          </div>
+        </Card>
+
+        <Card variant="default" className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+              <BarChart3 size={20} className="text-purple-600" />
+              تکمیل مراحل
+            </h2>
+            <Badge variant="outline" className="text-xs">به تفکیک فاز</Badge>
+          </div>
+          <SimpleBarChart 
+            data={plan.roadmap.map(phase => {
+              const completed = phase.steps.filter((s: string) => plan.completedSteps?.includes(s)).length;
+              return completed;
+            })} 
+            labels={plan.roadmap.map((_, i) => `فاز ${i + 1}`)}
+            height={120}
+            color="bg-gradient-to-t from-primary to-purple-500"
+          />
+        </Card>
+      </div>
     </div>
   );
 }

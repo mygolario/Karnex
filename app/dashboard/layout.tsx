@@ -9,6 +9,7 @@ import { AiAssistant } from "@/components/dashboard/ai-assistant";
 import { InstallPwa } from "@/components/shared/install-pwa";
 import { FeedbackWidget } from "@/components/feedback-widget";
 import { UpgradeModal } from "@/components/dashboard/upgrade-modal";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -81,6 +82,7 @@ export default function DashboardLayout({
           <span className="font-bold text-lg text-foreground">کارنکس</span>
         </Link>
         <div className="flex items-center gap-2">
+          <NotificationBell />
           <ThemeToggle />
           <Button 
             variant="ghost"

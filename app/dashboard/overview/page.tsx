@@ -9,6 +9,7 @@ import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { ProgressRing } from "@/components/dashboard/progress-ring";
+import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { HoverExplainer } from "@/components/ui/explainer";
 import { 
   Rocket, 
@@ -254,6 +255,44 @@ export default function DashboardOverviewPage() {
             </Card>
           </Link>
         </div>
+      </div>
+
+      {/* 4. Activity Feed Section */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Activity Feed */}
+        <div className="lg:col-span-2">
+          <Card variant="default" className="p-6">
+            <ActivityFeed maxItems={5} />
+          </Card>
+        </div>
+
+        {/* Tips & Pro Features */}
+        <Card variant="muted" className="p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles size={18} className="text-primary" />
+            <h3 className="font-bold text-foreground">نکات امروز</h3>
+          </div>
+          <div className="space-y-4">
+            <div className="p-4 bg-gradient-to-br from-primary/5 to-purple-500/5 rounded-xl border border-primary/10">
+              <h4 className="font-bold text-foreground text-sm mb-2">💡 اجرای سریع‌تر</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                با تکمیل نقشه راه، هر مرحله را به ترتیب انجام دهید. این روش باعث می‌شود پیشرفت شما قابل ردیابی باشد.
+              </p>
+            </div>
+            <div className="p-4 bg-gradient-to-br from-amber-500/5 to-orange-500/5 rounded-xl border border-amber-500/10">
+              <h4 className="font-bold text-foreground text-sm mb-2">📊 تحلیل هوشمند</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                از قابلیت تحلیل AI استفاده کنید تا نقاط ضعف استراتژی خود را شناسایی کنید.
+              </p>
+            </div>
+            <Link href="/dashboard/help" className="block">
+              <Button variant="outline" size="sm" className="w-full">
+                مشاهده راهنما
+                <ChevronLeft size={14} />
+              </Button>
+            </Link>
+          </div>
+        </Card>
       </div>
     </div>
   );
