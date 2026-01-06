@@ -12,6 +12,7 @@ interface StatsCardProps {
   trend?: "up" | "down" | "neutral";
   trendValue?: string;
   trendLabel?: string;
+  className?: string;
 }
 
 export function StatsCard({ 
@@ -21,7 +22,8 @@ export function StatsCard({
   variant = "default",
   trend,
   trendValue,
-  trendLabel
+  trendLabel,
+  className
 }: StatsCardProps) {
   // Map specific stats variants to generic card variants
   const cardVariant = (variant === 'primary' || variant === 'secondary' || variant === 'accent') 
@@ -29,7 +31,7 @@ export function StatsCard({
     : variant;
 
   return (
-    <Card variant={cardVariant as any} hover="lift" className="relative overflow-hidden">
+    <Card variant={cardVariant as any} hover="lift" className={`relative overflow-hidden ${className || ''}`}>
       <div className="flex justify-between items-start mb-4">
         <CardIcon variant={(variant === 'glass' || variant === 'gradient' || variant === 'default') ? 'primary' : variant as any} className="w-12 h-12 rounded-xl">
           <Icon size={24} />

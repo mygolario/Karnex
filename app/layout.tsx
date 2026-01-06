@@ -14,6 +14,10 @@ export const metadata: Metadata = {
     template: '%s | کارنکس',
   },
   description: 'با هوش مصنوعی، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
+  icons: {
+    icon: '/icon.png',
+    apple: '/icon.png',
+  },
   keywords: [
     'کارآفرینی',
     'استارتاپ',

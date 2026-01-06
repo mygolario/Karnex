@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
         "X-Title": "Karnex Competitor Search"
       },
       body: JSON.stringify({
+        // Using Google Gemini models only
         model: "google/gemini-2.0-flash-001",
         messages: [
           { role: "system", content: "تو یک متخصص تحلیل بازار ایران هستی. فقط JSON خالص برگردان." },

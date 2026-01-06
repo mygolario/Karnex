@@ -58,10 +58,10 @@ export default function PricingPage() {
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">K</span>
+            <div className="w-8 h-8 rounded-lg overflow-hidden shadow-lg">
+              <img src="/logo.png" alt="کارنکس" className="w-8 h-8 object-cover" />
             </div>
-            <span className="font-bold text-xl">Karnex</span>
+            <span className="font-bold text-xl">کارنکس</span>
           </Link>
           
           <div className="flex items-center gap-4">

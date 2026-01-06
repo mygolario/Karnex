@@ -20,76 +20,77 @@ export async function POST(req: Request) {
     }
 
     const systemPrompt = `
-      You are Karnex, an expert startup consultant for the Iranian market.
-      Your Goal: Take a user's business idea and create a detailed execution plan focused on ZERO BUDGET ($0) or low cost.
+      You are Karnex, a professional AI business consultant for the Iranian market.
+      Your Goal: Create a meaningful, detailed, and realistic startup plan for a user in Iran.
       
       User Context:
       - Idea: ${idea}
       - Target Audience: ${audience}
       - Budget Constraint: ${budget}
 
-      INSTRUCTIONS:
-      1. Think deeply about how to solve this specific problem in Iran.
-      2. You MUST reply in PERSIAN (Farsi).
-      3. You MUST output ONLY valid JSON.
+      CRITICAL INSTRUCTIONS:
+      1. LANGUAGE: ALL CONTENT VALUES MUST BE IN PERSIAN (FARSI). Do not use English, Chinese, or Cyrillic characters in the values.
+      2. FORMAT: You must output ONLY valid JSON. Do not include any markdown formatting like \`\`\`json.
+      3. TONE: Professional, encouraging, and practical.
+      4. CONTENT: Use realistic Iranian market references (e.g. Digikala, Divar, Snapp, Torob).
       
       JSON STRUCTURE REQUIRED:
       {
-        "projectName": "Short catchy name in Persian",
-        "tagline": "A punchy slogan",
-        "overview": "2 sentences describing the business",
+        "projectName": "Persian Name (e.g. نام استارتاپ)",
+        "tagline": "Persian Slogan (e.g. شعار جذاب)",
+        "overview": "2-3 sentences in Persian describing the business.",
         "leanCanvas": {
-          "problem": "What pain point are they solving?",
-          "solution": "How they solve it simply",
-          "uniqueValue": "Why them?",
-          "revenueStream": "How they make money (e.g. Subscription, Ads)"
+          "problem": "Persian text - مشکلات مشتری",
+          "solution": "Persian text - راه‌حل شما",
+          "uniqueValue": "Persian text - ارزش منحصربه‌فرد",
+          "revenueStream": "Persian text - مدل درآمدی",
+          "customerSegments": "Persian text - بخش‌های مشتریان هدف",
+          "keyActivities": "Persian text - فعالیت‌های کلیدی کسب‌وکار",
+          "keyResources": "Persian text - منابع کلیدی مورد نیاز",
+          "keyPartners": "Persian text - شرکای استراتژیک",
+          "costStructure": "Persian text - ساختار هزینه‌ها"
         },
         "brandKit": {
           "primaryColorHex": "#HEXCODE",
           "secondaryColorHex": "#HEXCODE",
-          "colorPsychology": "Why these colors?",
+          "colorPsychology": "Persian text explaining color choice",
           "suggestedFont": "Vazirmatn",
           "logoConcepts": [
-            { "conceptName": "Concept 1", "description": "Description 1" },
-            { "conceptName": "Concept 2", "description": "Description 2" },
-            { "conceptName": "Concept 3", "description": "Description 3" }
+            { "conceptName": "Persian Name 1", "description": "Persian Description" },
+            { "conceptName": "Persian Name 2", "description": "Persian Description" },
+            { "conceptName": "Persian Name 3", "description": "Persian Description" }
           ]
         },
         "roadmap": [
-           { "phase": "Week 1: Validation", "steps": ["Step 1", "Step 2"] },
-           { "phase": "Week 2: MVP Build", "steps": ["Step 1", "Step 2"] },
-           { "phase": "Week 3: Launch", "steps": ["Step 1", "Step 2"] }
+           { "phase": "گام اول: اعتبارسنجی", "steps": ["Persian Step 1", "Persian Step 2"] },
+           { "phase": "گام دوم: ساخت محصول", "steps": ["Persian Step 1", "Persian Step 2"] },
+           { "phase": "گام سوم: ورود به بازار", "steps": ["Persian Step 1", "Persian Step 2"] }
         ],
         "marketingStrategy": [
-           "Specific tactic 1",
-           "Specific tactic 2",
-           "Specific tactic 3",
-           "Specific tactic 4"
+           "Persian tactic 1",
+           "Persian tactic 2",
+           "Persian tactic 3",
+           "Persian tactic 4"
         ],
         "competitors": [
           { 
-            "name": "Name of ACTUAL competitor company in Iran (e.g. Digikala, Snapp, Torob, Basalam, Tap30)", 
-            "strength": "Their main advantage", 
-            "weakness": "Their main weakness you can exploit", 
-            "channel": "Where they sell (Website/App/Instagram/Physical)" 
+            "name": "Real Iranian Competitor Name", 
+            "strength": "Persian text", 
+            "weakness": "Persian text", 
+            "channel": "Persian text (e.g. اینستاگرام, سایت)" 
           },
           { 
-            "name": "Another REAL Iranian competitor company name", 
-            "strength": "Their main advantage", 
-            "weakness": "Their main weakness", 
-            "channel": "Their main channel" 
-          },
-          { 
-            "name": "Third REAL competitor (can be international if relevant)", 
-            "strength": "Their advantage", 
-            "weakness": "Their weakness", 
-            "channel": "Their channel" 
+            "name": "Real Iranian Competitor Name", 
+            "strength": "Persian text", 
+            "weakness": "Persian text", 
+            "channel": "Persian text" 
           }
         ]
       }
     `;
 
-    // --- MOCK PLAN FALLBACK ---
+    // ... (Mock plan code remains same, it is good fallback) ...
+
     const mockPlan = {
       projectName: "عسل ارگانیک کوهستان",
       tagline: "طعم واقعی طبیعت در سفره شما",
@@ -98,7 +99,12 @@ export async function POST(req: Request) {
         problem: "وجود عسل‌های تقلبی و شکرک‌زده در بازار و عدم اعتماد مشتریان",
         solution: "عرضه مستقیم عسل با برگه آزمایش و ضمانت بازگشت وجه",
         uniqueValue: "تضمین اصالت کالا و شفافیت کامل در فرآیند تولید",
-        revenueStream: "فروش مستقیم آنلاین و اشتراک ماهانه مصرف"
+        revenueStream: "فروش مستقیم آنلاین و اشتراک ماهانه مصرف",
+        customerSegments: "خانواده‌های شهری با درآمد متوسط به بالا که به سلامت و کیفیت غذا اهمیت می‌دهند. همچنین رستوران‌ها و کافی‌شاپ‌های ارگانیک.",
+        keyActivities: "زنبورداری و برداشت عسل، آزمایش کیفیت در آزمایشگاه معتبر، بسته‌بندی بهداشتی، بازاریابی دیجیتال، ارسال سریع",
+        keyResources: "کندوهای سالم در مناطق کوهستانی، تیم زنبوردار ماهر، آزمایشگاه همکار، سایت و اپلیکیشن فروش، سردخانه",
+        keyPartners: "زنبورداران محلی، آزمایشگاه‌های معتبر غذایی، شرکت‌های پستی، اینفلوئنسرهای حوزه سلامت",
+        costStructure: "خرید عسل از زنبورداران ۴۵٪، بسته‌بندی و ارسال ۲۰٪، بازاریابی ۱۵٪، هزینه آزمایشگاه ۱۰٪، سربار و نگهداری ۱۰٪"
       },
       brandKit: {
         primaryColorHex: "#F59E0B",
@@ -149,13 +155,12 @@ export async function POST(req: Request) {
     let structuredPlan;
 
     try {
-        // Best FREE models on OpenRouter (updated January 2026)
+        // Using only Google Gemini models from OpenRouter (Updated Jan 2026)
         const FALLBACK_MODELS = [
-             "google/gemini-2.0-flash-exp:free",      // 1. Best: Fast, smart, free
-             "qwen/qwen-2.5-72b-instruct:free",       // 2. Qwen 2.5 72B free
-             "deepseek/deepseek-chat:free",           // 3. DeepSeek free tier
-             "mistralai/mistral-7b-instruct:free",    // 4. Mistral 7B
-             "meta-llama/llama-3.3-70b-instruct:free", // 5. Llama 3.3 70B
+             "google/gemini-2.0-flash-exp:free",     // Best free Gemini model
+             "google/gemini-2.0-flash-001",          // Reliable Gemini Flash
+             "google/gemini-pro-1.5",                // Gemini Pro 1.5
+             "google/gemini-pro",                    // Gemini Pro
         ];
 
         const UNIQUE_MODELS = FALLBACK_MODELS;

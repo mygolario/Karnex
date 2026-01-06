@@ -8,17 +8,26 @@ const cardVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-card text-card-foreground border border-border shadow-sm",
+          "bg-card text-card-foreground border border-border/50 shadow-sm",
         elevated:
-          "bg-card text-card-foreground shadow-lg hover:shadow-xl",
+          "bg-card text-card-foreground shadow-lg hover:shadow-xl border-t border-white/20",
         glass:
-          "glass text-foreground",
+          "card-glass text-foreground",
         gradient:
-          "bg-gradient-to-br from-primary via-purple-600 to-secondary text-white",
+          "bg-gradient-to-br from-primary via-purple-600 to-secondary text-white border-0",
         ghost:
-          "bg-transparent text-foreground",
+          "bg-transparent text-foreground border-0 shadow-none",
         muted:
-          "bg-muted/50 text-foreground border border-border/50",
+          "bg-muted/40 text-foreground border border-border/50 backdrop-blur-sm",
+        // NEW PREMIUM VARIANTS
+        spotlight:
+          "card-spotlight text-card-foreground",
+        floating:
+          "card-floating text-card-foreground",
+        bento:
+          "bento-item text-card-foreground",
+        "gradient-border":
+          "card-gradient-border bg-card text-card-foreground",
       },
       padding: {
         none: "p-0",
@@ -29,10 +38,14 @@ const cardVariants = cva(
       },
       hover: {
         none: "",
-        lift: "hover-lift cursor-pointer",
-        glow: "hover:glow-primary cursor-pointer",
-        shine: "card-shine cursor-pointer",
+        lift: "hover-lift",
+        glow: "hover:glow-primary transition-shadow cursor-pointer",
+        shine: "card-shine cursor-pointer overflow-hidden",
         scale: "hover:scale-[1.02] cursor-pointer",
+        // NEW PREMIUM HOVER EFFECTS
+        tilt: "card-3d perspective-1000 cursor-pointer",
+        floating: "float-shadow cursor-pointer",
+        spotlight: "group cursor-pointer",
       },
     },
     defaultVariants: {

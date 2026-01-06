@@ -11,7 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0",
+          "bg-primary text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]",
         secondary:
           "bg-secondary text-secondary-foreground shadow-md hover:bg-secondary/90 hover:shadow-lg hover:-translate-y-0.5",
         destructive:
@@ -28,6 +28,15 @@ const buttonVariants = cva(
           "glass text-foreground hover:bg-white/80 dark:hover:bg-white/10 shadow-lg backdrop-blur-md",
         accent:
           "bg-accent text-accent-foreground shadow-md hover:bg-accent/90 hover:shadow-lg",
+        // NEW PREMIUM VARIANTS
+        shimmer:
+          "relative overflow-hidden bg-primary text-primary-foreground shadow-lg before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent before:-translate-x-full hover:before:translate-x-full before:transition-transform before:duration-700 hover:shadow-xl",
+        glow:
+          "bg-primary text-primary-foreground shadow-lg shadow-primary/40 hover:shadow-xl hover:shadow-primary/50 animate-glow-pulse hover:-translate-y-0.5",
+        "3d":
+          "bg-primary text-primary-foreground shadow-[0_4px_0_0] shadow-primary/50 hover:shadow-[0_2px_0_0] hover:translate-y-0.5 active:shadow-none active:translate-y-1 transition-all duration-100",
+        soft:
+          "bg-primary/10 text-primary hover:bg-primary/20 dark:bg-primary/20 dark:hover:bg-primary/30",
       },
       size: {
         default: "h-11 px-5 py-2.5",

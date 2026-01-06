@@ -1,170 +1,98 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { GenerationLoader } from "@/components/shared/generation-loader";
+import { StrategySnapshot } from "@/components/shared/strategy-snapshot";
 import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
-  Rocket, 
   ArrowLeft, 
   ArrowRight,
-  Lightbulb,
-  FileText,
   Sparkles,
-  CheckCircle2,
   Loader2,
+  Lightbulb,
+  HelpCircle,
+  Rocket,
+  Send,
+  SkipForward,
   Users,
-  Wallet,
-  ShoppingCart,
-  Smartphone,
-  Briefcase,
-  BookOpen,
-  Utensils,
-  Heart,
-  Gamepad2,
-  Car,
-  Home,
-  Zap,
-  Target,
-  TrendingUp
+  Building2,
+  Tag
 } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
-type Step = 1 | 2 | 3 | 4 | 5;
+// Import wizard components
+import {
+  WizardModeToggle,
+  IndustrySelector,
+  BudgetSelector,
+  VoiceInputButton,
+  CompetitorInput,
+  QuickTemplates,
+  ProgressGamification,
+  ConfettiCelebration,
+  ChatInterface,
+  ProjectNameSelector,
+  industries,
+  budgetOptions,
+} from "@/components/wizard";
+import type { Template } from "@/components/wizard";
 
-// Industry templates
-const templates = [
+// Status options for the current stage step
+const statusOptions = [
   { 
-    id: "ecommerce", 
-    icon: ShoppingCart, 
-    label: "فروشگاه آنلاین",
-    color: "from-orange-500 to-amber-500",
-    description: "فروش محصولات فیزیکی یا دیجیتال",
-    example: "فروشگاه لباس، لوازم خانگی، کتاب"
+    id: "idea", 
+    emoji: "🐣", 
+    label: "فقط یه ایده",
+    sublabel: "بدون سرمایه و تیم",
+    color: "from-amber-400 to-orange-500"
   },
   { 
-    id: "app", 
-    icon: Smartphone, 
-    label: "اپلیکیشن موبایل",
-    color: "from-primary to-purple-600",
-    description: "اپلیکیشن iOS یا اندروید",
-    example: "اپ تاکسی، اپ سلامت، اپ آموزش"
+    id: "building", 
+    emoji: "🔨", 
+    label: "در حال ساخت",
+    sublabel: "یک نمونه اولیه دارم",
+    color: "from-blue-400 to-indigo-500"
   },
   { 
-    id: "service", 
-    icon: Briefcase, 
-    label: "خدمات فریلنسری",
-    color: "from-secondary to-emerald-600",
-    description: "ارائه خدمات تخصصی",
-    example: "طراحی، برنامه‌نویسی، مشاوره"
-  },
-  { 
-    id: "content", 
-    icon: BookOpen, 
-    label: "محتوا و آموزش",
-    color: "from-pink-500 to-rose-500",
-    description: "تولید محتوا یا آموزش آنلاین",
-    example: "دوره آنلاین، پادکست، یوتیوب"
-  },
-  { 
-    id: "food", 
-    icon: Utensils, 
-    label: "غذا و رستوران",
-    color: "from-red-500 to-orange-500",
-    description: "کسب‌وکار غذایی",
-    example: "رستوران، کترینگ، سفارش آنلاین"
-  },
-  { 
-    id: "health", 
-    icon: Heart, 
-    label: "سلامت و زیبایی",
-    color: "from-rose-400 to-pink-500",
-    description: "خدمات بهداشتی و زیبایی",
-    example: "کلینیک، سالن زیبایی، مشاوره"
-  },
-  { 
-    id: "gaming", 
-    icon: Gamepad2, 
-    label: "گیمینگ و سرگرمی",
-    color: "from-violet-500 to-purple-600",
-    description: "بازی و محصولات سرگرمی",
-    example: "بازی موبایل، استریم، ایونت"
-  },
-  { 
-    id: "other", 
-    icon: Zap, 
-    label: "سایر",
-    color: "from-gray-500 to-gray-600",
-    description: "یک ایده کاملاً جدید",
-    example: "ایده‌ای متفاوت و خلاقانه"
+    id: "launch", 
+    emoji: "🚀", 
+    label: "آماده راه‌اندازی",
+    sublabel: "نیاز به بازاریابی دارم",
+    color: "from-emerald-400 to-teal-500"
   },
 ];
 
-// Audience options
-const audienceOptions = [
-  { id: "youth", label: "جوانان (۱۸-۳۰)", icon: "🧑‍🎤" },
-  { id: "families", label: "خانواده‌ها", icon: "👨‍👩‍👧" },
-  { id: "professionals", label: "متخصصان", icon: "👔" },
-  { id: "students", label: "دانشجویان", icon: "🎓" },
-  { id: "businesses", label: "کسب‌وکارها (B2B)", icon: "🏢" },
-  { id: "everyone", label: "عموم مردم", icon: "🌍" },
-];
+// Local storage key for draft
+const DRAFT_KEY = "karnex_wizard_draft";
 
-// Budget options
-const budgetOptions = [
-  { id: "free", label: "رایگان", sublabel: "بدون سرمایه اولیه", icon: "💸", color: "text-secondary" },
-  { id: "low", label: "کم‌هزینه", sublabel: "تا ۵ میلیون تومان", icon: "💰", color: "text-amber-500" },
-  { id: "medium", label: "متوسط", sublabel: "۵ تا ۵۰ میلیون", icon: "💎", color: "text-primary" },
-  { id: "high", label: "بالا", sublabel: "بیش از ۵۰ میلیون", icon: "🏆", color: "text-purple-500" },
-];
+interface WizardData {
+  mode: "chat" | "wizard";
+  industry: string | null;
+  businessIdea: string;
+  projectName: string;
+  problemSolving: string;
+  selectedAudience: string | null;
+  competitors: string[];
+  currentStatus: string | null;
+  budget: string | null;
+}
 
-// Smart tips based on template
-const smartTips: Record<string, string[]> = {
-  ecommerce: [
-    "📦 محصول خاصی در ذهن داری؟ (لباس، لوازم، کتاب...)",
-    "🛒 فروش در اینستاگرام شروع خوبیه!",
-    "💡 نیچ (تخصصی) بودن بهتر از عمومی بودنه"
-  ],
-  app: [
-    "📱 چه مشکلی رو حل می‌کنی؟",
-    "🎯 یک ویژگی کلیدی کافیه برای MVP",
-    "💡 اول نسخه وب بساز، بعد اپ!"
-  ],
-  service: [
-    "💼 مهارت اصلیت چیه؟",
-    "🌐 نمونه‌کار داشتن خیلی مهمه",
-    "💰 شروع با قیمت پایین، بعد افزایش"
-  ],
-  content: [
-    "🎬 چه موضوعی رو خوب بلدی؟",
-    "📱 از اینستاگرام یا یوتیوب شروع کن",
-    "💡 ثبات در تولید محتوا کلیده"
-  ],
-  food: [
-    "🍕 غذای خانگی یا رستوران؟",
-    "📍 منطقه جغرافیایی مهمه",
-    "📸 عکس‌های خوب از غذا = فروش بیشتر"
-  ],
-  health: [
-    "💊 نیاز به مجوز داری؟ (برای خدمات پزشکی)",
-    "🎯 تخصصی شو! (مثلاً فقط پوست)",
-    "💡 اعتمادسازی اول، فروش بعد"
-  ],
-  gaming: [
-    "🎮 بازی موبایل یا PC؟",
-    "📺 استریم و محتوا هم فکر کن",
-    "🌍 بازار جهانی رو هدف بگیر"
-  ],
-  other: [
-    "💡 ایده‌ات رو واضح توضیح بده",
-    "🎯 چه مشکلی رو حل می‌کنی؟",
-    "👥 مشتری هدفت کیه؟"
-  ]
+const initialData: WizardData = {
+  mode: "wizard",
+  industry: null,
+  businessIdea: "",
+  projectName: "",
+  problemSolving: "",
+  selectedAudience: null,
+  competitors: [],
+  currentStatus: null,
+  budget: null,
 };
 
 export default function NewProjectPage() {
@@ -172,14 +100,82 @@ export default function NewProjectPage() {
   const { user, loading: authLoading } = useAuth();
   const { createNewProject } = useProject();
   
-  const [step, setStep] = useState<Step>(1);
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  // Mode: chat or wizard
+  const [mode, setMode] = useState<"chat" | "wizard">("wizard");
+  
+  // Wizard state
+  const [step, setStep] = useState(1);
+  const [industry, setIndustry] = useState<string | null>(null);
+  const [businessIdea, setBusinessIdea] = useState("");
   const [projectName, setProjectName] = useState("");
-  const [projectIdea, setProjectIdea] = useState("");
-  const [selectedAudience, setSelectedAudience] = useState<string>("everyone");
-  const [selectedBudget, setSelectedBudget] = useState<string>("low");
+  const [problemSolving, setProblemSolving] = useState("");
+  const [selectedAudience, setSelectedAudience] = useState<string | null>(null);
+  const [competitors, setCompetitors] = useState<string[]>([]);
+  const [currentStatus, setCurrentStatus] = useState<string | null>(null);
+  const [budget, setBudget] = useState<string | null>(null);
+  
+  // AI suggestions
+  const [audienceSuggestions, setAudienceSuggestions] = useState<string[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  
+  // Generation state
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showSnapshot, setShowSnapshot] = useState(false);
+  const [generatedPlan, setGeneratedPlan] = useState<any>(null);
   const [error, setError] = useState("");
+  const [showConfetti, setShowConfetti] = useState(false);
+  
+  // XP tracking
+  const [xpEarned, setXpEarned] = useState(0);
+
+  // Refs for animation
+  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const totalSteps = 7;
+  const progress = (step / totalSteps) * 100;
+
+  // Load draft from localStorage
+  useEffect(() => {
+    const saved = localStorage.getItem(DRAFT_KEY);
+    if (saved) {
+      try {
+        const data: WizardData = JSON.parse(saved);
+        setMode(data.mode);
+        setIndustry(data.industry);
+        setBusinessIdea(data.businessIdea);
+        setProjectName(data.projectName || "");
+        setProblemSolving(data.problemSolving);
+        setSelectedAudience(data.selectedAudience);
+        setCompetitors(data.competitors);
+        setCurrentStatus(data.currentStatus);
+        setBudget(data.budget);
+      } catch (e) {
+        console.error("Failed to load draft:", e);
+      }
+    }
+  }, []);
+
+  // Save draft to localStorage
+  const saveDraft = useCallback(() => {
+    const data: WizardData = {
+      mode,
+      industry,
+      businessIdea,
+      projectName,
+      problemSolving,
+      selectedAudience,
+      competitors,
+      currentStatus,
+      budget,
+    };
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+  }, [mode, industry, businessIdea, problemSolving, selectedAudience, competitors, currentStatus, budget]);
+
+  useEffect(() => {
+    const timeout = setTimeout(saveDraft, 500);
+    return () => clearTimeout(timeout);
+  }, [saveDraft]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -188,62 +184,160 @@ export default function NewProjectPage() {
     }
   }, [user, authLoading, router]);
 
-  const steps = [
-    { number: 1, title: "نوع کسب‌وکار", icon: Target },
-    { number: 2, title: "نام پروژه", icon: FileText },
-    { number: 3, title: "توضیح ایده", icon: Lightbulb },
-    { number: 4, title: "جزئیات", icon: Users },
-    { number: 5, title: "تولید طرح", icon: Sparkles },
-  ];
+  // Focus input on step change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (step === 2 && inputRef.current) {
+        inputRef.current.focus();
+      } else if (step === 3 && textareaRef.current) {
+        textareaRef.current.focus();
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [step]);
 
-  const handleNextStep = () => {
-    setError("");
-    
-    if (step === 1 && !selectedTemplate) {
-      setError("لطفاً نوع کسب‌وکار را انتخاب کنید");
-      return;
-    }
-    if (step === 2 && !projectName.trim()) {
-      setError("لطفاً نام پروژه را وارد کنید");
-      return;
-    }
-    if (step === 3 && !projectIdea.trim()) {
-      setError("لطفاً ایده خود را توضیح دهید");
-      return;
-    }
-    
-    if (step === 4) {
-      handleGenerate();
-    } else {
-      setStep((prev) => (prev + 1) as Step);
+  // Fetch AI suggestions when idea changes
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (businessIdea.length < 5) {
+        setAudienceSuggestions([]);
+        return;
+      }
+
+      setIsLoadingSuggestions(true);
+      try {
+        const res = await fetch("/api/suggest-audience", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productIdea: businessIdea })
+        });
+        const data = await res.json();
+        setAudienceSuggestions(data.audiences || []);
+      } catch {
+        setAudienceSuggestions([]);
+      } finally {
+        setIsLoadingSuggestions(false);
+      }
+    };
+
+    const debounce = setTimeout(fetchSuggestions, 800);
+    return () => clearTimeout(debounce);
+  }, [businessIdea]);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        if (step === 2 && businessIdea.trim()) {
+          e.preventDefault();
+          handleNext();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [step, businessIdea]);
+
+  const canProceed = (): boolean => {
+    switch (step) {
+      case 1: return industry !== null;
+      case 2: return businessIdea.trim().length > 0;
+      case 3: return projectName.trim().length > 0;
+      case 4: return problemSolving.trim().length > 0;
+      case 5: return true; // Audience & competitors are optional
+      case 6: return currentStatus !== null;
+      case 7: return budget !== null;
+      default: return false;
     }
   };
 
-  const handlePrevStep = () => {
+  const handleNext = () => {
     setError("");
-    setStep((prev) => (prev - 1) as Step);
+    
+    if (!canProceed()) {
+      const errors: Record<number, string> = {
+        1: "لطفاً یک صنعت انتخاب کنید",
+        2: "لطفاً ایده خود را وارد کنید",
+        3: "لطفاً نام پروژه را وارد کنید",
+        4: "لطفاً مشکلی که حل می‌کنید را توضیح دهید",
+        6: "لطفاً وضعیت فعلی خود را انتخاب کنید",
+        7: "لطفاً مقیاس کسب‌وکار را انتخاب کنید",
+      };
+      setError(errors[step] || "");
+      return;
+    }
+
+    // Award XP
+    setXpEarned(prev => prev + 20);
+
+    if (step === totalSteps) {
+      handleGenerate();
+    } else {
+      setStep(step + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setError("");
+    setStep(step - 1);
+  };
+
+  const handleSkip = () => {
+    setError("");
+    setXpEarned(prev => prev + 10);
+    setStep(step + 1);
+  };
+
+  const handleTemplateSelect = (template: Template) => {
+    setIndustry(template.industry);
+    setBusinessIdea(template.idea);
+    setProblemSolving(template.problem);
+    setStep(4); // Jump to audience step
+    setXpEarned(prev => prev + 50);
+  };
+
+  const handleVoiceInput = (text: string, field: "idea" | "problem") => {
+    if (field === "idea") {
+      setBusinessIdea(prev => (prev + " " + text).trim());
+    } else {
+      setProblemSolving(prev => (prev + " " + text).trim());
+    }
+  };
+
+  const handleChatComplete = (data: any) => {
+    // Extract data from chat and generate
+    if (data.idea) setBusinessIdea(data.idea);
+    if (data.problem) setProblemSolving(data.problem);
+    if (data.audience) setSelectedAudience(data.audience);
+    handleGenerate();
   };
 
   const handleGenerate = async () => {
     if (!user) return;
     
-    setStep(5);
     setIsGenerating(true);
     setError("");
 
-    const audienceLabel = audienceOptions.find(a => a.id === selectedAudience)?.label || "عموم مردم";
-    const budgetLabel = budgetOptions.find(b => b.id === selectedBudget)?.label || "کم‌هزینه";
-    const templateLabel = templates.find(t => t.id === selectedTemplate)?.label || "";
+    // Use user's project name or fallback
+    const finalProjectName = projectName.trim() || businessIdea.split(" ").slice(0, 2).join(" ") || "پروژه من";
+
+    const selectedIndustry = industries.find(i => i.id === industry);
+    const selectedStatus = statusOptions.find(s => s.id === currentStatus);
+    const selectedBudget = budgetOptions.find(b => b.id === budget);
 
     try {
       const res = await fetch("/api/generate-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          idea: `${projectIdea} (نوع کسب‌وکار: ${templateLabel})`,
-          projectName: projectName,
-          audience: audienceLabel,
-          budget: budgetLabel
+          idea: businessIdea,
+          projectName: finalProjectName,
+          problem: problemSolving,
+          audience: selectedAudience || "عموم مردم",
+          industry: selectedIndustry?.label || "نامشخص",
+          competitors: competitors,
+          status: selectedStatus?.label || "فقط یه ایده",
+          budget: selectedBudget?.label || "کم‌هزینه"
         }),
       });
 
@@ -251,24 +345,37 @@ export default function NewProjectPage() {
 
       const data = await res.json();
       
-      // Force the project name to match what the user typed
-      data.projectName = projectName;
-      data.ideaInput = projectIdea;
-      data.audience = audienceLabel;
-      data.budget = budgetLabel;
-
-      await createNewProject(data);
-      router.push("/dashboard/overview");
+      // Force the project name
+      data.projectName = finalProjectName;
+      data.ideaInput = businessIdea;
+      data.audience = selectedAudience || "عموم مردم";
+      
+      setGeneratedPlan(data);
+      
+      // Show confetti!
+      setShowConfetti(true);
+      
+      // Clear draft
+      localStorage.removeItem(DRAFT_KEY);
+      
+      // Show strategy snapshot after confetti
+      setTimeout(() => {
+        setShowSnapshot(true);
+      }, 1500);
+      
     } catch (err) {
       console.error(err);
       setError("خطا در تولید طرح. لطفاً دوباره تلاش کنید.");
       setIsGenerating(false);
-      setStep(4);
     }
   };
 
-  // Get current tips based on template
-  const currentTips = selectedTemplate ? smartTips[selectedTemplate] : smartTips.other;
+  const handleContinueToDashboard = async () => {
+    if (generatedPlan) {
+      await createNewProject(generatedPlan);
+      router.push("/dashboard/overview");
+    }
+  };
 
   if (authLoading) {
     return (
@@ -278,12 +385,108 @@ export default function NewProjectPage() {
     );
   }
 
+  // Show confetti celebration
+  if (showConfetti && !showSnapshot) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
+        <ConfettiCelebration isActive={showConfetti} onComplete={() => {}} />
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="text-center"
+        >
+          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-primary rounded-3xl flex items-center justify-center">
+            <Sparkles size={48} className="text-white" />
+          </div>
+          <h2 className="text-3xl font-black text-foreground mb-2">تبریک! 🎉</h2>
+          <p className="text-muted-foreground">طرح کسب‌وکارت آماده شد!</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Show strategy snapshot after generation
+  if (showSnapshot && generatedPlan) {
+    return (
+      <StrategySnapshot 
+        plan={generatedPlan}
+        onContinue={handleContinueToDashboard}
+      />
+    );
+  }
+
+  // Show generation loader
+  if (isGenerating) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
+        <GenerationLoader projectName={businessIdea.split(" ").slice(0, 2).join(" ")} />
+      </div>
+    );
+  }
+
+  // Step content configurations
+  const stepConfig = [
+    {
+      icon: Building2,
+      title: "صنعت کسب‌وکارت",
+      subtitle: "چی می‌خوای بسازی؟",
+      description: "یک حوزه انتخاب کن تا پیشنهادات دقیق‌تری بدم",
+      gradient: "from-primary to-purple-600",
+    },
+    {
+      icon: Lightbulb,
+      title: "ایده‌ات چیه؟",
+      subtitle: "در یک جمله بگو",
+      description: "ایده‌ات رو ساده توضیح بده — هوش مصنوعی بقیه‌اش رو می‌فهمه",
+      gradient: "from-amber-500 to-orange-500",
+    },
+    {
+      icon: Tag,
+      title: "نام پروژه",
+      subtitle: "اسم کسب‌وکارت چیه؟",
+      description: "یک اسم به‌یادماندنی انتخاب کن — ما هم پیشنهاد می‌دیم!",
+      gradient: "from-cyan-500 to-blue-500",
+    },
+    {
+      icon: HelpCircle,
+      title: "چه مشکلی رو حل می‌کنی؟",
+      subtitle: "چرا مشتری باید بخره؟",
+      description: "چه دردی رو دوا می‌کنی؟ چرا راه‌حل فعلی بد هست؟",
+      gradient: "from-purple-500 to-pink-500",
+    },
+    {
+      icon: Users,
+      title: "مخاطب و رقبا",
+      subtitle: "کی‌ها مشتریت هستن؟",
+      description: "این بخش اختیاریه ولی به دقت طرح کمک می‌کنه",
+      gradient: "from-blue-500 to-cyan-500",
+      optional: true,
+    },
+    {
+      icon: Rocket,
+      title: "الان کجای مسیر هستی؟",
+      subtitle: "وضعیت فعلیت",
+      description: "این کمک می‌کنه قدم‌های اول رو درست مشخص کنیم",
+      gradient: "from-emerald-500 to-teal-500",
+    },
+    {
+      icon: Sparkles,
+      title: "مقیاس کسب‌وکار",
+      subtitle: "چقدر بزرگ فکر می‌کنی؟",
+      description: "این کمک می‌کنه استراتژی مناسب بچینیم",
+      gradient: "from-rose-500 to-red-500",
+    },
+  ];
+
+  const currentStepConfig = stepConfig[step - 1];
+  const StepIcon = currentStepConfig.icon;
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden" dir="rtl">
-      {/* Background Elements */}
+      {/* Background */}
       <div className="absolute inset-0 bg-gradient-hero" />
-      <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/5 rounded-full blur-3xl" />
       
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
@@ -291,7 +494,7 @@ export default function NewProjectPage() {
           <Link href="/" className="inline-flex items-center gap-2">
             <Image 
               src="/logo-icon-dark.png" 
-              alt="Karnex Logo" 
+              alt="کارنکس" 
               width={40} 
               height={40} 
               className="rounded-xl shadow-lg dark:invert-0 invert"
@@ -299,336 +502,311 @@ export default function NewProjectPage() {
             <span className="text-xl font-black text-foreground">کارنکس</span>
           </Link>
           
-          {/* Live Preview */}
-          {projectName && step >= 2 && (
-            <div className="hidden md:flex items-center gap-3 bg-muted/50 px-4 py-2 rounded-xl">
-              <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                {projectName.charAt(0)}
-              </div>
-              <span className="font-bold text-foreground">{projectName}</span>
-            </div>
-          )}
-        </header>
-
-        {/* Main Content */}
-        <main className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-3xl">
-            {/* Step Indicator */}
-            <div className="flex items-center justify-center mb-8 overflow-x-auto pb-2">
-              {steps.map((s, i) => (
-                <div key={s.number} className="flex items-center shrink-0">
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`
-                        w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
-                        ${step >= s.number 
-                          ? "bg-gradient-primary text-white shadow-lg shadow-primary/25" 
-                          : "bg-muted text-muted-foreground"}
-                      `}
-                    >
-                      {step > s.number ? (
-                        <CheckCircle2 size={18} />
-                      ) : (
-                        <s.icon size={18} />
-                      )}
-                    </div>
-                    <span className={`text-xs mt-1 font-medium hidden md:block ${step >= s.number ? "text-foreground" : "text-muted-foreground"}`}>
-                      {s.title}
-                    </span>
-                  </div>
-                  {i < steps.length - 1 && (
-                    <div
-                      className={`w-8 md:w-12 h-0.5 mx-1 rounded-full transition-all duration-300 ${step > s.number ? "bg-primary" : "bg-border"}`}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Step Content */}
-            {step === 5 && isGenerating ? (
-              <GenerationLoader projectName={projectName} />
-            ) : (
-              <Card variant="glass" padding="xl" className="animate-fade-in-up">
-                
-                {/* Step 1: Template Selection */}
-                {step === 1 && (
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <Badge variant="info" size="lg" className="mb-4">
-                        مرحله ۱ از ۵
-                      </Badge>
-                      <h2 className="text-2xl font-bold text-foreground mb-2">
-                        چه نوع کسب‌وکاری می‌خواهید؟
-                      </h2>
-                      <p className="text-muted-foreground">
-                        یک دسته‌بندی انتخاب کنید تا پیشنهادات بهتری دریافت کنید
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {templates.map((template) => (
-                        <button
-                          key={template.id}
-                          onClick={() => setSelectedTemplate(template.id)}
-                          className={`p-4 rounded-xl border-2 transition-all text-center group hover:scale-[1.02] ${
-                            selectedTemplate === template.id 
-                              ? "border-primary bg-primary/5 shadow-lg" 
-                              : "border-border hover:border-primary/30"
-                          }`}
-                        >
-                          <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${template.color} text-white flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
-                            <template.icon size={24} />
-                          </div>
-                          <p className="font-bold text-foreground text-sm">{template.label}</p>
-                          <p className="text-xs text-muted-foreground mt-1">{template.description}</p>
-                        </button>
-                      ))}
-                    </div>
-
-                    {error && (
-                      <p className="text-destructive text-sm text-center">{error}</p>
-                    )}
-
-                    <Button
-                      variant="gradient"
-                      size="xl"
-                      className="w-full"
-                      onClick={handleNextStep}
-                    >
-                      مرحله بعد
-                      <ArrowLeft size={18} />
-                    </Button>
-                  </div>
-                )}
-
-                {/* Step 2: Project Name */}
-                {step === 2 && (
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <Badge variant="info" size="lg" className="mb-4">
-                        مرحله ۲ از ۵
-                      </Badge>
-                      <h2 className="text-2xl font-bold text-foreground mb-2">
-                        پروژه خود را نام‌گذاری کنید
-                      </h2>
-                      <p className="text-muted-foreground">
-                        یک نام کوتاه و به‌یادماندنی برای پروژه انتخاب کنید
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        نام پروژه
-                      </label>
-                      <input
-                        type="text"
-                        value={projectName}
-                        onChange={(e) => setProjectName(e.target.value)}
-                        placeholder="مثال: کتاب‌یار، فودهاب، سلام‌تراپی"
-                        className="input-premium text-lg py-4"
-                        autoFocus
-                      />
-                    </div>
-
-                    {/* Live Preview */}
-                    {projectName && (
-                      <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-xl">
-                        <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center text-white font-bold text-xl">
-                          {projectName.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-bold text-foreground">{projectName}</p>
-                          <p className="text-sm text-muted-foreground">پیش‌نمایش برند شما</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {error && (
-                      <p className="text-destructive text-sm text-center">{error}</p>
-                    )}
-
-                    <div className="flex gap-4">
-                      <Button variant="outline" size="lg" className="flex-1" onClick={handlePrevStep}>
-                        <ArrowRight size={18} />
-                        مرحله قبل
-                      </Button>
-                      <Button variant="gradient" size="lg" className="flex-1" onClick={handleNextStep}>
-                        مرحله بعد
-                        <ArrowLeft size={18} />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 3: Idea Description */}
-                {step === 3 && (
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <Badge variant="info" size="lg" className="mb-4">
-                        مرحله ۳ از ۵
-                      </Badge>
-                      <h2 className="text-2xl font-bold text-foreground mb-2">
-                        ایده خود را شرح دهید
-                      </h2>
-                      <p className="text-muted-foreground">
-                        هرچه جزئیات بیشتری بدهید، طرح دقیق‌تری دریافت می‌کنید
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-foreground mb-2">
-                        توضیح ایده
-                      </label>
-                      <textarea
-                        value={projectIdea}
-                        onChange={(e) => setProjectIdea(e.target.value)}
-                        placeholder="ایده‌تان را در چند جمله توضیح دهید. چه مشکلی حل می‌کنید؟ محصول یا خدمات شما چیست؟"
-                        className="input-premium min-h-[150px] resize-none"
-                        autoFocus
-                      />
-                    </div>
-
-                    {/* Smart Tips */}
-                    <div className="bg-muted/50 rounded-xl p-4 space-y-2">
-                      <p className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <Lightbulb size={16} className="text-accent" />
-                        نکات هوشمند:
-                      </p>
-                      {currentTips.map((tip, i) => (
-                        <p key={i} className="text-sm text-muted-foreground">{tip}</p>
-                      ))}
-                    </div>
-
-                    {error && (
-                      <p className="text-destructive text-sm text-center">{error}</p>
-                    )}
-
-                    <div className="flex gap-4">
-                      <Button variant="outline" size="lg" className="flex-1" onClick={handlePrevStep}>
-                        <ArrowRight size={18} />
-                        مرحله قبل
-                      </Button>
-                      <Button variant="gradient" size="lg" className="flex-1" onClick={handleNextStep}>
-                        مرحله بعد
-                        <ArrowLeft size={18} />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 4: Audience & Budget */}
-                {step === 4 && (
-                  <div className="space-y-6">
-                    <div className="text-center">
-                      <Badge variant="info" size="lg" className="mb-4">
-                        مرحله ۴ از ۵
-                      </Badge>
-                      <h2 className="text-2xl font-bold text-foreground mb-2">
-                        جزئیات بیشتر
-                      </h2>
-                      <p className="text-muted-foreground">
-                        این اطلاعات به AI کمک می‌کند طرح دقیق‌تری بسازد
-                      </p>
-                    </div>
-
-                    {/* Audience Selection */}
-                    <div>
-                      <label className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                        <Users size={16} />
-                        مخاطب هدف
-                      </label>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                        {audienceOptions.map((option) => (
-                          <button
-                            key={option.id}
-                            onClick={() => setSelectedAudience(option.id)}
-                            className={`p-3 rounded-xl border-2 transition-all text-right flex items-center gap-3 ${
-                              selectedAudience === option.id 
-                                ? "border-primary bg-primary/5" 
-                                : "border-border hover:border-primary/30"
-                            }`}
-                          >
-                            <span className="text-xl">{option.icon}</span>
-                            <span className="text-sm font-medium text-foreground">{option.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Budget Selection */}
-                    <div>
-                      <label className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-                        <Wallet size={16} />
-                        بودجه اولیه
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {budgetOptions.map((option) => (
-                          <button
-                            key={option.id}
-                            onClick={() => setSelectedBudget(option.id)}
-                            className={`p-4 rounded-xl border-2 transition-all text-right ${
-                              selectedBudget === option.id 
-                                ? "border-primary bg-primary/5" 
-                                : "border-border hover:border-primary/30"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-2xl">{option.icon}</span>
-                              <div>
-                                <p className={`font-bold ${option.color}`}>{option.label}</p>
-                                <p className="text-xs text-muted-foreground">{option.sublabel}</p>
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Summary Preview */}
-                    <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-xl p-4">
-                      <p className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
-                        <TrendingUp size={16} className="text-primary" />
-                        خلاصه پروژه:
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        <strong className="text-foreground">{projectName}</strong> - 
-                        {templates.find(t => t.id === selectedTemplate)?.label} برای {audienceOptions.find(a => a.id === selectedAudience)?.label} با بودجه {budgetOptions.find(b => b.id === selectedBudget)?.label}
-                      </p>
-                    </div>
-
-                    {error && (
-                      <p className="text-destructive text-sm text-center">{error}</p>
-                    )}
-
-                    <div className="flex gap-4">
-                      <Button variant="outline" size="lg" className="flex-1" onClick={handlePrevStep}>
-                        <ArrowRight size={18} />
-                        مرحله قبل
-                      </Button>
-                      <Button variant="gradient" size="lg" className="flex-1" onClick={handleNextStep}>
-                        <Sparkles size={18} />
-                        تولید طرح کسب‌وکار
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </Card>
-            )}
-
-            {/* Bottom Hints */}
-            {step !== 5 && (
-              <div className="mt-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  نیاز به الهام دارید؟{" "}
-                  <span className="text-primary font-bold">
-                    یک ایده ساده کافیست!
-                  </span>
-                </p>
-              </div>
+          <div className="flex items-center gap-4">
+            {/* Mode Toggle */}
+            <WizardModeToggle mode={mode} onChange={setMode} />
+            
+            {mode === "wizard" && step > 1 && (
+              <button 
+                onClick={handleBack}
+                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ArrowRight size={18} />
+                برگشت
+              </button>
             )}
           </div>
-        </main>
+        </header>
+
+        {/* Chat Mode */}
+        {mode === "chat" ? (
+          <main className="flex-1 flex items-center justify-center p-6">
+            <div className="w-full max-w-2xl">
+              <ChatInterface onComplete={handleChatComplete} />
+            </div>
+          </main>
+        ) : (
+          /* Wizard Mode */
+          <>
+            {/* Progress & Gamification */}
+            <div className="px-6">
+              <div className="max-w-2xl mx-auto">
+                <ProgressGamification 
+                  currentStep={step} 
+                  totalSteps={totalSteps} 
+                  xpEarned={xpEarned}
+                />
+                
+                {/* Progress Bar */}
+                <div className="mt-4 h-1 bg-muted rounded-full overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-gradient-primary"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progress}%` }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Main Content */}
+            <main className="flex-1 flex items-center justify-center p-6">
+              <div className="w-full max-w-2xl">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={step}
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -50 }}
+                    transition={{ duration: 0.3 }}
+                    className="space-y-8"
+                  >
+                    {/* Step Header */}
+                    <div className="text-center space-y-4">
+                      <motion.div 
+                        initial={{ scale: 0.8 }}
+                        animate={{ scale: 1 }}
+                        className={cn(
+                          "w-20 h-20 bg-gradient-to-br rounded-3xl flex items-center justify-center mx-auto shadow-xl",
+                          currentStepConfig.gradient
+                        )}
+                      >
+                        <StepIcon size={40} className="text-white" />
+                      </motion.div>
+                      <h1 className="text-3xl md:text-4xl font-black text-foreground">
+                        {currentStepConfig.subtitle}
+                        <br />
+                        <span className={cn("bg-gradient-to-l bg-clip-text text-transparent", currentStepConfig.gradient)}>
+                          {currentStepConfig.title}
+                        </span>
+                      </h1>
+                      <p className="text-muted-foreground text-lg">
+                        {currentStepConfig.description}
+                      </p>
+                    </div>
+
+                    {/* Step Content */}
+                    <div className="space-y-4">
+                      {/* Step 1: Industry Selector */}
+                      {step === 1 && (
+                        <>
+                          <IndustrySelector selected={industry} onSelect={setIndustry} />
+                          <QuickTemplates onSelect={handleTemplateSelect} />
+                        </>
+                      )}
+
+                      {/* Step 2: Business Idea */}
+                      {step === 2 && (
+                        <>
+                          <div className="relative">
+                            <input
+                              ref={inputRef}
+                              type="text"
+                              value={businessIdea}
+                              onChange={(e) => setBusinessIdea(e.target.value)}
+                              placeholder="مثال: فروش عسل ارگانیک، اپلیکیشن یادگیری زبان..."
+                              className="input-premium text-lg py-5 pr-5 pl-28"
+                            />
+                            <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                              <VoiceInputButton onTranscript={(t) => handleVoiceInput(t, "idea")} />
+                              {isLoadingSuggestions ? (
+                                <Loader2 size={20} className="animate-spin text-muted-foreground" />
+                              ) : (
+                                <Send size={20} className="text-muted-foreground" />
+                              )}
+                            </div>
+                          </div>
+                          
+                          <p className="text-center text-sm text-muted-foreground">
+                            ⏎ Enter برای ادامه
+                          </p>
+                        </>
+                      )}
+
+                      {/* Step 3: Project Name */}
+                      {step === 3 && (
+                        <ProjectNameSelector
+                          idea={businessIdea}
+                          selectedName={projectName}
+                          onNameChange={setProjectName}
+                        />
+                      )}
+
+                      {/* Step 4: Problem Solving */}
+                      {step === 4 && (
+                        <>
+                          <div className="relative">
+                            <textarea
+                              ref={textareaRef}
+                              value={problemSolving}
+                              onChange={(e) => setProblemSolving(e.target.value)}
+                              placeholder="مثال: پیدا کردن عسل طبیعی سخته و اکثر عسل‌ها تقلبی هستند..."
+                              className="input-premium min-h-[120px] resize-none text-lg pr-5 pl-16"
+                            />
+                            <div className="absolute left-3 top-4">
+                              <VoiceInputButton onTranscript={(t) => handleVoiceInput(t, "problem")} />
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Step 5: Audience & Competitors */}
+                      {step === 5 && (
+                        <div className="space-y-6">
+                          {/* Audience Suggestions */}
+                          {audienceSuggestions.length > 0 && (
+                            <div className="space-y-3">
+                              <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Sparkles size={14} className="text-primary" />
+                                مخاطبان پیشنهادی:
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {audienceSuggestions.map((audience, i) => (
+                                  <button
+                                    key={i}
+                                    onClick={() => setSelectedAudience(audience)}
+                                    className={cn(
+                                      "px-4 py-2 rounded-full text-sm font-medium transition-all",
+                                      selectedAudience === audience
+                                        ? "bg-primary text-white shadow-lg shadow-primary/25"
+                                        : "bg-muted hover:bg-primary/10 text-foreground"
+                                    )}
+                                  >
+                                    {audience}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Custom audience input */}
+                          <input
+                            type="text"
+                            value={selectedAudience || ""}
+                            onChange={(e) => setSelectedAudience(e.target.value)}
+                            placeholder="یا مخاطب خودت رو بنویس..."
+                            className="input-premium"
+                          />
+
+                          {/* Competitors */}
+                          <div className="pt-4 border-t border-border">
+                            <p className="text-sm font-medium text-foreground mb-3">
+                              رقیب‌هات کی‌ان؟ (اختیاری)
+                            </p>
+                            <CompetitorInput 
+                              competitors={competitors}
+                              onChange={setCompetitors}
+                              placeholder="مثال: دیجی‌کالا، باسلام..."
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Step 6: Current Status */}
+                      {step === 6 && (
+                        <div className="grid gap-4">
+                          {statusOptions.map((option, index) => (
+                            <motion.button
+                              key={option.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                              onClick={() => setCurrentStatus(option.id)}
+                              className={cn(
+                                "p-6 rounded-2xl border-2 transition-all text-right flex items-center gap-5 group",
+                                currentStatus === option.id
+                                  ? "border-primary bg-primary/5 shadow-xl shadow-primary/10"
+                                  : "border-border hover:border-primary/30 hover:shadow-lg"
+                              )}
+                            >
+                              <div className={cn(
+                                "w-16 h-16 rounded-2xl bg-gradient-to-br flex items-center justify-center text-3xl shrink-0 transition-transform group-hover:scale-110",
+                                option.color
+                              )}>
+                                {option.emoji}
+                              </div>
+                              <div>
+                                <p className="font-bold text-lg text-foreground">{option.label}</p>
+                                <p className="text-muted-foreground">{option.sublabel}</p>
+                              </div>
+                            </motion.button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Step 7: Budget */}
+                      {step === 7 && (
+                        <>
+                          <BudgetSelector selected={budget} onSelect={setBudget} />
+                          
+                          {/* Summary */}
+                          {businessIdea && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="bg-muted/50 rounded-xl p-4 text-sm"
+                            >
+                              <p className="text-muted-foreground">
+                                <strong className="text-foreground">{businessIdea}</strong>
+                                {selectedAudience && <> برای <strong className="text-foreground">{selectedAudience}</strong></>}
+                                {problemSolving && <> — چون <strong className="text-foreground">{problemSolving}</strong></>}
+                              </p>
+                            </motion.div>
+                          )}
+                        </>
+                      )}
+                    </div>
+
+                    {/* Error */}
+                    {error && (
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-destructive text-sm text-center"
+                      >
+                        {error}
+                      </motion.p>
+                    )}
+
+                    {/* Actions */}
+                    <div className="space-y-3">
+                      <Button
+                        variant="gradient"
+                        size="xl"
+                        className="w-full"
+                        onClick={handleNext}
+                        disabled={!canProceed() && !currentStepConfig.optional}
+                      >
+                        {step === totalSteps ? (
+                          <>
+                            <Sparkles size={18} />
+                            بساز طرح کسب‌وکار من!
+                          </>
+                        ) : (
+                          <>
+                            ادامه
+                            <ArrowLeft size={18} />
+                          </>
+                        )}
+                      </Button>
+
+                      {/* Skip for optional steps */}
+                      {currentStepConfig.optional && (
+                        <button
+                          onClick={handleSkip}
+                          className="w-full flex items-center justify-center gap-2 py-3 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <SkipForward size={16} />
+                          رد شو
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </main>
+          </>
+        )}
       </div>
     </div>
   );

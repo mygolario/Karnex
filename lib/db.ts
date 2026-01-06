@@ -25,6 +25,14 @@ export interface RoadmapPhase {
 export interface LogoConcept {
   conceptName: string;
   description: string;
+  imageUrl?: string;
+}
+
+// Sub-task structure for roadmap
+export interface SubTask {
+  parentStep: string;
+  text: string;
+  isCompleted: boolean;
 }
 
 // Competitor structure
@@ -51,12 +59,30 @@ export interface BrandKit {
   logoConcepts: LogoConcept[];
 }
 
-// Lean Canvas structure
+// Card structure for Sticky Note Canvas
+export interface CanvasCard {
+  id: string;
+  content: string;
+  color: 'yellow' | 'blue' | 'green' | 'pink' | 'purple' | 'cyan';
+  order?: number;
+}
+
+// Business Model Canvas structure (9-block Osterwalder BMC)
+// Backward compatible: allows string (legacy) or CanvasCard[] (new)
+export type CanvasSectionContent = string | CanvasCard[];
+
 export interface LeanCanvas {
-  problem: string;
-  solution: string;
-  uniqueValue: string;
-  revenueStream: string;
+  // Original 4 blocks (Lean Canvas)
+  problem: CanvasSectionContent;
+  solution: CanvasSectionContent;
+  uniqueValue: CanvasSectionContent;
+  revenueStream: CanvasSectionContent;
+  // New 5 blocks for full BMC
+  customerSegments?: CanvasSectionContent;
+  keyActivities?: CanvasSectionContent;
+  keyResources?: CanvasSectionContent;
+  keyPartners?: CanvasSectionContent;
+  costStructure?: CanvasSectionContent;
 }
 
 // Main Business Plan interface
@@ -75,6 +101,7 @@ export interface BusinessPlan {
   audience: string;
   ideaInput?: string;
   completedSteps?: string[];
+  subTasks?: SubTask[];
   createdAt: string;
   updatedAt?: string;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { getPlanFromCloud, saveLegalAdvice, BusinessPlan } from "@/lib/db";
@@ -9,7 +10,19 @@ import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { HoverExplainer } from "@/components/ui/explainer";
 import { LearnMore } from "@/components/ui/learn-more";
+import { DocumentGenerator } from "@/components/dashboard/document-generator";
 import { featureExplanations, legalExplanations } from "@/lib/knowledge-base";
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } }
+};
 
 export default function LegalPage() {
   const { user } = useAuth();
@@ -84,64 +97,68 @@ export default function LegalPage() {
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-8">
+    <div className="max-w-[1400px] mx-auto space-y-12 pb-20 animate-fade-in-up">
       
-      {/* Feature Explanation Banner */}
-      <LearnMore title="الزامات قانونی چیست؟" variant="primary">
-        <p className="text-muted-foreground text-sm leading-7 mb-3">
-          {featureExplanations.legal.description}
-        </p>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Lightbulb size={14} className="text-primary" />
-          نکته: همه این موارد در روز اول لازم نیست! ابتدا شروع کنید و با رشد کسب‌وکار، رسمی‌تر شوید.
-        </div>
-      </LearnMore>
+      {/* Feature Explanation Banner - Hidden for cleaner look, or redesigned */}
+      {/* Integrated into Header for simplicity */}
 
       {/* Header */}
-      <div className="flex items-start gap-4">
-        <div className="w-14 h-14 bg-gradient-to-br from-primary to-purple-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-primary/20">
-          <Scale size={28} />
-        </div>
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-black text-foreground">الزامات قانونی و حقوقی</h1>
-            <Badge variant="gradient" size="sm">
-              <Sparkles size={12} />
-              AI
-            </Badge>
-            <HoverExplainer text="این اطلاعات توسط هوش مصنوعی و بر اساس قوانین کلی ایران تولید شده است" />
-          </div>
-          <p className="text-muted-foreground">راهنمای شروع فعالیت قانونی برای {plan.projectName}</p>
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-2xl shadow-emerald-500/20">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20 bg-center" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        
+        <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
+           <div className="flex items-start gap-6">
+             <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center text-white shadow-inner border border-white/20 animate-scale-in">
+               <Scale size={40} />
+             </div>
+             <div>
+               <div className="flex items-center gap-3 mb-2">
+                 <h1 className="text-4xl md:text-5xl font-black tracking-tight">الزامات قانونی</h1>
+                 <Badge variant="outline" className="border-white/20 text-white bg-white/10 backdrop-blur-sm px-3 py-1 gap-1">
+                   <Sparkles size={12} />
+                   AI Advisor
+                 </Badge>
+               </div>
+               <p className="text-white/80 text-lg max-w-xl leading-relaxed font-medium">
+                 راهنمای هوشمند شروع فعالیت قانونی برای <span className="text-white font-bold decoration-2 underline decoration-white/30 underline-offset-4">{plan.projectName}</span>.
+                 <br/>
+                 <span className="text-sm opacity-70 font-light mt-1 block">این اطلاعات جایگزین وکیل نیست، اما برای شروع عالی است.</span>
+               </p>
+             </div>
+           </div>
+           
+           <div className="hidden lg:block glass px-6 py-4 rounded-2xl border-white/10 max-w-xs">
+              <div className="flex items-start gap-3">
+                <Info className="shrink-0 text-white mt-1" size={20} />
+                <p className="text-sm text-white/90 leading-6">
+                  <strong>نکته مهم:</strong> بیشتر کسب‌وکارهای نوپا می‌توانند بدون مجوز شروع کنند و بعداً رسمی شوند. نگذارید بوروکراسی مانع شروع شما شود!
+                </p>
+              </div>
+           </div>
         </div>
       </div>
 
-      {/* Warning Box - Simplified */}
-      <Card variant="muted" className="border-l-4 border-l-accent flex gap-3">
-        <Info className="shrink-0 text-accent" size={20} />
-        <div>
-          <p className="text-muted-foreground text-sm mb-2">
-            این اطلاعات راهنمای کلی است، نه مشاوره حقوقی رسمی. برای موارد حساس با یک وکیل مشورت کنید.
-          </p>
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <Lightbulb size={12} className="text-accent" />
-            <strong>نکته مهم:</strong> بیشتر کسب‌وکارهای کوچک می‌توانند بدون مجوز شروع کنند و بعداً رسمی شوند!
-          </p>
-        </div>
-      </Card>
+      {/* Document Generator Section - Full Width */}
+      <div className="animate-in slide-in-from-bottom-4 fade-in duration-700 delay-100">
+        <DocumentGenerator />
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Main Column: Requirements */}
-        <div className="md:col-span-2 space-y-6">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <CardIcon variant="secondary" className="w-10 h-10">
-              <ShieldCheck size={20} />
-            </CardIcon>
-            <span className="font-bold text-sm uppercase tracking-wider">اقدامات ضروری</span>
-            <HoverExplainer text="مواردی که باید انجام دهید (بعضی فوری و بعضی بعداً)" />
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center gap-3 text-foreground mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+              <ShieldCheck size={24} />
+            </div>
+            <div>
+               <h3 className="font-black text-2xl tracking-tight">اقدامات ضروری</h3>
+               <p className="text-sm text-muted-foreground">لیست کارهایی که باید انجام دهید</p>
+            </div>
           </div>
           
-          <div className="space-y-4">
+          <div className="space-y-5">
             {(plan.legalAdvice.requirements || []).map((req, i) => {
               const explanation = getLegalExplanation(req.title);
               
@@ -150,32 +167,32 @@ export default function LegalPage() {
                   key={i} 
                   variant="default"
                   hover="lift"
-                  className="relative overflow-hidden"
+                  className="relative overflow-hidden group border transition-all duration-300 hover:border-primary/20"
                 >
                   {/* Priority Bar */}
-                  <div className={`absolute top-0 bottom-0 right-0 w-1 ${
-                    req.priority === 'High' ? 'bg-destructive' : 'bg-primary'
+                  <div className={`absolute top-0 bottom-0 right-0 w-2 ${
+                    req.priority === 'High' ? 'bg-rose-500' : 'bg-emerald-500'
                   }`} />
                   
-                  <div className="pr-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h4 className="font-bold text-foreground text-lg">{req.title}</h4>
+                  <div className="pr-6 p-2">
+                    <div className="flex items-center gap-4 mb-3">
+                      <h4 className="font-extrabold text-foreground text-xl tracking-tight">{req.title}</h4>
                       {req.priority === 'High' ? (
-                        <Badge variant="danger" size="sm">الزامی</Badge>
+                        <Badge variant="danger" size="sm" className="shadow-sm">الزامی و فوری</Badge>
                       ) : (
-                        <Badge variant="muted" size="sm">بعداً کافی است</Badge>
+                        <Badge variant="muted" size="sm">بعداً انجام دهید</Badge>
                       )}
                     </div>
-                    <p className="text-muted-foreground leading-relaxed text-sm mb-3">
+                    <p className="text-muted-foreground leading-9 text-lg mb-5 pl-4">
                       {req.description}
                     </p>
 
                     {/* Simple Explanation */}
                     {explanation && (
-                      <div className="bg-muted/50 rounded-lg p-3 text-xs">
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Lightbulb size={12} className="text-accent shrink-0" />
-                          <span><strong>یعنی چی؟</strong> {explanation}</span>
+                      <div className="bg-muted/40 rounded-xl p-4 text-base border border-border/50 group-hover:bg-muted/60 transition-colors">
+                        <div className="flex items-start gap-3 text-foreground/80">
+                          <Lightbulb size={20} className="text-amber-500 shrink-0 mt-0.5" />
+                          <span className="leading-7"><strong>به زبان ساده:</strong> {explanation}</span>
                         </div>
                       </div>
                     )}
@@ -184,7 +201,9 @@ export default function LegalPage() {
               );
             })}
             {(!plan.legalAdvice.requirements || plan.legalAdvice.requirements.length === 0) && (
-              <p className="text-muted-foreground text-sm">الزامات خاصی شناسایی نشد.</p>
+              <div className="text-center p-12 bg-muted/20 rounded-3xl border border-dashed border-border">
+                <p className="text-muted-foreground text-lg">الزامات خاصی برای این پروژه پیدا نشد.</p>
+              </div>
             )}
           </div>
         </div>
@@ -193,18 +212,17 @@ export default function LegalPage() {
         <div className="space-y-6">
           
           {/* Permits Box */}
-          <Card variant="default">
-            <div className="flex items-center gap-2 mb-4">
-              <CardIcon variant="primary" className="w-8 h-8">
-                <FileText size={16} />
-              </CardIcon>
-              <h3 className="font-bold text-foreground">مجوزهای احتمالی</h3>
-              <HoverExplainer text="مجوزهایی که ممکن است در آینده نیاز داشته باشید" />
+          <Card variant="default" className="card-glass border-white/5">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+                <FileText size={20} />
+              </div>
+              <h3 className="font-bold text-xl text-foreground">مجوزهای احتمالی</h3>
             </div>
-            <ul className="space-y-3">
+            <ul className="space-y-4">
               {(plan.legalAdvice.permits || []).map((permit, i) => (
-                <li key={i} className="flex items-center gap-2 text-muted-foreground text-sm">
-                  <div className="w-2 h-2 rounded-full bg-primary" />
+                <li key={i} className="flex items-start gap-3 text-foreground/80 text-base leading-7 bg-muted/30 p-3 rounded-xl">
+                  <div className="w-2 h-2 rounded-full bg-cyan-500 mt-2.5 shrink-0 shadow-[0_0_10px_rgba(6,182,212,0.5)]" />
                   {permit}
                 </li>
               ))}
@@ -215,40 +233,40 @@ export default function LegalPage() {
           </Card>
 
           {/* Expert Tips */}
-          <Card variant="gradient" padding="lg" className="text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl -mr-16 -mt-16" />
+          <Card variant="gradient" className="text-white relative overflow-hidden bg-gradient-to-br from-slate-800 to-slate-900 border-0 shadow-xl">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/20 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none" />
             
-            <div className="relative">
-              <div className="flex items-center gap-2 mb-4">
-                <AlertCircle size={20} className="text-accent" />
-                <h3 className="font-bold">نکته وکیل</h3>
+            <div className="relative z-10 p-2">
+              <div className="flex items-center gap-2 mb-6 text-emerald-400">
+                <Sparkles size={20} />
+                <h3 className="font-bold text-lg">نکات طلایی وکیل</h3>
               </div>
-              <ul className="space-y-4">
+              <ul className="space-y-5">
                 {(plan.legalAdvice.tips || []).map((tip, i) => (
-                  <li key={i} className="text-sm text-white/80 leading-6 border-b border-white/10 last:border-0 pb-3 last:pb-0">
-                    {tip}
+                  <li key={i} className="text-base text-gray-200 leading-8 border-b border-white/10 last:border-0 pb-4 last:pb-0">
+                    <span className="text-emerald-400 font-bold mr-1">✓</span> {tip}
                   </li>
                 ))}
-                {(!plan.legalAdvice.tips || plan.legalAdvice.tips.length === 0) && (
-                  <li className="text-white/60 text-sm">نکته‌ای موجود نیست.</li>
-                )}
               </ul>
             </div>
           </Card>
 
           {/* Helpful Links */}
-          <Card variant="default">
-            <h3 className="font-bold text-foreground mb-4">لینک‌های مفید</h3>
+          <Card variant="default" className="card-glass">
+            <h3 className="font-bold text-foreground mb-4 text-lg">لینک‌های کاربردی</h3>
             <ul className="space-y-3">
               <li>
                 <a 
                   href="https://enamad.ir" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-primary hover:underline text-sm"
+                  className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/5 hover:text-primary transition-all group"
                 >
-                  <ExternalLink size={14} />
-                  سامانه ای‌نماد
+                  <span className="flex items-center gap-2 font-medium">
+                    <ExternalLink size={16} />
+                    سامانه ای‌نماد
+                  </span>
+                  <span className="text-xs text-muted-foreground group-hover:text-primary/70">enamad.ir</span>
                 </a>
               </li>
               <li>
@@ -256,10 +274,13 @@ export default function LegalPage() {
                   href="https://tax.gov.ir" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-primary hover:underline text-sm"
+                  className="flex items-center justify-between p-3 rounded-xl bg-muted/30 hover:bg-primary/5 hover:text-primary transition-all group"
                 >
-                  <ExternalLink size={14} />
-                  سامانه مالیات
+                   <span className="flex items-center gap-2 font-medium">
+                    <ExternalLink size={16} />
+                    سامانه مالیات
+                  </span>
+                  <span className="text-xs text-muted-foreground group-hover:text-primary/70">tax.gov.ir</span>
                 </a>
               </li>
             </ul>

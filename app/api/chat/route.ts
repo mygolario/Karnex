@@ -1,17 +1,16 @@
 import { NextResponse } from 'next/server';
 
-export const maxDuration = 60; // Allow enough time for thinking
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
-    const { message, planContext } = await req.json();
+    const { message, planContext, generateFollowUps } = await req.json();
 
     if (!process.env.OPENROUTER_API_KEY) {
       return NextResponse.json({ error: 'API Key missing' }, { status: 500 });
     }
 
     // Contextual System Prompt
-    // We inject the user's plan details directly into the AI's instructions.
     const systemPrompt = `
       You are Karnex AI, a smart business consultant for the Iranian market.
       
@@ -26,70 +25,99 @@ export async function POST(req: Request) {
       2. Keep answers concise (max 3-4 sentences) unless asked for more.
       3. Use a friendly, encouraging, and professional tone.
       4. Reply in PERSIAN (Farsi).
-      
-      User Question: ${message}
+      ${generateFollowUps ? `
+      5. After your answer, add a line with "---FOLLOWUPS---" and then list exactly 3 short follow-up questions the user might ask next.
+      Format: Each question on its own line, starting with "- ".
+      Example:
+      ---FOLLOWUPS---
+      - چطور این کار را شروع کنم؟
+      - چقدر زمان می‌برد؟
+      - هزینه‌اش چقدره؟
+      ` : ''}
     `;
 
-    // Call OpenRouter (Using fast, free models)
+    // Call OpenRouter
     let response;
-    // Best FREE models on OpenRouter (January 2026)
+    // Using only Google Gemini models from OpenRouter
     const models = [
-        "google/gemini-2.0-flash-exp:free",      // 1. Best: Fast, smart, free
-        "qwen/qwen-2.5-72b-instruct:free",       // 2. Qwen 2.5 72B free
-        "deepseek/deepseek-chat:free",           // 3. DeepSeek free tier
-        "meta-llama/llama-3.3-70b-instruct:free", // 4. Llama 3.3 70B
+      "google/gemini-2.0-flash-exp:free",
+      "google/gemini-2.0-flash-001",
+      "google/gemini-pro-1.5",
+      "google/gemini-pro",
     ];
 
-    let successfulModel = '';
-    let lastError = '';
-
     for (const model of models) {
-        try {
-            console.log(`Chat attempts: ${model}`);
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 40000); // 40s Limit
+      try {
+        console.log(`Chat attempts: ${model}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 40000);
 
-            response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                "Content-Type": "application/json",
-                "HTTP-Referer": "http://localhost:3000",
-                "X-Title": "Karnex"
-              },
-              body: JSON.stringify({
-                "model": model,
-                "messages": [
-                  { "role": "system", "content": systemPrompt },
-                  { "role": "user", "content": message }
-                ],
-                "temperature": 0.7,
-              }),
-              signal: controller.signal
-            });
-            clearTimeout(timeoutId);
+        response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://karnex.ir",
+            "X-Title": "Karnex"
+          },
+          body: JSON.stringify({
+            "model": model,
+            "messages": [
+              { "role": "system", "content": systemPrompt },
+              { "role": "user", "content": message }
+            ],
+            "temperature": 0.7,
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
 
-            if (response.ok) {
-                successfulModel = model;
-                break; // Success!
-            }
-            const errText = await response.text();
-            lastError = `${model}: ${response.status} - ${errText}`;
-            console.warn(`Chat model ${model} failed: ${response.status} - ${errText}`);
-        } catch (e: any) {
-            lastError = `${model}: ${e.name || e.message}`;
-            console.warn(`Chat model ${model} error:`, e.name || e.message);
-        }
+        if (response.ok) break;
+        console.warn(`Chat model ${model} failed: ${response.status}`);
+      } catch (e: any) {
+        console.warn(`Chat model ${model} error:`, e.name || e.message);
+      }
     }
 
     if (!response || !response.ok) {
-        return NextResponse.json({ reply: "متاسفانه سرویس هوش مصنوعی در حال حاضر پاسخگو نیست. لطفا دقایقی دیگر تلاش کنید." });
+      return NextResponse.json({ 
+        reply: "متاسفانه سرویس هوش مصنوعی در حال حاضر پاسخگو نیست. لطفا دقایقی دیگر تلاش کنید.",
+        followUps: []
+      });
     }
 
     const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "متاسفانه مشکلی پیش آمد. لطفا دوباره تلاش کنید.";
+    let fullReply = data.choices?.[0]?.message?.content || "متاسفانه مشکلی پیش آمد.";
 
-    return NextResponse.json({ reply });
+    // Parse follow-up questions if present
+    let reply = fullReply;
+    let followUps: string[] = [];
+
+    if (generateFollowUps && fullReply.includes("---FOLLOWUPS---")) {
+      const parts = fullReply.split("---FOLLOWUPS---");
+      reply = parts[0].trim();
+      
+      if (parts[1]) {
+        followUps = parts[1]
+          .split('\n')
+          .map((line: string) => line.trim())
+          .filter((line: string) => line.startsWith("-"))
+          .map((line: string) => line.replace(/^-\s*/, ""))
+          .filter((q: string) => q.length > 0)
+          .slice(0, 3);
+      }
+    }
+
+    // Fallback follow-ups if none generated
+    if (generateFollowUps && followUps.length === 0) {
+      followUps = [
+        "بیشتر توضیح بده",
+        "یه مثال بزن",
+        "قدم بعدی چیه؟"
+      ];
+    }
+
+    return NextResponse.json({ reply, followUps });
 
   } catch (error) {
     console.error("Chat Error:", error);

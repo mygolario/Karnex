@@ -18,7 +18,8 @@ import {
   Search,
   Lightbulb,
   ArrowLeft,
-  ExternalLink
+  ExternalLink,
+  X
 } from "lucide-react";
 import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -136,157 +137,176 @@ export default function HelpCenterPage() {
     : Object.entries(businessGlossary);
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-10">
+    <div className="max-w-[1000px] mx-auto space-y-10 pb-20 animate-fade-in-up">
       
       {/* Header */}
-      <div className="text-center py-10">
-        <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-purple-600 text-white mb-6 shadow-xl shadow-primary/20">
-          <HelpCircle size={40} />
-        </div>
-        <h1 className="text-3xl font-black text-foreground mb-4">مرکز راهنمای کارنکس</h1>
-        <p className="text-muted-foreground text-lg mb-6">چطور می‌توانیم به رشد کسب‌وکار شما کمک کنیم؟</p>
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 to-purple-700 text-white shadow-2xl shadow-indigo-500/20 py-16 px-6 text-center">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20 bg-center" />
+        <div className="absolute top-1/2 left-1/2 w-[500px] h-[500px] bg-white/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
         
-        {/* Search */}
-        <div className="max-w-md mx-auto relative">
-          <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="جستجو در سوالات و راهنما..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pr-12 pl-4 py-3 bg-muted rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="inline-flex items-center justify-center w-24 h-24 rounded-[2rem] bg-white/10 backdrop-blur-md text-white mb-8 shadow-inner border border-white/20 animate-bounce-gentle">
+            <HelpCircle size={48} />
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">مرکز راهنمای کارنکس</h1>
+          <p className="text-xl text-white/80 font-medium mb-10 max-w-2xl mx-auto">چطور می‌توانیم به رشد کسب‌وکار شما کمک کنیم؟</p>
+          
+          {/* Search */}
+          <div className="w-full max-w-xl relative group">
+            <div className="absolute inset-0 bg-white/20 rounded-2xl blur-xl group-hover:bg-white/30 transition-all duration-500" />
+            <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl flex items-center p-2 shadow-2xl transition-all duration-300 focus-within:bg-white/20 focus-within:scale-[1.02]">
+               <Search size={24} className="text-white/70 mr-4" />
+               <input
+                 type="text"
+                 placeholder="جستجو در سوالات و راهنما..."
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+                 className="w-full bg-transparent border-none text-white placeholder:text-white/50 text-lg px-2 h-12 focus:ring-0 focus:outline-none"
+               />
+               {searchQuery && (
+                  <button onClick={() => setSearchQuery('')} className="p-2 hover:bg-white/10 rounded-xl transition-colors">
+                    <X size={20} className="text-white/70" />
+                  </button>
+               )}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card variant="glass" hover="lift" className="text-center cursor-pointer group">
-          <CardIcon variant="primary" className="mx-auto mb-4 w-14 h-14 group-hover:scale-110 transition-transform">
-            <Zap size={24} />
-          </CardIcon>
-          <h3 className="font-bold text-foreground mb-2">شروع سریع</h3>
-          <p className="text-muted-foreground text-sm">آموزش کار با ابزارهای هوشمند داشبورد</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 -mt-8 relative z-20 px-4">
+        <Card variant="glass" hover="lift" className="text-center cursor-pointer group py-8 border-t-4 border-t-amber-400">
+          <div className="bg-amber-400/10 text-amber-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+            <Zap size={32} />
+          </div>
+          <h3 className="font-bold text-lg text-foreground mb-2">شروع سریع</h3>
+          <p className="text-muted-foreground text-sm leading-6 px-4">آموزش گام‌به‌گام کار با ابزارهای هوشمند داشبورد</p>
         </Card>
         
-        <Card variant="glass" hover="lift" className="text-center cursor-pointer group">
-          <CardIcon variant="accent" className="mx-auto mb-4 w-14 h-14 group-hover:scale-110 transition-transform">
-            <FileText size={24} />
-          </CardIcon>
-          <h3 className="font-bold text-foreground mb-2">مستندات</h3>
-          <p className="text-muted-foreground text-sm">راهنمای خوانی بوم کسب‌وکار و نقشه راه</p>
+        <Card variant="glass" hover="lift" className="text-center cursor-pointer group py-8 border-t-4 border-t-blue-400">
+          <div className="bg-blue-400/10 text-blue-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+            <FileText size={32} />
+          </div>
+          <h3 className="font-bold text-lg text-foreground mb-2">مستندات</h3>
+          <p className="text-muted-foreground text-sm leading-6 px-4">راهنمای خوانی بوم کسب‌وکار و نقشه راه</p>
         </Card>
 
-        <Card variant="glass" hover="lift" className="text-center cursor-pointer group">
-          <CardIcon variant="secondary" className="mx-auto mb-4 w-14 h-14 group-hover:scale-110 transition-transform">
-            <MessageCircle size={24} />
-          </CardIcon>
-          <h3 className="font-bold text-foreground mb-2">پشتیبانی</h3>
-          <p className="text-muted-foreground text-sm">تماس با تیم فنی کارنکس</p>
+        <Card variant="glass" hover="lift" className="text-center cursor-pointer group py-8 border-t-4 border-t-emerald-400">
+          <div className="bg-emerald-400/10 text-emerald-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+            <MessageCircle size={32} />
+          </div>
+          <h3 className="font-bold text-lg text-foreground mb-2">پشتیبانی</h3>
+          <p className="text-muted-foreground text-sm leading-6 px-4">تماس مستقیم با تیم فنی و پشتیبانی کارنکس</p>
         </Card>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 border-b border-border pb-4">
-        {[
-          { id: "faq", label: "سوالات متداول", count: faqs.length },
-          { id: "features", label: "راهنمای امکانات", count: features.length },
-          { id: "glossary", label: "واژه‌نامه", count: Object.keys(businessGlossary).length }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
-              activeTab === tab.id 
-                ? "bg-primary text-white" 
-                : "bg-muted text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {tab.label}
-            <Badge variant={activeTab === tab.id ? "success" : "muted"} size="sm">
-              {tab.count}
-            </Badge>
-          </button>
-        ))}
-      </div>
-
-      {/* FAQ Tab */}
-      {activeTab === "faq" && (
-        <section className="space-y-4">
-          {filteredFaqs.length === 0 ? (
-            <Card variant="muted" className="text-center py-8">
-              <p className="text-muted-foreground">نتیجه‌ای یافت نشد. سوال دیگری جستجو کنید.</p>
-            </Card>
-          ) : (
-            filteredFaqs.map((item, i) => (
-              <FaqItem key={i} question={item.q} answer={item.a} />
-            ))
-          )}
-        </section>
-      )}
-
-      {/* Features Tab */}
-      {activeTab === "features" && (
-        <section className="space-y-4">
-          {features.map((feature, i) => (
-            <FeatureGuide
-              key={i}
-              icon={feature.icon}
-              title={feature.title}
-              description={feature.description}
-              variant={feature.variant}
-            >
-              <Link href={feature.href}>
-                <Button variant="outline" size="sm">
-                  رفتن به {feature.title}
-                  <ArrowLeft size={14} />
-                </Button>
-              </Link>
-            </FeatureGuide>
-          ))}
-        </section>
-      )}
-
-      {/* Glossary Tab */}
-      {activeTab === "glossary" && (
-        <section className="space-y-4">
-          <Card variant="muted" className="mb-4">
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <Lightbulb size={14} className="text-accent" />
-              این واژه‌ها را در طول کار با کارنکس می‌بینید. اگر معنی کلمه‌ای را ندانستید، اینجا پیدا کنید!
-            </div>
-          </Card>
-          
-          {filteredGlossary.length === 0 ? (
-            <Card variant="muted" className="text-center py-8">
-              <p className="text-muted-foreground">واژه‌ای یافت نشد.</p>
-            </Card>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-4">
-              {filteredGlossary.map(([term, definition], i) => (
-                <Card key={i} variant="default" hover="glow" className="p-4">
-                  <h4 className="font-bold text-primary mb-2">{term}</h4>
-                  <p className="text-muted-foreground text-sm leading-6">{definition}</p>
-                </Card>
+      <div className="px-4 md:px-0 space-y-8">
+        {/* Tabs */}
+        <div className="flex justify-center">
+            <div className="flex gap-2 bg-muted/50 p-1.5 rounded-2xl border border-border/50 backdrop-blur-sm">
+              {[
+                { id: "faq", label: "سوالات متداول", count: faqs.length },
+                { id: "features", label: "راهنمای امکانات", count: features.length },
+                { id: "glossary", label: "واژه‌نامه", count: Object.keys(businessGlossary).length }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-3 ${
+                    activeTab === tab.id 
+                      ? "bg-white shadow-lg text-primary scale-105" 
+                      : "text-muted-foreground hover:text-foreground hover:bg-white/50"
+                  }`}
+                >
+                  {tab.label}
+                  <Badge variant={activeTab === tab.id ? "default" : "muted"} size="sm" className="px-1.5 h-5 min-w-[20px] justify-center">
+                    {tab.count}
+                  </Badge>
+                </button>
               ))}
             </div>
-          )}
-        </section>
-      )}
+        </div>
 
-      {/* Still Need Help */}
-      <Card variant="gradient" className="text-center text-white py-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-        <div className="relative">
-          <h3 className="text-xl font-bold mb-2">هنوز سوالی دارید؟</h3>
-          <p className="text-white/80 mb-4">از مشاور هوشمند بپرسید! روی دکمه گوشه پایین-چپ کلیک کنید.</p>
-          <div className="flex items-center justify-center gap-2 text-sm text-white/60">
-            <Sparkles size={14} />
-            مشاور AI ۲۴ ساعته آنلاین است
+        {/* FAQ Tab */}
+        {activeTab === "faq" && (
+          <section className="space-y-4 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {filteredFaqs.length === 0 ? (
+              <div className="text-center py-12 bg-muted/30 rounded-3xl border border-dashed border-border">
+                <Search size={40} className="mx-auto text-muted-foreground mb-4 opacity-50" />
+                <p className="text-muted-foreground text-lg">نتیجه‌ای یافت نشد. با کلمات دیگری امتحان کنید.</p>
+              </div>
+            ) : (
+              filteredFaqs.map((item, i) => (
+                <FaqItem key={i} question={item.q} answer={item.a} />
+              ))
+            )}
+          </section>
+        )}
+
+        {/* Features Tab */}
+        {activeTab === "features" && (
+          <section className="space-y-6 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {features.map((feature, i) => (
+              <FeatureGuide
+                key={i}
+                icon={feature.icon}
+                title={feature.title}
+                description={feature.description}
+                variant={feature.variant}
+              >
+                <Link href={feature.href}>
+                  <Button variant="ghost" size="sm" className="gap-2 hover:bg-primary/10 hover:text-primary">
+                    رفتن به {feature.title}
+                    <ArrowLeft size={16} />
+                  </Button>
+                </Link>
+              </FeatureGuide>
+            ))}
+          </section>
+        )}
+
+        {/* Glossary Tab */}
+        {activeTab === "glossary" && (
+          <section className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex items-center gap-3 text-amber-700 dark:text-amber-400 max-w-3xl mx-auto">
+                <Lightbulb size={20} className="shrink-0" />
+                <p className="text-sm font-medium">این واژه‌ها را در طول کار با کارنکس می‌بینید. اگر معنی کلمه‌ای را ندانستید، اینجا پیدا کنید!</p>
+            </div>
+            
+            {filteredGlossary.length === 0 ? (
+              <div className="text-center py-12 bg-muted/30 rounded-3xl border border-dashed border-border">
+                <BookOpen size={40} className="mx-auto text-muted-foreground mb-4 opacity-50" />
+                <p className="text-muted-foreground text-lg">واژه‌ای یافت نشد.</p>
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 gap-5">
+                {filteredGlossary.map(([term, definition], i) => (
+                  <div key={i} className="bg-card border border-border/50 p-6 rounded-2xl hover:shadow-lg hover:border-primary/30 transition-all duration-300 group">
+                    <h4 className="font-extrabold text-lg text-primary mb-3 group-hover:scale-105 transition-transform origin-right">{term}</h4>
+                    <p className="text-muted-foreground text-sm leading-7 text-justify">{definition}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Still Need Help */}
+        <div className="mt-12 rounded-3xl bg-gradient-to-r from-slate-900 to-slate-800 text-white p-8 md:p-12 text-center relative overflow-hidden shadow-2xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/20 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2" />
+          
+          <div className="relative z-10">
+            <h3 className="text-2xl font-black mb-4">هنوز سوالی دارید؟</h3>
+            <p className="text-white/70 text-lg mb-8 max-w-xl mx-auto">ما همیشه آماده کمک هستیم. از دستیار هوشمند در پایین صفحه استفاده کنید.</p>
+            
+            <div className="inline-flex items-center gap-3 bg-white/10 backdrop-blur-md px-6 py-3 rounded-full border border-white/10 text-white/90">
+              <Sparkles size={18} className="text-yellow-400" />
+              <span className="font-medium">مشاور AI ۲۴ ساعته آنلاین است</span>
+            </div>
           </div>
         </div>
-      </Card>
-
+      </div>
     </div>
   );
 }
