@@ -8,11 +8,11 @@ import { ThemeProvider } from '@/components/shared/theme-provider';
 const vazir = Vazirmatn({ subsets: ['arabic', 'latin'] });
 
 export const metadata: Metadata = {
-  title: 'کارنکس | دستیار هوشمند کارآفرینی',
+  title: 'کارنکس | دستیار هوشمند کارآفرینی - 41123370',
   description: 'با هوش مصنوعی، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
   metadataBase: new URL('https://www.karnex.ir'),
   openGraph: {
-    title: 'کارنکس | دستیار هوشمند کارآفرینی',
+    title: 'کارنکس | دستیار هوشمند کارآفرینی - 41123370',
     description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید.',
     url: 'https://www.karnex.ir',
     siteName: 'Karnex',
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'کارنکس | دستیار هوشمند کارآفرینی',
+    title: 'کارنکس | دستیار هوشمند کارآفرینی - 41123370',
     description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید.',
     images: ['/logo-light.png'],
   },
