@@ -13,7 +13,7 @@ import { getAuth } from "firebase/auth";
 import { app } from "@/lib/firebase";
 
 // Real DB Call
-const upgradeUserStatus = async (userId: string) => {
+const upgradeUserStatus = async (userId: string, planId: string) => {
   const db = getFirestore(app);
   // We assume user profile is at /users/{userId} or we update the plan config
   // The prompt says: "The user document should now have subscriptionStatus: 'pro'"
@@ -23,16 +23,26 @@ const upgradeUserStatus = async (userId: string) => {
   await setDoc(userRef, { 
     subscriptionStatus: 'pro',
     subscriptionDate: new Date().toISOString(),
-    planId: 'pro_monthly'
+    planId: planId
   }, { merge: true });
 };
 
 // --- END MOCKS ---
 
+
+// --- PLAN DETAILS ---
+const PLANS: Record<string, { name: string; price: string }> = {
+  'starter': { name: 'طرح رایگان', price: '۰' },
+  'pro_monthly': { name: 'اشتراک حرفه‌ای (ماهانه)', price: '۲۹۹,۰۰۰' },
+  'pro_yearly': { name: 'اشتراک سالانه (با تخفیف)', price: '۲,۹۹۰,۰۰۰' },
+  'business': { name: 'اشتراک تجاری', price: '۲,۹۹۰,۰۰۰' },
+};
+
 export default function MockPaymentGateway() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const planId = searchParams.get("planId") || "plan_001";
+  const planId = searchParams.get("planId") || "pro_monthly";
+  const planDetails = PLANS[planId] || { name: 'اشتراک ویژه', price: '۲۹۹,۰۰۰' };
   
   const auth = getAuth(app);
   const userId = auth.currentUser?.uid;
@@ -42,6 +52,7 @@ export default function MockPaymentGateway() {
   const [cvv, setCvv] = useState("");
   const [expiryM, setExpiryM] = useState("");
   const [expiryY, setExpiryY] = useState("");
+  const [trackId, setTrackId] = useState("");
 
   const handlePayment = async () => {
     if (cardNumber.length < 16 || cvv.length < 3) return;
@@ -51,20 +62,20 @@ export default function MockPaymentGateway() {
     // Simulate network delay & API call
     setTimeout(async () => {
       try {
-        if (userId) {
+        if (userId || true) { // Allow mock without login for demo purposes if needed, but best with user
           // 1. Upgrade User Status (Real)
-          await upgradeUserStatus(userId);
+          if (userId) {
+            await upgradeUserStatus(userId, planId);
+          }
           
+          setTrackId(Math.random().toString().substr(2, 8));
           setStatus("success");
           
           // Redirect back to app after success
-          setTimeout(() => {
-            router.push(`/dashboard?upgrade=success`);
-          }, 2500);
+          // setTimeout(() => {
+          //   router.push(`/dashboard/overview?upgrade=success`);
+          // }, 4000); // 4 Seconds to see receipt
         } else {
-             // If no user (shouldn't happen in flow), we could prompt login or link
-             // But for now, let's just fail or save to local storage?
-             // Prompt implies we are upgrading the current user.
              console.error("No user found to upgrade");
              setStatus("fail");
         }
@@ -107,7 +118,7 @@ export default function MockPaymentGateway() {
           <div className="flex justify-between items-center mb-8 bg-gray-50 p-3 rounded-lg border border-gray-100">
             <span className="text-gray-500 text-sm">مبلغ کل</span>
             <div className="text-right">
-                <span className="font-bold text-2xl text-green-600">299,000</span>
+                <span className="font-bold text-2xl text-green-600">{planDetails.price}</span>
                 <span className="text-xs text-gray-400 mr-1">تومان</span>
             </div>
           </div>
@@ -201,25 +212,57 @@ export default function MockPaymentGateway() {
           )}
 
           {status === "success" && (
-            <div className="flex flex-col items-center justify-center py-10 space-y-6 animate-in zoom-in duration-300">
-              <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center text-green-600 shadow-inner">
-                <CheckCircle2 className="h-10 w-10" />
+            <div className="flex flex-col items-center animate-in zoom-in duration-300">
+               {/* Receipt Header */}
+              <div className="w-full bg-green-50 border border-green-100 rounded-t-xl p-6 text-center border-b-2 border-dashed border-b-green-200 relative mb-4">
+                 <div className="absolute -bottom-3 -right-3 w-6 h-6 bg-white rounded-full"></div>
+                 <div className="absolute -bottom-3 -left-3 w-6 h-6 bg-white rounded-full"></div>
+                 
+                 <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center text-green-600 mx-auto mb-3">
+                    <CheckCircle2 className="h-8 w-8" />
+                 </div>
+                 <h3 className="text-xl font-bold text-green-800">تراکنش موفق</h3>
+                 <p className="text-green-600 text-sm mt-1">{new Date().toLocaleTimeString('fa-IR')} - {new Date().toLocaleDateString('fa-IR')}</p>
               </div>
-              <div className="text-center space-y-2">
-                  <h3 className="text-2xl font-bold text-green-700">پرداخت موفق</h3>
-                  <p className="text-gray-500 text-sm">شماره تراکنش: {Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
-              </div>
-              <div className="w-full bg-gray-50 p-4 rounded-lg border border-gray-200 text-sm space-y-2">
-                  <div className="flex justify-between">
-                      <span className="text-gray-500">مبلغ پرداختی</span>
-                      <span className="font-bold">299,000 تومان</span>
+
+               {/* Receipt Details */}
+              <div className="w-full space-y-3 text-sm px-2">
+                  <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                       <span className="text-gray-500">کد رهگیری</span>
+                       <span className="font-mono font-bold text-lg tracking-wider">{trackId}</span>
                   </div>
-                  <div className="flex justify-between">
-                      <span className="text-gray-500">تاریخ</span>
-                      <span className="font-bold">{new Date().toLocaleDateString('fa-IR')}</span>
+                  <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                       <span className="text-gray-500">نام پذیرنده</span>
+                       <span className="font-bold">کارنکس (Karnex)</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                       <span className="text-gray-500">محصول</span>
+                       <span className="font-bold text-blue-600">{planDetails.name}</span>
+                  </div>
+                  <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                       <span className="text-gray-500">شماره کارت</span>
+                       <span className="font-mono text-gray-700" dir="ltr">6037 **** **** {cardNumber.slice(-4)}</span>
+                  </div>
+                   <div className="flex justify-between items-center pt-1">
+                       <span className="text-gray-500">مبلغ پرداخت شده</span>
+                       <span className="font-bold text-lg text-green-600">{planDetails.price} ریال</span>
                   </div>
               </div>
-              <p className="text-blue-600 text-sm font-medium animate-pulse">در حال انتقال به کارنکس...</p>
+
+              <div className="w-full mt-6 space-y-3">
+                 <button 
+                   onClick={() => router.push(`/dashboard/overview?upgrade=success`)}
+                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                 >
+                    تکمیل خرید و بازگشت
+                 </button>
+                 <button 
+                   onClick={() => window.print()}
+                   className="w-full bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium py-2 rounded-lg transition-colors text-sm"
+                 >
+                    چاپ رسید
+                 </button>
+              </div>
             </div>
           )}
           

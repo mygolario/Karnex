@@ -27,7 +27,7 @@ export function Navbar() {
   const navLinks = [
     { label: "ویژگی‌ها", href: "#features" },
     { label: "نحوه کار", href: "#how-it-works" },
-    { label: "قیمت‌ها", href: "#pricing" },
+    { label: "قیمت‌ها", href: "/pricing" },
   ];
 
   return (

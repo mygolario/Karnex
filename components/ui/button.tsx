@@ -28,6 +28,8 @@ const buttonVariants = cva(
           "glass text-foreground hover:bg-white/80 dark:hover:bg-white/10 shadow-lg backdrop-blur-md",
         accent:
           "bg-accent text-accent-foreground shadow-md hover:bg-accent/90 hover:shadow-lg",
+        white:
+          "bg-white text-primary hover:bg-white/90 shadow-md",
       },
       size: {
         default: "h-11 px-5 py-2.5",

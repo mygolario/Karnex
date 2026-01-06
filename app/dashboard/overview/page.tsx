@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { Button } from "@/components/ui/button";
@@ -26,13 +27,24 @@ import {
   Calendar,
   ChevronLeft,
   Activity,
-  Award
+  Award,
+  X
 } from "lucide-react";
 
 export default function DashboardOverviewPage() {
   const { user } = useAuth();
   const { activeProject: plan, loading } = useProject();
   const [greeting, setGreeting] = useState("سلام");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (searchParams.get("upgrade") === "success") {
+      setShowSuccessModal(true);
+      router.replace("/dashboard/overview");
+    }
+  }, [searchParams, router]);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -255,6 +267,50 @@ export default function DashboardOverviewPage() {
           </Link>
         </div>
       </div>
+
+      
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full p-8 relative overflow-hidden animate-in zoom-in-95 duration-300">
+             {/* Background Effects */}
+             <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+             <div className="absolute bottom-0 left-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+             <button 
+               onClick={() => setShowSuccessModal(false)}
+               className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
+             >
+               <X size={20} />
+             </button>
+
+             <div className="text-center space-y-4 relative z-10">
+               <div className="w-20 h-20 bg-green-100 dark:bg-green-900/30 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-green-500/10 ring-8 ring-green-50 dark:ring-green-900/10">
+                 <CheckCircle2 size={40} />
+               </div>
+               
+               <h2 className="text-2xl font-black text-foreground">
+                 اشتراک شما فعال شد! 🎉
+               </h2>
+               
+               <p className="text-muted-foreground leading-relaxed">
+                 تبریک می‌گوییم! حساب شما با موفقیت ارتقا یافت. اکنون به تمامی امکانات پیشرفته و هوش مصنوعی قدرتمند کارنکس دسترسی دارید.
+               </p>
+
+               <div className="pt-4">
+                 <Button 
+                   onClick={() => setShowSuccessModal(false)}
+                   variant="gradient" 
+                   size="lg" 
+                   className="w-full shadow-lg shadow-primary/20"
+                 >
+                   شروع استفاده
+                 </Button>
+               </div>
+             </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
