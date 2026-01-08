@@ -77,7 +77,7 @@ export function CompetitorAnalyzer() {
           <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Search size={32} />
           </div>
-          <h3 className="text-xl font-bold mb-2">تحلیل رقبا با هوش مصنوعی</h3>
+          <h3 className="text-xl font-bold mb-2">تحلیل رقبا با کارنکس</h3>
           <p className="text-white/80 text-sm mb-6 max-w-md mx-auto">
             رقبای ایرانی و بین‌المللی در حوزه «{plan?.projectName}» را شناسایی کنید و تحلیل SWOT اختصاصی دریافت کنید.
           </p>

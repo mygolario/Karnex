@@ -81,7 +81,7 @@ export async function POST(req: Request) {
 
     if (!response || !response.ok) {
       return NextResponse.json({ 
-        reply: "متاسفانه سرویس هوش مصنوعی در حال حاضر پاسخگو نیست. لطفا دقایقی دیگر تلاش کنید.",
+        reply: "متاسفانه سرویس دستیار کارنکس در حال حاضر پاسخگو نیست. لطفا دقایقی دیگر تلاش کنید.",
         followUps: []
       });
     }

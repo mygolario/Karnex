@@ -437,7 +437,7 @@ export default function NewProjectPage() {
       icon: Lightbulb,
       title: "ایده‌ات چیه؟",
       subtitle: "در یک جمله بگو",
-      description: "ایده‌ات رو ساده توضیح بده — هوش مصنوعی بقیه‌اش رو می‌فهمه",
+      description: "ایده‌ات رو ساده توضیح بده — دستیار کارنکس بقیه‌اش رو می‌فهمه",
       gradient: "from-amber-500 to-orange-500",
     },
     {

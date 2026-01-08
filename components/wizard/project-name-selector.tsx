@@ -67,7 +67,7 @@ export function ProjectNameSelector({ idea, selectedName, onNameChange }: Projec
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-foreground flex items-center gap-2">
             <Sparkles size={14} className="text-primary" />
-            پیشنهادات هوش مصنوعی:
+            پیشنهادات دستیار کارنکس:
           </p>
           <button
             onClick={fetchSuggestions}

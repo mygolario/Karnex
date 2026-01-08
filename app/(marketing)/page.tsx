@@ -63,7 +63,7 @@ export default function MarketingPage() {
               
               {/* Subheadline */}
               <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                بدون نیاز به سرمایه اولیه یا دانش فنی. هوش مصنوعی ما قدم‌به‌قدم شما را از 
+                بدون نیاز به سرمایه اولیه یا دانش فنی. کارنکس قدم‌به‌قدم شما را از 
                 یک ایده خام تا راه‌اندازی کامل کسب‌وکارتان راهنمایی می‌کند.
               </p>
               
@@ -208,7 +208,7 @@ export default function MarketingPage() {
                   {
                     step: "۲",
                     icon: Cpu,
-                    title: "پردازش هوش مصنوعی",
+                    title: "پردازش با کارنکس",
                     desc: "موتور هوشمند ما بازار، رقبا و ابزارهای کم‌هزینه مناسب شما را تحلیل می‌کند.",
                     color: "from-accent to-orange-500",
                   },

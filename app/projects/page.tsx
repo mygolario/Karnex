@@ -144,7 +144,7 @@ export default function ProjectsPage() {
            <div className="md:col-span-2">
               <LearnMore title="پروژه چیست؟" variant="muted" className="h-full bg-card/50 backdrop-blur-sm border-border/50">
                 <p className="text-muted-foreground text-sm leading-7 mb-3">
-                  هر پروژه یک ایده کسب‌وکار است که هوش مصنوعی برایش نقشه راه ساخته. می‌توانید چند پروژه مختلف داشته باشید و بین آن‌ها جابجا شوید.
+                  هر پروژه یک ایده کسب‌وکار است که کارنکس برایش نقشه راه ساخته. می‌توانید چند پروژه مختلف داشته باشید و بین آن‌ها جابجا شوید.
                   شما می‌توانید برای هر ایده، یک بوم مدل کسب‌وکار، نقشه راه اجرایی و هویت بصری جداگانه داشته باشید.
                 </p>
                 <div className="flex items-center gap-2 text-xs text-primary font-medium mt-4 bg-primary/5 w-fit px-3 py-1.5 rounded-lg border border-primary/10">
@@ -185,7 +185,7 @@ export default function ProjectsPage() {
                     </div>
                     <h3 className="text-2xl font-black text-foreground mb-3">هنوز پروژه‌ای ندارید</h3>
                     <p className="text-muted-foreground text-lg mb-8 leading-8">
-                        اولین قدم برای راه‌اندازی استارتاپ خود را بردارید. ایده خود را بنویسید و هوش مصنوعی نقشه راه کامل، بوم کسب‌وکار و استراتژی بازاریابی شما را ترسیم می‌کند.
+                        اولین قدم برای راه‌اندازی استارتاپ خود را بردارید. ایده خود را بنویسید و کارنکس نقشه راه کامل، بوم کسب‌وکار و استراتژی بازاریابی شما را ترسیم می‌کند.
                     </p>
                     <Link href="/new-project">
                         <Button variant="gradient" size="lg" className="h-14 px-8 text-lg rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-transform">

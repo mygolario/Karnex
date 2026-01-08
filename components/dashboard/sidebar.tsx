@@ -10,7 +10,8 @@ import {
   Map,
   Settings,
   Hexagon,
-  Megaphone
+  Megaphone,
+  ImageIcon
 } from "lucide-react";
 
 const sidebarLinks = [
@@ -38,6 +39,11 @@ const sidebarLinks = [
     title: "بازاریابی",
     href: "/dashboard/marketing",
     icon: Megaphone,
+  },
+  {
+    title: "کتابخانه رسانه",
+    href: "/dashboard/library",
+    icon: ImageIcon,
   },
   {
     title: "تنظیمات",

@@ -10,7 +10,7 @@ const organizationSchema = {
   alternateName: 'Karnex',
   url: 'https://www.karnex.ir',
   logo: 'https://www.karnex.ir/logo-light.png',
-  description: 'دستیار هوشمند کارآفرینی - با هوش مصنوعی ایده خود را به کسب‌وکار تبدیل کنید',
+  description: 'دستیار هوشمند کارآفرینی - با کارنکس ایده خود را به کسب‌وکار تبدیل کنید',
   sameAs: [],
   contactPoint: {
     '@type': 'ContactPoint',
@@ -27,7 +27,7 @@ const websiteSchema = {
   alternateName: 'Karnex',
   url: 'https://www.karnex.ir',
   inLanguage: 'fa-IR',
-  description: 'با هوش مصنوعی، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید',
+  description: 'با کارنکس، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید',
 };
 
 // SoftwareApplication schema for the SaaS platform
@@ -44,7 +44,7 @@ const softwareSchema = {
     priceCurrency: 'IRR',
     description: 'شروع رایگان',
   },
-  description: 'دستیار هوشمند راه‌اندازی کسب‌وکار با هوش مصنوعی',
+  description: 'دستیار هوشمند راه‌اندازی کسب‌وکار با کارنکس',
   aggregateRating: {
     '@type': 'AggregateRating',
     ratingValue: '4.8',
