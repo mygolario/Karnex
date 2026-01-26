@@ -10,7 +10,8 @@ import {
   Map,
   Settings,
   Hexagon,
-  Megaphone
+  Megaphone,
+  ImageIcon
 } from "lucide-react";
 
 const sidebarLinks = [
@@ -24,11 +25,11 @@ const sidebarLinks = [
     href: "/dashboard/canvas",
     icon: LayoutGrid,
   },
-  {
-    title: "هویت بصری",
-    href: "/dashboard/brand",
-    icon: Palette,
-  },
+  // {
+  //   title: "هویت بصری",
+  //   href: "/dashboard/brand",
+  //   icon: Palette,
+  // },
   {
     title: "نقشه راه",
     href: "/dashboard/roadmap",
@@ -38,6 +39,11 @@ const sidebarLinks = [
     title: "بازاریابی",
     href: "/dashboard/marketing",
     icon: Megaphone,
+  },
+  {
+    title: "کتابخانه رسانه",
+    href: "/dashboard/library",
+    icon: ImageIcon,
   },
   {
     title: "تنظیمات",
@@ -53,8 +59,8 @@ export function Sidebar() {
     <div className="flex h-full flex-col border-l bg-card pb-4">
       <div className="flex h-16 items-center border-b px-6">
         <Link href="/" className="flex items-center gap-2">
-           <Hexagon className="h-6 w-6 text-primary fill-primary/10" />
-           <span className="text-lg font-bold tracking-tight text-primary">Karnex</span>
+          <Hexagon className="h-6 w-6 text-primary fill-primary/10" />
+          <span className="text-lg font-bold tracking-tight text-primary">Karnex</span>
         </Link>
       </div>
       <div className="flex-1 overflow-y-auto py-4">
@@ -80,11 +86,11 @@ export function Sidebar() {
         </nav>
       </div>
       <div className="mt-auto border-t p-4">
-          <div className="rounded-lg bg-muted/50 p-4">
-              <p className="text-xs text-muted-foreground text-center">
-                  نسخه آزمایشی ۱.۰.۰
-              </p>
-          </div>
+        <div className="rounded-lg bg-muted/50 p-4">
+          <p className="text-xs text-muted-foreground text-center">
+            نسخه آزمایشی ۱.۰.۰
+          </p>
+        </div>
       </div>
     </div>
   );

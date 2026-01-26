@@ -1,15 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { Megaphone, TrendingUp, Users, Zap, Lightbulb, Target, Sparkles, BarChart3, Globe, Shield, AlertTriangle } from "lucide-react";
-import { Card, CardIcon } from "@/components/ui/card";
+import { Megaphone, TrendingUp, Lightbulb, Sparkles } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { HoverExplainer } from "@/components/ui/explainer";
-import { LearnMore } from "@/components/ui/learn-more";
-import { featureExplanations, getCostLabel, getDifficultyLabel } from "@/lib/knowledge-base";
 import { ContentGeneratorButton } from "@/components/dashboard/content-generator-button";
+import { CompetitorAnalyzer } from "@/components/dashboard/competitor-analyzer";
+import { MarketingScore } from "@/components/dashboard/marketing/marketing-score";
+import { MarketingFunnel } from "@/components/dashboard/marketing/marketing-funnel";
+import { ChannelCards } from "@/components/dashboard/marketing/channel-cards";
+import { ContentCalendar } from "@/components/dashboard/marketing/content-calendar";
+import { CampaignBuilder } from "@/components/dashboard/marketing/campaign-builder";
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const } }
+};
 
 export default function MarketingPage() {
   const { user } = useAuth();
@@ -19,96 +34,139 @@ export default function MarketingPage() {
   if (loading || !plan) {
     return (
       <div className="p-12 flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-rose-500 to-orange-500 flex items-center justify-center animate-pulse shadow-lg shadow-rose-500/20">
-          <Megaphone size={40} className="text-white" />
+        <div className="skeleton w-full h-48 rounded-[2rem]" />
+        <div className="grid md:grid-cols-2 gap-4 w-full">
+          {[1, 2, 3, 4].map(i => <div key={i} className="skeleton h-48 rounded-2xl" />)}
         </div>
-        <p className="text-muted-foreground font-medium animate-pulse">در حال تدوین استراتژی رشد...</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-12 pb-20">
-      
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="max-w-[1400px] mx-auto space-y-8 pb-20"
+    >
+
       {/* Header */}
-      <div className="bg-card border border-border rounded-3xl p-8 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-rose-500/5 rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <motion.div
+        variants={itemVariants}
+        className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-rose-600 via-orange-600 to-amber-500 text-white shadow-2xl shadow-rose-500/20"
+      >
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20 bg-center" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-300/30 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+
+        <div className="relative z-10 p-8 md:p-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-12 h-12 bg-gradient-to-br from-rose-500 to-orange-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                <Megaphone size={24} />
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-inner border border-white/20">
+                <Megaphone size={32} />
               </div>
-              <h1 className="text-3xl font-black text-foreground">بازاریابی و رشد</h1>
-              <Badge variant="gradient" size="sm">
-                <Sparkles size={12} />
-                Actionable
-              </Badge>
+              <div>
+                <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-1">مرکز فرماندهی بازاریابی</h1>
+                <p className="text-white/70 text-sm">Marketing Command Center</p>
+              </div>
             </div>
-            <p className="text-muted-foreground max-w-lg mt-2">
-              موتور جذب کاربر برای <span className="font-bold text-foreground">{plan.projectName}</span>. 
-              اینجا استراتژی‌ها به برنامه عملی تبدیل می‌شوند.
+            <p className="text-white/90 max-w-xl text-base leading-relaxed">
+              تمام ابزارهای بازاریابی <span className="font-bold text-white">{plan.projectName}</span> در یک‌جا.
+              از تحلیل رقبا تا تولید محتوا و ساخت کمپین.
             </p>
           </div>
-          
-          <div className="flex gap-3">
-             <div className="text-right hidden md:block">
-                <div className="text-xs text-muted-foreground mb-1">مخاطب هدف</div>
-                <Badge variant="secondary">{plan.audience}</Badge>
-             </div>
+
+          <div className="flex flex-col items-end gap-3">
+            <div className="glass px-5 py-3 rounded-xl border-white/10">
+              <div className="text-xs text-white/70 mb-1 uppercase tracking-wider font-medium">مخاطب هدف</div>
+              <Badge variant="secondary" className="text-sm py-1 px-3 bg-white text-rose-600 hover:bg-white/90">{plan.audience}</Badge>
+            </div>
           </div>
         </div>
+      </motion.div>
+
+      {/* Dashboard Grid */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Marketing Score */}
+        <motion.div variants={itemVariants}>
+          <MarketingScore />
+        </motion.div>
+
+        {/* Marketing Funnel */}
+        <motion.div variants={itemVariants}>
+          <MarketingFunnel />
+        </motion.div>
+
+        {/* Channel Cards */}
+        <motion.div variants={itemVariants}>
+          <ChannelCards />
+        </motion.div>
+
+        {/* Content Calendar */}
+        <motion.div variants={itemVariants}>
+          <ContentCalendar />
+        </motion.div>
       </div>
 
-      {/* 1. Growth Tactics */}
-      <section className="space-y-6">
-        <div className="flex items-center gap-2 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white shadow-lg shadow-primary/20">
-            <TrendingUp size={20} />
+      {/* Campaign Builder - Full Width */}
+      <motion.div variants={itemVariants}>
+        <CampaignBuilder />
+      </motion.div>
+
+      {/* Growth Tactics */}
+      <motion.section variants={itemVariants} className="space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-white shadow-lg shadow-primary/20">
+            <TrendingUp size={24} />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-foreground">تکتیک‌های رشد</h2>
-            <p className="text-xs text-muted-foreground">Growth Hacking Strategies</p>
+            <h2 className="text-2xl font-black text-foreground tracking-tight">تکتیک‌های رشد</h2>
+            <p className="text-sm text-muted-foreground font-medium">Growth Hacking Strategies</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4">
           {plan.marketingStrategy.map((tactic: string, i: number) => (
-            <Card 
-              key={i} 
+            <Card
+              key={i}
               variant="default"
               hover="lift"
-              className={`cursor-pointer border-2 transition-all ${expandedTactic === i ? 'border-primary/20 shadow-md' : 'border-transparent'}`}
+              className={`cursor-pointer transition-all duration-300 relative overflow-hidden group ${expandedTactic === i
+                  ? 'border-primary/50 shadow-xl shadow-primary/5 bg-primary/5 ring-1 ring-primary/20'
+                  : 'card-glass hover:border-primary/20'
+                }`}
               onClick={() => setExpandedTactic(expandedTactic === i ? null : i)}
             >
-              <div className="flex gap-4 items-start">
-                <div className="w-12 h-12 shrink-0 bg-primary/5 text-primary rounded-2xl flex items-center justify-center font-black text-lg">
+              <div className="flex gap-5 items-start p-2">
+                <div className={`
+                    w-12 h-12 shrink-0 rounded-xl flex items-center justify-center font-black text-lg shadow-inner transition-colors duration-300
+                    ${expandedTactic === i ? 'bg-primary text-white shadow-primary/30' : 'bg-muted/50 text-muted-foreground group-hover:text-primary group-hover:bg-primary/10'}
+                `}>
                   {i + 1}
                 </div>
-                
-                <div className="flex-1 space-y-3">
+
+                <div className="flex-1 space-y-3 pt-0.5">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <h3 className="text-lg font-bold text-foreground leading-snug">
                       {tactic}
                     </h3>
-                    
-                    <div className="flex items-center gap-2">
-                      <ContentGeneratorButton 
-                        strategy={tactic} 
-                        projectName={plan.projectName} 
-                        audience={plan.audience} 
+
+                    <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <ContentGeneratorButton
+                        strategy={tactic}
+                        projectName={plan.projectName}
+                        audience={plan.audience}
                       />
                     </div>
                   </div>
 
                   {expandedTactic === i && (
-                    <div className="pt-4 border-t border-border animate-in slide-in-from-top-2 p-1">
-                      <div className="flex items-start gap-2 text-sm text-muted-foreground bg-muted/30 p-4 rounded-xl">
-                        <Lightbulb size={16} className="text-accent shrink-0 mt-0.5" />
-                        <p>
-                          نکته اجرایی: برای اجرای این تکتیک، ابتدا یک محتوای آزمایشی تولید کنید و در مقیاس کوچک تست کنید. 
-                          استفاده از دکمه "تولید محتوا" می‌تواند نقطه شروع خوبی باشد.
+                    <div className="pt-4 border-t border-border/50 animate-in slide-in-from-top-4 fade-in duration-300">
+                      <div className="flex items-start gap-3 text-sm text-foreground/80 bg-background/50 p-4 rounded-xl border border-border/50">
+                        <Lightbulb size={20} className="text-amber-500 shrink-0 mt-0.5" />
+                        <p className="leading-7">
+                          <strong>نکته اجرایی:</strong> برای اجرای این تکتیک، ابتدا یک محتوای آزمایشی تولید کنید و در مقیاس کوچک تست کنید.
+                          از دکمه "تولید محتوا" برای دریافت ایده استفاده کنید.
                         </p>
                       </div>
                     </div>
@@ -118,107 +176,13 @@ export default function MarketingPage() {
             </Card>
           ))}
         </div>
-      </section>
+      </motion.section>
 
-      {/* 2. SWOT & Competitors */}
-      <section className="grid lg:grid-cols-2 gap-8">
-        {/* Competitors List */}
-        <div className="space-y-6">
-           <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-              <Users size={20} />
-            </div>
-            <h2 className="text-xl font-bold text-foreground">تحلیل رقبا</h2>
-          </div>
+      {/* Competitor Analyzer */}
+      <motion.section variants={itemVariants}>
+        <CompetitorAnalyzer />
+      </motion.section>
 
-          <div className="space-y-4">
-            {plan.competitors?.map((comp, idx) => (
-              <div key={idx} className="bg-card border border-border p-4 rounded-2xl flex items-center gap-4 hover:shadow-md transition-shadow">
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-bold">
-                  {comp.name.charAt(0)}
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-bold text-foreground">{comp.name}</span>
-                    <Badge variant="outline" className="text-xs">{comp.channel}</Badge>
-                  </div>
-                  <div className="flex gap-2 text-xs">
-                    <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
-                      قوت: {comp.strength}
-                    </span>
-                    <span className="text-rose-600 bg-rose-50 px-2 py-0.5 rounded">
-                      ضعف: {comp.weakness}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {(!plan.competitors || plan.competitors.length === 0) && (
-              <div className="p-8 text-center bg-muted/30 rounded-2xl border border-dashed border-border text-muted-foreground">
-                رقیبی یافت نشد.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* SWOT Visualization (Based on general AI knowledge or mock for now as we don't store SWOT explicitly) */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-2">
-             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-white shadow-lg shadow-violet-500/20">
-              <BarChart3 size={20} />
-            </div>
-            <h2 className="text-xl font-bold text-foreground">تحلیل SWOT</h2>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 h-full">
-            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl">
-               <div className="flex items-center gap-2 text-emerald-700 font-bold mb-2">
-                 <Shield size={16} />
-                 نقاط قوت
-               </div>
-               <p className="text-xs text-emerald-900/70 leading-5">
-                 • ایده نوآورانه<br/>
-                 • هزینه شروع پایین<br/>
-                 • انعطاف‌پذیری بالا
-               </p>
-            </div>
-            <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl">
-               <div className="flex items-center gap-2 text-rose-700 font-bold mb-2">
-                 <AlertTriangle size={16} />
-                 نقاط ضعف
-               </div>
-               <p className="text-xs text-rose-900/70 leading-5">
-                 • منابع محدود<br/>
-                 • برند ناشناخته<br/>
-                 • تیم کوچک
-               </p>
-            </div>
-            <div className="bg-blue-50 border border-blue-100 p-4 rounded-2xl">
-               <div className="flex items-center gap-2 text-blue-700 font-bold mb-2">
-                 <Zap size={16} />
-                 فرصت‌ها
-               </div>
-               <p className="text-xs text-blue-900/70 leading-5">
-                 • بازار در حال رشد<br/>
-                 • نیاز مشتریان<br/>
-                 • تکنولوژی جدید
-               </p>
-            </div>
-            <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl">
-               <div className="flex items-center gap-2 text-orange-700 font-bold mb-2">
-                 <Target size={16} />
-                 تهدیدها
-               </div>
-               <p className="text-xs text-orange-900/70 leading-5">
-                 • تغییرات قوانین<br/>
-                 • ورود رقبای بزرگ<br/>
-                 • تورم اقتصادی
-               </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </div>
+    </motion.div>
   );
 }

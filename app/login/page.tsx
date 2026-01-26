@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -127,8 +128,8 @@ export default function LoginPage() {
         
         {/* Content */}
         <div className="relative z-10 flex flex-col justify-center items-center text-center p-12 text-white">
-          <div className="w-20 h-20 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center mb-8 shadow-2xl">
-            <Rocket size={40} />
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-8 shadow-2xl overflow-hidden">
+            <Image src="/logo.png" alt="کارنکس" width={80} height={80} className="w-20 h-20 object-cover" />
           </div>
           
           <h1 className="text-4xl font-black mb-4">
@@ -154,9 +155,9 @@ export default function LoginPage() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background">
         <div className="w-full max-w-md">
           {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center gap-2 mb-8">
-            <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center text-white shadow-lg">
-              <Rocket size={20} />
+          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+              <Image src="/logo.png" alt="کارنکس" width={40} height={40} className="w-10 h-10 object-cover" />
             </div>
             <span className="text-xl font-black text-foreground">کارنکس</span>
           </div>

@@ -1,188 +1,598 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { toggleStepCompletion } from "@/lib/db";
-import { Map, CheckCircle2, Sparkles, Circle, Flag, ArrowDown } from "lucide-react";
-import { useRouter } from "next/navigation";
+import {
+  Map, CheckCircle2, Sparkles, Circle, Flag,
+  Focus, ListTree, Loader2, Zap, ChevronDown, ChevronUp,
+  AlertCircle, Target, ArrowLeft, Clock, FolderOpen,
+  ChevronLeft, ChevronRight, Calendar
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/dashboard/progress-ring";
-import { StepGuide } from "@/components/dashboard/step-guide";
-import { HoverExplainer } from "@/components/ui/explainer";
+import { StepDetailModal } from "@/components/dashboard/step-detail-modal";
+import { cn } from "@/lib/utils";
+
+// Types for enhanced roadmap
+interface RoadmapStep {
+  title: string;
+  description?: string;
+  estimatedHours?: number;
+  priority?: 'high' | 'medium' | 'low';
+  category?: string;
+  resources?: string[];
+}
+
+interface RoadmapPhase {
+  phase: string;
+  weekNumber?: number;
+  theme?: string;
+  steps: (string | RoadmapStep)[];
+}
+
+interface SubTask {
+  parentStep: string;
+  text: string;
+  isCompleted: boolean;
+}
+
+// Helper to normalize step to object format
+function normalizeStep(step: string | RoadmapStep): RoadmapStep {
+  if (typeof step === 'string') {
+    return { title: step };
+  }
+  return step;
+}
+
+// Helper to get step title
+function getStepTitle(step: string | RoadmapStep): string {
+  return typeof step === 'string' ? step : step.title;
+}
 
 export default function RoadmapPage() {
   const { user } = useAuth();
   const { activeProject: plan, loading, updateActiveProject } = useProject();
-  
-  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
 
-  // Sync state
+  // State
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [focusMode, setFocusMode] = useState(false);
+  const [subTasks, setSubTasks] = useState<SubTask[]>([]);
+  const [loadingTask, setLoadingTask] = useState<string | null>(null);
+  const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
+  const [activeWeek, setActiveWeek] = useState(1);
+  const [selectedStep, setSelectedStep] = useState<{ step: RoadmapStep, phase: RoadmapPhase } | null>(null);
+
+  // Sync state from plan
   useEffect(() => {
     if (plan) {
       setCompletedSteps(plan.completedSteps || []);
+      if (plan.subTasks) {
+        setSubTasks(plan.subTasks);
+      }
+      // Find current week (first incomplete)
+      if (plan.roadmap) {
+        const currentWeekIdx = plan.roadmap.findIndex((phase: any) =>
+          phase.steps.some((s: any) => !plan.completedSteps?.includes(getStepTitle(s)))
+        );
+        if (currentWeekIdx >= 0) {
+          const phase = plan.roadmap[currentWeekIdx] as RoadmapPhase;
+          setActiveWeek(phase.weekNumber || currentWeekIdx + 1);
+        }
+      }
     }
   }, [plan]);
 
-  // Handle Check/Uncheck
-  const handleToggle = async (step: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  // Get all steps flattened for focus mode
+  const allSteps = plan?.roadmap?.flatMap((phase: RoadmapPhase) =>
+    phase.steps.map((step) => ({ step: normalizeStep(step), phase }))
+  ) || [];
+
+  // Find current (first incomplete) step
+  const currentStepData = allSteps.find(
+    (s: any) => !completedSteps.includes(s.step.title)
+  );
+
+  // Handle toggle completion
+  const handleToggle = async (stepTitle: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!user || !plan) return;
 
-    const isNowCompleted = !completedSteps.includes(step);
-    const newCompletedSteps = isNowCompleted 
-      ? [...completedSteps, step] 
-      : completedSteps.filter(s => s !== step);
-    
+    const isNowCompleted = !completedSteps.includes(stepTitle);
+    const newCompletedSteps = isNowCompleted
+      ? [...completedSteps, stepTitle]
+      : completedSteps.filter(s => s !== stepTitle);
+
     setCompletedSteps(newCompletedSteps);
     updateActiveProject({ completedSteps: newCompletedSteps });
 
     try {
-      await toggleStepCompletion(user.uid, step, isNowCompleted, plan.id || 'current');
+      await toggleStepCompletion(user.uid, stepTitle, isNowCompleted, plan.id || 'current');
     } catch (error) {
       console.error("Sync failed", error);
-      setCompletedSteps(completedSteps); // Revert
+      setCompletedSteps(completedSteps);
       updateActiveProject({ completedSteps: completedSteps });
     }
   };
 
-  if (loading || !plan) return <div className="p-12 text-center animate-pulse">در حال بارگذاری نقشه...</div>;
+  // Handle "Stuck" button - break task into sub-tasks
+  const handleStuck = async (stepTitle: string) => {
+    if (loadingTask) return;
 
-  const totalSteps = plan.roadmap.reduce((acc, phase) => acc + phase.steps.length, 0);
+    setLoadingTask(stepTitle);
+
+    try {
+      const res = await fetch("/api/break-task", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          taskName: stepTitle,
+          projectContext: plan?.projectName || ""
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.subTasks && data.subTasks.length > 0) {
+        const newSubTasks: SubTask[] = data.subTasks.map((text: string) => ({
+          parentStep: stepTitle,
+          text,
+          isCompleted: false
+        }));
+
+        const updatedSubTasks = [...subTasks.filter(s => s.parentStep !== stepTitle), ...newSubTasks];
+        setSubTasks(updatedSubTasks);
+        setExpandedSteps([...expandedSteps, stepTitle]);
+        updateActiveProject({ subTasks: updatedSubTasks });
+      }
+    } catch (error) {
+      console.error("Failed to break task:", error);
+    } finally {
+      setLoadingTask(null);
+    }
+  };
+
+  // Toggle sub-task completion
+  const handleSubTaskToggle = (subTask: SubTask) => {
+    const updatedSubTasks = subTasks.map(s =>
+      s.parentStep === subTask.parentStep && s.text === subTask.text
+        ? { ...s, isCompleted: !s.isCompleted }
+        : s
+    );
+    setSubTasks(updatedSubTasks);
+    updateActiveProject({ subTasks: updatedSubTasks });
+
+    // Auto-complete parent if all sub-tasks done
+    const parentSubTasks = updatedSubTasks.filter(s => s.parentStep === subTask.parentStep);
+    const allCompleted = parentSubTasks.every(s => s.isCompleted);
+    if (allCompleted && !completedSteps.includes(subTask.parentStep)) {
+      const newCompleted = [...completedSteps, subTask.parentStep];
+      setCompletedSteps(newCompleted);
+      updateActiveProject({ completedSteps: newCompleted });
+      if (user && plan) {
+        toggleStepCompletion(user.uid, subTask.parentStep, true, plan.id || 'current');
+      }
+    }
+  };
+
+  // Get sub-tasks for a step
+  const getSubTasks = (stepTitle: string) => subTasks.filter(s => s.parentStep === stepTitle);
+
+  if (loading || !plan) {
+    return (
+      <div className="p-12 text-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+        <p className="mt-4 text-muted-foreground">در حال بارگذاری نقشه...</p>
+      </div>
+    );
+  }
+
+  const totalSteps = plan.roadmap.reduce((acc: number, phase: RoadmapPhase) => acc + phase.steps.length, 0);
   const progressPercent = Math.round((completedSteps.length / totalSteps) * 100) || 0;
+  const totalWeeks = plan.roadmap.length;
 
-  return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-20">
-      
-      {/* Header */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 bg-gradient-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-              <Map size={24} />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black text-foreground">نقشه راه اجرایی</h1>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="text-xs font-normal">
-                  فاز به فاز
-                </Badge>
-                <span className="text-sm text-muted-foreground">{plan.projectName}</span>
-              </div>
-            </div>
+  // Get active phase
+  const activePhase = plan.roadmap.find((p: RoadmapPhase) => p.weekNumber === activeWeek) || plan.roadmap[activeWeek - 1];
+  const phaseProgress = activePhase ?
+    Math.round((activePhase.steps.filter((s: any) => completedSteps.includes(getStepTitle(s))).length / activePhase.steps.length) * 100) : 0;
+
+  // Get priority color
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'high': return 'border-r-red-500';
+      case 'medium': return 'border-r-amber-500';
+      case 'low': return 'border-r-green-500';
+      default: return 'border-r-transparent';
+    }
+  };
+
+  // === FOCUS MODE VIEW ===
+  if (focusMode && currentStepData) {
+    const stepObj = currentStepData.step;
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-xl mb-8">
+          <Button variant="ghost" onClick={() => setFocusMode(false)} className="mb-4">
+            <ArrowLeft size={16} />
+            خروج از حالت تمرکز
+          </Button>
+
+          <div className="text-center">
+            <Badge variant="outline" className="mb-3">
+              {currentStepData.phase.phase}
+            </Badge>
+            <p className="text-sm text-muted-foreground">
+              پیشرفت: {completedSteps.length} از {totalSteps}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-6 bg-card border border-border px-6 py-3 rounded-2xl shadow-sm">
-          <div className="text-left">
-            <div className="text-sm text-muted-foreground mb-1">پیشرفت کل</div>
-            <div className="text-2xl font-black text-foreground">{progressPercent}%</div>
+        <Card variant="glass" className="w-full max-w-xl p-8 text-center">
+          <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-primary/20 animate-pulse">
+            <Target size={40} className="text-white" />
           </div>
-          <ProgressRing progress={progressPercent} size={60} strokeWidth={6}>
-            <span className="text-[10px] font-bold text-muted-foreground"></span>
-          </ProgressRing>
+
+          <h2 className="text-sm font-medium text-muted-foreground mb-2">
+            تنها هدف امروز:
+          </h2>
+          <h1 className="text-2xl md:text-3xl font-black text-foreground mb-4 leading-relaxed">
+            {stepObj.title}
+          </h1>
+
+          {stepObj.description && (
+            <p className="text-muted-foreground text-sm mb-6">{stepObj.description}</p>
+          )}
+
+          {stepObj.estimatedHours && (
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-6">
+              <Clock size={14} />
+              <span>زمان تخمینی: {stepObj.estimatedHours} ساعت</span>
+            </div>
+          )}
+
+          {/* Sub-tasks */}
+          {getSubTasks(stepObj.title).length > 0 && (
+            <div className="bg-muted/50 rounded-xl p-4 mb-6 text-right space-y-3">
+              <p className="text-sm font-bold text-foreground flex items-center gap-2">
+                <ListTree size={16} className="text-primary" />
+                گام‌های کوچکتر:
+              </p>
+              {getSubTasks(stepObj.title).map((sub, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSubTaskToggle(sub)}
+                  className={cn(
+                    "flex items-center gap-3 w-full text-right p-2 rounded-lg transition-all",
+                    sub.isCompleted && "opacity-50"
+                  )}
+                >
+                  <div className={cn(
+                    "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0",
+                    sub.isCompleted
+                      ? "bg-primary border-primary text-white"
+                      : "border-muted-foreground/30"
+                  )}>
+                    {sub.isCompleted && <CheckCircle2 size={12} />}
+                  </div>
+                  <span className={cn(
+                    "text-sm",
+                    sub.isCompleted && "line-through text-muted-foreground"
+                  )}>
+                    {sub.text}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3">
+            <Button
+              variant="gradient"
+              size="xl"
+              className="w-full"
+              onClick={(e) => handleToggle(stepObj.title, e)}
+            >
+              <CheckCircle2 size={20} />
+              تمام شد!
+            </Button>
+
+            {getSubTasks(stepObj.title).length === 0 && (
+              <Button
+                variant="outline"
+                onClick={() => handleStuck(stepObj.title)}
+                disabled={loadingTask === stepObj.title}
+              >
+                {loadingTask === stepObj.title ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    در حال شکستن تسک...
+                  </>
+                ) : (
+                  <>
+                    <AlertCircle size={16} />
+                    🤯 گیر کردم — تسک رو بشکن
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </Card>
+
+        <div className="mt-8 w-full max-w-xl">
+          <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-primary transition-all duration-500"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          <p className="text-center text-sm text-muted-foreground mt-2">
+            {progressPercent}% تکمیل شده
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // === FULL ROADMAP VIEW ===
+  return (
+    <div className="max-w-6xl mx-auto space-y-8 pb-20">
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/20">
+            <Map size={28} />
+          </div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black text-foreground">نقشه راه ۱۲ هفته‌ای</h1>
+            <p className="text-sm text-muted-foreground mt-1">{plan.projectName}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            variant={focusMode ? "gradient" : "outline"}
+            onClick={() => setFocusMode(!focusMode)}
+            className="gap-2"
+          >
+            <Focus size={18} />
+            حالت تمرکز
+          </Button>
+
+          <div className="flex items-center gap-4 glass px-4 py-2.5 rounded-xl">
+            <div className="text-left">
+              <div className="text-xs text-muted-foreground">پیشرفت کل</div>
+              <div className="text-xl font-black text-foreground">{progressPercent}%</div>
+            </div>
+            <ProgressRing progress={progressPercent} size={50} strokeWidth={5} />
+          </div>
         </div>
       </div>
 
-      {/* Timeline */}
-      <div className="relative border-r-2 border-border/50 mr-4 md:mr-8 space-y-12">
-        {plan.roadmap.map((phase, phaseIdx) => {
-          const isPhaseComplete = phase.steps.every((s: string) => completedSteps.includes(s));
-          const isPhaseStarted = phase.steps.some((s: string) => completedSteps.includes(s));
-          
-          return (
-            <div key={phaseIdx} className="relative pr-8 md:pr-12 group">
-              {/* Phase Marker */}
-              <div className={`
-                absolute -right-[11px] top-0 w-5 h-5 rounded-full border-4 transition-all duration-500 z-10
-                ${isPhaseComplete ? "bg-primary border-primary scale-110" : 
-                  isPhaseStarted ? "bg-white border-primary" : "bg-muted border-muted-foreground"}
-              `}>
-                {isPhaseComplete && <CheckCircle2 size={12} className="text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />}
-              </div>
+      {/* Week Tabs */}
+      <div className="relative">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            onClick={() => setActiveWeek(Math.max(1, activeWeek - 1))}
+            disabled={activeWeek === 1}
+          >
+            <ChevronRight size={20} />
+          </Button>
 
-              {/* Phase Content */}
-              <div className="mb-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <h2 className={`text-xl font-bold ${isPhaseComplete ? "text-primary" : "text-foreground"}`}>
-                    {phase.phase}
-                  </h2>
-                  {isPhaseComplete && (
-                    <Badge variant="success" className="animate-in zoom-in">تکمیل شد! 🎉</Badge>
+          {plan.roadmap.map((phase: RoadmapPhase, idx: number) => {
+            const weekNum = phase.weekNumber || idx + 1;
+            const weekSteps = phase.steps;
+            const weekCompleted = weekSteps.filter((s: any) => completedSteps.includes(getStepTitle(s))).length;
+            const isComplete = weekCompleted === weekSteps.length;
+            const isActive = weekNum === activeWeek;
+
+            return (
+              <button
+                key={idx}
+                onClick={() => setActiveWeek(weekNum)}
+                className={cn(
+                  "shrink-0 px-4 py-2 rounded-xl transition-all flex flex-col items-center gap-1 min-w-[80px]",
+                  isActive
+                    ? "bg-primary text-white shadow-lg shadow-primary/30"
+                    : isComplete
+                      ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                )}
+              >
+                <span className="text-xs font-medium">هفته</span>
+                <span className="text-lg font-black">{weekNum}</span>
+                {isComplete && <CheckCircle2 size={14} className="text-emerald-500" />}
+              </button>
+            );
+          })}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            onClick={() => setActiveWeek(Math.min(totalWeeks, activeWeek + 1))}
+            disabled={activeWeek === totalWeeks}
+          >
+            <ChevronLeft size={20} />
+          </Button>
+        </div>
+      </div>
+
+      {/* Active Week Content */}
+      {activePhase && (
+        <div className="space-y-6">
+          {/* Week Header */}
+          <div className="glass rounded-2xl p-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                    <Calendar size={12} className="ml-1" />
+                    هفته {activePhase.weekNumber || activeWeek}
+                  </Badge>
+                  {activePhase.theme && (
+                    <Badge variant="secondary">{activePhase.theme}</Badge>
                   )}
                 </div>
+                <h2 className="text-xl font-bold text-foreground">{activePhase.phase}</h2>
+              </div>
 
-                <div className="grid gap-4">
-                  {phase.steps.map((step: string, stepIdx: number) => {
-                    const isCompleted = completedSteps.includes(step);
-                    
-                    return (
-                      <div 
-                        key={stepIdx}
-                        className={`
-                          group/card relative bg-card border transition-all duration-300 rounded-xl p-4
-                          ${isCompleted 
-                            ? "border-primary/20 bg-primary/5 hover:border-primary/40" 
-                            : "border-border hover:border-primary/50 hover:shadow-md hover:-translate-x-1"}
-                        `}
-                      >
-                         <div className="flex items-start gap-4">
-                            {/* Checkbox */}
-                            <button
-                              onClick={(e) => handleToggle(step, e)}
-                              className={`
-                                w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 mt-1 transition-all
-                                ${isCompleted 
-                                  ? "bg-gradient-primary border-transparent text-white scale-110" 
-                                  : "border-muted-foreground/30 text-transparent hover:border-primary hover:scale-105"}
-                              `}
-                            >
-                              <CheckCircle2 size={14} fill="currentColor" className={isCompleted ? "opacity-100" : "opacity-0"} />
-                            </button>
-
-                            <div className="flex-1">
-                              <h3 className={`font-medium text-lg mb-1 transition-colors ${isCompleted ? "text-muted-foreground line-through decoration-primary/30" : "text-foreground"}`}>
-                                {step}
-                              </h3>
-                              
-                              {/* Action Bar */}
-                              <div className="flex items-center gap-2 mt-2">
-                                <StepGuide 
-                                  stepName={step} 
-                                  stepPhase={phase.phase} 
-                                  projectName={plan.projectName}
-                                />
-                              </div>
-                            </div>
-                         </div>
-                      </div>
-                    );
-                  })}
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground mb-1">پیشرفت این هفته</div>
+                  <div className="text-2xl font-black text-foreground">{phaseProgress}%</div>
+                </div>
+                <div className="w-16 h-16 relative">
+                  <ProgressRing progress={phaseProgress} size={64} strokeWidth={6} />
+                  {phaseProgress === 100 && (
+                    <div className="absolute inset-0 flex items-center justify-center text-xl">✅</div>
+                  )}
                 </div>
               </div>
             </div>
-          );
-        })}
-        
-        {/* End Marker */}
-        <div className="absolute -right-[9px] bottom-0 w-4 h-4 rounded-full bg-muted-foreground/20" />
-      </div>
+
+            {/* Progress bar */}
+            <div className="h-2 bg-muted rounded-full overflow-hidden mt-4">
+              <div
+                className="h-full bg-gradient-primary transition-all duration-500"
+                style={{ width: `${phaseProgress}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Steps Grid */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {activePhase.steps.map((step: string | RoadmapStep, stepIdx: number) => {
+              const stepObj = normalizeStep(step);
+              const isCompleted = completedSteps.includes(stepObj.title);
+              const stepSubTasks = getSubTasks(stepObj.title);
+              const isCurrentStep = currentStepData?.step.title === stepObj.title;
+
+              return (
+                <div
+                  key={stepIdx}
+                  onClick={() => setSelectedStep({ step: stepObj, phase: activePhase })}
+                  className={cn(
+                    "group cursor-pointer transition-all duration-300 rounded-2xl p-5 border-2 border-r-4",
+                    isCompleted
+                      ? "bg-muted/30 border-border/50 opacity-70 border-r-emerald-500"
+                      : "card-glass hover:shadow-lg hover:border-primary/30",
+                    getPriorityColor(stepObj.priority),
+                    isCurrentStep && !isCompleted && "ring-2 ring-primary/40 ring-offset-2 ring-offset-background"
+                  )}
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Checkbox */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggle(stepObj.title, e);
+                      }}
+                      className={cn(
+                        "w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all",
+                        isCompleted
+                          ? "bg-gradient-primary border-transparent text-white"
+                          : "border-muted-foreground/30 hover:border-primary/60"
+                      )}
+                    >
+                      {isCompleted && <CheckCircle2 size={14} />}
+                    </button>
+
+                    <div className="flex-1 min-w-0">
+                      <h3 className={cn(
+                        "font-bold text-base mb-1.5 transition-colors",
+                        isCompleted ? "text-muted-foreground line-through" : "text-foreground"
+                      )}>
+                        {stepObj.title}
+                      </h3>
+
+                      {stepObj.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                          {stepObj.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {stepObj.estimatedHours && (
+                          <Badge variant="outline" className="text-xs">
+                            <Clock size={10} className="ml-1" />
+                            {stepObj.estimatedHours} ساعت
+                          </Badge>
+                        )}
+                        {stepObj.category && (
+                          <Badge variant="secondary" className="text-xs">
+                            <FolderOpen size={10} className="ml-1" />
+                            {stepObj.category}
+                          </Badge>
+                        )}
+                        {stepSubTasks.length > 0 && (
+                          <Badge variant="outline" className="text-xs bg-primary/5 text-primary">
+                            <ListTree size={10} className="ml-1" />
+                            {stepSubTasks.filter(s => s.isCompleted).length}/{stepSubTasks.length}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {isCurrentStep && !isCompleted && (
+                      <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Celebration if 100% */}
       {progressPercent === 100 && (
-        <Card variant="gradient" className="text-center p-8 animate-in zoom-in duration-500">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Trophy size={32} className="text-yellow-300" />
+        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-yellow-300 via-amber-500 to-orange-500 shadow-2xl shadow-amber-500/30">
+          <div className="bg-card rounded-[22px] p-8 text-center">
+            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Sparkles size={40} className="text-yellow-600" />
+            </div>
+            <h2 className="text-3xl font-black text-foreground mb-3">تبریک! شما قهرمانید! 🏆</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              تمام مراحل نقشه راه ۱۲ هفته‌ای با موفقیت به پایان رسید!
+            </p>
+            <Link href="/dashboard/overview">
+              <Button variant="gradient" size="lg" className="mt-8">
+                بازگشت به داشبورد
+              </Button>
+            </Link>
           </div>
-          <h2 className="text-2xl font-black text-white mb-2">تبریک! شما قهرمانید! 🏆</h2>
-          <p className="text-white/90">تمام مراحل نقشه راه با موفقیت به پایان رسید.</p>
-        </Card>
+        </div>
+      )}
+
+      {/* Step Detail Modal */}
+      {selectedStep && (
+        <StepDetailModal
+          step={selectedStep.step}
+          phaseName={selectedStep.phase.phase}
+          weekNumber={selectedStep.phase.weekNumber}
+          isOpen={!!selectedStep}
+          onClose={() => setSelectedStep(null)}
+          isCompleted={completedSteps.includes(selectedStep.step.title)}
+          onToggleComplete={() => {
+            handleToggle(selectedStep.step.title);
+            setSelectedStep(null);
+          }}
+          subTasks={getSubTasks(selectedStep.step.title)}
+          onSubTaskToggle={handleSubTaskToggle}
+          onBreakTask={() => handleStuck(selectedStep.step.title)}
+          isBreakingTask={loadingTask === selectedStep.step.title}
+          projectName={plan.projectName}
+        />
       )}
     </div>
   );
-}
-
-function Trophy({ size, className }: { size: number, className?: string }) {
-  return <Sparkles size={size} className={className} />;
 }

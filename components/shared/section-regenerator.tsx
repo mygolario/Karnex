@@ -75,7 +75,7 @@ export function SectionRegenerator({
 
     } catch (error) {
       console.error("Regeneration Error:", error);
-      alert("متاسفانه ارتباط با هوش مصنوعی برقرار نشد. لطفاً مجدد تلاش کنید.");
+      alert("متاسفانه ارتباط با دستیار کارنکس برقرار نشد. لطفاً مجدد تلاش کنید.");
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,7 @@ export function SectionRegenerator({
             className="gap-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 border border-indigo-100 h-8 px-3"
         >
           <Wand2 className="h-4 w-4" />
-          <span className="font-medium">بازنویسی با هوش مصنوعی</span>
+          <span className="font-medium">بازنویسی با دستیار کارنکس</span>
         </Button>
 
         {/* Popover Content */}

@@ -1,95 +1,63 @@
 import { NextResponse } from 'next/server';
+import { callOpenRouter } from '@/lib/openrouter';
 
-export const maxDuration = 60; // Allow enough time for thinking
+export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
-    const { message, planContext } = await req.json();
+    const { message, planContext, generateFollowUps } = await req.json();
 
-    if (!process.env.OPENROUTER_API_KEY) {
-      return NextResponse.json({ error: 'API Key missing' }, { status: 500 });
+    // Simple, explicit Persian-only system prompt
+    const systemPrompt = `تو دستیار کارنکس هستی.
+
+قانون مهم: همه پاسخ‌ها فقط به زبان فارسی باشد.
+
+پروژه: ${planContext?.projectName || 'نامشخص'}
+ایده: ${planContext?.overview || 'نامشخص'}
+
+وظیفه: پاسخ کوتاه و مفید به سوال کاربر بده.
+${generateFollowUps ? '\nدر آخر ۳ سوال پیگیری بنویس با فرمت:\n---FOLLOWUPS---\n- سوال ۱\n- سوال ۲\n- سوال ۳' : ''}`;
+
+    const result = await callOpenRouter(`${message}\n\n(پاسخ فارسی بده)`, {
+      systemPrompt,
+      maxTokens: 800,
+      temperature: 0.5,
+    });
+
+    if (!result.success) {
+      return NextResponse.json({
+        reply: "متاسفانه سرویس در دسترس نیست. لطفا دقایقی دیگر تلاش کنید.",
+        followUps: []
+      });
     }
 
-    // Contextual System Prompt
-    // We inject the user's plan details directly into the AI's instructions.
-    const systemPrompt = `
-      You are Karnex AI, a smart business consultant for the Iranian market.
-      
-      CONTEXT - USER'S CURRENT PROJECT:
-      Project Name: ${planContext?.projectName || 'Unknown'}
-      Business Idea: ${planContext?.overview || 'Unknown'}
-      Target Audience: ${planContext?.audience || 'Unknown'}
-      Current Budget: ${planContext?.budget || 'Unknown'}
-      
-      INSTRUCTIONS:
-      1. Answer the user's question specifically for *their* project. Don't give generic advice.
-      2. Keep answers concise (max 3-4 sentences) unless asked for more.
-      3. Use a friendly, encouraging, and professional tone.
-      4. Reply in PERSIAN (Farsi).
-      
-      User Question: ${message}
-    `;
+    let fullReply = result.content || "متاسفانه مشکلی پیش آمد.";
 
-    // Call OpenRouter (Using fast, free models)
-    let response;
-    // Best FREE models on OpenRouter (January 2026)
-    const models = [
-        "google/gemini-2.0-flash-exp:free",      // 1. Best: Fast, smart, free
-        "qwen/qwen-2.5-72b-instruct:free",       // 2. Qwen 2.5 72B free
-        "deepseek/deepseek-chat:free",           // 3. DeepSeek free tier
-        "meta-llama/llama-3.3-70b-instruct:free", // 4. Llama 3.3 70B
-    ];
+    // Parse follow-up questions
+    let reply = fullReply;
+    let followUps: string[] = [];
 
-    let successfulModel = '';
-    let lastError = '';
+    if (generateFollowUps && fullReply.includes("---FOLLOWUPS---")) {
+      const parts = fullReply.split("---FOLLOWUPS---");
+      reply = parts[0].trim();
 
-    for (const model of models) {
-        try {
-            console.log(`Chat attempts: ${model}`);
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 40000); // 40s Limit
-
-            response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                "Content-Type": "application/json",
-                "HTTP-Referer": "http://localhost:3000",
-                "X-Title": "Karnex"
-              },
-              body: JSON.stringify({
-                "model": model,
-                "messages": [
-                  { "role": "system", "content": systemPrompt },
-                  { "role": "user", "content": message }
-                ],
-                "temperature": 0.7,
-              }),
-              signal: controller.signal
-            });
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-                successfulModel = model;
-                break; // Success!
-            }
-            const errText = await response.text();
-            lastError = `${model}: ${response.status} - ${errText}`;
-            console.warn(`Chat model ${model} failed: ${response.status} - ${errText}`);
-        } catch (e: any) {
-            lastError = `${model}: ${e.name || e.message}`;
-            console.warn(`Chat model ${model} error:`, e.name || e.message);
-        }
+      if (parts[1]) {
+        followUps = parts[1]
+          .split('\n')
+          .map((line: string) => line.trim())
+          .filter((line: string) => line.startsWith("-"))
+          .map((line: string) => line.replace(/^-\s*/, ""))
+          .filter((q: string) => q.length > 0)
+          .slice(0, 3);
+      }
     }
 
-    if (!response || !response.ok) {
-        return NextResponse.json({ reply: "متاسفانه سرویس هوش مصنوعی در حال حاضر پاسخگو نیست. لطفا دقایقی دیگر تلاش کنید." });
+    // Fallback follow-ups
+    if (generateFollowUps && followUps.length === 0) {
+      followUps = ["بیشتر توضیح بده", "یه مثال بزن", "قدم بعدی چیه؟"];
     }
 
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "متاسفانه مشکلی پیش آمد. لطفا دوباره تلاش کنید.";
-
-    return NextResponse.json({ reply });
+    return NextResponse.json({ reply, followUps });
 
   } catch (error) {
     console.error("Chat Error:", error);

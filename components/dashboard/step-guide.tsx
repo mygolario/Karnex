@@ -1,10 +1,35 @@
 "use client";
 
-import React, { useState } from "react";
-import { HelpCircle, ChevronRight, Loader2, BookOpen, ExternalLink, Lightbulb } from "lucide-react";
+import React, { useState, createContext, useContext } from "react";
+import { HelpCircle, ChevronRight, Loader2, Lightbulb, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+
+// Context for pre-filling AI chat from roadmap
+interface MentorContextType {
+  pendingQuestion: string | null;
+  setPendingQuestion: (question: string | null) => void;
+}
+
+const MentorContext = createContext<MentorContextType>({
+  pendingQuestion: null,
+  setPendingQuestion: () => {}
+});
+
+export function useMentorContext() {
+  return useContext(MentorContext);
+}
+
+export function MentorProvider({ children }: { children: React.ReactNode }) {
+  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
+  
+  return (
+    <MentorContext.Provider value={{ pendingQuestion, setPendingQuestion }}>
+      {children}
+    </MentorContext.Provider>
+  );
+}
 
 interface StepGuideProps {
   stepName: string;
@@ -16,6 +41,7 @@ export function StepGuide({ stepName, stepPhase, projectName }: StepGuideProps) 
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [guide, setGuide] = useState<string | null>(null);
+  const { setPendingQuestion } = useMentorContext();
 
   const fetchGuide = async () => {
     if (guide) {
@@ -24,7 +50,7 @@ export function StepGuide({ stepName, stepPhase, projectName }: StepGuideProps) 
     }
 
     setLoading(true);
-    setIsOpen(true); // Open immediately to show loader
+    setIsOpen(true);
 
     try {
       const prompt = `
@@ -57,18 +83,37 @@ export function StepGuide({ stepName, stepPhase, projectName }: StepGuideProps) 
     }
   };
 
+  // Open AI chat with pre-filled question about this step
+  const askAiMentor = () => {
+    const question = `در مورد مرحله "${stepName}" سوال دارم. چطور باید این کار رو انجام بدم؟`;
+    setPendingQuestion(question);
+  };
+
   return (
     <div className="mt-2">
       {!isOpen ? (
-        <Button 
-          variant="ghost" 
-          size="sm" 
-          onClick={fetchGuide}
-          className="text-xs text-primary hover:text-primary/80 hover:bg-primary/5 h-7 px-2"
-        >
-          <HelpCircle size={12} className="mr-1.5" />
-          چطور این کار را انجام دهم؟
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={fetchGuide}
+            className="text-xs text-primary hover:text-primary/80 hover:bg-primary/5 h-7 px-2"
+          >
+            <HelpCircle size={12} className="mr-1.5" />
+            چطور انجام بدم؟
+          </Button>
+          
+          {/* AI Mentor Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={askAiMentor}
+            className="text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50 h-7 px-2"
+          >
+            <MessageCircle size={12} className="mr-1.5" />
+            کمک از منتور
+          </Button>
+        </div>
       ) : (
         <Card variant="muted" className="mt-2 relative animate-in slide-in-from-top-2 fade-in duration-300 border-primary/20 bg-primary/5">
           <div className="flex justify-between items-start mb-3">
@@ -90,9 +135,24 @@ export function StepGuide({ stepName, stepPhase, projectName }: StepGuideProps) 
               <span className="text-xs animate-pulse">در حال نوشتن راهنما...</span>
             </div>
           ) : (
-            <div className="prose prose-sm max-w-none text-muted-foreground text-sm leading-7 whitespace-pre-line">
-              {guide}
-            </div>
+            <>
+              <div className="prose prose-sm max-w-none text-muted-foreground text-sm leading-7 whitespace-pre-line">
+                {guide}
+              </div>
+              
+              {/* Still confused? Ask AI Mentor */}
+              <div className="mt-4 pt-4 border-t border-border/50">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={askAiMentor}
+                  className="w-full text-xs gap-2"
+                >
+                  <MessageCircle size={14} />
+                  هنوز سوال دارم — بپرس از منتور AI
+                </Button>
+              </div>
+            </>
           )}
         </Card>
       )}
