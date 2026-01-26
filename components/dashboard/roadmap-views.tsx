@@ -12,6 +12,19 @@ interface RoadmapStep {
   phase: string;
 }
 
+interface RoadmapStepObject {
+  title: string;
+  description?: string;
+  estimatedHours?: number;
+  priority?: string;
+  category?: string;
+}
+
+// Helper to get step title whether it's a string or object
+function getStepTitle(step: string | RoadmapStepObject): string {
+  return typeof step === 'string' ? step : step.title;
+}
+
 interface KanbanBoardProps {
   steps: RoadmapStep[];
   onToggleStep: (stepId: string) => void;
@@ -28,23 +41,23 @@ export function KanbanBoard({ steps, onToggleStep, className }: KanbanBoardProps
   const doneSteps = steps.filter(s => s.completed);
 
   const columns = [
-    { 
-      id: "todo", 
-      title: "در انتظار", 
+    {
+      id: "todo",
+      title: "در انتظار",
       steps: todoSteps,
       color: "bg-muted",
       iconColor: "text-muted-foreground",
     },
-    { 
-      id: "progress", 
-      title: "در حال انجام", 
+    {
+      id: "progress",
+      title: "در حال انجام",
       steps: inProgressStep ? [inProgressStep] : [],
       color: "bg-amber-500/10",
       iconColor: "text-amber-600",
     },
-    { 
-      id: "done", 
-      title: "تکمیل شده", 
+    {
+      id: "done",
+      title: "تکمیل شده",
       steps: doneSteps,
       color: "bg-emerald-500/10",
       iconColor: "text-emerald-600",
@@ -54,7 +67,7 @@ export function KanbanBoard({ steps, onToggleStep, className }: KanbanBoardProps
   return (
     <div className={cn("grid grid-cols-1 md:grid-cols-3 gap-4", className)}>
       {columns.map(column => (
-        <div 
+        <div
           key={column.id}
           className={cn(
             "rounded-xl p-4 min-h-[300px]",
@@ -125,7 +138,7 @@ export function KanbanBoard({ steps, onToggleStep, className }: KanbanBoardProps
  * Displays steps as a horizontal timeline
  */
 interface TimelineViewProps {
-  phases: Array<{ phase: string; steps: string[] }>;
+  phases: Array<{ phase: string; steps: (string | RoadmapStepObject)[] }>;
   completedSteps: string[];
   onToggleStep: (step: string) => void;
   className?: string;
@@ -136,7 +149,7 @@ export function TimelineView({ phases, completedSteps, onToggleStep, className }
     <div className={cn("relative", className)}>
       {/* Timeline connector */}
       <div className="absolute top-6 left-0 right-0 h-0.5 bg-border z-0" />
-      
+
       {/* Timeline items */}
       <div className="relative z-10 flex overflow-x-auto pb-4 gap-4">
         {phases.map((phase, phaseIdx) => (
@@ -145,9 +158,9 @@ export function TimelineView({ phases, completedSteps, onToggleStep, className }
             <div className="flex items-center gap-2 mb-4">
               <div className={cn(
                 "w-12 h-12 rounded-full flex items-center justify-center border-4",
-                phase.steps.every(s => completedSteps.includes(s))
+                phase.steps.every(s => completedSteps.includes(getStepTitle(s)))
                   ? "bg-emerald-500 border-emerald-200 text-white"
-                  : phase.steps.some(s => completedSteps.includes(s))
+                  : phase.steps.some(s => completedSteps.includes(getStepTitle(s)))
                     ? "bg-amber-500 border-amber-200 text-white"
                     : "bg-muted border-border text-muted-foreground"
               )}>
@@ -166,16 +179,17 @@ export function TimelineView({ phases, completedSteps, onToggleStep, className }
             {/* Steps */}
             <div className="space-y-2 pr-2">
               {phase.steps.map((step, stepIdx) => {
-                const isCompleted = completedSteps.includes(step);
+                const stepTitle = getStepTitle(step);
+                const isCompleted = completedSteps.includes(stepTitle);
                 return (
                   <div
                     key={stepIdx}
-                    onClick={() => onToggleStep(step)}
+                    onClick={() => onToggleStep(stepTitle)}
                     className={cn(
                       "p-3 rounded-lg border cursor-pointer transition-all",
                       "hover:ring-2 hover:ring-primary/20",
-                      isCompleted 
-                        ? "bg-emerald-500/5 border-emerald-500/20" 
+                      isCompleted
+                        ? "bg-emerald-500/5 border-emerald-500/20"
                         : "bg-card border-border"
                     )}
                   >
@@ -189,7 +203,7 @@ export function TimelineView({ phases, completedSteps, onToggleStep, className }
                         "text-xs line-clamp-2",
                         isCompleted ? "text-muted-foreground line-through" : "text-foreground"
                       )}>
-                        {step}
+                        {stepTitle}
                       </span>
                     </div>
                   </div>

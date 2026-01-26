@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  Activity, 
-  Sparkles, 
-  CheckCircle2, 
+import {
+  Activity,
+  Sparkles,
+  CheckCircle2,
   TrendingUp,
   FileText,
   Palette,
@@ -54,14 +54,14 @@ function generateMockActivities(): ActivityItem[] {
       timestamp: new Date(now.getTime() - 5 * 60 * 60 * 1000), // 5 hours ago
       link: "/dashboard/roadmap",
     },
-    {
-      id: "3",
-      type: "brand",
-      title: "بروزرسانی برند",
-      description: "پالت رنگی جدید ذخیره شد",
-      timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000), // 1 day ago
-      link: "/dashboard/brand",
-    },
+    // {
+    //   id: "3",
+    //   type: "brand",
+    //   title: "بروزرسانی برند",
+    //   description: "پالت رنگی جدید ذخیره شد",
+    //   timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000), // 1 day ago
+    //   link: "/dashboard/brand",
+    // },
     {
       id: "4",
       type: "milestone",
@@ -123,11 +123,11 @@ function formatRelativeTime(date: Date): string {
   return date.toLocaleDateString("fa-IR");
 }
 
-export function ActivityFeed({ 
-  activities, 
-  maxItems = 5, 
+export function ActivityFeed({
+  activities,
+  maxItems = 5,
   className,
-  showHeader = true 
+  showHeader = true
 }: ActivityFeedProps) {
   const [items, setItems] = useState<ActivityItem[]>([]);
 

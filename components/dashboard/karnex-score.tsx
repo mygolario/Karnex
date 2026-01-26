@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { useProject } from "@/contexts/project-context";
+import { useGamification } from "@/contexts/gamification-context";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/dashboard/progress-ring";
-import { 
-  Trophy, 
-  Target, 
-  Zap, 
-  Rocket, 
-  Star, 
+import {
+  Trophy,
+  Target,
+  Zap,
+  Rocket,
+  Star,
   Award,
   TrendingUp,
   Shield,
@@ -39,6 +40,7 @@ interface KarnexScoreProps {
 
 export function KarnexScore({ className, compact = false }: KarnexScoreProps) {
   const { activeProject: plan } = useProject();
+  const { profile } = useGamification();
   const [animatedScore, setAnimatedScore] = useState(0);
 
   // Calculate comprehensive Karnex Score
@@ -178,7 +180,7 @@ export function KarnexScore({ className, compact = false }: KarnexScoreProps) {
       {/* Main Score Card */}
       <Card variant="gradient" className="relative overflow-hidden text-white">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.15),_transparent_50%)]" />
-        
+
         <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 p-6">
           {/* Score Ring */}
           <div className="relative">
@@ -188,7 +190,7 @@ export function KarnexScore({ className, compact = false }: KarnexScoreProps) {
                 <span className="text-xs opacity-80">از ۱۰۰</span>
               </div>
             </ProgressRing>
-            
+
             {/* Glow Effect */}
             <div className="absolute inset-0 rounded-full bg-white/20 blur-2xl -z-10 scale-75" />
           </div>
@@ -199,14 +201,29 @@ export function KarnexScore({ className, compact = false }: KarnexScoreProps) {
             <p className="text-white/80 mb-4 text-sm">
               نمایانگر آمادگی پروژه شما برای اجرا و سرمایه‌گذاری
             </p>
-            
-            {/* Investment Readiness */}
-            <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 inline-flex items-center gap-3">
-              <Shield size={20} className="text-emerald-300" />
-              <div className="text-right">
-                <div className="text-xs opacity-80">آمادگی سرمایه‌گذاری</div>
-                <div className="font-bold text-lg">{investmentReadiness}%</div>
+
+            <div className="flex gap-2 justify-center md:justify-start">
+              {/* Investment Readiness */}
+              <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 inline-flex items-center gap-3">
+                <Shield size={20} className="text-emerald-300" />
+                <div className="text-right">
+                  <div className="text-xs opacity-80">آمادگی</div>
+                  <div className="font-bold text-lg">{investmentReadiness}%</div>
+                </div>
               </div>
+
+              {/* Founder Level */}
+              {profile && (
+                <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 inline-flex items-center gap-3 border border-amber-400/30">
+                  <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center font-black text-slate-900 border-2 border-white">
+                    {profile.level}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs opacity-80 text-amber-200">سطح بنیان‌گذار</div>
+                    <div className="font-bold text-lg text-amber-100">{profile.totalXp} XP</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -265,20 +282,20 @@ export function KarnexScore({ className, compact = false }: KarnexScoreProps) {
                   <Lock size={16} className="text-muted-foreground" />
                 )}
               </div>
-              
+
               <h4 className="font-bold text-sm text-foreground mb-0.5">{achievement.name}</h4>
               <p className="text-[10px] text-muted-foreground line-clamp-2">{achievement.description}</p>
-              
+
               {/* Progress bar for locked achievements */}
               {!achievement.unlocked && achievement.progress !== undefined && (
                 <div className="mt-2 h-1 bg-muted rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-amber-400 transition-all" 
+                  <div
+                    className="h-full bg-amber-400 transition-all"
                     style={{ width: `${achievement.progress}%` }}
                   />
                 </div>
               )}
-              
+
               {achievement.unlocked && (
                 <div className="absolute top-2 left-2">
                   <CheckCircle2 size={14} className="text-emerald-500" />

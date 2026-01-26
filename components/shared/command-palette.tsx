@@ -10,7 +10,6 @@ import {
   LayoutGrid,
   Palette,
   Megaphone,
-  Scale,
   Settings,
   HelpCircle,
   ArrowRight,
@@ -39,9 +38,9 @@ const backdropVariants = {
 
 const modalVariants = {
   hidden: { opacity: 0, scale: 0.95, y: -20 },
-  visible: { 
-    opacity: 1, 
-    scale: 1, 
+  visible: {
+    opacity: 1,
+    scale: 1,
     y: 0,
     transition: { type: "spring" as const, damping: 25, stiffness: 300 }
   },
@@ -88,15 +87,15 @@ export function CommandPalette() {
       keywords: ["canvas", "business", "model", "بوم"],
       category: "navigation",
     },
-    {
-      id: "brand",
-      title: "هویت بصری",
-      subtitle: "لوگو و رنگ‌های برند",
-      icon: <Palette size={20} />,
-      action: () => router.push("/dashboard/brand"),
-      keywords: ["brand", "logo", "colors", "برند", "لوگو"],
-      category: "navigation",
-    },
+    // {
+    //   id: "brand",
+    //   title: "هویت بصری",
+    //   subtitle: "لوگو و رنگ‌های برند",
+    //   icon: <Palette size={20} />,
+    //   action: () => router.push("/dashboard/brand"),
+    //   keywords: ["brand", "logo", "colors", "برند", "لوگو"],
+    //   category: "navigation",
+    // },
     {
       id: "marketing",
       title: "بازاریابی",
@@ -104,15 +103,6 @@ export function CommandPalette() {
       icon: <Megaphone size={20} />,
       action: () => router.push("/dashboard/marketing"),
       keywords: ["marketing", "growth", "strategy", "بازاریابی"],
-      category: "navigation",
-    },
-    {
-      id: "legal",
-      title: "حقوقی و مجوز",
-      subtitle: "مشاوره حقوقی هوشمند",
-      icon: <Scale size={20} />,
-      action: () => router.push("/dashboard/legal"),
-      keywords: ["legal", "permits", "law", "حقوقی", "مجوز"],
       category: "navigation",
     },
     {
@@ -156,9 +146,9 @@ export function CommandPalette() {
   // Filter commands based on search
   const filteredCommands = useMemo(() => {
     if (!search.trim()) return commands;
-    
+
     const query = search.toLowerCase();
-    return commands.filter(cmd => 
+    return commands.filter(cmd =>
       cmd.title.toLowerCase().includes(query) ||
       cmd.subtitle?.toLowerCase().includes(query) ||
       cmd.keywords?.some(k => k.toLowerCase().includes(query))
@@ -185,13 +175,13 @@ export function CommandPalette() {
       if (isOpen && filteredCommands.length > 0) {
         if (e.key === "ArrowDown") {
           e.preventDefault();
-          setSelectedIndex(prev => 
+          setSelectedIndex(prev =>
             prev < filteredCommands.length - 1 ? prev + 1 : 0
           );
         }
         if (e.key === "ArrowUp") {
           e.preventDefault();
-          setSelectedIndex(prev => 
+          setSelectedIndex(prev =>
             prev > 0 ? prev - 1 : filteredCommands.length - 1
           );
         }

@@ -11,12 +11,17 @@ import { Badge } from "@/components/ui/badge";
 import { StatsCard } from "@/components/dashboard/stats-card";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { KarnexScore } from "@/components/dashboard/karnex-score";
-import { 
+import {
   Rocket, Map, Palette, LayoutGrid, Megaphone,
   TrendingUp, Target, CheckCircle2, Sparkles, Zap, Plus,
   Calendar, ChevronLeft, Activity, Award, Wand2, Loader2,
-  Brain, Lightbulb, RefreshCw, ArrowUpRight, Scale
+  Brain, Lightbulb, RefreshCw, ArrowUpRight
 } from "lucide-react";
+
+// Helper to get step title whether it's a string or object
+function getStepTitle(step: any): string {
+  return typeof step === 'string' ? step : step?.title || '';
+}
 
 // Animation variants
 const containerVariants = {
@@ -29,8 +34,8 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  show: { 
-    opacity: 1, 
+  show: {
+    opacity: 1,
     y: 0,
     transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const }
   }
@@ -38,8 +43,8 @@ const itemVariants = {
 
 const scaleVariants = {
   hidden: { opacity: 0, scale: 0.9 },
-  show: { 
-    opacity: 1, 
+  show: {
+    opacity: 1,
     scale: 1,
     transition: { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] as const }
   }
@@ -92,20 +97,20 @@ Return ONLY a JSON array of 3 Persian strings.`;
   // Empty state
   if (!loading && !plan) {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className="min-h-[80vh] flex items-center justify-center"
       >
         <div className="text-center max-w-md relative">
           <div className="absolute inset-0 bg-primary/20 blur-[120px] rounded-full opacity-60" />
-          <motion.div 
+          <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
             className="relative z-10 frosted-glass p-10 rounded-[2rem] shadow-2xl"
           >
-            <motion.div 
+            <motion.div
               animate={{ y: [0, -8, 0] }}
               transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
               className="w-28 h-28 bg-gradient-to-br from-primary to-purple-600 rounded-[1.5rem] flex items-center justify-center mx-auto mb-8 shadow-xl shadow-primary/30"
@@ -131,7 +136,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
       <div className="space-y-6">
         <div className="skeleton skeleton-card h-72 rounded-[2rem]" />
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1,2,3,4].map(i => <div key={i} className="skeleton h-28 rounded-2xl" />)}
+          {[1, 2, 3, 4].map(i => <div key={i} className="skeleton h-28 rounded-2xl" />)}
         </div>
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 skeleton h-64 rounded-2xl" />
@@ -144,18 +149,17 @@ Return ONLY a JSON array of 3 Persian strings.`;
   const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1;
   const completedCount = plan?.completedSteps?.length || 0;
   const progressPercent = Math.round((completedCount / totalSteps) * 100);
-  const nextStep = plan?.roadmap?.flatMap((p: any) => p.steps).find((s: string) => !plan?.completedSteps?.includes(s));
+  const nextStep = plan?.roadmap?.flatMap((p: any) => p.steps).find((s: any) => !plan?.completedSteps?.includes(getStepTitle(s)));
 
   const toolCards = [
     { href: "/dashboard/roadmap", icon: Map, title: "نقشه راه", desc: "مسیر اجرای گام‌به‌گام", gradient: "from-blue-500 to-cyan-500", shadow: "shadow-blue-500/20" },
     { href: "/dashboard/canvas", icon: LayoutGrid, title: "بوم کسب‌وکار", desc: "مدل و استراتژی بیزینس", gradient: "from-amber-500 to-orange-500", shadow: "shadow-amber-500/20" },
-    { href: "/dashboard/brand", icon: Palette, title: "هویت بصری", desc: "لوگو، رنگ و فونت", gradient: "from-purple-500 to-pink-500", shadow: "shadow-purple-500/20", ai: true },
+    // { href: "/dashboard/brand", icon: Palette, title: "هویت بصری", desc: "لوگو، رنگ و فونت", gradient: "from-purple-500 to-pink-500", shadow: "shadow-purple-500/20", ai: true }, // Temporarily disabled
     { href: "/dashboard/marketing", icon: Megaphone, title: "بازاریابی", desc: "استراتژی جذب مشتری", gradient: "from-rose-500 to-red-500", shadow: "shadow-rose-500/20" },
-    { href: "/dashboard/legal", icon: Scale, title: "حقوقی", desc: "مجوزها و قراردادها", gradient: "from-emerald-500 to-teal-500", shadow: "shadow-emerald-500/20", ai: true },
   ];
 
   return (
-    <motion.div 
+    <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="show"
@@ -169,12 +173,12 @@ Return ONLY a JSON array of 3 Persian strings.`;
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
           <div className="absolute -right-20 -top-20 w-96 h-96 bg-white/20 blur-[100px] rounded-full animate-float" />
           <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-secondary/30 blur-[100px] rounded-full animate-float" style={{ animationDelay: "-3s" }} />
-          
+
           <div className="relative z-10 p-8 md:p-10 h-full flex flex-col justify-between">
             {/* Top Bar */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <motion.div 
+                <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   transition={{ type: "spring", delay: 0.3 }}
@@ -190,17 +194,17 @@ Return ONLY a JSON array of 3 Persian strings.`;
                 </Badge>
               )}
             </div>
-            
+
             {/* Greeting */}
             <div className="my-8">
-              <motion.h1 
+              <motion.h1
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.2 }}
                 className="text-4xl md:text-6xl font-black mb-4 leading-tight"
               >
-                {greeting}، {user?.displayName?.split(' ')[0] || "دوست من"}! 
-                <motion.span 
+                {greeting}، {user?.displayName?.split(' ')[0] || "دوست من"}!
+                <motion.span
                   animate={{ rotate: [0, 20, 0] }}
                   transition={{ duration: 0.5, delay: 0.5 }}
                   className="inline-block mr-2"
@@ -208,7 +212,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
                   👋
                 </motion.span>
               </motion.h1>
-              <motion.p 
+              <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.4 }}
@@ -217,9 +221,9 @@ Return ONLY a JSON array of 3 Persian strings.`;
                 امروز روی رشد <strong className="text-white">{plan?.projectName}</strong> تمرکز کنیم.
               </motion.p>
             </div>
-            
+
             {/* Mission Card */}
-            <motion.div 
+            <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
@@ -232,7 +236,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
                 <div className="flex-1">
                   <span className="text-xs font-bold text-white/70 uppercase tracking-wider">مأموریت امروز</span>
                   <p className="font-bold text-lg mt-1 leading-relaxed">
-                    {nextStep || "تمام مراحل انجام شده! 🎉"}
+                    {nextStep ? getStepTitle(nextStep) : "تمام مراحل انجام شده! 🎉"}
                   </p>
                   {nextStep && (
                     <Link href="/dashboard/roadmap">
@@ -248,7 +252,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
         </div>
 
         {/* Karnex Score Card */}
-        <motion.div 
+        <motion.div
           variants={scaleVariants}
           className="bento-item row-2 flex flex-col items-center justify-center text-center relative overflow-hidden"
         >
@@ -269,42 +273,42 @@ Return ONLY a JSON array of 3 Persian strings.`;
 
       {/* Key Metrics */}
       <motion.div variants={itemVariants} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard 
-          title="پیشرفت کل" 
-          value={`${progressPercent}%`} 
-          icon={TrendingUp} 
-          trend="up" 
-          trendValue="+12%" 
-          variant="primary" 
+        <StatsCard
+          title="پیشرفت کل"
+          value={`${progressPercent}%`}
+          icon={TrendingUp}
+          trend="up"
+          trendValue="+12%"
+          variant="primary"
           className="card-floating"
         />
-        <StatsCard 
-          title="فاز فعلی" 
-          value={plan?.roadmap?.find((p:any) => p.steps.some((s: string) => !plan.completedSteps?.includes(s)))?.phase.split(':')[0] || "تکمیل"} 
-          icon={Map} 
-          variant="accent" 
+        <StatsCard
+          title="فاز فعلی"
+          value={plan?.roadmap?.find((p: any) => p.steps.some((s: any) => !plan.completedSteps?.includes(getStepTitle(s))))?.phase.split(':')[0] || "تکمیل"}
+          icon={Map}
+          variant="accent"
           className="card-floating"
         />
-        <StatsCard 
-          title="مراحل باقیمانده" 
-          value={totalSteps - completedCount} 
-          icon={CheckCircle2} 
-          variant="secondary" 
+        <StatsCard
+          title="مراحل باقیمانده"
+          value={totalSteps - completedCount}
+          icon={CheckCircle2}
+          variant="secondary"
           className="card-floating"
         />
-        <StatsCard 
-          title="دستاوردها" 
-          value="۳" 
-          icon={Award} 
-          variant="glass" 
-          trend="neutral" 
-          trendLabel="۱ نشان جدید" 
+        <StatsCard
+          title="دستاوردها"
+          value="۳"
+          icon={Award}
+          variant="glass"
+          trend="neutral"
+          trendLabel="۱ نشان جدید"
           className="card-floating"
         />
       </motion.div>
 
       {/* AI Insights */}
-      <motion.div 
+      <motion.div
         variants={itemVariants}
         className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-purple-500/5 p-8"
       >
@@ -312,7 +316,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
         <div className="relative z-10">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
             <div className="flex items-center gap-4">
-              <motion.div 
+              <motion.div
                 animate={{ rotate: [0, 360] }}
                 transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                 className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-xl shadow-primary/30"
@@ -324,9 +328,9 @@ Return ONLY a JSON array of 3 Persian strings.`;
                 <p className="text-muted-foreground">پیشنهادات AI برای رشد سریع‌تر</p>
               </div>
             </div>
-            <Button 
-              variant={insightsLoaded ? "outline" : "shimmer"} 
-              onClick={handleGenerateInsights} 
+            <Button
+              variant={insightsLoaded ? "outline" : "shimmer"}
+              onClick={handleGenerateInsights}
               disabled={generatingInsights}
               className="gap-2"
             >
@@ -339,17 +343,17 @@ Return ONLY a JSON array of 3 Persian strings.`;
               )}
             </Button>
           </div>
-          
+
           {aiInsights.length > 0 ? (
-            <motion.div 
+            <motion.div
               initial="hidden"
               animate="show"
               variants={containerVariants}
               className="grid md:grid-cols-3 gap-5"
             >
               {aiInsights.map((insight, i) => (
-                <motion.div 
-                  key={i} 
+                <motion.div
+                  key={i}
                   variants={itemVariants}
                   className="card-spotlight p-6"
                 >
@@ -388,11 +392,6 @@ Return ONLY a JSON array of 3 Persian strings.`;
             >
               <Link href={item.href}>
                 <div className={`card-floating group h-full p-6 flex flex-col items-center text-center cursor-pointer relative ${item.shadow}`}>
-                  {item.ai && (
-                    <Badge variant="accent" className="absolute top-3 left-3 text-[10px] gap-1">
-                      <Zap size={10} /> AI
-                    </Badge>
-                  )}
                   <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.gradient} text-white flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
                     <item.icon size={28} />
                   </div>
@@ -426,7 +425,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
         <Card variant="gradient" className="relative overflow-hidden border-0 p-0">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950" />
           <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/20 rounded-full blur-[80px]" />
-          
+
           <div className="relative z-10 p-6 text-white h-full flex flex-col">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
@@ -434,7 +433,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
               </div>
               <h3 className="font-bold text-lg">نکات طلایی</h3>
             </div>
-            
+
             <div className="space-y-4 flex-1">
               <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
                 <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
@@ -451,7 +450,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
                 <p className="text-sm text-white/70 leading-7">از قابلیت AI برای شناسایی نقاط ضعف استفاده کنید.</p>
               </div>
             </div>
-            
+
             <Link href="/dashboard/help" className="mt-4">
               <Button variant="glass" className="w-full justify-between text-white border-white/20 hover:bg-white/10">
                 مشاهده راهنما

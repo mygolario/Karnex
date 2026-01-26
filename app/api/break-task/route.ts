@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { callOpenRouter, parseJsonFromAI } from '@/lib/openrouter';
 
 export const maxDuration = 30;
 export const dynamic = 'force-dynamic';
@@ -11,86 +12,46 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Task name required' }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENROUTER_API_KEY;
-    if (!apiKey) {
-      // Return fallback if no API key
+    const systemPrompt = `تو مشاور کسب‌وکار هستی.
+
+قانون: فقط فارسی پاسخ بده.
+
+این کار را به ۳ گام کوچک تقسیم کن.
+فقط JSON خروجی بده:
+{"subTasks": ["گام ۱", "گام ۲", "گام ۳"]}`;
+
+    const result = await callOpenRouter(
+      `کار: "${taskName}" - به ۳ گام فارسی تقسیم کن`,
+      { systemPrompt, maxTokens: 200, temperature: 0.5, timeoutMs: 20000 }
+    );
+
+    if (!result.success) {
       return NextResponse.json({
         subTasks: [
-          `اول ${taskName} رو تحقیق کن`,
-          `یه نمونه کوچیک از ${taskName} بساز`,
-          `نتیجه‌اش رو تست کن و بهبود بده`
+          `تحقیق درباره ${taskName}`,
+          `شروع اجرای ${taskName}`,
+          `بررسی نتیجه`
         ]
       });
     }
 
-    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://karnex.ir",
-        "X-Title": "Karnex Task Breakdown"
-      },
-      body: JSON.stringify({
-        // Using Google Gemini models only
-        model: "google/gemini-2.0-flash-001",
-        messages: [
-          {
-            role: "system",
-            content: `شما یک مشاور کسب‌وکار هستید. یک تسک بزرگ به شما داده می‌شود.
-این تسک را به ۳ گام کوچکتر و قابل اجرا تقسیم کنید.
-
-قوانین:
-1. هر گام باید ساده و مشخص باشد
-2. گام‌ها باید به ترتیب اجرا شوند
-3. هر گام را با فعل شروع کنید
-4. پاسخ فقط JSON باشد: {"subTasks": ["گام ۱", "گام ۲", "گام ۳"]}
-
-زمینه پروژه: ${projectContext || 'استارتاپ'}`
-          },
-          {
-            role: "user",
-            content: `این تسک را به ۳ گام کوچکتر تقسیم کن: "${taskName}"`
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 200
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error("AI API failed");
-    }
-
-    const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "";
-    
-    // Parse JSON from response
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0]);
+    try {
+      const parsed = parseJsonFromAI(result.content!);
+      return NextResponse.json({ subTasks: parsed.subTasks || [] });
+    } catch {
       return NextResponse.json({
-        subTasks: parsed.subTasks || []
+        subTasks: [
+          `تحقیق درباره ${taskName}`,
+          `شروع اجرای ${taskName}`,
+          `بررسی نتیجه`
+        ]
       });
     }
 
-    // Fallback
-    return NextResponse.json({
-      subTasks: [
-        `تحقیق درباره ${taskName}`,
-        `شروع اجرای ${taskName}`,
-        `بررسی و بهبود نتیجه`
-      ]
-    });
-
   } catch (error) {
-    console.error("Break task API error:", error);
+    console.error("Break task error:", error);
     return NextResponse.json({
-      subTasks: [
-        "قدم اول را مشخص کن",
-        "آن را اجرا کن", 
-        "نتیجه را بررسی کن"
-      ]
+      subTasks: ["قدم اول", "اجرا", "بررسی"]
     });
   }
 }

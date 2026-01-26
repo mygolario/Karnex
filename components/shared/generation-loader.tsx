@@ -1,141 +1,150 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { 
-  Sparkles, 
-  Brain, 
-  FileText, 
-  Palette, 
-  Map,
-  Target,
-  Megaphone,
-  CheckCircle2
-} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 
 interface GenerationLoaderProps {
-  projectName?: string;
+  isLoading: boolean;
+  progress?: number; // 0 to 100
+  title?: string;
 }
 
-export function GenerationLoader({ projectName }: GenerationLoaderProps) {
-  const [currentStep, setCurrentStep] = useState(0);
+const TIPS = [
+  "در حال تحلیل مدل‌های کسب‌وکار موفق...",
+  "ساختاردهی به جریان‌های درآمدی...",
+  "شناسایی بخش‌های مشتریان هدف...",
+  "بهینه‌سازی ارزش پیشنهادی...",
+  "بررسی استراتژی‌های رشد...",
+  "تدوین ساختار هزینه‌ها...",
+  "تحلیل رقبا و مزیت‌های رقابتی...",
+];
 
-  const steps = [
-    { icon: Brain, label: "تحلیل ایده شما", color: "from-primary to-purple-600" },
-    { icon: Target, label: "بررسی بازار و رقبا", color: "from-purple-600 to-pink-500" },
-    { icon: FileText, label: "تولید بوم کسب‌وکار", color: "from-pink-500 to-rose-500" },
-    { icon: Map, label: "طراحی نقشه راه", color: "from-rose-500 to-orange-500" },
-    { icon: Palette, label: "ساخت هویت بصری", color: "from-orange-500 to-amber-500" },
-    { icon: Megaphone, label: "استراتژی بازاریابی", color: "from-amber-500 to-secondary" },
-  ];
+export function GenerationLoader({ isLoading, progress, title = "در حال ساخت طرح کسب‌وکار" }: GenerationLoaderProps) {
+  const [tipIndex, setTipIndex] = useState(0);
+  const [dots, setDots] = useState("");
 
+  // Rotate tips
   useEffect(() => {
+    if (!isLoading) return;
     const interval = setInterval(() => {
-      setCurrentStep((prev) => (prev < steps.length - 1 ? prev + 1 : prev));
-    }, 2500);
-
+      setTipIndex((prev) => (prev + 1) % TIPS.length);
+    }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isLoading]);
+
+  // Animated dots
+  useEffect(() => {
+    if (!isLoading) return;
+    const interval = setInterval(() => {
+      setDots((prev) => (prev.length >= 3 ? "" : prev + "."));
+    }, 500);
+    return () => clearInterval(interval);
+  }, [isLoading]);
+
+  if (!isLoading) return null;
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      {/* Main Animation */}
-      <div className="relative mb-12">
-        {/* Outer Glow */}
-        <div className="absolute inset-0 bg-gradient-to-r from-primary to-secondary blur-3xl opacity-20 scale-150 animate-pulse" />
-        
-        {/* Circle Background */}
-        <div className={cn(
-          "relative w-32 h-32 rounded-3xl flex items-center justify-center",
-          "bg-gradient-to-br",
-          steps[currentStep].color,
-          "shadow-2xl transition-all duration-500"
-        )}>
-          {/* Inner Icon */}
-          <div className="text-white">
-            {(() => {
-              const Icon = steps[currentStep].icon;
-              return <Icon size={48} className="animate-pulse" />;
-            })()}
-          </div>
-          
-          {/* Spinning Ring */}
-          <div className="absolute inset-0 rounded-3xl border-4 border-white/20 animate-spin-slow" 
-            style={{ 
-              borderTopColor: 'transparent', 
-              borderRightColor: 'white',
-              animationDuration: '3s' 
-            }} 
-          />
-        </div>
-        
-        {/* Floating Particles */}
-        <div className="absolute -top-4 -left-4 w-6 h-6 bg-primary/30 rounded-full blur-sm animate-float" />
-        <div className="absolute -bottom-4 -right-4 w-4 h-4 bg-secondary/30 rounded-full blur-sm animate-float" style={{ animationDelay: "-1s" }} />
-        <div className="absolute top-1/2 -right-8 w-3 h-3 bg-accent/30 rounded-full blur-sm animate-float" style={{ animationDelay: "-2s" }} />
-      </div>
+    <AnimatePresence>
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-md">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="relative w-full max-w-md p-8 flex flex-col items-center"
+        >
+          {/* 3D Building Blocks Animation */}
+          <div className="relative h-40 w-40 mb-12 perserve-3d">
+            <div className="absolute inset-0 flex items-center justify-center" style={{ perspective: "1000px" }}>
+              {/* Base Block */}
+              <motion.div
+                className="absolute w-16 h-16 bg-blue-600 rounded-lg shadow-xl"
+                initial={{ y: 50, opacity: 0, scale: 0.5, rotateX: 45, rotateZ: 45 }}
+                animate={{ y: 0, opacity: 1, scale: 1, rotateX: 60, rotateZ: 45 }}
+                transition={{ duration: 0.6, delay: 0, type: "spring" }}
+                style={{ zIndex: 1 }}
+              />
+              {/* Middle Block */}
+              <motion.div
+                className="absolute w-16 h-16 bg-indigo-500 rounded-lg shadow-xl"
+                initial={{ y: -50, opacity: 0, scale: 0.5, rotateX: 45, rotateZ: 45 }}
+                animate={{ y: -25, opacity: 1, scale: 1, rotateX: 60, rotateZ: 45 }}
+                transition={{ duration: 0.6, delay: 0.4, type: "spring" }}
+                style={{ zIndex: 2 }}
+              />
+              {/* Top Block */}
+              <motion.div
+                className="absolute w-16 h-16 bg-purple-500 rounded-lg shadow-xl"
+                initial={{ y: -100, opacity: 0, scale: 0.5, rotateX: 45, rotateZ: 45 }}
+                animate={{ y: -50, opacity: 1, scale: 1, rotateX: 60, rotateZ: 45 }}
+                transition={{ duration: 0.6, delay: 0.8, type: "spring" }}
+                style={{ zIndex: 3 }}
+              />
 
-      {/* Project Name */}
-      {projectName && (
-        <h2 className="text-2xl font-black text-foreground mb-3">
-          {projectName}
-        </h2>
-      )}
-
-      {/* Current Step */}
-      <p className="text-lg text-muted-foreground mb-8">
-        در حال <span className="text-foreground font-bold">{steps[currentStep].label}</span>...
-      </p>
-
-      {/* Progress Steps */}
-      <div className="w-full max-w-md space-y-3">
-        {steps.map((step, i) => (
-          <div
-            key={i}
-            className={cn(
-              "flex items-center gap-3 p-3 rounded-xl transition-all duration-500",
-              i < currentStep && "opacity-50",
-              i === currentStep && "bg-muted/50"
-            )}
-          >
-            <div
-              className={cn(
-                "w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-500",
-                i <= currentStep
-                  ? `bg-gradient-to-br ${step.color} text-white shadow-lg`
-                  : "bg-muted text-muted-foreground"
-              )}
-            >
-              {i < currentStep ? (
-                <CheckCircle2 size={16} />
-              ) : (
-                <step.icon size={16} />
-              )}
+              {/* Floating Particles */}
+              {[...Array(5)].map((_, i) => (
+                <motion.div
+                  key={i}
+                  className="absolute w-2 h-2 bg-yellow-400 rounded-full"
+                  initial={{ opacity: 0, x: 0, y: 0 }}
+                  animate={{
+                    opacity: [0, 1, 0],
+                    x: (Math.random() - 0.5) * 100,
+                    y: (Math.random() - 0.5) * 100 - 50
+                  }}
+                  transition={{
+                    duration: 2,
+                    repeat: Infinity,
+                    delay: Math.random() * 2,
+                    ease: "easeOut"
+                  }}
+                />
+              ))}
             </div>
-            <span
-              className={cn(
-                "text-sm font-medium transition-colors",
-                i <= currentStep ? "text-foreground" : "text-muted-foreground"
-              )}
-            >
-              {step.label}
-            </span>
-            {i === currentStep && (
-              <div className="mr-auto flex gap-1">
-                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-bounce" />
-              </div>
-            )}
           </div>
-        ))}
-      </div>
 
-      {/* Tip */}
-      <p className="mt-8 text-sm text-muted-foreground flex items-center gap-2">
-        <Sparkles size={14} className="text-accent" />
-        این فرایند معمولاً ۳۰ تا ۶۰ ثانیه طول می‌کشد
-      </p>
-    </div>
+          <h3 className="text-2xl font-bold text-foreground mb-2 text-center text-primary">
+            {title}{dots}
+          </h3>
+
+          <div className="h-8 mb-6 overflow-hidden relative w-full text-center">
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={tipIndex}
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -20, opacity: 0 }}
+                transition={{ duration: 0.4 }}
+                className="text-muted-foreground text-sm absolute w-full font-medium"
+              >
+                {TIPS[tipIndex]}
+              </motion.p>
+            </AnimatePresence>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="w-full h-2 bg-muted rounded-full overflow-hidden relative">
+            <motion.div
+              className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"
+              initial={{ width: "0%" }}
+              animate={{
+                width: progress !== undefined ? `${progress}%` : "100%",
+                left: progress !== undefined ? "0%" : ["-100%", "100%"]
+              }}
+              transition={
+                progress !== undefined
+                  ? { type: "spring", stiffness: 50 }
+                  : { repeat: Infinity, duration: 2, ease: "linear" }
+              }
+            />
+          </div>
+
+          {progress !== undefined && (
+            <p className="mt-2 text-xs font-mono text-muted-foreground">{progress}%</p>
+          )}
+
+        </motion.div>
+      </div>
+    </AnimatePresence>
   );
 }
