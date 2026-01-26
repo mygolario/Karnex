@@ -12,10 +12,28 @@ import { StatsCard } from "@/components/dashboard/stats-card";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { KarnexScore } from "@/components/dashboard/karnex-score";
 import {
-  Rocket, Map, Palette, LayoutGrid, Megaphone,
-  TrendingUp, Target, CheckCircle2, Sparkles, Zap, Plus,
-  Calendar, ChevronLeft, Activity, Award, Wand2, Loader2,
-  Brain, Lightbulb, RefreshCw, ArrowUpRight
+  Rocket,
+  Map,
+  Palette,
+  LayoutGrid,
+  Megaphone,
+  TrendingUp,
+  Target,
+  CheckCircle2,
+  Sparkles,
+  Zap,
+  Plus,
+  Calendar,
+  ChevronLeft,
+  Activity,
+  Award,
+  Wand2,
+  Loader2,
+  Brain,
+  Lightbulb,
+  RefreshCw,
+  ArrowUpRight,
+  Scale,
 } from "lucide-react";
 
 // Helper to get step title whether it's a string or object
@@ -28,8 +46,8 @@ const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.1 }
-  }
+    transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+  },
 };
 
 const itemVariants = {
@@ -37,8 +55,8 @@ const itemVariants = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const }
-  }
+    transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as const },
+  },
 };
 
 const scaleVariants = {
@@ -46,8 +64,8 @@ const scaleVariants = {
   show: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] as const }
-  }
+    transition: { duration: 0.4, ease: [0.34, 1.56, 0.64, 1] as const },
+  },
 };
 
 export default function DashboardOverviewPage() {
@@ -69,7 +87,11 @@ export default function DashboardOverviewPage() {
     if (!plan) return;
     setGeneratingInsights(true);
     try {
-      const totalSteps = plan.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1;
+      const totalSteps =
+        plan.roadmap?.reduce(
+          (acc: number, p: any) => acc + p.steps.length,
+          0,
+        ) || 1;
       const completedCount = plan.completedSteps?.length || 0;
       const progressPercent = Math.round((completedCount / totalSteps) * 100);
 
@@ -80,18 +102,26 @@ Return ONLY a JSON array of 3 Persian strings.`;
       const response = await fetch("/api/ai-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, systemPrompt: "Return ONLY valid JSON array in Persian." })
+        body: JSON.stringify({
+          prompt,
+          systemPrompt: "Return ONLY valid JSON array in Persian.",
+        }),
       });
       const data = await response.json();
       if (data.success && data.content) {
-        const insights = JSON.parse(data.content.replace(/```json|```/g, "").trim());
+        const insights = JSON.parse(
+          data.content.replace(/```json|```/g, "").trim(),
+        );
         if (Array.isArray(insights)) {
           setAiInsights(insights);
           setInsightsLoaded(true);
         }
       }
-    } catch (err) { console.error(err); }
-    finally { setGeneratingInsights(false); }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setGeneratingInsights(false);
+    }
   };
 
   // Empty state
@@ -117,11 +147,16 @@ Return ONLY a JSON array of 3 Persian strings.`;
             >
               <Rocket size={56} className="text-white" />
             </motion.div>
-            <h2 className="text-3xl font-black text-foreground mb-4">هنوز پروژه‌ای نساخته‌اید</h2>
-            <p className="text-muted-foreground mb-8 text-lg leading-8">ایده خود را توصیف کنید و بگذارید AI طرح کسب‌وکار بسازد.</p>
+            <h2 className="text-3xl font-black text-foreground mb-4">
+              هنوز پروژه‌ای نساخته‌اید
+            </h2>
+            <p className="text-muted-foreground mb-8 text-lg leading-8">
+              ایده خود را توصیف کنید و بگذارید AI طرح کسب‌وکار بسازد.
+            </p>
             <Link href="/new-project">
               <Button variant="shimmer" size="xl" className="w-full text-lg">
-                <Plus size={22} className="ml-2" />ساخت پروژه جدید
+                <Plus size={22} className="ml-2" />
+                ساخت پروژه جدید
               </Button>
             </Link>
           </motion.div>
@@ -136,7 +171,9 @@ Return ONLY a JSON array of 3 Persian strings.`;
       <div className="space-y-6">
         <div className="skeleton skeleton-card h-72 rounded-[2rem]" />
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => <div key={i} className="skeleton h-28 rounded-2xl" />)}
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="skeleton h-28 rounded-2xl" />
+          ))}
         </div>
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 skeleton h-64 rounded-2xl" />
@@ -146,17 +183,71 @@ Return ONLY a JSON array of 3 Persian strings.`;
     );
   }
 
-  const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1;
+  const totalSteps =
+    plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) ||
+    1;
   const completedCount = plan?.completedSteps?.length || 0;
   const progressPercent = Math.round((completedCount / totalSteps) * 100);
-  const nextStep = plan?.roadmap?.flatMap((p: any) => p.steps).find((s: any) => !plan?.completedSteps?.includes(getStepTitle(s)));
+  // Helper to safely get step title
+  const getStepTitle = (step: any) => {
+    if (typeof step === "string") return step;
+    return step?.title || "Unknown Step";
+  };
+
+  const nextStepRaw = plan?.roadmap
+    ?.flatMap((p: any) => p.steps)
+    .find((s: any) => {
+      const title = getStepTitle(s);
+      return !plan?.completedSteps?.includes(title);
+    });
+
+  const nextStep = nextStepRaw ? getStepTitle(nextStepRaw) : null;
 
   const toolCards = [
-    { href: "/dashboard/roadmap", icon: Map, title: "نقشه راه", desc: "مسیر اجرای گام‌به‌گام", gradient: "from-blue-500 to-cyan-500", shadow: "shadow-blue-500/20" },
-    { href: "/dashboard/canvas", icon: LayoutGrid, title: "بوم کسب‌وکار", desc: "مدل و استراتژی بیزینس", gradient: "from-amber-500 to-orange-500", shadow: "shadow-amber-500/20" },
-    // { href: "/dashboard/brand", icon: Palette, title: "هویت بصری", desc: "لوگو، رنگ و فونت", gradient: "from-purple-500 to-pink-500", shadow: "shadow-purple-500/20", ai: true }, // Temporarily disabled
-    { href: "/dashboard/marketing", icon: Megaphone, title: "بازاریابی", desc: "استراتژی جذب مشتری", gradient: "from-rose-500 to-red-500", shadow: "shadow-rose-500/20" },
+    {
+      href: "/dashboard/roadmap",
+      icon: Map,
+      title: "نقشه راه",
+      desc: "مسیر اجرای گام‌به‌گام",
+      gradient: "from-blue-500 to-cyan-500",
+      shadow: "shadow-blue-500/20",
+    },
+    {
+      href: "/dashboard/canvas",
+      icon: LayoutGrid,
+      title: "بوم کسب‌وکار",
+      desc: "مدل و استراتژی بیزینس",
+      gradient: "from-amber-500 to-orange-500",
+      shadow: "shadow-amber-500/20",
+    },
+    {
+      href: "/dashboard/brand",
+      icon: Palette,
+      title: "هویت بصری",
+      desc: "لوگو، رنگ و فونت",
+      gradient: "from-purple-500 to-pink-500",
+      shadow: "shadow-purple-500/20",
+      ai: true,
+    },
+    {
+      href: "/dashboard/marketing",
+      icon: Megaphone,
+      title: "بازاریابی",
+      desc: "استراتژی جذب مشتری",
+      gradient: "from-rose-500 to-red-500",
+      shadow: "shadow-rose-500/20",
+    },
+    {
+      href: "/dashboard/legal",
+      icon: Scale,
+      title: "حقوقی",
+      desc: "مجوزها و قراردادها",
+      gradient: "from-emerald-500 to-teal-500",
+      shadow: "shadow-emerald-500/20",
+      ai: true,
+    },
   ];
+
 
   return (
     <motion.div
@@ -172,7 +263,10 @@ Return ONLY a JSON array of 3 Persian strings.`;
           {/* Animated Background */}
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
           <div className="absolute -right-20 -top-20 w-96 h-96 bg-white/20 blur-[100px] rounded-full animate-float" />
-          <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-secondary/30 blur-[100px] rounded-full animate-float" style={{ animationDelay: "-3s" }} />
+          <div
+            className="absolute -left-20 -bottom-20 w-80 h-80 bg-secondary/30 blur-[100px] rounded-full animate-float"
+            style={{ animationDelay: "-3s" }}
+          />
 
           <div className="relative z-10 p-8 md:p-10 h-full flex flex-col justify-between">
             {/* Top Bar */}
@@ -185,7 +279,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
                   className="glass-strong px-4 py-1.5 rounded-full flex items-center gap-2 text-sm font-medium border-white/30"
                 >
                   <Calendar size={14} />
-                  {new Date().toLocaleDateString('fa-IR')}
+                  {new Date().toLocaleDateString("fa-IR")}
                 </motion.div>
               </div>
               {progressPercent === 100 && (
@@ -203,7 +297,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
                 transition={{ delay: 0.2 }}
                 className="text-4xl md:text-6xl font-black mb-4 leading-tight"
               >
-                {greeting}، {user?.displayName?.split(' ')[0] || "دوست من"}!
+                {greeting}، {user?.displayName?.split(" ")[0] || "دوست من"}!
                 <motion.span
                   animate={{ rotate: [0, 20, 0] }}
                   transition={{ duration: 0.5, delay: 0.5 }}
@@ -218,7 +312,9 @@ Return ONLY a JSON array of 3 Persian strings.`;
                 transition={{ delay: 0.4 }}
                 className="text-xl text-white/80 max-w-xl"
               >
-                امروز روی رشد <strong className="text-white">{plan?.projectName}</strong> تمرکز کنیم.
+                امروز روی رشد{" "}
+                <strong className="text-white">{plan?.projectName}</strong>{" "}
+                تمرکز کنیم.
               </motion.p>
             </div>
 
@@ -234,13 +330,19 @@ Return ONLY a JSON array of 3 Persian strings.`;
                   <Target size={28} />
                 </div>
                 <div className="flex-1">
-                  <span className="text-xs font-bold text-white/70 uppercase tracking-wider">مأموریت امروز</span>
+                  <span className="text-xs font-bold text-white/70 uppercase tracking-wider">
+                    مأموریت امروز
+                  </span>
                   <p className="font-bold text-lg mt-1 leading-relaxed">
                     {nextStep ? getStepTitle(nextStep) : "تمام مراحل انجام شده! 🎉"}
                   </p>
                   {nextStep && (
                     <Link href="/dashboard/roadmap">
-                      <Button variant="glass" size="sm" className="mt-3 text-white border-white/20 hover:bg-white/20">
+                      <Button
+                        variant="glass"
+                        size="sm"
+                        className="mt-3 text-white border-white/20 hover:bg-white/20"
+                      >
                         شروع <ChevronLeft size={16} className="mr-1" />
                       </Button>
                     </Link>
@@ -258,7 +360,9 @@ Return ONLY a JSON array of 3 Persian strings.`;
         >
           <div className="absolute inset-0 bg-mesh-gradient pointer-events-none" />
           <div className="relative z-10 w-full">
-            <h3 className="text-sm font-bold text-muted-foreground mb-4 uppercase tracking-wider">امتیاز کارنکس</h3>
+            <h3 className="text-sm font-bold text-muted-foreground mb-4 uppercase tracking-wider">
+              امتیاز کارنکس
+            </h3>
             <div className="scale-125 mb-6">
               <KarnexScore compact />
             </div>
@@ -272,7 +376,10 @@ Return ONLY a JSON array of 3 Persian strings.`;
       </motion.div>
 
       {/* Key Metrics */}
-      <motion.div variants={itemVariants} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.div
+        variants={itemVariants}
+        className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      >
         <StatsCard
           title="پیشرفت کل"
           value={`${progressPercent}%`}
@@ -284,7 +391,13 @@ Return ONLY a JSON array of 3 Persian strings.`;
         />
         <StatsCard
           title="فاز فعلی"
-          value={plan?.roadmap?.find((p: any) => p.steps.some((s: any) => !plan.completedSteps?.includes(getStepTitle(s))))?.phase.split(':')[0] || "تکمیل"}
+          value={
+            plan?.roadmap
+              ?.find((p: any) =>
+                p.steps.some((s: any) => !plan.completedSteps?.includes(getStepTitle(s))),
+              )
+              ?.phase.split(":")[0] || "تکمیل"
+          }
           icon={Map}
           variant="accent"
           className="card-floating"
@@ -324,8 +437,12 @@ Return ONLY a JSON array of 3 Persian strings.`;
                 <Brain size={28} />
               </motion.div>
               <div>
-                <h2 className="text-2xl font-black text-foreground">توصیه‌های هوشمند</h2>
-                <p className="text-muted-foreground">پیشنهادات AI برای رشد سریع‌تر</p>
+                <h2 className="text-2xl font-black text-foreground">
+                  توصیه‌های هوشمند
+                </h2>
+                <p className="text-muted-foreground">
+                  پیشنهادات AI برای رشد سریع‌تر
+                </p>
               </div>
             </div>
             <Button
@@ -335,11 +452,17 @@ Return ONLY a JSON array of 3 Persian strings.`;
               className="gap-2"
             >
               {generatingInsights ? (
-                <><Loader2 size={18} className="animate-spin" /> در حال تحلیل...</>
+                <>
+                  <Loader2 size={18} className="animate-spin" /> در حال تحلیل...
+                </>
               ) : insightsLoaded ? (
-                <><RefreshCw size={18} /> بروزرسانی</>
+                <>
+                  <RefreshCw size={18} /> بروزرسانی
+                </>
               ) : (
-                <><Wand2 size={18} /> دریافت توصیه</>
+                <>
+                  <Wand2 size={18} /> دریافت توصیه
+                </>
               )}
             </Button>
           </div>
@@ -361,7 +484,9 @@ Return ONLY a JSON array of 3 Persian strings.`;
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
                       <Lightbulb size={20} />
                     </div>
-                    <span className="text-sm font-bold text-muted-foreground">توصیه {i + 1}</span>
+                    <span className="text-sm font-bold text-muted-foreground">
+                      توصیه {i + 1}
+                    </span>
                   </div>
                   <p className="text-foreground leading-8">{insight}</p>
                 </motion.div>
@@ -370,7 +495,9 @@ Return ONLY a JSON array of 3 Persian strings.`;
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <Brain size={56} className="mx-auto mb-4 opacity-20" />
-              <p className="text-lg">روی "دریافت توصیه" کلیک کنید تا AI پیشنهاداتی برای شما بسازد.</p>
+              <p className="text-lg">
+                روی "دریافت توصیه" کلیک کنید تا AI پیشنهاداتی برای شما بسازد.
+              </p>
             </div>
           )}
         </div>
@@ -380,7 +507,9 @@ Return ONLY a JSON array of 3 Persian strings.`;
       <motion.div variants={itemVariants}>
         <div className="flex items-center gap-3 mb-6">
           <div className="w-1.5 h-8 bg-gradient-to-b from-primary to-secondary rounded-full" />
-          <h2 className="text-2xl font-black text-foreground">ابزارهای کلیدی</h2>
+          <h2 className="text-2xl font-black text-foreground">
+            ابزارهای کلیدی
+          </h2>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
           {toolCards.map((item, i) => (
@@ -391,12 +520,28 @@ Return ONLY a JSON array of 3 Persian strings.`;
               whileTap={{ scale: 0.98 }}
             >
               <Link href={item.href}>
-                <div className={`card-floating group h-full p-6 flex flex-col items-center text-center cursor-pointer relative ${item.shadow}`}>
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.gradient} text-white flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
+                <div
+                  className={`card-floating group h-full p-6 flex flex-col items-center text-center cursor-pointer relative ${item.shadow}`}
+                >
+                  {item.ai && (
+                    <Badge
+                      variant="accent"
+                      className="absolute top-3 left-3 text-[10px] gap-1"
+                    >
+                      <Zap size={10} /> AI
+                    </Badge>
+                  )}
+                  <div
+                    className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.gradient} text-white flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}
+                  >
                     <item.icon size={28} />
                   </div>
-                  <h3 className="font-bold text-foreground text-lg mb-1">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                  <h3 className="font-bold text-foreground text-lg mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {item.desc}
+                  </p>
                 </div>
               </Link>
             </motion.div>
@@ -407,7 +552,11 @@ Return ONLY a JSON array of 3 Persian strings.`;
       {/* Activity & Tips */}
       <motion.div variants={itemVariants} className="grid lg:grid-cols-3 gap-6">
         {/* Activity Feed */}
-        <Card variant="spotlight" padding="none" className="lg:col-span-2 overflow-hidden">
+        <Card
+          variant="spotlight"
+          padding="none"
+          className="lg:col-span-2 overflow-hidden"
+        >
           <div className="p-6 border-b border-border/50 flex items-center justify-between bg-muted/30">
             <h3 className="font-bold text-lg flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -422,7 +571,10 @@ Return ONLY a JSON array of 3 Persian strings.`;
         </Card>
 
         {/* Smart Tips */}
-        <Card variant="gradient" className="relative overflow-hidden border-0 p-0">
+        <Card
+          variant="gradient"
+          className="relative overflow-hidden border-0 p-0"
+        >
           <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950" />
           <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/20 rounded-full blur-[80px]" />
 
@@ -440,19 +592,26 @@ Return ONLY a JSON array of 3 Persian strings.`;
                   <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   اجرای سریع‌تر
                 </h4>
-                <p className="text-sm text-white/70 leading-7">با تکمیل نقشه راه، هر مرحله را به ترتیب انجام دهید.</p>
+                <p className="text-sm text-white/70 leading-7">
+                  با تکمیل نقشه راه، هر مرحله را به ترتیب انجام دهید.
+                </p>
               </div>
               <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
                 <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
                   تحلیل هوشمند
                 </h4>
-                <p className="text-sm text-white/70 leading-7">از قابلیت AI برای شناسایی نقاط ضعف استفاده کنید.</p>
+                <p className="text-sm text-white/70 leading-7">
+                  از قابلیت AI برای شناسایی نقاط ضعف استفاده کنید.
+                </p>
               </div>
             </div>
 
             <Link href="/dashboard/help" className="mt-4">
-              <Button variant="glass" className="w-full justify-between text-white border-white/20 hover:bg-white/10">
+              <Button
+                variant="glass"
+                className="w-full justify-between text-white border-white/20 hover:bg-white/10"
+              >
                 مشاهده راهنما
                 <ChevronLeft size={18} />
               </Button>

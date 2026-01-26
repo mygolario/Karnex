@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/dashboard/progress-ring";
 import { StepDetailModal } from "@/components/dashboard/step-detail-modal";
+import { StepGuide } from "@/components/dashboard/step-guide";
 import { cn } from "@/lib/utils";
 
 // Types for enhanced roadmap
@@ -36,6 +37,22 @@ interface RoadmapPhase {
   steps: (string | RoadmapStep)[];
 }
 
+const itemVariants = {
+  hidden: { opacity: 0, x: -20 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } }
+};
+
+const getStepTitle = (step: any): string => {
+  if (typeof step === 'string') return step;
+  if (step && typeof step.title === 'string') return step.title;
+  return "Unknown Step";
+};
+
+const stepVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.3 } }
+};
+
 interface SubTask {
   parentStep: string;
   text: string;
@@ -44,15 +61,11 @@ interface SubTask {
 
 // Helper to normalize step to object format
 function normalizeStep(step: string | RoadmapStep): RoadmapStep {
+  if (!step) return { title: "Unknown Step" };
   if (typeof step === 'string') {
     return { title: step };
   }
   return step;
-}
-
-// Helper to get step title
-function getStepTitle(step: string | RoadmapStep): string {
-  return typeof step === 'string' ? step : step.title;
 }
 
 export default function RoadmapPage() {
@@ -89,8 +102,8 @@ export default function RoadmapPage() {
   }, [plan]);
 
   // Get all steps flattened for focus mode
-  const allSteps = plan?.roadmap?.flatMap((phase: RoadmapPhase) =>
-    phase.steps.map((step) => ({ step: normalizeStep(step), phase }))
+  const allSteps = plan?.roadmap?.flatMap((phase: any) => 
+    phase.steps.map((step: any) => ({ step: getStepTitle(step), phase: phase.phase }))
   ) || [];
 
   // Find current (first incomplete) step
@@ -178,6 +191,15 @@ export default function RoadmapPage() {
         toggleStepCompletion(user.uid, subTask.parentStep, true, plan.id || 'current');
       }
     }
+  };
+
+  // Toggle expand for steps with subtasks
+  const toggleExpand = (stepTitle: string) => {
+    setExpandedSteps((prev) =>
+      prev.includes(stepTitle)
+        ? prev.filter((s) => s !== stepTitle)
+        : [...prev, stepTitle],
+    );
   };
 
   // Get sub-tasks for a step
@@ -387,32 +409,42 @@ export default function RoadmapPage() {
             <ChevronRight size={20} />
           </Button>
 
-          {plan.roadmap.map((phase: RoadmapPhase, idx: number) => {
-            const weekNum = phase.weekNumber || idx + 1;
-            const weekSteps = phase.steps;
-            const weekCompleted = weekSteps.filter((s: any) => completedSteps.includes(getStepTitle(s))).length;
-            const isComplete = weekCompleted === weekSteps.length;
-            const isActive = weekNum === activeWeek;
+        {plan.roadmap.map((phase: any, phaseIdx: number) => {
+          // Flatten check: Ensure steps exist and can be checked
+          const steps = phase.steps || [];
+          const isPhaseComplete = steps.length > 0 && steps.every((s: any) => completedSteps.includes(getStepTitle(s)));
+          const isPhaseStarted = steps.length > 0 && steps.some((s: any) => completedSteps.includes(getStepTitle(s)));
+          const isActive = (phase.weekNumber || phaseIdx + 1) === activeWeek;
+          
+          return (
+            <div key={phaseIdx} className="relative pr-10 md:pr-14 group">
+              {/* Phase Marker */}
+              <div className={cn(
+                "absolute -right-[13px] top-0 w-6 h-6 rounded-full border-4 transition-all duration-500 z-10 shadow-lg",
+                isPhaseComplete ? "bg-primary border-primary scale-110 shadow-primary/40" : 
+                isPhaseStarted ? "bg-white border-primary animate-pulse" : "bg-muted border-muted-foreground"
+              )}>
+                {isPhaseComplete && <CheckCircle2 size={14} className="text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />}
+              </div>
 
-            return (
               <button
-                key={idx}
-                onClick={() => setActiveWeek(weekNum)}
+                onClick={() => setActiveWeek(phase.weekNumber || phaseIdx + 1)}
                 className={cn(
                   "shrink-0 px-4 py-2 rounded-xl transition-all flex flex-col items-center gap-1 min-w-[80px]",
                   isActive
                     ? "bg-primary text-white shadow-lg shadow-primary/30"
-                    : isComplete
+                    : isPhaseComplete
                       ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
                       : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 )}
               >
                 <span className="text-xs font-medium">هفته</span>
-                <span className="text-lg font-black">{weekNum}</span>
-                {isComplete && <CheckCircle2 size={14} className="text-emerald-500" />}
+                <span className="text-lg font-black">{phase.weekNumber || phaseIdx + 1}</span>
+                {isPhaseComplete && <CheckCircle2 size={14} className="text-emerald-500" />}
               </button>
-            );
-          })}
+            </div>
+          );
+        })}
 
           <Button
             variant="ghost"
@@ -445,16 +477,133 @@ export default function RoadmapPage() {
                 <h2 className="text-xl font-bold text-foreground">{activePhase.phase}</h2>
               </div>
 
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <div className="text-xs text-muted-foreground mb-1">پیشرفت این هفته</div>
-                  <div className="text-2xl font-black text-foreground">{phaseProgress}%</div>
-                </div>
-                <div className="w-16 h-16 relative">
-                  <ProgressRing progress={phaseProgress} size={64} strokeWidth={6} />
-                  {phaseProgress === 100 && (
-                    <div className="absolute inset-0 flex items-center justify-center text-xl">✅</div>
-                  )}
+                <div className="grid gap-5">
+                  {(activePhase.steps || []).map((rawStep: any, stepIdx: number) => {
+                    const step = getStepTitle(rawStep);
+                    const isCompleted = completedSteps.includes(step);
+                    const stepSubTasks = getSubTasks(step);
+                    const isExpanded = expandedSteps.includes(step);
+                    const isCurrentStep = currentStepData?.step.title === step;
+                    
+                    return (
+                      <div key={stepIdx} className="relative">
+                        <div 
+                          className={cn(
+                            "group/card relative transition-all duration-300 rounded-2xl p-5 border",
+                            isCompleted 
+                              ? "bg-muted/20 border-border/50 opacity-80" 
+                              : "card-glass hover-lift border-white/10 hover:border-primary/20",
+                            isCurrentStep && !isCompleted && "ring-2 ring-primary/40 ring-offset-2 ring-offset-background shadow-xl shadow-primary/10"
+                          )}
+                        >
+                           {/* Current Step Indicator */}
+                           {isCurrentStep && !isCompleted && (
+                             <div className="absolute -left-2 -top-2 w-4 h-4 bg-primary rounded-full animate-ping" />
+                           )}
+
+                           <div className="flex items-start gap-5">
+                              {/* Checkbox */}
+                              <button
+                                onClick={(e) => handleToggle(step, e)}
+                                className={cn(
+                                  "w-7 h-7 rounded-full border-2 flex items-center justify-center shrink-0 mt-1 transition-all duration-300",
+                                  isCompleted 
+                                    ? "bg-gradient-to-br from-primary to-purple-600 border-transparent text-white scale-110 shadow-lg shadow-primary/30" 
+                                    : "border-muted-foreground/30 text-transparent hover:border-primary/60 hover:scale-105 hover:bg-primary/5"
+                                )}
+                              >
+                                <CheckCircle2 size={16} fill="currentColor" className={isCompleted ? "opacity-100" : "opacity-0"} />
+                              </button>
+
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-4">
+                                  <h3 className={cn(
+                                    "font-bold text-lg mb-1.5 transition-colors leading-snug",
+                                    isCompleted ? "text-muted-foreground line-through decoration-primary/30" : "text-foreground"
+                                  )}>
+                                    {step}
+                                  </h3>
+                                  
+                                  {/* Expand/Collapse if has sub-tasks */}
+                                  {stepSubTasks.length > 0 && (
+                                    <button
+                                      onClick={() => toggleExpand(step)}
+                                      className="text-muted-foreground hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-primary/5"
+                                    >
+                                      {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                                    </button>
+                                  )}
+                                </div>
+                                
+                                {/* Action Bar */}
+                                <div className="flex items-center gap-3 mt-3 flex-wrap">
+                                  <StepGuide 
+                                    stepName={step} 
+                                    stepPhase={activePhase.phase} 
+                                    projectName={plan.projectName}
+                                  />
+                                  
+                                  {/* Stuck Button */}
+                                  {!isCompleted && stepSubTasks.length === 0 && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-8 text-xs gap-1.5 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-lg px-3"
+                                      onClick={() => handleStuck(step)}
+                                      disabled={loadingTask === step}
+                                    >
+                                      {loadingTask === step ? (
+                                        <Loader2 size={14} className="animate-spin" />
+                                      ) : (
+                                        <Zap size={14} />
+                                      )}
+                                      گیر کردید؟
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                           </div>
+                        </div>
+
+                        {/* Sub-tasks Panel */}
+                        {stepSubTasks.length > 0 && isExpanded && (
+                          <div className="mr-8 mt-3 glass rounded-2xl p-5 space-y-3 animate-in slide-in-from-top-4 border-l-4 border-l-primary/20">
+                            <p className="text-xs font-bold text-primary uppercase tracking-wider mb-2 flex items-center gap-2">
+                              <ListTree size={14} />
+                              گام‌های کوچکتر
+                            </p>
+                            {stepSubTasks.map((sub, i) => (
+                              <button
+                                key={i}
+                                onClick={() => handleSubTaskToggle(sub)}
+                                className={cn(
+                                  "flex items-center gap-3 w-full text-right p-3 rounded-xl transition-all group",
+                                  sub.isCompleted 
+                                    ? "bg-muted/30 opacity-60" 
+                                    : "hover:bg-primary/5 bg-background/50 border border-transparent hover:border-primary/10"
+                                )}
+                              >
+                                <div className={cn(
+                                  "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all",
+                                  sub.isCompleted 
+                                    ? "bg-primary border-primary text-white" 
+                                    : "border-muted-foreground/30 group-hover:border-primary/50"
+                                )}>
+                                  {sub.isCompleted && <CheckCircle2 size={12} />}
+                                </div>
+                                <span className={cn(
+                                  "text-sm font-medium",
+                                  sub.isCompleted ? "line-through text-muted-foreground" : "text-foreground"
+                                )}>
+                                  {sub.text}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -470,7 +619,7 @@ export default function RoadmapPage() {
 
           {/* Steps Grid */}
           <div className="grid gap-4 md:grid-cols-2">
-            {activePhase.steps.map((step: string | RoadmapStep, stepIdx: number) => {
+            {(activePhase.steps || []).map((step: string | RoadmapStep, stepIdx: number) => {
               const stepObj = normalizeStep(step);
               const isCompleted = completedSteps.includes(stepObj.title);
               const stepSubTasks = getSubTasks(stepObj.title);
