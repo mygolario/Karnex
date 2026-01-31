@@ -6,28 +6,46 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { toggleStepCompletion } from "@/lib/db";
-import { 
-  Map, CheckCircle2, Sparkles, Circle, Flag, ArrowDown, 
+import {
+  Map, CheckCircle2, Sparkles, Circle, Flag,
   Focus, ListTree, Loader2, Zap, ChevronDown, ChevronUp,
-  AlertCircle, Target, ArrowLeft
+  AlertCircle, Target, ArrowLeft, Clock, FolderOpen,
+  ChevronLeft, ChevronRight, Calendar
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/dashboard/progress-ring";
+import { StepDetailModal } from "@/components/dashboard/step-detail-modal";
 import { StepGuide } from "@/components/dashboard/step-guide";
 import { cn } from "@/lib/utils";
 
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.08 } }
-};
+// Types for enhanced roadmap
+interface RoadmapStep {
+  title: string;
+  description?: string;
+  estimatedHours?: number;
+  priority?: 'high' | 'medium' | 'low';
+  category?: string;
+  resources?: string[];
+}
+
+interface RoadmapPhase {
+  phase: string;
+  weekNumber?: number;
+  theme?: string;
+  steps: (string | RoadmapStep)[];
+}
 
 const itemVariants = {
   hidden: { opacity: 0, x: -20 },
   show: { opacity: 1, x: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] } }
+};
+
+const getStepTitle = (step: any): string => {
+  if (typeof step === 'string') return step;
+  if (step && typeof step.title === 'string') return step.title;
+  return "Unknown Step";
 };
 
 const stepVariants = {
@@ -41,53 +59,73 @@ interface SubTask {
   isCompleted: boolean;
 }
 
+// Helper to normalize step to object format
+function normalizeStep(step: string | RoadmapStep): RoadmapStep {
+  if (!step) return { title: "Unknown Step" };
+  if (typeof step === 'string') {
+    return { title: step };
+  }
+  return step;
+}
+
 export default function RoadmapPage() {
   const { user } = useAuth();
   const { activeProject: plan, loading, updateActiveProject } = useProject();
-  
+
   // State
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [focusMode, setFocusMode] = useState(false);
   const [subTasks, setSubTasks] = useState<SubTask[]>([]);
   const [loadingTask, setLoadingTask] = useState<string | null>(null);
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
+  const [activeWeek, setActiveWeek] = useState(1);
+  const [selectedStep, setSelectedStep] = useState<{ step: RoadmapStep, phase: RoadmapPhase } | null>(null);
 
   // Sync state from plan
   useEffect(() => {
     if (plan) {
       setCompletedSteps(plan.completedSteps || []);
-      // Load saved sub-tasks if any
       if (plan.subTasks) {
         setSubTasks(plan.subTasks);
+      }
+      // Find current week (first incomplete)
+      if (plan.roadmap) {
+        const currentWeekIdx = plan.roadmap.findIndex((phase: any) =>
+          phase.steps.some((s: any) => !plan.completedSteps?.includes(getStepTitle(s)))
+        );
+        if (currentWeekIdx >= 0) {
+          const phase = plan.roadmap[currentWeekIdx] as RoadmapPhase;
+          setActiveWeek(phase.weekNumber || currentWeekIdx + 1);
+        }
       }
     }
   }, [plan]);
 
   // Get all steps flattened for focus mode
   const allSteps = plan?.roadmap?.flatMap((phase: any) => 
-    phase.steps.map((step: string) => ({ step, phase: phase.phase }))
+    phase.steps.map((step: any) => ({ step: getStepTitle(step), phase: phase.phase }))
   ) || [];
-  
+
   // Find current (first incomplete) step
   const currentStepData = allSteps.find(
-    (s: any) => !completedSteps.includes(s.step)
+    (s: any) => !completedSteps.includes(s.step.title)
   );
 
   // Handle toggle completion
-  const handleToggle = async (step: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleToggle = async (stepTitle: string, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!user || !plan) return;
 
-    const isNowCompleted = !completedSteps.includes(step);
-    const newCompletedSteps = isNowCompleted 
-      ? [...completedSteps, step] 
-      : completedSteps.filter(s => s !== step);
-    
+    const isNowCompleted = !completedSteps.includes(stepTitle);
+    const newCompletedSteps = isNowCompleted
+      ? [...completedSteps, stepTitle]
+      : completedSteps.filter(s => s !== stepTitle);
+
     setCompletedSteps(newCompletedSteps);
     updateActiveProject({ completedSteps: newCompletedSteps });
 
     try {
-      await toggleStepCompletion(user.uid, step, isNowCompleted, plan.id || 'current');
+      await toggleStepCompletion(user.uid, stepTitle, isNowCompleted, plan.id || 'current');
     } catch (error) {
       console.error("Sync failed", error);
       setCompletedSteps(completedSteps);
@@ -96,35 +134,33 @@ export default function RoadmapPage() {
   };
 
   // Handle "Stuck" button - break task into sub-tasks
-  const handleStuck = async (step: string) => {
+  const handleStuck = async (stepTitle: string) => {
     if (loadingTask) return;
-    
-    setLoadingTask(step);
-    
+
+    setLoadingTask(stepTitle);
+
     try {
       const res = await fetch("/api/break-task", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          taskName: step,
+          taskName: stepTitle,
           projectContext: plan?.projectName || ""
         })
       });
-      
+
       const data = await res.json();
-      
+
       if (data.subTasks && data.subTasks.length > 0) {
         const newSubTasks: SubTask[] = data.subTasks.map((text: string) => ({
-          parentStep: step,
+          parentStep: stepTitle,
           text,
           isCompleted: false
         }));
-        
-        const updatedSubTasks = [...subTasks.filter(s => s.parentStep !== step), ...newSubTasks];
+
+        const updatedSubTasks = [...subTasks.filter(s => s.parentStep !== stepTitle), ...newSubTasks];
         setSubTasks(updatedSubTasks);
-        setExpandedSteps([...expandedSteps, step]);
-        
-        // Save to project
+        setExpandedSteps([...expandedSteps, stepTitle]);
         updateActiveProject({ subTasks: updatedSubTasks });
       }
     } catch (error) {
@@ -136,14 +172,14 @@ export default function RoadmapPage() {
 
   // Toggle sub-task completion
   const handleSubTaskToggle = (subTask: SubTask) => {
-    const updatedSubTasks = subTasks.map(s => 
+    const updatedSubTasks = subTasks.map(s =>
       s.parentStep === subTask.parentStep && s.text === subTask.text
         ? { ...s, isCompleted: !s.isCompleted }
         : s
     );
     setSubTasks(updatedSubTasks);
     updateActiveProject({ subTasks: updatedSubTasks });
-    
+
     // Auto-complete parent if all sub-tasks done
     const parentSubTasks = updatedSubTasks.filter(s => s.parentStep === subTask.parentStep);
     const allCompleted = parentSubTasks.every(s => s.isCompleted);
@@ -157,15 +193,17 @@ export default function RoadmapPage() {
     }
   };
 
-  // Get sub-tasks for a step
-  const getSubTasks = (step: string) => subTasks.filter(s => s.parentStep === step);
-  
-  // Toggle expand/collapse
-  const toggleExpand = (step: string) => {
-    setExpandedSteps(prev => 
-      prev.includes(step) ? prev.filter(s => s !== step) : [...prev, step]
+  // Toggle expand for steps with subtasks
+  const toggleExpand = (stepTitle: string) => {
+    setExpandedSteps((prev) =>
+      prev.includes(stepTitle)
+        ? prev.filter((s) => s !== stepTitle)
+        : [...prev, stepTitle],
     );
   };
+
+  // Get sub-tasks for a step
+  const getSubTasks = (stepTitle: string) => subTasks.filter(s => s.parentStep === stepTitle);
 
   if (loading || !plan) {
     return (
@@ -176,27 +214,39 @@ export default function RoadmapPage() {
     );
   }
 
-  const totalSteps = plan.roadmap.reduce((acc: number, phase: any) => acc + phase.steps.length, 0);
+  const totalSteps = plan.roadmap.reduce((acc: number, phase: RoadmapPhase) => acc + phase.steps.length, 0);
   const progressPercent = Math.round((completedSteps.length / totalSteps) * 100) || 0;
+  const totalWeeks = plan.roadmap.length;
+
+  // Get active phase
+  const activePhase = plan.roadmap.find((p: RoadmapPhase) => p.weekNumber === activeWeek) || plan.roadmap[activeWeek - 1];
+  const phaseProgress = activePhase ?
+    Math.round((activePhase.steps.filter((s: any) => completedSteps.includes(getStepTitle(s))).length / activePhase.steps.length) * 100) : 0;
+
+  // Get priority color
+  const getPriorityColor = (priority?: string) => {
+    switch (priority) {
+      case 'high': return 'border-r-red-500';
+      case 'medium': return 'border-r-amber-500';
+      case 'low': return 'border-r-green-500';
+      default: return 'border-r-transparent';
+    }
+  };
 
   // === FOCUS MODE VIEW ===
   if (focusMode && currentStepData) {
+    const stepObj = currentStepData.step;
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center p-6">
-        {/* Header */}
         <div className="w-full max-w-xl mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => setFocusMode(false)}
-            className="mb-4"
-          >
+          <Button variant="ghost" onClick={() => setFocusMode(false)} className="mb-4">
             <ArrowLeft size={16} />
             خروج از حالت تمرکز
           </Button>
-          
+
           <div className="text-center">
             <Badge variant="outline" className="mb-3">
-              {currentStepData.phase}
+              {currentStepData.phase.phase}
             </Badge>
             <p className="text-sm text-muted-foreground">
               پیشرفت: {completedSteps.length} از {totalSteps}
@@ -204,12 +254,11 @@ export default function RoadmapPage() {
           </div>
         </div>
 
-        {/* Focus Card */}
         <Card variant="glass" className="w-full max-w-xl p-8 text-center">
           <div className="w-20 h-20 bg-gradient-primary rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-primary/20 animate-pulse">
             <Target size={40} className="text-white" />
           </div>
-          
+
           <h2 className="text-sm font-medium text-muted-foreground mb-2">
             تنها هدف امروز:
           </h2>
@@ -217,14 +266,25 @@ export default function RoadmapPage() {
             {typeof currentStepData.step === 'object' ? (currentStepData.step as any).title || "Task" : currentStepData.step}
           </h1>
 
-          {/* Sub-tasks if broken down */}
-          {getSubTasks(currentStepData.step).length > 0 && (
+          {stepObj.description && (
+            <p className="text-muted-foreground text-sm mb-6">{stepObj.description}</p>
+          )}
+
+          {stepObj.estimatedHours && (
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-6">
+              <Clock size={14} />
+              <span>زمان تخمینی: {stepObj.estimatedHours} ساعت</span>
+            </div>
+          )}
+
+          {/* Sub-tasks */}
+          {getSubTasks(stepObj.title).length > 0 && (
             <div className="bg-muted/50 rounded-xl p-4 mb-6 text-right space-y-3">
               <p className="text-sm font-bold text-foreground flex items-center gap-2">
                 <ListTree size={16} className="text-primary" />
                 گام‌های کوچکتر:
               </p>
-              {getSubTasks(currentStepData.step).map((sub, i) => (
+              {getSubTasks(stepObj.title).map((sub, i) => (
                 <button
                   key={i}
                   onClick={() => handleSubTaskToggle(sub)}
@@ -235,8 +295,8 @@ export default function RoadmapPage() {
                 >
                   <div className={cn(
                     "w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0",
-                    sub.isCompleted 
-                      ? "bg-primary border-primary text-white" 
+                    sub.isCompleted
+                      ? "bg-primary border-primary text-white"
                       : "border-muted-foreground/30"
                   )}>
                     {sub.isCompleted && <CheckCircle2 size={12} />}
@@ -257,19 +317,19 @@ export default function RoadmapPage() {
               variant="gradient"
               size="xl"
               className="w-full"
-              onClick={(e) => handleToggle(currentStepData.step, e)}
+              onClick={(e) => handleToggle(stepObj.title, e)}
             >
               <CheckCircle2 size={20} />
               تمام شد!
             </Button>
-            
-            {getSubTasks(currentStepData.step).length === 0 && (
+
+            {getSubTasks(stepObj.title).length === 0 && (
               <Button
                 variant="outline"
-                onClick={() => handleStuck(currentStepData.step)}
-                disabled={loadingTask === currentStepData.step}
+                onClick={() => handleStuck(stepObj.title)}
+                disabled={loadingTask === stepObj.title}
               >
-                {loadingTask === currentStepData.step ? (
+                {loadingTask === stepObj.title ? (
                   <>
                     <Loader2 size={16} className="animate-spin" />
                     در حال شکستن تسک...
@@ -285,10 +345,9 @@ export default function RoadmapPage() {
           </div>
         </Card>
 
-        {/* Progress */}
         <div className="mt-8 w-full max-w-xl">
           <div className="h-2 bg-muted rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-gradient-primary transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
@@ -303,65 +362,59 @@ export default function RoadmapPage() {
 
   // === FULL ROADMAP VIEW ===
   return (
-    <div className="max-w-5xl mx-auto space-y-12 pb-20 stagger-children">
-      
+    <div className="max-w-6xl mx-auto space-y-8 pb-20">
+
       {/* Header */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-4 mb-2">
-            <div className="w-14 h-14 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/20 animate-bounce-gentle">
-              <Map size={28} />
-            </div>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">نقشه راه اجرایی</h1>
-              <div className="flex items-center gap-2 mt-1.5">
-                <Badge variant="outline" className="text-xs font-normal border-primary/20 bg-primary/5 text-primary">
-                  فاز به فاز
-                </Badge>
-                <span className="text-sm text-muted-foreground font-medium">{plan.projectName}</span>
-              </div>
-            </div>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-gradient-to-br from-primary to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary/20">
+            <Map size={28} />
+          </div>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black text-foreground">نقشه راه ۱۲ هفته‌ای</h1>
+            <p className="text-sm text-muted-foreground mt-1">{plan.projectName}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* Focus Mode Toggle */}
+        <div className="flex items-center gap-3 flex-wrap">
           <Button
             variant={focusMode ? "gradient" : "outline"}
             onClick={() => setFocusMode(!focusMode)}
-            className={cn(
-               "gap-2 h-12 px-6 rounded-xl transition-all duration-300",
-               focusMode ? "shadow-lg shadow-primary/25" : "hover:border-primary/50 hover:bg-primary/5"
-            )}
+            className="gap-2"
           >
             <Focus size={18} />
             حالت تمرکز
           </Button>
 
-          {/* Progress Ring */}
-          <div className="flex items-center gap-6 glass px-6 py-3.5 rounded-2xl shadow-sm border-white/20">
+          <div className="flex items-center gap-4 glass px-4 py-2.5 rounded-xl">
             <div className="text-left">
-              <div className="text-xs text-muted-foreground mb-1 font-medium">پیشرفت کل</div>
-              <div className="text-2xl font-black text-foreground">{progressPercent}%</div>
+              <div className="text-xs text-muted-foreground">پیشرفت کل</div>
+              <div className="text-xl font-black text-foreground">{progressPercent}%</div>
             </div>
-            <div className="relative">
-               <ProgressRing progress={progressPercent} size={64} strokeWidth={6} />
-               {progressPercent === 100 && (
-                 <div className="absolute inset-0 flex items-center justify-center text-xl">🎉</div>
-               )}
-            </div>
+            <ProgressRing progress={progressPercent} size={50} strokeWidth={5} />
           </div>
         </div>
       </div>
 
-      {/* Timeline */}
-      <div className="relative border-r-2 border-transparent mr-4 md:mr-8 space-y-16">
-        {/* Gradient Line */}
-        <div className="absolute top-0 bottom-0 right-[-1px] w-[2px] bg-gradient-to-b from-primary via-purple-500 to-transparent" />
+      {/* Week Tabs */}
+      <div className="relative">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            onClick={() => setActiveWeek(Math.max(1, activeWeek - 1))}
+            disabled={activeWeek === 1}
+          >
+            <ChevronRight size={20} />
+          </Button>
 
         {plan.roadmap.map((phase: any, phaseIdx: number) => {
-          const isPhaseComplete = phase.steps.every((s: string) => completedSteps.includes(s));
-          const isPhaseStarted = phase.steps.some((s: string) => completedSteps.includes(s));
+          // Flatten check: Ensure steps exist and can be checked
+          const steps = phase.steps || [];
+          const isPhaseComplete = steps.length > 0 && steps.every((s: any) => completedSteps.includes(getStepTitle(s)));
+          const isPhaseStarted = steps.length > 0 && steps.some((s: any) => completedSteps.includes(getStepTitle(s)));
+          const isActive = (phase.weekNumber || phaseIdx + 1) === activeWeek;
           
           return (
             <div key={phaseIdx} className="relative pr-10 md:pr-14 group">
@@ -374,26 +427,63 @@ export default function RoadmapPage() {
                 {isPhaseComplete && <CheckCircle2 size={14} className="text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />}
               </div>
 
-              {/* Phase Content */}
-              <div className="mb-6">
-                <div className="flex items-center gap-4 mb-6 sticky top-20 z-10 bg-background/80 backdrop-blur-md py-2 -my-2 w-fit px-2 rounded-lg">
-                  <h2 className={cn(
-                    "text-2xl font-black tracking-tight",
-                    isPhaseComplete ? "text-primary text-gradient" : "text-foreground"
-                  )}>
-                    {phase.phase}
-                  </h2>
-                  {isPhaseComplete && (
-                    <Badge variant="success" className="animate-in zoom-in bg-emerald-500/10 text-emerald-600 border-emerald-500/20">تکمیل شد! 🎉</Badge>
+              <button
+                onClick={() => setActiveWeek(phase.weekNumber || phaseIdx + 1)}
+                className={cn(
+                  "shrink-0 px-4 py-2 rounded-xl transition-all flex flex-col items-center gap-1 min-w-[80px]",
+                  isActive
+                    ? "bg-primary text-white shadow-lg shadow-primary/30"
+                    : isPhaseComplete
+                      ? "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                )}
+              >
+                <span className="text-xs font-medium">هفته</span>
+                <span className="text-lg font-black">{phase.weekNumber || phaseIdx + 1}</span>
+                {isPhaseComplete && <CheckCircle2 size={14} className="text-emerald-500" />}
+              </button>
+            </div>
+          );
+        })}
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="shrink-0"
+            onClick={() => setActiveWeek(Math.min(totalWeeks, activeWeek + 1))}
+            disabled={activeWeek === totalWeeks}
+          >
+            <ChevronLeft size={20} />
+          </Button>
+        </div>
+      </div>
+
+      {/* Active Week Content */}
+      {activePhase && (
+        <div className="space-y-6">
+          {/* Week Header */}
+          <div className="glass rounded-2xl p-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <div className="flex items-center gap-3 mb-2">
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
+                    <Calendar size={12} className="ml-1" />
+                    هفته {activePhase.weekNumber || activeWeek}
+                  </Badge>
+                  {activePhase.theme && (
+                    <Badge variant="secondary">{activePhase.theme}</Badge>
                   )}
                 </div>
+                <h2 className="text-xl font-bold text-foreground">{activePhase.phase}</h2>
+              </div>
 
                 <div className="grid gap-5">
-                  {phase.steps.map((step: string, stepIdx: number) => {
+                  {(activePhase.steps || []).map((rawStep: any, stepIdx: number) => {
+                    const step = getStepTitle(rawStep);
                     const isCompleted = completedSteps.includes(step);
                     const stepSubTasks = getSubTasks(step);
                     const isExpanded = expandedSteps.includes(step);
-                    const isCurrentStep = currentStepData?.step === step;
+                    const isCurrentStep = currentStepData?.step.title === step;
                     
                     return (
                       <div key={stepIdx} className="relative">
@@ -449,7 +539,7 @@ export default function RoadmapPage() {
                                 <div className="flex items-center gap-3 mt-3 flex-wrap">
                                   <StepGuide 
                                     stepName={step} 
-                                    stepPhase={phase.phase} 
+                                    stepPhase={activePhase.phase} 
                                     projectName={plan.projectName}
                                   />
                                   
@@ -517,34 +607,140 @@ export default function RoadmapPage() {
                 </div>
               </div>
             </div>
-          );
-        })}
-        
-        {/* End Marker */}
-        <div className="absolute -right-[11px] bottom-0 w-5 h-5 rounded-full bg-gradient-to-br from-primary to-purple-600 shadow-lg shadow-primary/30" />
-      </div>
+
+            {/* Progress bar */}
+            <div className="h-2 bg-muted rounded-full overflow-hidden mt-4">
+              <div
+                className="h-full bg-gradient-primary transition-all duration-500"
+                style={{ width: `${phaseProgress}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Steps Grid */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {(activePhase.steps || []).map((step: string | RoadmapStep, stepIdx: number) => {
+              const stepObj = normalizeStep(step);
+              const isCompleted = completedSteps.includes(stepObj.title);
+              const stepSubTasks = getSubTasks(stepObj.title);
+              const isCurrentStep = currentStepData?.step.title === stepObj.title;
+
+              return (
+                <div
+                  key={stepIdx}
+                  onClick={() => setSelectedStep({ step: stepObj, phase: activePhase })}
+                  className={cn(
+                    "group cursor-pointer transition-all duration-300 rounded-2xl p-5 border-2 border-r-4",
+                    isCompleted
+                      ? "bg-muted/30 border-border/50 opacity-70 border-r-emerald-500"
+                      : "card-glass hover:shadow-lg hover:border-primary/30",
+                    getPriorityColor(stepObj.priority),
+                    isCurrentStep && !isCompleted && "ring-2 ring-primary/40 ring-offset-2 ring-offset-background"
+                  )}
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Checkbox */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggle(stepObj.title, e);
+                      }}
+                      className={cn(
+                        "w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all",
+                        isCompleted
+                          ? "bg-gradient-primary border-transparent text-white"
+                          : "border-muted-foreground/30 hover:border-primary/60"
+                      )}
+                    >
+                      {isCompleted && <CheckCircle2 size={14} />}
+                    </button>
+
+                    <div className="flex-1 min-w-0">
+                      <h3 className={cn(
+                        "font-bold text-base mb-1.5 transition-colors",
+                        isCompleted ? "text-muted-foreground line-through" : "text-foreground"
+                      )}>
+                        {stepObj.title}
+                      </h3>
+
+                      {stepObj.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                          {stepObj.description}
+                        </p>
+                      )}
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {stepObj.estimatedHours && (
+                          <Badge variant="outline" className="text-xs">
+                            <Clock size={10} className="ml-1" />
+                            {stepObj.estimatedHours} ساعت
+                          </Badge>
+                        )}
+                        {stepObj.category && (
+                          <Badge variant="secondary" className="text-xs">
+                            <FolderOpen size={10} className="ml-1" />
+                            {stepObj.category}
+                          </Badge>
+                        )}
+                        {stepSubTasks.length > 0 && (
+                          <Badge variant="outline" className="text-xs bg-primary/5 text-primary">
+                            <ListTree size={10} className="ml-1" />
+                            {stepSubTasks.filter(s => s.isCompleted).length}/{stepSubTasks.length}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+
+                    {isCurrentStep && !isCompleted && (
+                      <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Celebration if 100% */}
       {progressPercent === 100 && (
-        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-yellow-300 via-amber-500 to-orange-500 animate-in zoom-in duration-500 shadow-2xl shadow-amber-500/30">
-           <div className="bg-card rounded-[22px] p-8 text-center relative overflow-hidden">
-             <div className="absolute inset-0 bg-[url('/confetti.png')] opacity-10 bg-cover" />
-             <div className="relative z-10">
-                <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-gentle">
-                  <Sparkles size={40} className="text-yellow-600" />
-                </div>
-                <h2 className="text-3xl font-black text-foreground mb-3">تبریک! شما قهرمانید! 🏆</h2>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                   تمام مراحل نقشه راه با موفقیت به پایان رسید. پروژه شما آماده پرواز است!
-                </p>
-                <Link href="/dashboard/overview">
-                  <Button variant="gradient" size="lg" className="mt-8 rounded-xl shadow-lg shadow-primary/20">
-                     بازگشت به داشبورد
-                  </Button>
-                </Link>
-             </div>
-           </div>
+        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-yellow-300 via-amber-500 to-orange-500 shadow-2xl shadow-amber-500/30">
+          <div className="bg-card rounded-[22px] p-8 text-center">
+            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Sparkles size={40} className="text-yellow-600" />
+            </div>
+            <h2 className="text-3xl font-black text-foreground mb-3">تبریک! شما قهرمانید! 🏆</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              تمام مراحل نقشه راه ۱۲ هفته‌ای با موفقیت به پایان رسید!
+            </p>
+            <Link href="/dashboard/overview">
+              <Button variant="gradient" size="lg" className="mt-8">
+                بازگشت به داشبورد
+              </Button>
+            </Link>
+          </div>
         </div>
+      )}
+
+      {/* Step Detail Modal */}
+      {selectedStep && (
+        <StepDetailModal
+          step={selectedStep.step}
+          phaseName={selectedStep.phase.phase}
+          weekNumber={selectedStep.phase.weekNumber}
+          isOpen={!!selectedStep}
+          onClose={() => setSelectedStep(null)}
+          isCompleted={completedSteps.includes(selectedStep.step.title)}
+          onToggleComplete={() => {
+            handleToggle(selectedStep.step.title);
+            setSelectedStep(null);
+          }}
+          subTasks={getSubTasks(selectedStep.step.title)}
+          onSubTaskToggle={handleSubTaskToggle}
+          onBreakTask={() => handleStuck(selectedStep.step.title)}
+          isBreakingTask={loadingTask === selectedStep.step.title}
+          projectName={plan.projectName}
+        />
       )}
     </div>
   );

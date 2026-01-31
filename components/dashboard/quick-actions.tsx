@@ -20,10 +20,10 @@ interface QuickActionsBarProps {
   variant?: "horizontal" | "grid";
 }
 
-export function QuickActionsBar({ 
-  actions, 
+export function QuickActionsBar({
+  actions,
   className,
-  variant = "horizontal" 
+  variant = "horizontal"
 }: QuickActionsBarProps) {
   if (variant === "grid") {
     return (
@@ -95,15 +95,15 @@ export const DASHBOARD_QUICK_ACTIONS: QuickAction[] = [
     color: "text-amber-600",
     bgColor: "bg-amber-500/10",
   },
-  {
-    id: "brand",
-    label: "هویت بصری",
-    description: "مشاهده برند",
-    icon: require("lucide-react").Palette,
-    href: "/dashboard/brand",
-    color: "text-purple-600",
-    bgColor: "bg-purple-500/10",
-  },
+  // {
+  //   id: "brand",
+  //   label: "هویت بصری",
+  //   description: "مشاهده برند",
+  //   icon: require("lucide-react").Palette,
+  //   href: "/dashboard/brand",
+  //   color: "text-purple-600",
+  //   bgColor: "bg-purple-500/10",
+  // },
   {
     id: "marketing",
     label: "بازاریابی",

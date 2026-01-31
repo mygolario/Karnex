@@ -4,10 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ArrowLeft, 
-  Download, 
-  Share2, 
+import {
+  ArrowLeft,
+  Download,
+  Share2,
   Sparkles,
   Calendar,
   Gauge,
@@ -19,15 +19,28 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+interface RoadmapStep {
+  title: string;
+  description?: string;
+  estimatedHours?: number;
+  priority?: string;
+  category?: string;
+}
+
 interface StrategySnapshotProps {
   plan: {
     projectName: string;
     ideaInput?: string;
     audience?: string;
     tagline?: string;
-    roadmap?: Array<{ phase: string; steps: string[] }>;
+    roadmap?: Array<{ phase: string; steps: (string | RoadmapStep)[] }>;
   };
   onContinue: () => void;
+}
+
+// Helper to get step title whether it's a string or object
+function getStepTitle(step: string | RoadmapStep): string {
+  return typeof step === 'string' ? step : step.title;
 }
 
 export function StrategySnapshot({ plan, onContinue }: StrategySnapshotProps) {
@@ -37,7 +50,7 @@ export function StrategySnapshot({ plan, onContinue }: StrategySnapshotProps) {
   // Calculate estimated launch days based on roadmap
   const totalSteps = plan.roadmap?.reduce((acc, p) => acc + p.steps.length, 0) || 10;
   const estimatedDays = Math.round(totalSteps * 2.5); // 2.5 days per step average
-  
+
   // Calculate difficulty
   const difficulty = totalSteps > 15 ? "بالا" : totalSteps > 8 ? "متوسط" : "آسان";
   const difficultyColor = totalSteps > 15 ? "text-red-500" : totalSteps > 8 ? "text-amber-500" : "text-emerald-500";
@@ -79,7 +92,7 @@ ${plan.tagline || plan.ideaInput}
       <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "-2s" }} />
 
       <div className="relative z-10 w-full max-w-lg animate-fade-in-up">
-        
+
         {/* Success Badge */}
         <div className="text-center mb-6">
           <div className="inline-flex items-center gap-2 bg-emerald-500/10 text-emerald-600 px-4 py-2 rounded-full text-sm font-bold">
@@ -150,7 +163,7 @@ ${plan.tagline || plan.ideaInput}
                       <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
                         {i + 1}
                       </div>
-                      <span className="text-muted-foreground">{step}</span>
+                      <span className="text-muted-foreground">{getStepTitle(step)}</span>
                     </div>
                   ))}
                 </div>

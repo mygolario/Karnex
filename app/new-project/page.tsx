@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
@@ -9,173 +9,52 @@ import { GenerationLoader } from "@/components/shared/generation-loader";
 import { StrategySnapshot } from "@/components/shared/strategy-snapshot";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  ArrowLeft, 
+import {
+  ArrowLeft,
   ArrowRight,
   Sparkles,
   Loader2,
   Lightbulb,
-  HelpCircle,
-  Rocket,
-  Send,
-  SkipForward,
   Users,
-  Building2,
-  Tag
+  Tag,
+  Mic,
+  MicOff
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-
-// Import wizard components
-import {
-  WizardModeToggle,
-  IndustrySelector,
-  BudgetSelector,
-  VoiceInputButton,
-  CompetitorInput,
-  QuickTemplates,
-  ProgressGamification,
-  ConfettiCelebration,
-  ChatInterface,
-  ProjectNameSelector,
-  industries,
-  budgetOptions,
-} from "@/components/wizard";
-import type { Template } from "@/components/wizard";
-
-// Status options for the current stage step
-const statusOptions = [
-  { 
-    id: "idea", 
-    emoji: "🐣", 
-    label: "فقط یه ایده",
-    sublabel: "بدون سرمایه و تیم",
-    color: "from-amber-400 to-orange-500"
-  },
-  { 
-    id: "building", 
-    emoji: "🔨", 
-    label: "در حال ساخت",
-    sublabel: "یک نمونه اولیه دارم",
-    color: "from-blue-400 to-indigo-500"
-  },
-  { 
-    id: "launch", 
-    emoji: "🚀", 
-    label: "آماده راه‌اندازی",
-    sublabel: "نیاز به بازاریابی دارم",
-    color: "from-emerald-400 to-teal-500"
-  },
-];
-
-// Local storage key for draft
-const DRAFT_KEY = "karnex_wizard_draft";
-
-interface WizardData {
-  mode: "chat" | "wizard";
-  industry: string | null;
-  businessIdea: string;
-  projectName: string;
-  problemSolving: string;
-  selectedAudience: string | null;
-  competitors: string[];
-  currentStatus: string | null;
-  budget: string | null;
-}
-
-const initialData: WizardData = {
-  mode: "wizard",
-  industry: null,
-  businessIdea: "",
-  projectName: "",
-  problemSolving: "",
-  selectedAudience: null,
-  competitors: [],
-  currentStatus: null,
-  budget: null,
-};
 
 export default function NewProjectPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const { createNewProject } = useProject();
-  
-  // Mode: chat or wizard
-  const [mode, setMode] = useState<"chat" | "wizard">("wizard");
-  
-  // Wizard state
+
+  // Simple 3-step state
   const [step, setStep] = useState(1);
-  const [industry, setIndustry] = useState<string | null>(null);
   const [businessIdea, setBusinessIdea] = useState("");
+  const [selectedAudience, setSelectedAudience] = useState("");
   const [projectName, setProjectName] = useState("");
-  const [problemSolving, setProblemSolving] = useState("");
-  const [selectedAudience, setSelectedAudience] = useState<string | null>(null);
-  const [competitors, setCompetitors] = useState<string[]>([]);
-  const [currentStatus, setCurrentStatus] = useState<string | null>(null);
-  const [budget, setBudget] = useState<string | null>(null);
-  
+
   // AI suggestions
   const [audienceSuggestions, setAudienceSuggestions] = useState<string[]>([]);
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
-  
+  const [nameSuggestions, setNameSuggestions] = useState<string[]>([]);
+  const [loadingAudience, setLoadingAudience] = useState(false);
+  const [loadingNames, setLoadingNames] = useState(false);
+
   // Generation state
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [showSnapshot, setShowSnapshot] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<any>(null);
-  const [error, setError] = useState("");
   const [showConfetti, setShowConfetti] = useState(false);
-  
-  // XP tracking
-  const [xpEarned, setXpEarned] = useState(0);
+  const [error, setError] = useState("");
 
-  // Refs for animation
-  const inputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Voice input
+  const [isRecording, setIsRecording] = useState(false);
 
-  const totalSteps = 7;
-  const progress = (step / totalSteps) * 100;
+  // Refs
+  const ideaInputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load draft from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem(DRAFT_KEY);
-    if (saved) {
-      try {
-        const data: WizardData = JSON.parse(saved);
-        setMode(data.mode);
-        setIndustry(data.industry);
-        setBusinessIdea(data.businessIdea);
-        setProjectName(data.projectName || "");
-        setProblemSolving(data.problemSolving);
-        setSelectedAudience(data.selectedAudience);
-        setCompetitors(data.competitors);
-        setCurrentStatus(data.currentStatus);
-        setBudget(data.budget);
-      } catch (e) {
-        console.error("Failed to load draft:", e);
-      }
-    }
-  }, []);
-
-  // Save draft to localStorage
-  const saveDraft = useCallback(() => {
-    const data: WizardData = {
-      mode,
-      industry,
-      businessIdea,
-      projectName,
-      problemSolving,
-      selectedAudience,
-      competitors,
-      currentStatus,
-      budget,
-    };
-    localStorage.setItem(DRAFT_KEY, JSON.stringify(data));
-  }, [mode, industry, businessIdea, problemSolving, selectedAudience, competitors, currentStatus, budget]);
-
-  useEffect(() => {
-    const timeout = setTimeout(saveDraft, 500);
-    return () => clearTimeout(timeout);
-  }, [saveDraft]);
+  const totalSteps = 3;
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -186,25 +65,16 @@ export default function NewProjectPage() {
 
   // Focus input on step change
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (step === 2 && inputRef.current) {
-        inputRef.current.focus();
-      } else if (step === 3 && textareaRef.current) {
-        textareaRef.current.focus();
-      }
-    }, 300);
-    return () => clearTimeout(timer);
+    if (step === 1 && ideaInputRef.current) {
+      setTimeout(() => ideaInputRef.current?.focus(), 300);
+    }
   }, [step]);
 
-  // Fetch AI suggestions when idea changes
+  // Fetch audience suggestions when idea changes
   useEffect(() => {
-    const fetchSuggestions = async () => {
-      if (businessIdea.length < 5) {
-        setAudienceSuggestions([]);
-        return;
-      }
-
-      setIsLoadingSuggestions(true);
+    const fetchAudience = async () => {
+      if (businessIdea.length < 10) return;
+      setLoadingAudience(true);
       try {
         const res = await fetch("/api/suggest-audience", {
           method: "POST",
@@ -212,63 +82,60 @@ export default function NewProjectPage() {
           body: JSON.stringify({ productIdea: businessIdea })
         });
         const data = await res.json();
-        setAudienceSuggestions(data.audiences || []);
+        setAudienceSuggestions(data.audiences?.slice(0, 4) || []);
       } catch {
         setAudienceSuggestions([]);
       } finally {
-        setIsLoadingSuggestions(false);
+        setLoadingAudience(false);
       }
     };
 
-    const debounce = setTimeout(fetchSuggestions, 800);
+    const debounce = setTimeout(fetchAudience, 1000);
     return () => clearTimeout(debounce);
   }, [businessIdea]);
 
-  // Handle keyboard navigation
+  // Fetch name suggestions when moving to step 3
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        if (step === 2 && businessIdea.trim()) {
-          e.preventDefault();
-          handleNext();
-        }
+    const fetchNames = async () => {
+      if (step !== 3 || !businessIdea) return;
+      setLoadingNames(true);
+      try {
+        const res = await fetch("/api/suggest-project-name", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idea: businessIdea })
+        });
+        const data = await res.json();
+        setNameSuggestions(data.names?.slice(0, 6) || []);
+      } catch {
+        setNameSuggestions([]);
+      } finally {
+        setLoadingNames(false);
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    fetchNames();
   }, [step, businessIdea]);
 
   const canProceed = (): boolean => {
     switch (step) {
-      case 1: return industry !== null;
-      case 2: return businessIdea.trim().length > 0;
+      case 1: return businessIdea.trim().length >= 5;
+      case 2: return selectedAudience.trim().length > 0;
       case 3: return projectName.trim().length > 0;
-      case 4: return problemSolving.trim().length > 0;
-      case 5: return true; // Audience & competitors are optional
-      case 6: return currentStatus !== null;
-      case 7: return budget !== null;
       default: return false;
     }
   };
 
   const handleNext = () => {
     setError("");
-    
     if (!canProceed()) {
       const errors: Record<number, string> = {
-        1: "لطفاً یک صنعت انتخاب کنید",
-        2: "لطفاً ایده خود را وارد کنید",
-        3: "لطفاً نام پروژه را وارد کنید",
-        4: "لطفاً مشکلی که حل می‌کنید را توضیح دهید",
-        6: "لطفاً وضعیت فعلی خود را انتخاب کنید",
-        7: "لطفاً مقیاس کسب‌وکار را انتخاب کنید",
+        1: "لطفاً ایده‌ات رو توضیح بده (حداقل ۵ حرف)",
+        2: "مخاطب هدفت رو مشخص کن",
+        3: "یک اسم برای پروژه انتخاب کن",
       };
       setError(errors[step] || "");
       return;
     }
-
-    // Award XP
-    setXpEarned(prev => prev + 20);
 
     if (step === totalSteps) {
       handleGenerate();
@@ -282,48 +149,11 @@ export default function NewProjectPage() {
     setStep(step - 1);
   };
 
-  const handleSkip = () => {
-    setError("");
-    setXpEarned(prev => prev + 10);
-    setStep(step + 1);
-  };
-
-  const handleTemplateSelect = (template: Template) => {
-    setIndustry(template.industry);
-    setBusinessIdea(template.idea);
-    setProblemSolving(template.problem);
-    setStep(4); // Jump to audience step
-    setXpEarned(prev => prev + 50);
-  };
-
-  const handleVoiceInput = (text: string, field: "idea" | "problem") => {
-    if (field === "idea") {
-      setBusinessIdea(prev => (prev + " " + text).trim());
-    } else {
-      setProblemSolving(prev => (prev + " " + text).trim());
-    }
-  };
-
-  const handleChatComplete = (data: any) => {
-    // Extract data from chat and generate
-    if (data.idea) setBusinessIdea(data.idea);
-    if (data.problem) setProblemSolving(data.problem);
-    if (data.audience) setSelectedAudience(data.audience);
-    handleGenerate();
-  };
-
   const handleGenerate = async () => {
     if (!user) return;
-    
+
     setIsGenerating(true);
     setError("");
-
-    // Use user's project name or fallback
-    const finalProjectName = projectName.trim() || businessIdea.split(" ").slice(0, 2).join(" ") || "پروژه من";
-
-    const selectedIndustry = industries.find(i => i.id === industry);
-    const selectedStatus = statusOptions.find(s => s.id === currentStatus);
-    const selectedBudget = budgetOptions.find(b => b.id === budget);
 
     try {
       const res = await fetch("/api/generate-plan", {
@@ -331,50 +161,62 @@ export default function NewProjectPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           idea: businessIdea,
-          projectName: finalProjectName,
-          problem: problemSolving,
-          audience: selectedAudience || "عموم مردم",
-          industry: selectedIndustry?.label || "نامشخص",
-          competitors: competitors,
-          status: selectedStatus?.label || "فقط یه ایده",
-          budget: selectedBudget?.label || "کم‌هزینه"
+          audience: selectedAudience,
+          budget: "متوسط", // Default
         }),
       });
 
       if (!res.ok) throw new Error("Failed to generate plan");
 
       const data = await res.json();
-      
-      // Force the project name
-      data.projectName = finalProjectName;
+
+      // Override with user's project name
+      data.projectName = projectName;
       data.ideaInput = businessIdea;
-      data.audience = selectedAudience || "عموم مردم";
-      
+      data.audience = selectedAudience;
+
       setGeneratedPlan(data);
-      
-      // Show confetti!
       setShowConfetti(true);
-      
-      // Clear draft
-      localStorage.removeItem(DRAFT_KEY);
-      
-      // Show strategy snapshot after confetti
+
       setTimeout(() => {
         setShowSnapshot(true);
       }, 1500);
-      
+
     } catch (err) {
       console.error(err);
-      setError("خطا در تولید طرح. لطفاً دوباره تلاش کنید.");
+      setError("خطا در تولید طرح. لطفاً دوباره تلاش کن.");
       setIsGenerating(false);
     }
   };
 
   const handleContinueToDashboard = async () => {
     if (generatedPlan) {
+      setIsCreatingProject(true);
       await createNewProject(generatedPlan);
       router.push("/dashboard/overview");
     }
+  };
+
+  // Voice input handler
+  const handleVoiceInput = () => {
+    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+      alert("مرورگر شما از ضبط صدا پشتیبانی نمی‌کند");
+      return;
+    }
+
+    const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'fa-IR';
+    recognition.continuous = false;
+
+    recognition.onstart = () => setIsRecording(true);
+    recognition.onend = () => setIsRecording(false);
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setBusinessIdea(prev => (prev + " " + transcript).trim());
+    };
+
+    recognition.start();
   };
 
   if (authLoading) {
@@ -386,11 +228,10 @@ export default function NewProjectPage() {
   }
 
   // Show confetti celebration
-  if (showConfetti && !showSnapshot) {
+  if (showConfetti && !showSnapshot && !isCreatingProject) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center" dir="rtl">
-        <ConfettiCelebration isActive={showConfetti} onComplete={() => {}} />
-        <motion.div 
+        <motion.div
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           className="text-center"
@@ -405,10 +246,10 @@ export default function NewProjectPage() {
     );
   }
 
-  // Show strategy snapshot after generation
+  // Show strategy snapshot
   if (showSnapshot && generatedPlan) {
     return (
-      <StrategySnapshot 
+      <StrategySnapshot
         plan={generatedPlan}
         onContinue={handleContinueToDashboard}
       />
@@ -416,397 +257,304 @@ export default function NewProjectPage() {
   }
 
   // Show generation loader
-  if (isGenerating) {
+  if (isGenerating || isCreatingProject) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-6" dir="rtl">
-        <GenerationLoader projectName={businessIdea.split(" ").slice(0, 2).join(" ")} />
+        <GenerationLoader
+          isLoading={true}
+          title={isCreatingProject ? "در حال آماده‌سازی داشبورد..." : `در حال ساخت طرح ${projectName || "پروژه"}...`}
+        />
       </div>
     );
   }
 
-  // Step content configurations
-  const stepConfig = [
-    {
-      icon: Building2,
-      title: "صنعت کسب‌وکارت",
-      subtitle: "چی می‌خوای بسازی؟",
-      description: "یک حوزه انتخاب کن تا پیشنهادات دقیق‌تری بدم",
-      gradient: "from-primary to-purple-600",
-    },
+  const stepConfigs = [
     {
       icon: Lightbulb,
       title: "ایده‌ات چیه؟",
-      subtitle: "در یک جمله بگو",
-      description: "ایده‌ات رو ساده توضیح بده — دستیار کارنکس بقیه‌اش رو می‌فهمه",
+      subtitle: "در یکی دو جمله توضیح بده",
       gradient: "from-amber-500 to-orange-500",
     },
     {
-      icon: Tag,
-      title: "نام پروژه",
-      subtitle: "اسم کسب‌وکارت چیه؟",
-      description: "یک اسم به‌یادماندنی انتخاب کن — ما هم پیشنهاد می‌دیم!",
-      gradient: "from-cyan-500 to-blue-500",
-    },
-    {
-      icon: HelpCircle,
-      title: "چه مشکلی رو حل می‌کنی؟",
-      subtitle: "چرا مشتری باید بخره؟",
-      description: "چه دردی رو دوا می‌کنی؟ چرا راه‌حل فعلی بد هست؟",
-      gradient: "from-purple-500 to-pink-500",
-    },
-    {
       icon: Users,
-      title: "مخاطب و رقبا",
-      subtitle: "کی‌ها مشتریت هستن؟",
-      description: "این بخش اختیاریه ولی به دقت طرح کمک می‌کنه",
+      title: "مخاطبت کیه؟",
+      subtitle: "محصولت برای چه کسانی هست؟",
       gradient: "from-blue-500 to-cyan-500",
-      optional: true,
     },
     {
-      icon: Rocket,
-      title: "الان کجای مسیر هستی؟",
-      subtitle: "وضعیت فعلیت",
-      description: "این کمک می‌کنه قدم‌های اول رو درست مشخص کنیم",
-      gradient: "from-emerald-500 to-teal-500",
-    },
-    {
-      icon: Sparkles,
-      title: "مقیاس کسب‌وکار",
-      subtitle: "چقدر بزرگ فکر می‌کنی؟",
-      description: "این کمک می‌کنه استراتژی مناسب بچینیم",
-      gradient: "from-rose-500 to-red-500",
+      icon: Tag,
+      title: "اسم پروژه‌ات",
+      subtitle: "یک اسم به‌یادماندنی انتخاب کن",
+      gradient: "from-purple-500 to-pink-500",
     },
   ];
 
-  const currentStepConfig = stepConfig[step - 1];
-  const StepIcon = currentStepConfig.icon;
+  const currentConfig = stepConfigs[step - 1];
+  const StepIcon = currentConfig.icon;
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden" dir="rtl">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-hero" />
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-secondary/5 rounded-full blur-3xl" />
-      
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl" />
+
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
         <header className="p-6 flex justify-between items-center">
           <Link href="/" className="inline-flex items-center gap-2">
-            <Image 
-              src="/logo-icon-dark.png" 
-              alt="کارنکس" 
-              width={40} 
-              height={40} 
+            <Image
+              src="/logo-icon-dark.png"
+              alt="کارنکس"
+              width={40}
+              height={40}
               className="rounded-xl shadow-lg dark:invert-0 invert"
             />
             <span className="text-xl font-black text-foreground">کارنکس</span>
           </Link>
-          
-          <div className="flex items-center gap-4">
-            {/* Mode Toggle */}
-            <WizardModeToggle mode={mode} onChange={setMode} />
-            
-            {mode === "wizard" && step > 1 && (
-              <button 
-                onClick={handleBack}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <ArrowRight size={18} />
-                برگشت
-              </button>
-            )}
-          </div>
+
+          {step > 1 && (
+            <button
+              onClick={handleBack}
+              className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowRight size={18} />
+              برگشت
+            </button>
+          )}
         </header>
 
-        {/* Chat Mode */}
-        {mode === "chat" ? (
-          <main className="flex-1 flex items-center justify-center p-6">
-            <div className="w-full max-w-2xl">
-              <ChatInterface onComplete={handleChatComplete} />
+        {/* Progress */}
+        <div className="px-6">
+          <div className="max-w-lg mx-auto">
+            <div className="flex items-center justify-between mb-2 text-sm text-muted-foreground">
+              <span>مرحله {step} از {totalSteps}</span>
+              <span>{Math.round((step / totalSteps) * 100)}%</span>
             </div>
-          </main>
-        ) : (
-          /* Wizard Mode */
-          <>
-            {/* Progress & Gamification */}
-            <div className="px-6">
-              <div className="max-w-2xl mx-auto">
-                <ProgressGamification 
-                  currentStep={step} 
-                  totalSteps={totalSteps} 
-                  xpEarned={xpEarned}
-                />
-                
-                {/* Progress Bar */}
-                <div className="mt-4 h-1 bg-muted rounded-full overflow-hidden">
-                  <motion.div 
-                    className="h-full bg-gradient-primary"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
-                  />
-                </div>
-              </div>
+            <div className="h-2 bg-muted rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-primary"
+                initial={{ width: 0 }}
+                animate={{ width: `${(step / totalSteps) * 100}%` }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              />
             </div>
+          </div>
+        </div>
 
-            {/* Main Content */}
-            <main className="flex-1 flex items-center justify-center p-6">
-              <div className="w-full max-w-2xl">
-                <AnimatePresence mode="wait">
+        {/* Main Content */}
+        <main className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-lg">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 50 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -50 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-8"
+              >
+                {/* Step Header */}
+                <div className="text-center space-y-4">
                   <motion.div
-                    key={step}
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -50 }}
-                    transition={{ duration: 0.3 }}
-                    className="space-y-8"
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    className={cn(
+                      "w-20 h-20 bg-gradient-to-br rounded-3xl flex items-center justify-center mx-auto shadow-xl",
+                      currentConfig.gradient
+                    )}
                   >
-                    {/* Step Header */}
-                    <div className="text-center space-y-4">
-                      <motion.div 
-                        initial={{ scale: 0.8 }}
-                        animate={{ scale: 1 }}
-                        className={cn(
-                          "w-20 h-20 bg-gradient-to-br rounded-3xl flex items-center justify-center mx-auto shadow-xl",
-                          currentStepConfig.gradient
-                        )}
-                      >
-                        <StepIcon size={40} className="text-white" />
-                      </motion.div>
-                      <h1 className="text-3xl md:text-4xl font-black text-foreground">
-                        {currentStepConfig.subtitle}
-                        <br />
-                        <span className={cn("bg-gradient-to-l bg-clip-text text-transparent", currentStepConfig.gradient)}>
-                          {currentStepConfig.title}
-                        </span>
-                      </h1>
-                      <p className="text-muted-foreground text-lg">
-                        {currentStepConfig.description}
+                    <StepIcon size={40} className="text-white" />
+                  </motion.div>
+                  <div>
+                    <h1 className="text-3xl md:text-4xl font-black text-foreground">
+                      {currentConfig.title}
+                    </h1>
+                    <p className="text-muted-foreground text-lg mt-2">
+                      {currentConfig.subtitle}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Step Content */}
+                <div className="space-y-4">
+                  {/* Step 1: Business Idea */}
+                  {step === 1 && (
+                    <div className="space-y-4">
+                      <div className="relative">
+                        <textarea
+                          ref={ideaInputRef}
+                          value={businessIdea}
+                          onChange={(e) => setBusinessIdea(e.target.value)}
+                          placeholder="مثال: فروش عسل ارگانیک به صورت آنلاین با تضمین اصالت..."
+                          className="input-premium min-h-[140px] resize-none text-lg pr-5 pl-14"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.shiftKey && canProceed()) {
+                              e.preventDefault();
+                              handleNext();
+                            }
+                          }}
+                        />
+                        <button
+                          onClick={handleVoiceInput}
+                          className={cn(
+                            "absolute left-3 top-3 p-2 rounded-xl transition-all",
+                            isRecording
+                              ? "bg-red-500 text-white animate-pulse"
+                              : "bg-muted hover:bg-primary/10 text-muted-foreground hover:text-primary"
+                          )}
+                        >
+                          {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
+                        </button>
+                      </div>
+                      <p className="text-center text-sm text-muted-foreground">
+                        هر چقدر بیشتر توضیح بدی، طرح بهتری می‌سازم 💡
                       </p>
                     </div>
+                  )}
 
-                    {/* Step Content */}
+                  {/* Step 2: Audience */}
+                  {step === 2 && (
                     <div className="space-y-4">
-                      {/* Step 1: Industry Selector */}
-                      {step === 1 && (
-                        <>
-                          <IndustrySelector selected={industry} onSelect={setIndustry} />
-                          <QuickTemplates onSelect={handleTemplateSelect} />
-                        </>
-                      )}
-
-                      {/* Step 2: Business Idea */}
-                      {step === 2 && (
-                        <>
-                          <div className="relative">
-                            <input
-                              ref={inputRef}
-                              type="text"
-                              value={businessIdea}
-                              onChange={(e) => setBusinessIdea(e.target.value)}
-                              placeholder="مثال: فروش عسل ارگانیک، اپلیکیشن یادگیری زبان..."
-                              className="input-premium text-lg py-5 pr-5 pl-28"
-                            />
-                            <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-                              <VoiceInputButton onTranscript={(t) => handleVoiceInput(t, "idea")} />
-                              {isLoadingSuggestions ? (
-                                <Loader2 size={20} className="animate-spin text-muted-foreground" />
-                              ) : (
-                                <Send size={20} className="text-muted-foreground" />
-                              )}
-                            </div>
-                          </div>
-                          
-                          <p className="text-center text-sm text-muted-foreground">
-                            ⏎ Enter برای ادامه
+                      {/* AI Suggestions */}
+                      {loadingAudience ? (
+                        <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
+                          <Loader2 size={16} className="animate-spin" />
+                          در حال یافتن مخاطبان...
+                        </div>
+                      ) : audienceSuggestions.length > 0 && (
+                        <div className="space-y-3">
+                          <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                            <Sparkles size={14} className="text-primary" />
+                            پیشنهاد هوشمند:
                           </p>
-                        </>
+                          <div className="flex flex-wrap gap-2">
+                            {audienceSuggestions.map((audience, i) => (
+                              <button
+                                key={i}
+                                onClick={() => setSelectedAudience(audience)}
+                                className={cn(
+                                  "px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                                  selectedAudience === audience
+                                    ? "bg-primary text-white shadow-lg shadow-primary/25"
+                                    : "bg-muted hover:bg-primary/10 text-foreground border border-transparent hover:border-primary/20"
+                                )}
+                              >
+                                {audience}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       )}
 
-                      {/* Step 3: Project Name */}
-                      {step === 3 && (
-                        <ProjectNameSelector
-                          idea={businessIdea}
-                          selectedName={projectName}
-                          onNameChange={setProjectName}
+                      <div className="relative">
+                        <p className="text-sm text-muted-foreground mb-2">یا خودت بنویس:</p>
+                        <input
+                          type="text"
+                          value={selectedAudience}
+                          onChange={(e) => setSelectedAudience(e.target.value)}
+                          placeholder="مثال: خانواده‌های علاقه‌مند به سلامت..."
+                          className="input-premium text-lg"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && canProceed()) {
+                              e.preventDefault();
+                              handleNext();
+                            }
+                          }}
                         />
-                      )}
+                      </div>
+                    </div>
+                  )}
 
-                      {/* Step 4: Problem Solving */}
-                      {step === 4 && (
-                        <>
-                          <div className="relative">
-                            <textarea
-                              ref={textareaRef}
-                              value={problemSolving}
-                              onChange={(e) => setProblemSolving(e.target.value)}
-                              placeholder="مثال: پیدا کردن عسل طبیعی سخته و اکثر عسل‌ها تقلبی هستند..."
-                              className="input-premium min-h-[120px] resize-none text-lg pr-5 pl-16"
-                            />
-                            <div className="absolute left-3 top-4">
-                              <VoiceInputButton onTranscript={(t) => handleVoiceInput(t, "problem")} />
-                            </div>
-                          </div>
-                        </>
-                      )}
-
-                      {/* Step 5: Audience & Competitors */}
-                      {step === 5 && (
-                        <div className="space-y-6">
-                          {/* Audience Suggestions */}
-                          {audienceSuggestions.length > 0 && (
-                            <div className="space-y-3">
-                              <p className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Sparkles size={14} className="text-primary" />
-                                مخاطبان پیشنهادی:
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {audienceSuggestions.map((audience, i) => (
-                                  <button
-                                    key={i}
-                                    onClick={() => setSelectedAudience(audience)}
-                                    className={cn(
-                                      "px-4 py-2 rounded-full text-sm font-medium transition-all",
-                                      selectedAudience === audience
-                                        ? "bg-primary text-white shadow-lg shadow-primary/25"
-                                        : "bg-muted hover:bg-primary/10 text-foreground"
-                                    )}
-                                  >
-                                    {audience}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Custom audience input */}
-                          <input
-                            type="text"
-                            value={selectedAudience || ""}
-                            onChange={(e) => setSelectedAudience(e.target.value)}
-                            placeholder="یا مخاطب خودت رو بنویس..."
-                            className="input-premium"
-                          />
-
-                          {/* Competitors */}
-                          <div className="pt-4 border-t border-border">
-                            <p className="text-sm font-medium text-foreground mb-3">
-                              رقیب‌هات کی‌ان؟ (اختیاری)
-                            </p>
-                            <CompetitorInput 
-                              competitors={competitors}
-                              onChange={setCompetitors}
-                              placeholder="مثال: دیجی‌کالا، باسلام..."
-                            />
+                  {/* Step 3: Project Name */}
+                  {step === 3 && (
+                    <div className="space-y-4">
+                      {/* AI Name Suggestions */}
+                      {loadingNames ? (
+                        <div className="flex items-center justify-center gap-2 py-4 text-muted-foreground">
+                          <Loader2 size={16} className="animate-spin" />
+                          در حال ساخت اسم‌های خلاقانه...
+                        </div>
+                      ) : nameSuggestions.length > 0 && (
+                        <div className="space-y-3">
+                          <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                            <Sparkles size={14} className="text-primary" />
+                            پیشنهاد کارنکس:
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {nameSuggestions.map((name, i) => (
+                              <button
+                                key={i}
+                                onClick={() => setProjectName(name)}
+                                className={cn(
+                                  "px-4 py-3 rounded-xl text-sm font-bold transition-all text-center",
+                                  projectName === name
+                                    ? "bg-primary text-white shadow-lg shadow-primary/25"
+                                    : "bg-muted hover:bg-primary/10 text-foreground border border-transparent hover:border-primary/20"
+                                )}
+                              >
+                                {name}
+                              </button>
+                            ))}
                           </div>
                         </div>
                       )}
 
-                      {/* Step 6: Current Status */}
-                      {step === 6 && (
-                        <div className="grid gap-4">
-                          {statusOptions.map((option, index) => (
-                            <motion.button
-                              key={option.id}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              onClick={() => setCurrentStatus(option.id)}
-                              className={cn(
-                                "p-6 rounded-2xl border-2 transition-all text-right flex items-center gap-5 group",
-                                currentStatus === option.id
-                                  ? "border-primary bg-primary/5 shadow-xl shadow-primary/10"
-                                  : "border-border hover:border-primary/30 hover:shadow-lg"
-                              )}
-                            >
-                              <div className={cn(
-                                "w-16 h-16 rounded-2xl bg-gradient-to-br flex items-center justify-center text-3xl shrink-0 transition-transform group-hover:scale-110",
-                                option.color
-                              )}>
-                                {option.emoji}
-                              </div>
-                              <div>
-                                <p className="font-bold text-lg text-foreground">{option.label}</p>
-                                <p className="text-muted-foreground">{option.sublabel}</p>
-                              </div>
-                            </motion.button>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Step 7: Budget */}
-                      {step === 7 && (
-                        <>
-                          <BudgetSelector selected={budget} onSelect={setBudget} />
-                          
-                          {/* Summary */}
-                          {businessIdea && (
-                            <motion.div 
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className="bg-muted/50 rounded-xl p-4 text-sm"
-                            >
-                              <p className="text-muted-foreground">
-                                <strong className="text-foreground">{businessIdea}</strong>
-                                {selectedAudience && <> برای <strong className="text-foreground">{selectedAudience}</strong></>}
-                                {problemSolving && <> — چون <strong className="text-foreground">{problemSolving}</strong></>}
-                              </p>
-                            </motion.div>
-                          )}
-                        </>
-                      )}
+                      <div className="relative pt-2">
+                        <p className="text-sm text-muted-foreground mb-2">یا اسم دلخواهت:</p>
+                        <input
+                          type="text"
+                          value={projectName}
+                          onChange={(e) => setProjectName(e.target.value)}
+                          placeholder="نام برند یا کسب‌وکار..."
+                          className="input-premium text-lg text-center font-bold"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && canProceed()) {
+                              e.preventDefault();
+                              handleNext();
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
+                  )}
+                </div>
 
-                    {/* Error */}
-                    {error && (
-                      <motion.p 
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="text-destructive text-sm text-center"
-                      >
-                        {error}
-                      </motion.p>
-                    )}
+                {/* Error */}
+                {error && (
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-destructive text-sm text-center"
+                  >
+                    {error}
+                  </motion.p>
+                )}
 
-                    {/* Actions */}
-                    <div className="space-y-3">
-                      <Button
-                        variant="gradient"
-                        size="xl"
-                        className="w-full"
-                        onClick={handleNext}
-                        disabled={!canProceed() && !currentStepConfig.optional}
-                      >
-                        {step === totalSteps ? (
-                          <>
-                            <Sparkles size={18} />
-                            بساز طرح کسب‌وکار من!
-                          </>
-                        ) : (
-                          <>
-                            ادامه
-                            <ArrowLeft size={18} />
-                          </>
-                        )}
-                      </Button>
-
-                      {/* Skip for optional steps */}
-                      {currentStepConfig.optional && (
-                        <button
-                          onClick={handleSkip}
-                          className="w-full flex items-center justify-center gap-2 py-3 text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <SkipForward size={16} />
-                          رد شو
-                        </button>
-                      )}
-                    </div>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-            </main>
-          </>
-        )}
+                {/* Action Button */}
+                <Button
+                  variant="gradient"
+                  size="xl"
+                  className="w-full"
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                >
+                  {step === totalSteps ? (
+                    <>
+                      <Sparkles size={20} />
+                      بساز طرح کسب‌وکار من!
+                    </>
+                  ) : (
+                    <>
+                      ادامه
+                      <ArrowLeft size={20} />
+                    </>
+                  )}
+                </Button>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </main>
       </div>
     </div>
   );

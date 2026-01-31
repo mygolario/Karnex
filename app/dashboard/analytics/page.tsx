@@ -10,11 +10,16 @@ import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/dashboard/progress-ring";
 import { SimpleLineChart, SimpleBarChart } from "@/components/ui/charts";
 
+// Helper to get step title whether it's a string or object
+function getStepTitle(step: any): string {
+  return typeof step === 'string' ? step : step?.title || '';
+}
+
 export default function AnalyticsPage() {
   const { user } = useAuth();
   const { activeProject: plan, loading } = useProject();
   const [stats, setStats] = useState({ totalSteps: 0, completedSteps: 0, progressPercent: 0, daysActive: 0, aiUsageCount: 0 });
-  
+
   // AI States
   const [aiAnalysis, setAiAnalysis] = useState<string[]>([]);
   const [generatingAnalysis, setGeneratingAnalysis] = useState(false);
@@ -75,18 +80,18 @@ Return ONLY JSON array of 3 strings in Persian with analysis insights.`;
       <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 text-white shadow-2xl shadow-indigo-500/20">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20 bg-center" />
         <div className="absolute top-0 right-0 w-96 h-96 bg-white/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        
+
         <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
           <div className="flex items-center gap-6">
-             <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center text-white shadow-inner border border-white/20 animate-pulse-glow">
-               <BarChart3 size={36} />
-             </div>
-             <div>
-               <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2">تحلیل پیشرفت</h1>
-               <p className="text-white/80 text-lg font-medium">
-                 آمار و تحلیل پروژه <span className="text-white font-extrabold bg-white/20 px-2 py-0.5 rounded-lg">{plan.projectName}</span>
-               </p>
-             </div>
+            <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-3xl flex items-center justify-center text-white shadow-inner border border-white/20 animate-pulse-glow">
+              <BarChart3 size={36} />
+            </div>
+            <div>
+              <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2">تحلیل پیشرفت</h1>
+              <p className="text-white/80 text-lg font-medium">
+                آمار و تحلیل پروژه <span className="text-white font-extrabold bg-white/20 px-2 py-0.5 rounded-lg">{plan.projectName}</span>
+              </p>
+            </div>
           </div>
           <div className="glass px-6 py-3 rounded-2xl border-white/10 flex items-center gap-3">
             <Calendar size={20} className="text-white/80" />
@@ -165,7 +170,7 @@ Return ONLY JSON array of 3 strings in Persian with analysis insights.`;
         <div className="space-y-6">
           {plan.roadmap.map((phase, idx) => {
             const phaseTotal = phase.steps.length;
-            const phaseCompleted = phase.steps.filter((s: string) => plan.completedSteps?.includes(s)).length;
+            const phaseCompleted = phase.steps.filter((s: any) => plan.completedSteps?.includes(getStepTitle(s))).length;
             const phasePercent = phaseTotal > 0 ? Math.round((phaseCompleted / phaseTotal) * 100) : 0;
             return (
               <div key={idx} className="group">
@@ -191,7 +196,7 @@ Return ONLY JSON array of 3 strings in Persian with analysis insights.`;
         <Card variant="glass" className="p-8">
           <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2"><BarChart3 size={24} className="text-purple-500" />تکمیل مراحل</h2>
           <div className="h-[200px] w-full">
-            <SimpleBarChart data={plan.roadmap.map(phase => phase.steps.filter((s: string) => plan.completedSteps?.includes(s)).length)} labels={plan.roadmap.map((_, i) => `فاز ${i + 1}`)} height={200} color="bg-gradient-to-t from-primary to-purple-600" />
+            <SimpleBarChart data={plan.roadmap.map(phase => phase.steps.filter((s: any) => plan.completedSteps?.includes(getStepTitle(s))).length)} labels={plan.roadmap.map((_, i) => `فاز ${i + 1}`)} height={200} color="bg-gradient-to-t from-primary to-purple-600" />
           </div>
         </Card>
       </div>

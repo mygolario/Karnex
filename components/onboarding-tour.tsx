@@ -48,13 +48,13 @@ const tourSteps: TourStep[] = [
     icon: LayoutGrid,
     position: "left"
   },
-  {
-    target: "[href='/dashboard/brand']",
-    title: "هویت بصری",
-    description: "رنگ‌ها، فونت و ایده‌های لوگو مخصوص برند شما.",
-    icon: Palette,
-    position: "left"
-  },
+  // {
+  //   target: "[href='/dashboard/brand']",
+  //   title: "هویت بصری",
+  //   description: "رنگ‌ها، فونت و ایده‌های لوگو مخصوص برند شما.",
+  //   icon: Palette,
+  //   position: "left"
+  // },
   {
     target: "[href='/dashboard/marketing']",
     title: "بازاریابی",
@@ -160,11 +160,11 @@ function TourOverlay({ step, stepNumber, totalSteps }: { step: TourStep; stepNum
       if (element) {
         const rect = element.getBoundingClientRect();
         setTargetRect(rect);
-        
+
         // Calculate tooltip position based on step.position
         const padding = 16;
         let x = 0, y = 0;
-        
+
         switch (step.position) {
           case "bottom":
             x = rect.left + rect.width / 2 - 160; // Center tooltip
@@ -186,13 +186,13 @@ function TourOverlay({ step, stepNumber, totalSteps }: { step: TourStep; stepNum
             x = rect.left + rect.width / 2 - 160;
             y = rect.bottom + padding;
         }
-        
+
         // Keep tooltip on screen
         x = Math.max(16, Math.min(window.innerWidth - 340, x));
         y = Math.max(16, Math.min(window.innerHeight - 200, y));
-        
+
         setTooltipPosition({ x, y });
-        
+
         // Scroll element into view if needed
         element.scrollIntoView({ behavior: "smooth", block: "center" });
       }
@@ -201,7 +201,7 @@ function TourOverlay({ step, stepNumber, totalSteps }: { step: TourStep; stepNum
     findElement();
     // Retry after a short delay in case DOM is updating
     const timer = setTimeout(findElement, 300);
-    
+
     return () => clearTimeout(timer);
   }, [step.target, step.position]);
 
@@ -360,7 +360,7 @@ function TourOverlay({ step, stepNumber, totalSteps }: { step: TourStep; stepNum
 // Help button to restart tour
 export function TourHelpButton() {
   const { startTour, isActive } = useOnboarding();
-  
+
   if (isActive) return null;
 
   return (

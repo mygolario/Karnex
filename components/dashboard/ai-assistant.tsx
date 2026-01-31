@@ -6,9 +6,9 @@ import { useAuth } from "@/contexts/auth-context";
 import { getPlanFromCloud } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { useMentorContext } from "@/components/dashboard/step-guide";
-import { 
-  Sparkles, 
-  Send, 
+import {
+  Sparkles,
+  Send,
   Loader2,
   Bot,
   ArrowUpRight,
@@ -24,9 +24,8 @@ const pageSuggestions: Record<string, string[]> = {
   "/dashboard/overview": ["از کجا شروع کنم؟", "نکات مهم امروز", "اولویت‌بندی کارها"],
   "/dashboard/roadmap": ["این مرحله یعنی چی؟", "چطور سریع‌تر پیش برم؟"],
   "/dashboard/canvas": ["ارزش پیشنهادی چیه؟", "مشتری ایده‌آل کیه؟"],
-  "/dashboard/brand": ["چطور لوگو بسازم؟", "رنگ مناسب برندم چیه؟"],
+  // "/dashboard/brand": ["چطور لوگو بسازم؟", "رنگ مناسب برندم چیه؟"], // Temporarily disabled
   "/dashboard/marketing": ["چطور مشتری جذب کنم؟", "بازاریابی رایگان"],
-  "/dashboard/legal": ["آیا ثبت شرکت لازمه؟", "مجوزهای ضروری"],
 };
 
 const defaultSuggestions = ["راهنمایی سریع", "سوال دارم"];
@@ -36,13 +35,13 @@ export function AiAssistant() {
   const router = useRouter();
   const pathname = usePathname();
   const { pendingQuestion, setPendingQuestion } = useMentorContext();
-  
+
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [quickResponse, setQuickResponse] = useState<string | null>(null);
   const [planContext, setPlanContext] = useState<any>(null);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -107,11 +106,11 @@ export function AiAssistant() {
       });
 
       const data = await res.json();
-      
+
       if (data.reply) {
         // Show truncated response
-        const truncated = data.reply.length > 200 
-          ? data.reply.substring(0, 200) + "..." 
+        const truncated = data.reply.length > 200
+          ? data.reply.substring(0, 200) + "..."
           : data.reply;
         setQuickResponse(truncated);
       }
@@ -146,7 +145,7 @@ export function AiAssistant() {
           "p-3.5 rounded-2xl shadow-xl",
           "transition-all duration-300",
           "flex items-center gap-2 group",
-          isOpen 
+          isOpen
             ? "bg-muted text-foreground shadow-lg"
             : "bg-gradient-to-r from-primary to-purple-600 text-white shadow-primary/30 hover:scale-110 hover:shadow-2xl hover:shadow-primary/40"
         )}
@@ -208,7 +207,7 @@ export function AiAssistant() {
 
               {/* Input */}
               <div className="p-3">
-                <form 
+                <form
                   onSubmit={(e) => { e.preventDefault(); handleQuickQuestion(); }}
                   className="flex gap-2"
                 >
@@ -221,7 +220,7 @@ export function AiAssistant() {
                     className="input-premium flex-1 text-sm py-2"
                     dir="rtl"
                   />
-                  <Button 
+                  <Button
                     type="submit"
                     variant="gradient"
                     size="icon-sm"

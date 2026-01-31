@@ -17,14 +17,18 @@ import { PatternLibrary } from "@/components/dashboard/brand/pattern-library";
 import { MockupGallery } from "@/components/dashboard/brand/mockup-gallery";
 import { TypographySection } from "@/components/dashboard/brand/typography-section";
 
+// Simple toast placeholders (replace with a real toast library later)
+const toastSuccess = (message: string) => console.log("✅ Success:", message);
+const toastError = (message: string) => console.error("❌ Error:", message);
+
 export default function BrandKitPage() {
   const { user } = useAuth();
   const { activeProject: plan, loading, updateActiveProject } = useProject();
-  
+
   // UI State
   const [activeTab, setActiveTab] = useState<TabId>("overview");
   const [showWizard, setShowWizard] = useState(false);
-  
+
   // Generation states
   const [generatingLogo, setGeneratingLogo] = useState<number | null>(null);
   const [generatingMood, setGeneratingMood] = useState(false);
@@ -44,7 +48,7 @@ export default function BrandKitPage() {
   // ===== WIZARD CONTEXT =====
   const getWizardContext = useCallback(() => {
     if (!plan?.brandKit?.wizardData) return getBusinessContext;
-    
+
     const wd = plan.brandKit.wizardData;
     return `${getBusinessContext}. Industry: ${wd.industry}. Style: ${wd.logoStyle}. Personality: ${wd.brandPersonality?.join(", ")}. Feeling: ${wd.desiredFeeling}. Target: ${wd.targetAudience}`;
   }, [plan, getBusinessContext]);
@@ -77,7 +81,7 @@ export default function BrandKitPage() {
       });
 
       const data = await response.json();
-      
+
       if (data.success && data.imageUrl) {
         // Save to media library
         await fetch("/api/media-library", {
@@ -94,7 +98,7 @@ export default function BrandKitPage() {
             projectName: plan.projectName
           })
         });
-        
+
         return data.imageUrl;
       } else {
         throw new Error(data.error || "Image generation failed");
@@ -129,7 +133,7 @@ export default function BrandKitPage() {
 
     setShowWizard(false);
     toastSuccess("هویت بصری با موفقیت ذخیره شد!");
-    
+
     // TODO: Trigger full brand generation here
     // For now, just close wizard
   };
@@ -142,11 +146,11 @@ export default function BrandKitPage() {
     try {
       const concept = plan.brandKit.logoConcepts[index];
       const wizardContext = getWizardContext();
-      
+
       const prompt = `Logo for "${plan.projectName}". ${wizardContext}. Concept: ${concept.conceptName} - ${concept.description}.`;
 
       const imageUrl = await generateImage(prompt, 'logo', undefined, 'logo');
-      
+
       if (imageUrl) {
         const updatedConcepts = [...plan.brandKit.logoConcepts];
         updatedConcepts[index] = { ...updatedConcepts[index], imageUrl };
@@ -164,7 +168,7 @@ export default function BrandKitPage() {
     try {
       const styles = ['geometric', 'gradient', 'abstract', 'organic'] as const;
       const patterns = [];
-      
+
       for (const style of styles) {
         setGeneratingPatternStyle(style);
         const prompt = `${style} seamless pattern for: ${getWizardContext()}`;
@@ -179,7 +183,7 @@ export default function BrandKitPage() {
           });
         }
       }
-      
+
       if (patterns.length > 0) {
         await updateBrandKit({ patterns });
         toastSuccess("پترن‌ها با موفقیت تولید شدند!");
@@ -221,11 +225,11 @@ export default function BrandKitPage() {
     try {
       const types = ['tshirt', 'mug', 'business_card', 'instagram'] as const;
       const mockups = [];
-      
+
       for (const type of types) {
         setGeneratingMockupType(type);
-        const category: BrandMockup['category'] = ['tshirt', 'mug'].includes(type) ? 'product' : 
-                        ['business_card'].includes(type) ? 'stationery' : 'social';
+        const category: BrandMockup['category'] = ['tshirt', 'mug'].includes(type) ? 'product' :
+          ['business_card'].includes(type) ? 'stationery' : 'social';
         const prompt = `${type.replace('_', ' ')} mockup for: ${getWizardContext()}`;
         const imageUrl = await generateImage(prompt, 'mockup', type, 'square');
         if (imageUrl) {
@@ -233,7 +237,7 @@ export default function BrandKitPage() {
           mockups.push(newMockup);
         }
       }
-      
+
       if (mockups.length > 0) {
         await updateBrandKit({ mockups });
         toastSuccess("موکاپ‌ها با موفقیت تولید شدند!");
@@ -247,10 +251,10 @@ export default function BrandKitPage() {
   const handleGenerateSingleMockup = async (type: string) => {
     setGeneratingMockupType(type);
     try {
-      const category: BrandMockup['category'] = ['tshirt', 'mug', 'tote_bag', 'phone_case'].includes(type) ? 'product' 
-        : ['letterhead', 'business_card', 'envelope'].includes(type) ? 'stationery' 
-        : 'social';
-      
+      const category: BrandMockup['category'] = ['tshirt', 'mug', 'tote_bag', 'phone_case'].includes(type) ? 'product'
+        : ['letterhead', 'business_card', 'envelope'].includes(type) ? 'stationery'
+          : 'social';
+
       const prompt = `${type.replace('_', ' ')} mockup for: ${getWizardContext()}`;
       const imageUrl = await generateImage(prompt, 'mockup', type, 'square');
       if (imageUrl) {
@@ -273,7 +277,7 @@ export default function BrandKitPage() {
     try {
       const colors = [plan?.brandKit.primaryColorHex, plan?.brandKit.secondaryColorHex];
       const moodImages = [];
-      
+
       for (const color of colors) {
         const prompt = `Mood photography in ${color} for: ${getWizardContext()}`;
         const imageUrl = await generateImage(prompt, 'color_mood', color, 'square');
@@ -281,7 +285,7 @@ export default function BrandKitPage() {
           moodImages.push({ color: color!, imageUrl, prompt });
         }
       }
-      
+
       if (moodImages.length > 0) {
         await updateBrandKit({ colorMoodImages: moodImages });
       }
@@ -296,7 +300,7 @@ export default function BrandKitPage() {
       const response = await fetch("/api/ai-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           prompt: `Explain color psychology for: ${getWizardContext()}. Colors: ${plan?.brandKit.primaryColorHex}, ${plan?.brandKit.secondaryColorHex}. Write in Persian, 2-3 sentences.`,
           systemPrompt: "You are a brand psychology expert. Respond only in Persian."
         })

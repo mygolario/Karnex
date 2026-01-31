@@ -5,13 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Bot, 
-  Send, 
-  Sparkles, 
-  Loader2, 
+import {
+  Bot,
+  Send,
+  Sparkles,
+  Loader2,
   Trash2,
   Download,
   Lightbulb,
@@ -19,18 +18,24 @@ import {
   TrendingUp,
   Users,
   DollarSign,
-  Scale,
   Wand2,
-  ChevronLeft,
-  ChevronRight,
   MessageSquare,
   Zap,
-  RefreshCw,
   Copy,
-  Check
+  Check,
+  Rocket
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
+
+// Mission Control Components
+import { DailyGreeting } from "@/components/dashboard/assistant/daily-greeting";
+import { DailyMissions, Mission, generateDailyMissions } from "@/components/dashboard/assistant/daily-missions";
+import { AIInsightCard, AIInsight, generateDailyInsights } from "@/components/dashboard/assistant/ai-insight";
+import { SmartActionCard, ActionCard } from "@/components/dashboard/assistant/action-card";
+import { VoiceInput } from "@/components/dashboard/assistant/voice-input";
+import { Celebration, triggerConfetti, triggerStars } from "@/components/dashboard/assistant/celebration";
+import { XpFloat, XpBadge } from "@/components/dashboard/assistant/xp-float";
+import { StreakDisplay } from "@/components/dashboard/assistant/streak-display";
 
 interface Message {
   id: string;
@@ -38,103 +43,96 @@ interface Message {
   content: string;
   timestamp: number;
   followUps?: string[];
+  actions?: ActionCard[];
+  xpReward?: number;
 }
 
-// Prompt templates for quick actions
+// Prompt templates
 const promptTemplates = [
-  { 
-    icon: TrendingUp, 
-    title: "استراتژی رشد", 
-    prompt: "یک استراتژی رشد ۶ ماهه برای کسب‌وکارم پیشنهاد بده با مراحل مشخص",
-    color: "from-blue-500 to-cyan-500"
-  },
-  { 
-    icon: Target, 
-    title: "تحلیل SWOT", 
-    prompt: "نقاط قوت، ضعف، فرصت‌ها و تهدیدهای پروژه من رو تحلیل کن",
-    color: "from-purple-500 to-pink-500"
-  },
-  { 
-    icon: Users, 
-    title: "جذب مشتری", 
-    prompt: "چطور می‌تونم اولین ۱۰۰ مشتری پروژه‌ام رو جذب کنم؟",
-    color: "from-amber-500 to-orange-500"
-  },
-  { 
-    icon: DollarSign, 
-    title: "مشاوره مالی", 
-    prompt: "برای شروع کسب‌وکارم چه بودجه‌ای نیاز دارم و چطور تخصیص بدم؟",
-    color: "from-emerald-500 to-teal-500"
-  },
-  { 
-    icon: Scale, 
-    title: "مسائل حقوقی", 
-    prompt: "مهم‌ترین نکات حقوقی که برای شروع کسب‌وکارم باید رعایت کنم چیه؟",
-    color: "from-rose-500 to-red-500"
-  },
-  { 
-    icon: Wand2, 
-    title: "بهبود ایده", 
-    prompt: "چطور می‌تونم ایده کسب‌وکارم رو بهتر و متمایزتر کنم؟",
-    color: "from-indigo-500 to-violet-500"
-  },
+  { icon: TrendingUp, title: "رشد", prompt: "استراتژی رشد ۶ ماهه برای پروژه‌ام پیشنهاد بده", color: "from-blue-500 to-cyan-500" },
+  { icon: Target, title: "SWOT", prompt: "تحلیل SWOT پروژه من رو انجام بده", color: "from-purple-500 to-pink-500" },
+  { icon: Users, title: "مشتری", prompt: "چطور اولین ۱۰۰ مشتری رو جذب کنم؟", color: "from-amber-500 to-orange-500" },
+  { icon: DollarSign, title: "مالی", prompt: "بودجه‌بندی و منابع مالی پروژه رو تحلیل کن", color: "from-emerald-500 to-teal-500" },
+  { icon: Wand2, title: "بهبود", prompt: "چطور ایده‌ام رو بهتر و متمایزتر کنم؟", color: "from-rose-500 to-red-500" },
 ];
 
 const STORAGE_KEY = "karnex_advisor_history";
+const STREAK_KEY = "karnex_assistant_streak";
+const XP_KEY = "karnex_assistant_xp";
 const MAX_HISTORY = 100;
-
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.05 }
-  }
-};
-
-const messageVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.95 },
-  show: { 
-    opacity: 1, 
-    y: 0, 
-    scale: 1,
-    transition: { type: "spring" as const, stiffness: 300, damping: 30 }
-  }
-};
 
 export default function AssistantPage() {
   const { user } = useAuth();
   const { activeProject: plan } = useProject();
-  
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showFollowUps, setShowFollowUps] = useState<string[]>([]);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  
+
+  // Gamification state
+  const [streak, setStreak] = useState(0);
+  const [totalXp, setTotalXp] = useState(0);
+  const [celebrationType, setCelebrationType] = useState<"confetti" | "stars" | "mission" | null>(null);
+  const [xpGain, setXpGain] = useState({ amount: 0, trigger: false });
+
+  // Mission Control state
+  const [missions, setMissions] = useState<Mission[]>([]);
+  const [insights, setInsights] = useState<AIInsight[]>([]);
+  const [pendingActions, setPendingActions] = useState<ActionCard[]>([]);
+
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Initial welcome message
-  const welcomeMessage: Message = {
-    id: 'welcome',
-    role: 'assistant',
-    content: `سلام! 👋 من دستیار هوشمند کارنکس هستم - مشاور کسب‌وکار شخصی شما.
+  // Calculate project stats
+  const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 0;
+  const completedCount = plan?.completedSteps?.length || 0;
+  const progressPercent = totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
 
-من به تمام اطلاعات پروژه‌تون دسترسی دارم و می‌تونم در این موارد کمکتون کنم:
+  // Load streak and XP from localStorage
+  useEffect(() => {
+    if (user) {
+      const savedStreak = localStorage.getItem(`${STREAK_KEY}_${user.uid}`);
+      const savedXp = localStorage.getItem(`${XP_KEY}_${user.uid}`);
+      const lastVisit = localStorage.getItem(`${STREAK_KEY}_${user.uid}_last`);
 
-🎯 **استراتژی رشد** - برنامه‌ریزی برای توسعه کسب‌وکار
-📊 **تحلیل بازار** - شناخت رقبا و فرصت‌ها
-💡 **بهبود ایده** - تقویت مدل کسب‌وکار
-💰 **مشاوره مالی** - بودجه‌بندی و جذب سرمایه
-⚖️ **مسائل حقوقی** - مجوزها و قراردادها
+      const today = new Date().toDateString();
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
 
-از قالب‌های آماده سمت راست استفاده کنید یا هر سوالی دارید بپرسید!`,
-    timestamp: Date.now()
-  };
+      if (lastVisit === today) {
+        // Same day, keep streak
+        setStreak(parseInt(savedStreak || "0"));
+      } else if (lastVisit === yesterday) {
+        // Consecutive day, increment streak
+        const newStreak = (parseInt(savedStreak || "0")) + 1;
+        setStreak(newStreak);
+        localStorage.setItem(`${STREAK_KEY}_${user.uid}`, newStreak.toString());
 
-  // Load chat history from localStorage
+        // Celebrate streak milestones
+        if ([3, 7, 14, 30].includes(newStreak)) {
+          setTimeout(() => setCelebrationType("stars"), 1000);
+        }
+      } else {
+        // Streak broken
+        setStreak(1);
+        localStorage.setItem(`${STREAK_KEY}_${user.uid}`, "1");
+      }
+
+      localStorage.setItem(`${STREAK_KEY}_${user.uid}_last`, today);
+      setTotalXp(parseInt(savedXp || "0"));
+    }
+  }, [user]);
+
+  // Generate daily missions and insights
+  useEffect(() => {
+    if (plan?.projectName) {
+      setMissions(generateDailyMissions(plan.projectName, progressPercent));
+      setInsights(generateDailyInsights(plan.projectName));
+    }
+  }, [plan?.projectName, progressPercent]);
+
+  // Load chat history
   useEffect(() => {
     if (user) {
       const saved = localStorage.getItem(`${STORAGE_KEY}_${user.uid}`);
@@ -150,29 +148,39 @@ export default function AssistantPage() {
         }
       }
     }
-    // Set welcome message if no history
-    setMessages([welcomeMessage]);
   }, [user]);
 
-  // Save chat history to localStorage
+  // Save chat history
   useEffect(() => {
-    if (user && messages.length > 0 && messages[0].id !== 'welcome') {
+    if (user && messages.length > 0) {
       const toSave = messages.slice(-MAX_HISTORY);
       localStorage.setItem(`${STORAGE_KEY}_${user.uid}`, JSON.stringify(toSave));
     }
   }, [messages, user]);
 
-  // Auto-scroll to bottom
+  // Auto-scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, showFollowUps]);
+  }, [messages, showFollowUps, pendingActions]);
 
-  // Focus input on mount
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+  // XP helper
+  const awardXp = useCallback((amount: number) => {
+    if (user && amount > 0) {
+      setXpGain({ amount, trigger: true });
+      setTotalXp(prev => {
+        const newTotal = prev + amount;
+        localStorage.setItem(`${XP_KEY}_${user.uid}`, newTotal.toString());
+        return newTotal;
+      });
+
+      // Small celebration for XP
+      if (amount >= 25) {
+        triggerStars();
+      }
+    }
+  }, [user]);
 
   const generateId = () => `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -182,19 +190,28 @@ export default function AssistantPage() {
 
     setInput("");
     setShowFollowUps([]);
-    
-    const userMessage: Message = { 
+    setPendingActions([]);
+
+    const userMessage: Message = {
       id: generateId(),
-      role: 'user', 
+      role: 'user',
       content: messageToSend,
       timestamp: Date.now()
     };
-    
-    setMessages(prev => [...prev.filter(m => m.id !== 'welcome'), userMessage]);
+
+    setMessages(prev => [...prev, userMessage]);
     setIsLoading(true);
 
+    // Award XP for asking a question
+    awardXp(10);
+
+    // Mark mission as completed if matches
+    const questionMission = missions.find(m => m.type === "quick_win" && !m.completed);
+    if (questionMission) {
+      handleMissionComplete(questionMission.id);
+    }
+
     try {
-      // Build project context from active project
       const projectContext = plan ? {
         projectName: plan.projectName,
         tagline: plan.tagline,
@@ -202,17 +219,12 @@ export default function AssistantPage() {
         audience: plan.audience,
         budget: plan.budget,
         leanCanvas: plan.leanCanvas,
-        brandKit: plan.brandKit,
         roadmap: plan.roadmap,
         completedSteps: plan.completedSteps,
         marketingStrategy: plan.marketingStrategy,
-        competitors: plan.competitors,
-        legalAdvice: plan.legalAdvice
       } : {};
 
-      // Get conversation history for context
       const conversationHistory = messages
-        .filter(m => m.id !== 'welcome')
         .slice(-8)
         .map(m => ({ role: m.role, content: m.content }));
 
@@ -222,31 +234,39 @@ export default function AssistantPage() {
         body: JSON.stringify({
           message: messageToSend,
           projectContext,
-          conversationHistory
+          conversationHistory,
+          requestActions: true
         })
       });
 
       const data = await res.json();
-      
+
       if (data.reply) {
         const assistantMessage: Message = {
           id: generateId(),
           role: 'assistant',
           content: data.reply,
           timestamp: Date.now(),
-          followUps: data.followUps || []
+          followUps: data.followUps || [],
+          actions: data.actions || [],
+          xpReward: data.xpReward
         };
+
         setMessages(prev => [...prev, assistantMessage]);
-        
-        if (data.followUps && data.followUps.length > 0) {
+
+        if (data.followUps?.length > 0) {
           setShowFollowUps(data.followUps);
+        }
+
+        if (data.actions?.length > 0) {
+          setPendingActions(data.actions);
         }
       }
     } catch (error) {
       console.error(error);
-      setMessages(prev => [...prev, { 
+      setMessages(prev => [...prev, {
         id: generateId(),
-        role: 'assistant', 
+        role: 'assistant',
         content: 'متاسفانه ارتباط قطع شد. لطفا دوباره تلاش کنید.',
         timestamp: Date.now()
       }]);
@@ -255,11 +275,56 @@ export default function AssistantPage() {
     }
   };
 
+  const handleMissionClick = (mission: Mission) => {
+    if (mission.actionPrompt) {
+      handleSendMessage(mission.actionPrompt);
+    }
+  };
+
+  const handleMissionComplete = (missionId: string) => {
+    setMissions(prev => prev.map(m =>
+      m.id === missionId ? { ...m, completed: true } : m
+    ));
+
+    const mission = missions.find(m => m.id === missionId);
+    if (mission) {
+      awardXp(mission.xpReward);
+      setCelebrationType("mission");
+    }
+  };
+
+  const handleActionApply = async (action: ActionCard) => {
+    // TODO: Implement actual action application
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    awardXp(action.xpReward);
+    triggerConfetti();
+  };
+
+  const handleActionDismiss = (actionId: string) => {
+    setPendingActions(prev => prev.filter(a => a.id !== actionId));
+  };
+
+  const handleInsightAction = (insight: AIInsight) => {
+    if (insight.actionPrompt) {
+      handleSendMessage(insight.actionPrompt);
+    }
+    if (insight.xpReward) {
+      awardXp(insight.xpReward);
+    }
+  };
+
+  const handleVoiceTranscript = (text: string) => {
+    setInput(text);
+    // Auto-send voice input
+    setTimeout(() => handleSendMessage(text), 500);
+  };
+
   const clearHistory = () => {
     if (user) {
       localStorage.removeItem(`${STORAGE_KEY}_${user.uid}`);
-      setMessages([welcomeMessage]);
+      setMessages([]);
       setShowFollowUps([]);
+      setPendingActions([]);
     }
   };
 
@@ -269,135 +334,64 @@ export default function AssistantPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const exportConversation = () => {
-    const text = messages
-      .map(m => `[${m.role === 'user' ? 'شما' : 'دستیار'}] ${new Date(m.timestamp).toLocaleString('fa-IR')}\n${m.content}`)
-      .join('\n\n---\n\n');
-    
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `karnex-chat-${new Date().toISOString().split('T')[0]}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString("fa-IR", { 
-      hour: "2-digit", 
-      minute: "2-digit" 
+    return new Date(timestamp).toLocaleTimeString("fa-IR", {
+      hour: "2-digit",
+      minute: "2-digit"
     });
   };
 
-  // Calculate project stats for display
-  const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 0;
-  const completedCount = plan?.completedSteps?.length || 0;
-  const progressPercent = totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
-
   return (
-    <div className="h-[calc(100vh-10rem)] md:h-[calc(100vh-8rem)] flex flex-row-reverse gap-4">
-      {/* Sidebar - Quick Actions */}
-      <AnimatePresence mode="wait">
-        {sidebarOpen && (
-          <motion.aside
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 320, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="hidden lg:flex flex-col border-l border-border/40 bg-card/50 backdrop-blur-xl overflow-hidden"
-          >
-            <div className="p-6 flex-1 overflow-y-auto no-scrollbar space-y-6">
-              {/* Project Context Card */}
-              {plan && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-purple-500/10 border border-primary/20"
-                >
-                  <h3 className="font-bold text-sm text-foreground mb-3 flex items-center gap-2">
-                    <Target size={16} className="text-primary" />
-                    پروژه فعال
-                  </h3>
-                  <p className="font-bold text-lg text-foreground mb-1">{plan.projectName}</p>
-                  <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{plan.overview}</p>
-                  <div className="flex items-center gap-2 text-xs">
-                    <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-gradient-to-r from-primary to-purple-500 rounded-full transition-all"
-                        style={{ width: `${progressPercent}%` }}
-                      />
-                    </div>
-                    <span className="text-muted-foreground font-medium">{progressPercent}%</span>
-                  </div>
-                </motion.div>
-              )}
+    <div className="h-[calc(100vh-10rem)] md:h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-4">
 
-              {/* Prompt Templates */}
-              <div>
-                <h3 className="font-bold text-sm text-muted-foreground mb-4 flex items-center gap-2">
-                  <Lightbulb size={16} className="text-accent" />
-                  قالب‌های آماده
-                </h3>
-                <div className="space-y-2">
-                  {promptTemplates.map((template, i) => (
-                    <motion.button
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      onClick={() => handleSendMessage(template.prompt)}
-                      disabled={isLoading}
-                      className="w-full p-3 rounded-xl bg-muted/50 hover:bg-muted text-right transition-all group flex items-center gap-3 border border-transparent hover:border-primary/20 disabled:opacity-50"
-                    >
-                      <div className={cn(
-                        "w-9 h-9 rounded-lg bg-gradient-to-br flex items-center justify-center text-white shrink-0 transition-transform group-hover:scale-110",
-                        template.color
-                      )}>
-                        <template.icon size={18} />
-                      </div>
-                      <span className="text-sm font-medium text-foreground">{template.title}</span>
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
+      {/* Celebrations */}
+      <Celebration
+        type={celebrationType || "confetti"}
+        trigger={celebrationType !== null}
+        onComplete={() => setCelebrationType(null)}
+      />
 
-              {/* Quick Stats */}
-              {plan && (
-                <div className="p-4 rounded-2xl bg-muted/30 border border-border/50">
-                  <h3 className="font-bold text-xs text-muted-foreground mb-3 uppercase tracking-wide">آمار پروژه</h3>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="text-center p-2 rounded-lg bg-background/50">
-                      <p className="font-bold text-lg text-foreground">{totalSteps}</p>
-                      <p className="text-muted-foreground">مرحله</p>
-                    </div>
-                    <div className="text-center p-2 rounded-lg bg-background/50">
-                      <p className="font-bold text-lg text-primary">{completedCount}</p>
-                      <p className="text-muted-foreground">تکمیل شده</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+      {/* XP Float */}
+      <XpFloat
+        amount={xpGain.amount}
+        trigger={xpGain.trigger}
+        position={{ x: 50, y: 30 }}
+        onComplete={() => setXpGain({ amount: 0, trigger: false })}
+      />
 
-      {/* Toggle Sidebar Button */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 w-6 h-12 bg-muted hover:bg-primary/10 rounded-l-lg items-center justify-center text-muted-foreground hover:text-primary transition-colors border-l border-y border-border/50"
-      >
-        {sidebarOpen ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-      </button>
+      {/* Left Sidebar - Missions & Insights */}
+      <aside className="hidden lg:flex flex-col w-80 shrink-0 gap-4 overflow-y-auto no-scrollbar">
+        {/* Daily Greeting */}
+        <DailyGreeting
+          userName={user?.displayName || user?.email?.split("@")[0]}
+          projectName={plan?.projectName}
+          streak={streak}
+          totalXp={totalXp}
+          progressPercent={progressPercent}
+          todayMission={missions.find(m => !m.completed)?.title}
+        />
+
+        {/* Daily Missions */}
+        <DailyMissions
+          missions={missions}
+          onMissionClick={handleMissionClick}
+          onMissionComplete={handleMissionComplete}
+        />
+
+        {/* AI Insights */}
+        <AIInsightCard
+          insights={insights}
+          onAction={handleInsightAction}
+        />
+      </aside>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 bg-card/30 rounded-2xl border border-border/40 overflow-hidden">
         {/* Header */}
-        <div className="shrink-0 p-4 md:p-6 border-b border-border/40 bg-gradient-to-l from-primary/5 to-transparent">
+        <div className="shrink-0 p-4 md:p-5 border-b border-border/40 bg-gradient-to-l from-primary/5 to-transparent">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", delay: 0.1 }}
@@ -407,80 +401,129 @@ export default function AssistantPage() {
               </motion.div>
               <div>
                 <h1 className="text-xl font-black text-foreground flex items-center gap-2">
-                  دستیار کارنکس
+                  مرکز فرماندهی
                   <Badge variant="accent" className="text-[10px] gap-1">
                     <Zap size={10} />
                     AI
                   </Badge>
                 </h1>
-                <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
                   <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                  مشاور کسب‌وکار هوشمند
+                  دستیار کسب‌وکار هوشمند
                 </p>
               </div>
             </div>
-            
-            <div className="flex items-center gap-2">
-              {messages.length > 1 && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={exportConversation}
-                    className="text-muted-foreground hover:text-foreground gap-2"
-                  >
-                    <Download size={16} />
-                    <span className="hidden sm:inline">خروجی</span>
-                  </Button>
+
+            <div className="flex items-center gap-3">
+              {/* Stats badges */}
+              <div className="hidden md:flex items-center gap-2">
+                <StreakDisplay streak={streak} size="sm" showLabel={false} />
+              </div>
+
+              {/* Actions */}
+              {messages.length > 0 && (
+                <div className="flex items-center gap-1">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={clearHistory}
-                    className="text-muted-foreground hover:text-destructive gap-2"
+                    className="text-muted-foreground hover:text-destructive"
                   >
                     <Trash2 size={16} />
-                    <span className="hidden sm:inline">پاک کردن</span>
                   </Button>
-                </>
+                </div>
               )}
             </div>
           </div>
         </div>
 
         {/* Messages Area */}
-        <div 
+        <div
           ref={scrollRef}
           className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 no-scrollbar"
         >
-          <div className="max-w-4xl mx-auto space-y-4">
+          {/* Empty state */}
+          {messages.length === 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="h-full flex flex-col items-center justify-center text-center p-8"
+            >
+              <motion.div
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white mb-6 shadow-xl shadow-primary/30"
+              >
+                <Rocket size={40} />
+              </motion.div>
+              <h2 className="text-2xl font-black text-foreground mb-3">
+                سلام! من مشاور کسب‌وکار شما هستم 👋
+              </h2>
+              <p className="text-muted-foreground mb-8 max-w-md leading-8">
+                هر سوالی درباره کسب‌وکارتون دارید بپرسید.
+                یا از قالب‌های آماده استفاده کنید.
+              </p>
+
+              {/* Quick templates */}
+              <div className="flex flex-wrap justify-center gap-2 max-w-lg">
+                {promptTemplates.map((template, i) => (
+                  <motion.button
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                    onClick={() => handleSendMessage(template.prompt)}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
+                      "bg-muted hover:bg-muted/80 text-foreground border border-border/50",
+                      "hover:border-primary/30 hover:shadow-lg transition-all"
+                    )}
+                  >
+                    <template.icon size={16} />
+                    {template.title}
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Messages */}
+          <div className="max-w-3xl mx-auto space-y-4">
             {messages.map((msg, index) => (
-              <motion.div 
+              <motion.div
                 key={msg.id}
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index < 3 ? index * 0.1 : 0 }}
+                transition={{ duration: 0.3 }}
                 className={cn(
                   "flex",
                   msg.role === 'user' ? "justify-start" : "justify-end"
                 )}
               >
                 <div className={cn(
-                  "max-w-[85%] md:max-w-[75%] group relative",
+                  "max-w-[85%] group relative",
                   msg.role === 'user' ? "pr-10" : "pl-10"
                 )}>
-                  <div 
+                  <div
                     className={cn(
                       "p-4 md:p-5 rounded-2xl text-sm leading-8",
-                      msg.role === 'user' 
-                        ? "bg-gradient-to-l from-primary to-purple-600 text-white rounded-br-sm shadow-lg shadow-primary/20" 
+                      msg.role === 'user'
+                        ? "bg-gradient-to-l from-primary to-purple-600 text-white rounded-br-sm shadow-lg shadow-primary/20"
                         : "bg-card border border-border/50 text-foreground rounded-bl-sm shadow-sm"
                     )}
                   >
                     <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap">
                       {msg.content}
                     </div>
+
+                    {/* XP reward badge */}
+                    {msg.xpReward && msg.role === 'assistant' && (
+                      <div className="mt-3 pt-3 border-t border-border/30">
+                        <XpBadge amount={msg.xpReward} variant="small" />
+                      </div>
+                    )}
                   </div>
-                  
+
                   {/* Message Meta */}
                   <div className={cn(
                     "flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground",
@@ -500,10 +543,10 @@ export default function AssistantPage() {
                 </div>
               </motion.div>
             ))}
-            
+
             {/* Loading Indicator */}
             {isLoading && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex justify-end"
@@ -519,9 +562,30 @@ export default function AssistantPage() {
               </motion.div>
             )}
 
+            {/* Pending Action Cards */}
+            <AnimatePresence>
+              {pendingActions.length > 0 && !isLoading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="space-y-3"
+                >
+                  {pendingActions.map((action) => (
+                    <SmartActionCard
+                      key={action.id}
+                      action={action}
+                      onApply={handleActionApply}
+                      onDismiss={handleActionDismiss}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Follow-up Suggestions */}
             <AnimatePresence>
-              {showFollowUps.length > 0 && !isLoading && (
+              {showFollowUps.length > 0 && !isLoading && pendingActions.length === 0 && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -547,12 +611,19 @@ export default function AssistantPage() {
         </div>
 
         {/* Input Area */}
-        <div className="shrink-0 p-4 md:p-6 border-t border-border/40 bg-card/30 backdrop-blur-xl">
-          <form 
+        <div className="shrink-0 p-4 md:p-5 border-t border-border/40 bg-card/50 backdrop-blur-xl">
+          <form
             onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
-            className="max-w-4xl mx-auto"
+            className="max-w-3xl mx-auto"
           >
             <div className="flex gap-3 items-end">
+              {/* Voice input */}
+              <VoiceInput
+                onTranscript={handleVoiceTranscript}
+                disabled={isLoading}
+                className="shrink-0"
+              />
+
               <div className="flex-1 relative">
                 <textarea
                   ref={inputRef}
@@ -564,7 +635,7 @@ export default function AssistantPage() {
                       handleSendMessage();
                     }
                   }}
-                  placeholder="سوال خود را بپرسید..."
+                  placeholder="سوالت رو بپرس..."
                   className="input-premium w-full min-h-[52px] max-h-32 resize-none py-3.5 pl-12"
                   dir="rtl"
                   rows={1}
@@ -573,7 +644,8 @@ export default function AssistantPage() {
                   Enter ↵
                 </div>
               </div>
-              <Button 
+
+              <Button
                 type="submit"
                 variant="gradient"
                 size="lg"
@@ -587,9 +659,26 @@ export default function AssistantPage() {
                 )}
               </Button>
             </div>
-            <p className="text-[10px] text-muted-foreground text-center mt-3">
-              دستیار کارنکس بر اساس اطلاعات پروژه شما پاسخ می‌دهد • Shift+Enter برای خط جدید
-            </p>
+
+            {/* Quick templates for mobile */}
+            <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar pb-1">
+              {promptTemplates.slice(0, 4).map((template, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => handleSendMessage(template.prompt)}
+                  disabled={isLoading}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0",
+                    "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground",
+                    "border border-border/50 transition-all disabled:opacity-50"
+                  )}
+                >
+                  <template.icon size={12} />
+                  {template.title}
+                </button>
+              ))}
+            </div>
           </form>
         </div>
       </div>

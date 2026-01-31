@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { 
-  DndContext, 
-  closestCorners, 
-  KeyboardSensor, 
-  PointerSensor, 
-  useSensor, 
+import {
+  DndContext,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
   useSensors,
   DragOverlay,
   DragStartEvent,
@@ -18,14 +18,15 @@ import { arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { savePlanToCloud, CanvasCard, CanvasSectionContent, LeanCanvas } from "@/lib/db";
-import { 
-  AlertTriangle, Lightbulb, Gem, Banknote, Users, Activity, 
-  Package, Handshake, PiggyBank, LayoutGrid, 
+import {
+  AlertTriangle, Lightbulb, Gem, Banknote, Users, Activity,
+  Package, Handshake, PiggyBank, LayoutGrid,
   Sparkles, Loader2, FileDown
 } from "lucide-react";
 import { PdfExportButton } from "@/components/dashboard/pdf-export-button";
 import { CanvasColumn } from "@/components/canvas/canvas-column";
 import { NoteCard } from "@/components/canvas/note-card";
+import { GenerationLoader } from "@/components/shared/generation-loader";
 import "./canvas.css";
 
 // ID generator
@@ -61,7 +62,7 @@ const mapContentToCards = (content: CanvasSectionContent | undefined, color: Can
 type CanvasBlockKey = keyof LeanCanvas;
 
 const CANVAS_FIELDS: CanvasBlockKey[] = [
-  'keyPartners', 'keyActivities', 'keyResources', 'uniqueValue', 
+  'keyPartners', 'keyActivities', 'keyResources', 'uniqueValue',
   'customerSegments', 'problem', 'solution', 'revenueStream', 'costStructure'
 ];
 
@@ -109,20 +110,20 @@ export default function CanvasPage() {
     useSensor(PointerSensor, {
       activationConstraint: { distance: 5 }
     }),
-    useSensor(KeyboardSensor, { 
-      coordinateGetter: sortableKeyboardCoordinates 
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates
     })
   );
 
   const findContainer = (id: string): CanvasBlockKey | undefined => {
     if (id in items) return id as CanvasBlockKey;
-    return (Object.keys(items) as CanvasBlockKey[]).find(k => 
+    return (Object.keys(items) as CanvasBlockKey[]).find(k =>
       items[k]?.some(item => item.id === id)
     );
   };
 
   const handleDragStart = (e: DragStartEvent) => setActiveId(e.active.id as string);
-  
+
   const handleDragOver = (e: DragOverEvent) => {
     const { active, over } = e;
     if (!over) return;
@@ -132,31 +133,36 @@ export default function CanvasPage() {
 
     if (!activeContainer || !overContainer || activeContainer === overContainer) return;
 
-    setItems(prev => {
-      const activeItems = prev[activeContainer];
-      const overItems = prev[overContainer];
-      const activeIdx = activeItems.findIndex(i => i.id === active.id);
-      const overIdx = overItems.findIndex(i => i.id === over.id);
+    const activeItems = items[activeContainer];
+    const overItems = items[overContainer];
+    const activeIdx = activeItems.findIndex(i => i.id === active.id);
+    const overIdx = overItems.findIndex(i => i.id === over.id);
 
-      const newIndex = over.id in prev 
-        ? overItems.length 
-        : (overIdx >= 0 ? overIdx : overItems.length);
+    const newIndex = over.id in items
+      ? overItems.length
+      : (overIdx >= 0 ? overIdx : overItems.length);
 
-      return {
-        ...prev,
-        [activeContainer]: activeItems.filter(i => i.id !== active.id),
-        [overContainer]: [
-          ...overItems.slice(0, newIndex),
-          activeItems[activeIdx],
-          ...overItems.slice(newIndex)
-        ]
-      };
-    });
+    const newActiveItems = activeItems.filter(i => i.id !== active.id);
+    const newOverItems = [
+      ...overItems.slice(0, newIndex),
+      activeItems[activeIdx],
+      ...overItems.slice(newIndex)
+    ];
+
+    const updatedItems = {
+      ...items,
+      [activeContainer]: newActiveItems,
+      [overContainer]: newOverItems
+    };
+
+    setItems(updatedItems);
+    // No save logic was present here in original, keeping it consistent or adding if needed.
+    // Assuming dragOver is transient and dragEnd handles save.
   };
 
   const handleDragEnd = (e: DragEndEvent) => {
     const { active, over } = e;
-    
+
     if (over) {
       const activeContainer = findContainer(active.id as string);
       const overContainer = findContainer(over.id as string);
@@ -166,20 +172,19 @@ export default function CanvasPage() {
         const overIdx = items[overContainer].findIndex(i => i.id === over.id);
 
         if (activeIdx !== overIdx) {
-          setItems(prev => {
-            const updated = {
-              ...prev,
-              [activeContainer]: arrayMove(prev[activeContainer], activeIdx, overIdx)
-            };
-            save(updated);
-            return updated;
-          });
+          const activeItems = items[activeContainer];
+          const updatedItems = {
+            ...items,
+            [activeContainer]: arrayMove(activeItems, activeIdx, overIdx)
+          };
+          setItems(updatedItems);
+          save(updatedItems);
         }
       } else {
         save(items);
       }
     }
-    
+
     setActiveId(null);
   };
 
@@ -189,41 +194,41 @@ export default function CanvasPage() {
       content: "یادداشت جدید",
       color: sectionColors[field] || 'yellow'
     };
-    setItems(prev => {
-      const updated = { ...prev, [field]: [...(prev[field] || []), card] };
-      save(updated);
-      return updated;
-    });
+    const updatedItems = {
+      ...items,
+      [field]: [...(items[field] || []), card]
+    };
+    setItems(updatedItems);
+    save(updatedItems);
   };
 
   const updateCard = (id: string, content: string, color: CanvasCard['color']) => {
     const container = findContainer(id);
     if (!container) return;
-    setItems(prev => {
-      const updated = {
-        ...prev,
-        [container]: prev[container].map(i => i.id === id ? { ...i, content, color } : i)
-      };
-      save(updated);
-      return updated;
-    });
+    const updatedItems = {
+      ...items,
+      [container]: items[container].map(i => i.id === id ? { ...i, content, color } : i)
+    };
+    setItems(updatedItems);
+    save(updatedItems);
   };
 
   const deleteCard = (id: string) => {
     const container = findContainer(id);
     if (!container) return;
-    setItems(prev => {
-      const updated = { ...prev, [container]: prev[container].filter(i => i.id !== id) };
-      save(updated);
-      return updated;
-    });
+    const updatedItems = {
+      ...items,
+      [container]: items[container].filter(i => i.id !== id)
+    };
+    setItems(updatedItems);
+    save(updatedItems);
   };
 
   // AI Generation
   const generateCanvas = async () => {
     if (!plan || isGenerating) return;
     setIsGenerating(true);
-    
+
     try {
       const res = await fetch('/api/ai-generate', {
         method: 'POST',
@@ -237,11 +242,11 @@ export default function CanvasPage() {
 
       if (!res.ok) throw new Error('Failed');
       const data = await res.json();
-      
+
       if (data.canvas) {
         const state = {} as CanvasState;
         CANVAS_FIELDS.forEach(f => {
-          state[f] = data.canvas[f] 
+          state[f] = data.canvas[f]
             ? mapContentToCards(data.canvas[f], sectionColors[f] || 'yellow')
             : items[f] || [];
         });
@@ -271,8 +276,8 @@ export default function CanvasPage() {
   const activeCard = activeId ? Object.values(items).flat().find(i => i.id === activeId) : null;
 
   return (
-    <DndContext 
-      sensors={sensors} 
+    <DndContext
+      sensors={sensors}
       collisionDetection={closestCorners}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
@@ -280,6 +285,7 @@ export default function CanvasPage() {
       measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
     >
       <div className="canvas-wrapper">
+        <GenerationLoader isLoading={isGenerating} />
         {/* Header */}
         <div className="canvas-header">
           <div className="header-left">
@@ -297,23 +303,19 @@ export default function CanvasPage() {
               <span className="stat-value">{progress}%</span>
               <span>تکمیل</span>
             </div>
-            
+
             <div className="stat-badge">
               <span className="stat-value">{totalCards}</span>
               <span>یادداشت</span>
             </div>
 
-            <button 
+            <button
               onClick={generateCanvas}
               disabled={isGenerating}
               className="btn-primary"
             >
-              {isGenerating ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Sparkles />
-              )}
-              <span>{isGenerating ? 'در حال تولید...' : 'تولید خودکار'}</span>
+              <Sparkles />
+              <span>تولید خودکار</span>
             </button>
 
             <PdfExportButton plan={plan} />
@@ -342,7 +344,7 @@ export default function CanvasPage() {
       <DragOverlay>
         {activeCard && (
           <div className="drag-overlay w-[260px]">
-            <NoteCard card={activeCard} onUpdate={() => {}} onDelete={() => {}} disabled />
+            <NoteCard card={activeCard} onUpdate={() => { }} onDelete={() => { }} disabled />
           </div>
         )}
       </DragOverlay>

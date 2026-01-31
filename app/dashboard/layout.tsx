@@ -29,7 +29,6 @@ import {
   Menu,
   X,
   UserCircle,
-  Scale,
   HelpCircle,
   ChevronRight,
   ChevronLeft,
@@ -58,15 +57,14 @@ export default function DashboardLayout({
     { icon: LayoutDashboard, label: "نمای کلی", href: "/dashboard/overview" },
     { icon: Map, label: "نقشه راه", href: "/dashboard/roadmap" },
     { icon: LayoutGrid, label: "بوم کسب‌وکار", href: "/dashboard/canvas" },
-    { icon: Palette, label: "هویت بصری", href: "/dashboard/brand" },
+    // { icon: Palette, label: "هویت بصری", href: "/dashboard/brand" }, // Temporarily disabled
     { icon: Megaphone, label: "بازاریابی", href: "/dashboard/marketing" },
-    { icon: Scale, label: "حقوقی و مجوز", href: "/dashboard/legal" },
   ];
 
   // AI Assistant - Featured Item
-  const aiAssistantItem = { 
-    icon: Bot, 
-    label: "دستیار کارنکس", 
+  const aiAssistantItem = {
+    icon: Bot,
+    label: "دستیار کارنکس",
     href: "/dashboard/assistant",
     badge: "AI"
   };
@@ -271,8 +269,8 @@ export default function DashboardLayout({
                         </span>
                       )}
                       {!sidebarCollapsed && aiAssistantItem.badge && (
-                        <Badge 
-                          variant={isActive ? "secondary" : "accent"} 
+                        <Badge
+                          variant={isActive ? "secondary" : "accent"}
                           className={cn(
                             "text-[9px] px-1.5 py-0 h-4 gap-0.5",
                             isActive && "bg-white/20 text-white border-white/30"
