@@ -232,7 +232,9 @@ Return ONLY a JSON array of 3 Persian strings.`;
                 <div className="flex-1">
                   <span className="text-xs font-bold text-white/70 uppercase tracking-wider">مأموریت امروز</span>
                   <p className="font-bold text-lg mt-1 leading-relaxed">
-                    {nextStep || "تمام مراحل انجام شده! 🎉"}
+                    {typeof nextStep === 'object' 
+                      ? (nextStep as any).title || (nextStep as any).description || "گام بعدی (جزئیات نامشخص)" 
+                      : nextStep || "تمام مراحل انجام شده! 🎉"}
                   </p>
                   {nextStep && (
                     <Link href="/dashboard/roadmap">

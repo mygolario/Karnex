@@ -214,7 +214,7 @@ export default function RoadmapPage() {
             تنها هدف امروز:
           </h2>
           <h1 className="text-2xl md:text-3xl font-black text-foreground mb-8 leading-relaxed">
-            {currentStepData.step}
+            {typeof currentStepData.step === 'object' ? (currentStepData.step as any).title || "Task" : currentStepData.step}
           </h1>
 
           {/* Sub-tasks if broken down */}
@@ -431,7 +431,7 @@ export default function RoadmapPage() {
                                     "font-bold text-lg mb-1.5 transition-colors leading-snug",
                                     isCompleted ? "text-muted-foreground line-through decoration-primary/30" : "text-foreground"
                                   )}>
-                                    {step}
+                                    {typeof step === 'object' ? (step as any).title || "Task" : step}
                                   </h3>
                                   
                                   {/* Expand/Collapse if has sub-tasks */}
