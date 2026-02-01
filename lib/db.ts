@@ -65,13 +65,9 @@ export interface RoadmapStep {
 // Roadmap Phase structure
 export interface RoadmapPhase {
   phase: string;
-<<<<<<< HEAD
-  steps: string[];
+  steps: (string | RoadmapStep)[];
   weekNumber?: number;
   theme?: string;
-=======
-  steps: (string | RoadmapStep)[];
->>>>>>> Karnex-Completion
 }
 
 // Logo concept structure
@@ -608,7 +604,6 @@ export const deleteProject = async (userId: string, projectId: string = 'current
   }
 };
 
-<<<<<<< HEAD
 // ========================================
 // MEDIA LIBRARY (AI-Generated Content)
 // ========================================
@@ -783,7 +778,7 @@ export const addGamificationXp = async (userId: string, amount: number, actionNa
     return null;
   }
 };
-=======
+
 // --- User Profile Operations ---
 
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
@@ -853,5 +848,3 @@ export const updateUserProfile = async (userId: string, data: Partial<UserProfil
     throw error;
   }
 };
-
->>>>>>> Karnex-Completion

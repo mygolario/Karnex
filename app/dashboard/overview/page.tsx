@@ -17,7 +17,9 @@ import {
   Calendar, ChevronLeft, Activity, Award, Wand2, Loader2,
   Brain, Lightbulb, RefreshCw, ArrowUpRight
 } from "lucide-react";
-import { calculateProjectScore } from "@/lib/scoring"; // Import
+import { calculateProjectScore } from "@/lib/scoring";
+import { ProgressRing } from "@/components/dashboard/progress-ring";
+import { HoverExplainer } from "@/components/ui/explainer";
 
 // Helper to get step title whether it's a string or object
 function getStepTitle(step: any): string {
@@ -147,23 +149,6 @@ Return ONLY a JSON array of 3 Persian strings.`;
     );
   }
 
-<<<<<<< HEAD
-  const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1;
-  const completedCount = plan?.completedSteps?.length || 0;
-  const progressPercent = Math.round((completedCount / totalSteps) * 100);
-  const nextStep = plan?.roadmap?.flatMap((p: any) => p.steps).find((s: any) => !plan?.completedSteps?.includes(getStepTitle(s)));
-
-  const toolCards = [
-    { href: "/dashboard/roadmap", icon: Map, title: "نقشه راه", desc: "مسیر اجرای گام‌به‌گام", gradient: "from-blue-500 to-cyan-500", shadow: "shadow-blue-500/20" },
-    { href: "/dashboard/canvas", icon: LayoutGrid, title: "بوم کسب‌وکار", desc: "مدل و استراتژی بیزینس", gradient: "from-amber-500 to-orange-500", shadow: "shadow-amber-500/20" },
-    // { href: "/dashboard/brand", icon: Palette, title: "هویت بصری", desc: "لوگو، رنگ و فونت", gradient: "from-purple-500 to-pink-500", shadow: "shadow-purple-500/20", ai: true }, // Temporarily disabled
-    { href: "/dashboard/marketing", icon: Megaphone, title: "بازاریابی", desc: "استراتژی جذب مشتری", gradient: "from-rose-500 to-red-500", shadow: "shadow-rose-500/20" },
-  ];
-=======
-
-
-// ...
-
   // Calculate Stats
   const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1;
   const completedCount = plan?.completedSteps?.length || 0;
@@ -179,7 +164,6 @@ Return ONLY a JSON array of 3 Persian strings.`;
   });
 
   const nextStepName = nextStep ? (typeof nextStep === 'string' ? nextStep : nextStep.title) : null;
->>>>>>> Karnex-Completion
 
   return (
     <motion.div
@@ -259,9 +243,9 @@ Return ONLY a JSON array of 3 Persian strings.`;
                 <div className="flex-1">
                   <span className="text-xs font-bold text-white/70 uppercase tracking-wider">مأموریت امروز</span>
                   <p className="font-bold text-lg mt-1 leading-relaxed">
-                    {nextStep ? getStepTitle(nextStep) : "تمام مراحل انجام شده! 🎉"}
+                    {nextStepName || "تمام مراحل انجام شده! 🎉"}
                   </p>
-                  {nextStep && (
+                  {nextStepName && (
                     <Link href="/dashboard/roadmap">
                       <Button variant="glass" size="sm" className="mt-3 text-white border-white/20 hover:bg-white/20">
                         شروع <ChevronLeft size={16} className="mr-1" />
@@ -274,230 +258,6 @@ Return ONLY a JSON array of 3 Persian strings.`;
           </div>
         </div>
 
-        {/* Karnex Score Card */}
-        <motion.div
-          variants={scaleVariants}
-          className="bento-item row-2 flex flex-col items-center justify-center text-center relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-mesh-gradient pointer-events-none" />
-          <div className="relative z-10 w-full">
-            <h3 className="text-sm font-bold text-muted-foreground mb-4 uppercase tracking-wider">امتیاز کارنکس</h3>
-            <div className="scale-125 mb-6">
-              <KarnexScore compact />
-            </div>
-            <Link href="/dashboard/analytics" className="w-full">
-              <Button variant="soft" className="w-full">
-                تحلیل کامل <ArrowUpRight size={16} className="mr-1" />
-              </Button>
-            </Link>
-          </div>
-        </motion.div>
-      </motion.div>
-
-      {/* Key Metrics */}
-      <motion.div variants={itemVariants} className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatsCard
-          title="پیشرفت کل"
-          value={`${progressPercent}%`}
-          icon={TrendingUp}
-          trend="up"
-          trendValue="+12%"
-          variant="primary"
-          className="card-floating"
-        />
-        <StatsCard
-          title="فاز فعلی"
-          value={plan?.roadmap?.find((p: any) => p.steps.some((s: any) => !plan.completedSteps?.includes(getStepTitle(s))))?.phase.split(':')[0] || "تکمیل"}
-          icon={Map}
-          variant="accent"
-          className="card-floating"
-        />
-        <StatsCard
-          title="مراحل باقیمانده"
-          value={totalSteps - completedCount}
-          icon={CheckCircle2}
-          variant="secondary"
-          className="card-floating"
-        />
-        <StatsCard
-          title="دستاوردها"
-          value="۳"
-          icon={Award}
-          variant="glass"
-          trend="neutral"
-          trendLabel="۱ نشان جدید"
-          className="card-floating"
-        />
-      </motion.div>
-
-      {/* AI Insights */}
-      <motion.div
-        variants={itemVariants}
-        className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-purple-500/5 p-8"
-      >
-        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
-        <div className="relative z-10">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-            <div className="flex items-center gap-4">
-              <motion.div
-                animate={{ rotate: [0, 360] }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-xl shadow-primary/30"
-              >
-                <Brain size={28} />
-              </motion.div>
-              <div>
-<<<<<<< HEAD
-                <h2 className="text-2xl font-black text-foreground">توصیه‌های هوشمند</h2>
-                <p className="text-muted-foreground">پیشنهادات AI برای رشد سریع‌تر</p>
-=======
-                <span className="text-xs font-bold text-white/60 uppercase tracking-wider">تمرکز امروز</span>
-                <p className="font-bold text-lg md:text-xl mt-1 line-clamp-1">
-                  {nextStepName || "تبریک! تمام مراحل انجام شده است 🎉"}
-                </p>
-                {nextStepName && (
-                  <Link href="/dashboard/roadmap" className="inline-flex items-center gap-1 text-sm mt-2 hover:underline opacity-90">
-                    انجام تسک <ChevronLeft size={14} />
-                  </Link>
-                )}
->>>>>>> Karnex-Completion
-              </div>
-            </div>
-            <Button
-              variant={insightsLoaded ? "outline" : "shimmer"}
-              onClick={handleGenerateInsights}
-              disabled={generatingInsights}
-              className="gap-2"
-            >
-              {generatingInsights ? (
-                <><Loader2 size={18} className="animate-spin" /> در حال تحلیل...</>
-              ) : insightsLoaded ? (
-                <><RefreshCw size={18} /> بروزرسانی</>
-              ) : (
-                <><Wand2 size={18} /> دریافت توصیه</>
-              )}
-            </Button>
-          </div>
-
-          {aiInsights.length > 0 ? (
-            <motion.div
-              initial="hidden"
-              animate="show"
-              variants={containerVariants}
-              className="grid md:grid-cols-3 gap-5"
-            >
-              {aiInsights.map((insight, i) => (
-                <motion.div
-                  key={i}
-                  variants={itemVariants}
-                  className="card-spotlight p-6"
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
-                      <Lightbulb size={20} />
-                    </div>
-                    <span className="text-sm font-bold text-muted-foreground">توصیه {i + 1}</span>
-                  </div>
-                  <p className="text-foreground leading-8">{insight}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <Brain size={56} className="mx-auto mb-4 opacity-20" />
-              <p className="text-lg">روی "دریافت توصیه" کلیک کنید تا AI پیشنهاداتی برای شما بسازد.</p>
-            </div>
-          )}
-        </div>
-      </motion.div>
-
-      {/* Quick Tools */}
-      <motion.div variants={itemVariants}>
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-1.5 h-8 bg-gradient-to-b from-primary to-secondary rounded-full" />
-          <h2 className="text-2xl font-black text-foreground">ابزارهای کلیدی</h2>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          {toolCards.map((item, i) => (
-            <motion.div
-              key={i}
-              variants={scaleVariants}
-              whileHover={{ y: -8, scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link href={item.href}>
-                <div className={`card-floating group h-full p-6 flex flex-col items-center text-center cursor-pointer relative ${item.shadow}`}>
-                  <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${item.gradient} text-white flex items-center justify-center mb-4 shadow-lg group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}>
-                    <item.icon size={28} />
-                  </div>
-                  <h3 className="font-bold text-foreground text-lg mb-1">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Activity & Tips */}
-      <motion.div variants={itemVariants} className="grid lg:grid-cols-3 gap-6">
-        {/* Activity Feed */}
-        <Card variant="spotlight" padding="none" className="lg:col-span-2 overflow-hidden">
-          <div className="p-6 border-b border-border/50 flex items-center justify-between bg-muted/30">
-            <h3 className="font-bold text-lg flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Activity size={20} className="text-primary" />
-              </div>
-              فعالیت‌های اخیر
-            </h3>
-          </div>
-          <div className="p-6">
-            <ActivityFeed maxItems={5} />
-          </div>
-        </Card>
-
-<<<<<<< HEAD
-        {/* Smart Tips */}
-        <Card variant="gradient" className="relative overflow-hidden border-0 p-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950" />
-          <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/20 rounded-full blur-[80px]" />
-
-          <div className="relative z-10 p-6 text-white h-full flex flex-col">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
-                <Sparkles size={22} />
-              </div>
-              <h3 className="font-bold text-lg">نکات طلایی</h3>
-            </div>
-
-            <div className="space-y-4 flex-1">
-              <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  اجرای سریع‌تر
-                </h4>
-                <p className="text-sm text-white/70 leading-7">با تکمیل نقشه راه، هر مرحله را به ترتیب انجام دهید.</p>
-              </div>
-              <div className="p-4 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-colors">
-                <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-                  تحلیل هوشمند
-                </h4>
-                <p className="text-sm text-white/70 leading-7">از قابلیت AI برای شناسایی نقاط ضعف استفاده کنید.</p>
-              </div>
-            </div>
-
-            <Link href="/dashboard/help" className="mt-4">
-              <Button variant="glass" className="w-full justify-between text-white border-white/20 hover:bg-white/10">
-                مشاهده راهنما
-                <ChevronLeft size={18} />
-              </Button>
-            </Link>
-          </div>
-        </Card>
-      </motion.div>
-    </motion.div>
-=======
         {/* Project Health Score */}
         <Card variant="default" className="flex flex-col items-center justify-center text-center relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-muted/20 pointer-events-none" />
@@ -554,7 +314,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
             )}
           </div>
         </Card>
-      </div>
+      </motion.div>
 
       {/* 2. Key Metrics Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -591,6 +351,82 @@ Return ONLY a JSON array of 3 Persian strings.`;
           trendLabel="۱ نشان جدید در انتظار"
         />
       </div>
+
+       {/* AI Insights & Focus */}
+      <motion.div
+        variants={itemVariants}
+        className="relative overflow-hidden rounded-[2rem] border border-primary/20 bg-gradient-to-br from-primary/5 via-background to-purple-500/5 p-8"
+      >
+        <div className="absolute top-0 right-0 w-80 h-80 bg-primary/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3" />
+        <div className="relative z-10">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+            <div className="flex items-center gap-4">
+              <motion.div
+                animate={{ rotate: [0, 360] }}
+                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-xl shadow-primary/30"
+              >
+                <Brain size={28} />
+              </motion.div>
+              <div>
+                <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">تمرکز امروز</span>
+                <p className="font-bold text-lg md:text-xl mt-1 line-clamp-1">
+                  {nextStepName || "تبریک! تمام مراحل انجام شده است 🎉"}
+                </p>
+                {nextStepName && (
+                  <Link href="/dashboard/roadmap" className="inline-flex items-center gap-1 text-sm mt-2 hover:underline opacity-90">
+                    انجام تسک <ChevronLeft size={14} />
+                  </Link>
+                )}
+              </div>
+            </div>
+            <Button
+              variant={insightsLoaded ? "outline" : "shimmer"}
+              onClick={handleGenerateInsights}
+              disabled={generatingInsights}
+              className="gap-2"
+            >
+              {generatingInsights ? (
+                <><Loader2 size={18} className="animate-spin" /> در حال تحلیل...</>
+              ) : insightsLoaded ? (
+                <><RefreshCw size={18} /> بروزرسانی</>
+              ) : (
+                <><Wand2 size={18} /> دریافت توصیه</>
+              )}
+            </Button>
+          </div>
+
+          {aiInsights.length > 0 ? (
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={containerVariants}
+              className="grid md:grid-cols-3 gap-5"
+            >
+              {aiInsights.map((insight, i) => (
+                <motion.div
+                  key={i}
+                  variants={itemVariants}
+                  className="card-spotlight p-6"
+                >
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/30">
+                      <Lightbulb size={20} />
+                    </div>
+                    <span className="text-sm font-bold text-muted-foreground">توصیه {i + 1}</span>
+                  </div>
+                  <p className="text-foreground leading-8">{insight}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <div className="text-center py-12 text-muted-foreground">
+              <Brain size={56} className="mx-auto mb-4 opacity-20" />
+              <p className="text-lg">روی "دریافت توصیه" کلیک کنید تا AI پیشنهاداتی برای شما بسازد.</p>
+            </div>
+          )}
+        </div>
+      </motion.div>
 
       {/* 3. Quick Actions */}
       <div>
@@ -645,7 +481,6 @@ Return ONLY a JSON array of 3 Persian strings.`;
           </Link>
         </div>
       </div>
-    </div>
->>>>>>> Karnex-Completion
+    </motion.div>
   );
 }

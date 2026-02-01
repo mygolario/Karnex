@@ -5,36 +5,23 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-<<<<<<< HEAD
-import { toggleStepCompletion } from "@/lib/db";
+import { toggleStepCompletion, RoadmapStep } from "@/lib/db";
 import {
   Map, CheckCircle2, Sparkles, Circle, Flag,
   Focus, ListTree, Loader2, Zap, ChevronDown, ChevronUp,
   AlertCircle, Target, ArrowLeft, Clock, FolderOpen,
-  ChevronLeft, ChevronRight, Calendar
+  ChevronLeft, ChevronRight, Calendar, FileText, ArrowDown
 } from "lucide-react";
-=======
-import { toggleStepCompletion, RoadmapStep } from "@/lib/db";
-import { Map, CheckCircle2, Sparkles, Circle, Flag, ArrowDown, Clock, AlertCircle, FileText } from "lucide-react";
-import { useRouter } from "next/navigation";
->>>>>>> Karnex-Completion
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/dashboard/progress-ring";
 import { StepDetailModal } from "@/components/dashboard/step-detail-modal";
 import { cn } from "@/lib/utils";
+import { StepGuide } from "@/components/dashboard/step-guide";
 
 // Types for enhanced roadmap
-interface RoadmapStep {
-  title: string;
-  description?: string;
-  estimatedHours?: number;
-  priority?: 'high' | 'medium' | 'low';
-  category?: string;
-  resources?: string[];
-}
-
+// (RoadmapStep is imported from db, but we can extend or re-declare if needed)
 interface RoadmapPhase {
   phase: string;
   weekNumber?: number;
@@ -94,7 +81,6 @@ export default function RoadmapPage() {
     }
   }, [plan]);
 
-<<<<<<< HEAD
   // Get all steps flattened for focus mode
   const allSteps = plan?.roadmap?.flatMap((phase: RoadmapPhase) =>
     phase.steps.map((step) => ({ step: normalizeStep(step), phase }))
@@ -105,20 +91,9 @@ export default function RoadmapPage() {
     (s: any) => !completedSteps.includes(s.step.title)
   );
 
-  // Handle toggle completion
-  const handleToggle = async (stepTitle: string, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    if (!user || !plan) return;
-
-    const isNowCompleted = !completedSteps.includes(stepTitle);
-    const newCompletedSteps = isNowCompleted
-      ? [...completedSteps, stepTitle]
-      : completedSteps.filter(s => s !== stepTitle);
-
-=======
   // Handle Check/Uncheck
-  const handleToggle = async (step: string | RoadmapStep, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleToggle = async (step: string | RoadmapStep, e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!user || !plan) return;
 
     const stepName = typeof step === 'string' ? step : step.title;
@@ -128,16 +103,11 @@ export default function RoadmapPage() {
       ? [...completedSteps, stepName] 
       : completedSteps.filter(s => s !== stepName);
     
->>>>>>> Karnex-Completion
     setCompletedSteps(newCompletedSteps);
     updateActiveProject({ completedSteps: newCompletedSteps });
 
     try {
-<<<<<<< HEAD
-      await toggleStepCompletion(user.uid, stepTitle, isNowCompleted, plan.id || 'current');
-=======
       await toggleStepCompletion(user.uid, stepName, isNowCompleted, plan.id || 'current');
->>>>>>> Karnex-Completion
     } catch (error) {
       console.error("Sync failed", error);
       setCompletedSteps(completedSteps);
@@ -399,7 +369,6 @@ export default function RoadmapPage() {
         </div>
       </div>
 
-<<<<<<< HEAD
       {/* Week Tabs */}
       <div className="relative">
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -412,30 +381,6 @@ export default function RoadmapPage() {
           >
             <ChevronRight size={20} />
           </Button>
-=======
-      {/* Timeline */}
-      <div className="relative border-r-2 border-border/50 mr-4 md:mr-8 space-y-12">
-        {plan.roadmap.map((phase, phaseIdx) => {
-          const isPhaseComplete = phase.steps.every((s) => {
-             const name = typeof s === 'string' ? s : s.title;
-             return completedSteps.includes(name);
-          });
-          const isPhaseStarted = phase.steps.some((s) => {
-             const name = typeof s === 'string' ? s : s.title;
-             return completedSteps.includes(name);
-          });
-          
-          return (
-            <div key={phaseIdx} className="relative pr-8 md:pr-12 group">
-              {/* Phase Marker */}
-              <div className={`
-                absolute -right-[11px] top-0 w-5 h-5 rounded-full border-4 transition-all duration-500 z-10
-                ${isPhaseComplete ? "bg-primary border-primary scale-110" : 
-                  isPhaseStarted ? "bg-white border-primary" : "bg-muted border-muted-foreground"}
-              `}>
-                {isPhaseComplete && <CheckCircle2 size={12} className="text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />}
-              </div>
->>>>>>> Karnex-Completion
 
           {plan.roadmap.map((phase: RoadmapPhase, idx: number) => {
             const weekNum = phase.weekNumber || idx + 1;
@@ -481,7 +426,7 @@ export default function RoadmapPage() {
         <div className="space-y-6">
           {/* Week Header */}
           <div className="glass rounded-2xl p-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
@@ -494,22 +439,21 @@ export default function RoadmapPage() {
                 </div>
                 <h2 className="text-xl font-bold text-foreground">{activePhase.phase}</h2>
               </div>
-
-<<<<<<< HEAD
+              
+              {/* Phase Progress */}
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <div className="text-xs text-muted-foreground mb-1">پیشرفت این هفته</div>
-                  <div className="text-2xl font-black text-foreground">{phaseProgress}%</div>
+                    <div className="text-xs text-muted-foreground mb-1">پیشرفت این هفته</div>
+                    <div className="text-2xl font-black text-foreground">{phaseProgress}%</div>
                 </div>
-                <div className="w-16 h-16 relative">
-                  <ProgressRing progress={phaseProgress} size={64} strokeWidth={6} />
-                  {phaseProgress === 100 && (
-                    <div className="absolute inset-0 flex items-center justify-center text-xl">✅</div>
-                  )}
-=======
-                <div className="grid gap-4">
-                  {phase.steps.map((step: string | RoadmapStep, stepIdx: number) => {
+                <ProgressRing progress={phaseProgress} size={50} strokeWidth={5} />
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+                  {activePhase.steps.map((step: string | RoadmapStep, stepIdx: number) => {
                     const stepName = typeof step === 'string' ? step : step.title;
+                    const stepObj = normalizeStep(step);
                     const isCompleted = completedSteps.includes(stepName);
                     
                     return (
@@ -542,7 +486,7 @@ export default function RoadmapPage() {
                                   {stepName}
                                 </h3>
                                 {typeof step !== 'string' && step.priority && (
-                                  <Badge variant={step.priority === 'High' ? 'danger' : 'secondary'} className="text-[10px] h-5">
+                                  <Badge variant={step.priority?.toLowerCase() === 'high' ? 'destructive' : 'secondary'} className="text-[10px] h-5">
                                     {step.priority}
                                   </Badge>
                                 )}
@@ -572,114 +516,71 @@ export default function RoadmapPage() {
                               <div className="flex items-center gap-2 mt-2">
                                 <StepGuide 
                                   stepName={stepName} 
-                                  stepPhase={phase.phase} 
+                                  stepPhase={activePhase.phase} 
                                   projectName={plan.projectName}
                                 />
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    onClick={() => setSelectedStep({ step: stepObj, phase: activePhase })}
+                                    className="h-7 text-xs px-2"
+                                >
+                                    جزئیات بیشتر
+                                </Button>
                               </div>
                             </div>
                          </div>
                       </div>
                     );
                   })}
->>>>>>> Karnex-Completion
                 </div>
-              </div>
-            </div>
-
-            {/* Progress bar */}
-            <div className="h-2 bg-muted rounded-full overflow-hidden mt-4">
-              <div
-                className="h-full bg-gradient-primary transition-all duration-500"
-                style={{ width: `${phaseProgress}%` }}
-              />
-            </div>
-          </div>
-
-          {/* Steps Grid */}
-          <div className="grid gap-4 md:grid-cols-2">
-            {activePhase.steps.map((step: string | RoadmapStep, stepIdx: number) => {
-              const stepObj = normalizeStep(step);
-              const isCompleted = completedSteps.includes(stepObj.title);
-              const stepSubTasks = getSubTasks(stepObj.title);
-              const isCurrentStep = currentStepData?.step.title === stepObj.title;
-
-              return (
-                <div
-                  key={stepIdx}
-                  onClick={() => setSelectedStep({ step: stepObj, phase: activePhase })}
-                  className={cn(
-                    "group cursor-pointer transition-all duration-300 rounded-2xl p-5 border-2 border-r-4",
-                    isCompleted
-                      ? "bg-muted/30 border-border/50 opacity-70 border-r-emerald-500"
-                      : "card-glass hover:shadow-lg hover:border-primary/30",
-                    getPriorityColor(stepObj.priority),
-                    isCurrentStep && !isCompleted && "ring-2 ring-primary/40 ring-offset-2 ring-offset-background"
-                  )}
-                >
-                  <div className="flex items-start gap-4">
-                    {/* Checkbox */}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleToggle(stepObj.title, e);
-                      }}
-                      className={cn(
-                        "w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all",
-                        isCompleted
-                          ? "bg-gradient-primary border-transparent text-white"
-                          : "border-muted-foreground/30 hover:border-primary/60"
-                      )}
-                    >
-                      {isCompleted && <CheckCircle2 size={14} />}
-                    </button>
-
-                    <div className="flex-1 min-w-0">
-                      <h3 className={cn(
-                        "font-bold text-base mb-1.5 transition-colors",
-                        isCompleted ? "text-muted-foreground line-through" : "text-foreground"
-                      )}>
-                        {stepObj.title}
-                      </h3>
-
-                      {stepObj.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                          {stepObj.description}
-                        </p>
-                      )}
-
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {stepObj.estimatedHours && (
-                          <Badge variant="outline" className="text-xs">
-                            <Clock size={10} className="ml-1" />
-                            {stepObj.estimatedHours} ساعت
-                          </Badge>
-                        )}
-                        {stepObj.category && (
-                          <Badge variant="secondary" className="text-xs">
-                            <FolderOpen size={10} className="ml-1" />
-                            {stepObj.category}
-                          </Badge>
-                        )}
-                        {stepSubTasks.length > 0 && (
-                          <Badge variant="outline" className="text-xs bg-primary/5 text-primary">
-                            <ListTree size={10} className="ml-1" />
-                            {stepSubTasks.filter(s => s.isCompleted).length}/{stepSubTasks.length}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    {isCurrentStep && !isCompleted && (
-                      <div className="w-2 h-2 bg-primary rounded-full animate-ping" />
-                    )}
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
       )}
 
+      {/* Celebration if 100% */}
+      {progressPercent === 100 && (
+        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-yellow-300 via-amber-500 to-orange-500 shadow-2xl shadow-amber-500/30">
+          <div className="bg-card rounded-[22px] p-8 text-center">
+            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Sparkles size={40} className="text-yellow-600" />
+            </div>
+            <h2 className="text-3xl font-black text-foreground mb-3">تبریک! شما قهرمانید! 🏆</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              تمام مراحل نقشه راه ۱۲ هفته‌ای با موفقیت به پایان رسید!
+            </p>
+            <Link href="/dashboard/overview">
+              <Button variant="gradient" size="lg" className="mt-8">
+                بازگشت به داشبورد
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Step Detail Modal */}
+      {selectedStep && (
+        <StepDetailModal
+          step={selectedStep.step}
+          phaseName={selectedStep.phase.phase}
+          weekNumber={selectedStep.phase.weekNumber}
+          isOpen={!!selectedStep}
+          onClose={() => setSelectedStep(null)}
+          isCompleted={completedSteps.includes(selectedStep.step.title)}
+          onToggleComplete={() => {
+            handleToggle(selectedStep.step.title);
+            setSelectedStep(null);
+          }}
+          subTasks={getSubTasks(selectedStep.step.title)}
+          onSubTaskToggle={handleSubTaskToggle}
+          onBreakTask={() => handleStuck(selectedStep.step.title)}
+          isBreakingTask={loadingTask === selectedStep.step.title}
+          projectName={plan.projectName}
+        />
+      )}
+    </div>
+  );
+}
       {/* Celebration if 100% */}
       {progressPercent === 100 && (
         <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-yellow-300 via-amber-500 to-orange-500 shadow-2xl shadow-amber-500/30">

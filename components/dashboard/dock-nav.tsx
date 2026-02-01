@@ -19,7 +19,8 @@ import {
   HelpCircle,
   Settings,
   Sparkles,
-  UserCircle
+  UserCircle,
+  ImageIcon
 } from "lucide-react";
 import { useProject } from "@/contexts/project-context";
 import { HoverExplainer } from "@/components/ui/explainer";
@@ -45,6 +46,7 @@ export function DockNavigation() {
           { icon: Store, label: "طرح", href: "/dashboard/canvas" },
           { icon: Scale, label: "مالی", href: "/dashboard/financial" },
           { icon: Megaphone, label: "انبار", href: "/dashboard/operations" }, 
+          { icon: ImageIcon, label: "رسانه", href: "/dashboard/library" },
         ];
         break;
       case 'creator':
@@ -54,6 +56,7 @@ export function DockNavigation() {
           { icon: Palette, label: "برند", href: "/dashboard/brand" },
           { icon: Megaphone, label: "مدیا کیت", href: "/dashboard/marketing" },
           { icon: Crown, label: "تعرفه", href: "/dashboard/financial" },
+          { icon: ImageIcon, label: "رسانه", href: "/dashboard/library" },
         ];
         break;
       case 'startup':
@@ -64,6 +67,7 @@ export function DockNavigation() {
           { icon: LayoutGrid, label: "بوم ناب", href: "/dashboard/canvas" },
           { icon: Presentation, label: "پیچ دک", href: "/dashboard/marketing" },
           { icon: Scale, label: "بودجه", href: "/dashboard/financial" },
+          { icon: ImageIcon, label: "رسانه", href: "/dashboard/library" },
         ];
         break;
   }

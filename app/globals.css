@@ -15,61 +15,6 @@
     --primary: 243 75% 59%; /* #635bff */
     --primary-foreground: 0 0% 100%;
 
-<<<<<<< HEAD
-    /* === Secondary (Success/Emerald) === */
-    --secondary: 160 70% 45%;
-    --secondary-foreground: 160 10% 10%;
-
-    /* === Accent (Persian Gold) === */
-    --accent: 35 95% 55%;
-    --accent-foreground: 35 95% 15%;
-
-    /* === Neutral Backgrounds === */
-    --background: 240 20% 99%;
-    --foreground: 240 10% 10%;
-
-    /* === Card Surfaces === */
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 10%;
-
-    /* === Muted Elements === */
-    --muted: 240 15% 95%;
-    --muted-foreground: 240 5% 45%;
-
-    /* === Popover === */
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
-
-    /* === Borders & Inputs === */
-    --border: 240 10% 90%;
-    --input: 240 10% 90%;
-    --ring: 250 85% 55%;
-
-    /* === Destructive === */
-    --destructive: 0 85% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    /* === Border Radius Scale === */
-    --radius: 0.75rem;
-    --radius-sm: 0.375rem;
-    --radius-md: 0.75rem;
-    --radius-lg: 1rem;
-    --radius-xl: 1.5rem;
-    --radius-2xl: 2rem;
-
-    /* === Shadows === */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    --shadow-md:
-      0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-lg:
-      0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-xl:
-      0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-    --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
-
-    /* === Glass Effect === */
-=======
     /* Secondary (Cyan) */
     --secondary: 190 100% 50%; /* #00d4ff */
     --secondary-foreground: 190 100% 10%;
@@ -112,54 +57,12 @@
     --radius-2xl: 1.5rem;
 
     /* Glass */
->>>>>>> Karnex-Completion
     --glass-bg: rgba(255, 255, 255, 0.7);
     --glass-border: rgba(255, 255, 255, 0.3);
     --glass-blur: 16px;
   }
 
   .dark {
-<<<<<<< HEAD
-    /* === Primary Colors === */
-    --primary: 250 85% 65%;
-    --primary-foreground: 0 0% 100%;
-
-    /* === Secondary === */
-    --secondary: 160 70% 50%;
-    --secondary-foreground: 160 10% 95%;
-
-    /* === Accent === */
-    --accent: 35 95% 55%;
-    --accent-foreground: 35 95% 95%;
-
-    /* === Neutral Backgrounds === */
-    --background: 240 15% 6%;
-    --foreground: 0 0% 95%;
-
-    /* === Card Surfaces === */
-    --card: 240 15% 10%;
-    --card-foreground: 0 0% 95%;
-
-    /* === Muted Elements === */
-    --muted: 240 15% 15%;
-    --muted-foreground: 240 5% 60%;
-
-    /* === Popover === */
-    --popover: 240 15% 10%;
-    --popover-foreground: 0 0% 95%;
-
-    /* === Borders & Inputs === */
-    --border: 240 10% 20%;
-    --input: 240 10% 20%;
-    --ring: 250 85% 65%;
-
-    /* === Destructive === */
-    --destructive: 0 75% 55%;
-    --destructive-foreground: 0 0% 100%;
-
-    /* === Glass Effect (Dark) === */
-    --glass-bg: rgba(15, 15, 25, 0.7);
-=======
     /* === Dark Mode (Rich Navy/Slate) === */
 
     /* Primary (Light Blurple) */
@@ -201,7 +104,6 @@
 
     /* Glass */
     --glass-bg: rgba(15, 23, 42, 0.7);
->>>>>>> Karnex-Completion
     --glass-border: rgba(255, 255, 255, 0.1);
   }
 }

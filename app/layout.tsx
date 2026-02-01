@@ -4,26 +4,22 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ProjectProvider } from '@/contexts/project-context';
 import { ThemeProvider } from '@/components/shared/theme-provider';
-<<<<<<< HEAD
 import { JsonLd } from '@/components/shared/json-ld';
-=======
 import { NetworkStatus } from '@/components/shared/network-status';
 import { CookieBanner } from '@/components/shared/cookie-banner'; 
-import { GoogleAnalytics } from '@/components/shared/analytics'; // Fixed Import
->>>>>>> Karnex-Completion
+import { GoogleAnalytics } from '@/components/shared/analytics';
 
 const vazir = Vazirmatn({ subsets: ['arabic', 'latin'] });
 
 export const metadata: Metadata = {
-<<<<<<< HEAD
   title: {
     default: 'کارنکس | دستیار هوشمند کارآفرینی',
     template: '%s | کارنکس',
   },
   description: 'با هوش مصنوعی، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
   icons: {
-    icon: '/icon.png',
-    apple: '/icon.png',
+    icon: '/logo-official.png',
+    apple: '/logo-official.png',
   },
   keywords: [
     'کارآفرینی',
@@ -42,10 +38,6 @@ export const metadata: Metadata = {
   authors: [{ name: 'Karnex Team', url: 'https://www.karnex.ir' }],
   creator: 'Karnex',
   publisher: 'Karnex',
-=======
-  title: 'کارنکس | هم‌بنیان‌گذار هوشمند استارتاپ‌ها، کسب‌وکارها و کریتورها',
-  description: 'پلتفرم جامع برای راه‌اندازی استارتاپ، کسب‌وکار سنتی و برند شخصی. با Genesis Flow ایده خود را به واقعیت تبدیل کنید.',
->>>>>>> Karnex-Completion
   metadataBase: new URL('https://www.karnex.ir'),
   alternates: {
     canonical: '/',
@@ -62,44 +54,22 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-<<<<<<< HEAD
     title: 'کارنکس | دستیار هوشمند کارآفرینی',
     description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
     url: 'https://www.karnex.ir',
     siteName: 'Karnex',
-=======
-    title: 'کارنکس | هم‌بنیان‌گذار هوشمند استارتاپ‌ها، کسب‌وکارها و کریتورها',
-    description: 'ابزار تخصصی برای استارتاپ‌ها (Visionary)، کسب‌وکارهای سنتی (Owner) و کریتورها (Creator).',
-    url: 'https://www.karnex.ir',
-    siteName: 'Karnex',
     images: ['/logo-official.png'],
->>>>>>> Karnex-Completion
     locale: 'fa_IR',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-<<<<<<< HEAD
     title: 'کارنکس | دستیار هوشمند کارآفرینی',
     description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید.',
     creator: '@karnex_ir',
-  },
-  manifest: '/manifest.json',
-
-  verification: {
-    // Add your verification codes here when you have them
-    // google: 'your-google-verification-code',
-=======
-    title: 'کارنکس | هم‌بنیان‌گذار هوشمند استارتاپ‌ها، کسب‌وکارها و کریتورها',
-    description: 'ابزار تخصصی برای استارتاپ‌ها (Visionary)، کسب‌وکارهای سنتی (Owner) و کریتورها (Creator).',
     images: ['/logo-official.png'],
   },
   manifest: '/manifest.json',
-  icons: {
-    icon: '/logo-official.png',
-    apple: '/logo-official.png',
->>>>>>> Karnex-Completion
-  },
   category: 'technology',
 };
 

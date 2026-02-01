@@ -7,36 +7,8 @@ export async function POST(req: Request) {
   try {
     const { message, planContext, generateFollowUps } = await req.json();
 
-    // Simple, explicit Persian-only system prompt
-    const systemPrompt = `تو دستیار کارنکس هستی.
-
-قانون مهم: همه پاسخ‌ها فقط به زبان فارسی باشد.
-
-پروژه: ${planContext?.projectName || 'نامشخص'}
-ایده: ${planContext?.overview || 'نامشخص'}
-
-وظیفه: پاسخ کوتاه و مفید به سوال کاربر بده.
-${generateFollowUps ? '\nدر آخر ۳ سوال پیگیری بنویس با فرمت:\n---FOLLOWUPS---\n- سوال ۱\n- سوال ۲\n- سوال ۳' : ''}`;
-
-    const result = await callOpenRouter(`${message}\n\n(پاسخ فارسی بده)`, {
-      systemPrompt,
-      maxTokens: 800,
-      temperature: 0.5,
-    });
-
-    if (!result.success) {
-      return NextResponse.json({
-        reply: "متاسفانه سرویس در دسترس نیست. لطفا دقایقی دیگر تلاش کنید.",
-        followUps: []
-      });
-    }
-
-<<<<<<< HEAD
-    let fullReply = result.content || "متاسفانه مشکلی پیش آمد.";
-=======
     // Contextual System Prompt
     // We inject the user's plan details directly into the AI's instructions.
-    // Contextual System Prompt
     const projectType = planContext?.projectType || 'startup';
     
     let personaInstructions = "";
@@ -86,8 +58,23 @@ ${generateFollowUps ? '\nدر آخر ۳ سوال پیگیری بنویس با ف
       3. Reply in PERSIAN (Farsi).
       
       User Question: ${message}
+      ${generateFollowUps ? '\nدر آخر ۳ سوال پیگیری بنویس با فرمت:\n---FOLLOWUPS---\n- سوال ۱\n- سوال ۲\n- سوال ۳' : ''}
     `;
->>>>>>> Karnex-Completion
+
+    const result = await callOpenRouter(`${message}\n\n(پاسخ فارسی بده)`, {
+      systemPrompt,
+      maxTokens: 800,
+      temperature: 0.5,
+    });
+
+    if (!result.success) {
+      return NextResponse.json({
+        reply: "متاسفانه سرویس در دسترس نیست. لطفا دقایقی دیگر تلاش کنید.",
+        followUps: []
+      });
+    }
+
+    let fullReply = result.content || "متاسفانه مشکلی پیش آمد.";
 
     // Parse follow-up questions
     let reply = fullReply;

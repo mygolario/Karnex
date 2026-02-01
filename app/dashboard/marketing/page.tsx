@@ -4,13 +4,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-<<<<<<< HEAD
-import { Megaphone, TrendingUp, Lightbulb, Sparkles } from "lucide-react";
-import { Card } from "@/components/ui/card";
-=======
 import { Megaphone, TrendingUp, Users, Zap, Lightbulb, Target, Sparkles, BarChart3, Globe, Shield, AlertTriangle, Presentation } from "lucide-react";
 import { Card, CardIcon } from "@/components/ui/card";
->>>>>>> Karnex-Completion
 import { Badge } from "@/components/ui/badge";
 import { ContentGeneratorButton } from "@/components/dashboard/content-generator-button";
 import { CompetitorAnalyzer } from "@/components/dashboard/competitor-analyzer";
@@ -19,6 +14,8 @@ import { MarketingFunnel } from "@/components/dashboard/marketing/marketing-funn
 import { ChannelCards } from "@/components/dashboard/marketing/channel-cards";
 import { ContentCalendar } from "@/components/dashboard/marketing/content-calendar";
 import { CampaignBuilder } from "@/components/dashboard/marketing/campaign-builder";
+import { MediaKitBuilder } from "@/components/features/media-kit/media-kit-builder";
+import { PitchDeckBuilder } from "@/components/features/pitch-deck/pitch-deck-builder";
 
 // Animation variants
 const containerVariants = {
@@ -30,9 +27,6 @@ const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const } }
 };
-
-import { MediaKitBuilder } from "@/components/features/media-kit/media-kit-builder";
-import { PitchDeckBuilder } from "@/components/features/pitch-deck/pitch-deck-builder";
 
 export default function MarketingPage() {
   const { user } = useAuth();
