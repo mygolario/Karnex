@@ -85,6 +85,7 @@ export function Sidebar() {
           })}
         </nav>
       </div>
+<<<<<<< HEAD
       <div className="mt-auto border-t p-4">
         <div className="rounded-lg bg-muted/50 p-4">
           <p className="text-xs text-muted-foreground text-center">
@@ -92,6 +93,8 @@ export function Sidebar() {
           </p>
         </div>
       </div>
+=======
+>>>>>>> Karnex-Completion
     </div>
   );
 }

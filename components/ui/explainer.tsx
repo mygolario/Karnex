@@ -9,12 +9,14 @@ import { cn } from "@/lib/utils";
 // HOVER EXPLAINER - Simple Tooltip on Hover
 // ============================================
 interface HoverExplainerProps {
-  text: string;
+  text?: string; // Legacy
+  title?: string;
+  description?: string;
   children?: ReactNode;
   className?: string;
 }
 
-export function HoverExplainer({ text, children, className }: HoverExplainerProps) {
+export function HoverExplainer({ text, title, description, children, className }: HoverExplainerProps) {
   const [show, setShow] = useState(false);
 
   return (
@@ -28,7 +30,8 @@ export function HoverExplainer({ text, children, className }: HoverExplainerProp
       {show && (
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div className="bg-foreground text-background text-xs px-3 py-2 rounded-lg shadow-xl max-w-xs leading-relaxed whitespace-normal">
-            {text}
+            {title && <div className="font-bold mb-1 border-b border-white/20 pb-1">{title}</div>}
+            {description || text}
           </div>
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground" />
         </div>

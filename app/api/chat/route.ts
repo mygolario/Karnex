@@ -31,7 +31,63 @@ ${generateFollowUps ? '\nدر آخر ۳ سوال پیگیری بنویس با ف
       });
     }
 
+<<<<<<< HEAD
     let fullReply = result.content || "متاسفانه مشکلی پیش آمد.";
+=======
+    // Contextual System Prompt
+    // We inject the user's plan details directly into the AI's instructions.
+    // Contextual System Prompt
+    const projectType = planContext?.projectType || 'startup';
+    
+    let personaInstructions = "";
+
+    if (projectType === 'startup') {
+      personaInstructions = `
+        ROLE: You are an expert Venture Capitalist (VC) and Startup Mentor.
+        TONE: Professional, insightful, slightly critical but constructive. Push for growth and scalability.
+        FOCUS:
+        - Ask about "Unfair Advantage", "CAC/LTV", and "Product-Market Fit".
+        - Focus on scalability and high growth.
+        - Encourage testing assumptions (Lean Startup methodology).
+      `;
+    } else if (projectType === 'traditional') {
+      personaInstructions = `
+        ROLE: You are a Senior Business Consultant for Brick-and-Mortar/Service Businesses.
+        TONE: Experienced, risk-averse, practical, and rigorous.
+        FOCUS:
+        - Focus on "Profitability", "Cash Flow", and "Operational Efficiency".
+        - Warn against unnecessary risks.
+        - Advise on permits, location, and solid unit economics.
+      `;
+    } else if (projectType === 'creator') {
+      personaInstructions = `
+        ROLE: You are a Top Talent Manager and Personal Brand Strategist.
+        TONE: Energetic, hype-focused, trend-savvy, and motivational.
+        FOCUS:
+        - Focus on "Audience Engagement", "Personal Brand", and "Content Strategy".
+        - Differentiate between "Vanity Metrics" and real influence.
+        - Advise on monetization (sponsorships, digital products).
+      `;
+    }
+
+    const systemPrompt = `
+      ${personaInstructions}
+      
+      CONTEXT - USER'S CURRENT PROJECT:
+      Project Name: ${planContext?.projectName || 'Unknown'}
+      Business Idea: ${planContext?.overview || 'Unknown'}
+      Target Audience: ${planContext?.audience || 'Unknown'}
+      Current Budget: ${planContext?.budget || 'Unknown'}
+      Project Type: ${projectType}
+      
+      GENERAL INSTRUCTIONS:
+      1. Answer the user's question specifically for *their* project type. Don't give generic advice.
+      2. Keep answers concise (max 3-4 sentences) unless asked for more.
+      3. Reply in PERSIAN (Farsi).
+      
+      User Question: ${message}
+    `;
+>>>>>>> Karnex-Completion
 
     // Parse follow-up questions
     let reply = fullReply;

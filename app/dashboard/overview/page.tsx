@@ -17,6 +17,7 @@ import {
   Calendar, ChevronLeft, Activity, Award, Wand2, Loader2,
   Brain, Lightbulb, RefreshCw, ArrowUpRight
 } from "lucide-react";
+import { calculateProjectScore } from "@/lib/scoring"; // Import
 
 // Helper to get step title whether it's a string or object
 function getStepTitle(step: any): string {
@@ -146,6 +147,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
     );
   }
 
+<<<<<<< HEAD
   const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1;
   const completedCount = plan?.completedSteps?.length || 0;
   const progressPercent = Math.round((completedCount / totalSteps) * 100);
@@ -157,6 +159,27 @@ Return ONLY a JSON array of 3 Persian strings.`;
     // { href: "/dashboard/brand", icon: Palette, title: "هویت بصری", desc: "لوگو، رنگ و فونت", gradient: "from-purple-500 to-pink-500", shadow: "shadow-purple-500/20", ai: true }, // Temporarily disabled
     { href: "/dashboard/marketing", icon: Megaphone, title: "بازاریابی", desc: "استراتژی جذب مشتری", gradient: "from-rose-500 to-red-500", shadow: "shadow-rose-500/20" },
   ];
+=======
+
+
+// ...
+
+  // Calculate Stats
+  const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1;
+  const completedCount = plan?.completedSteps?.length || 0;
+  const progressPercent = Math.round((completedCount / totalSteps) * 100);
+  
+  // Calculate Score (Real Logic)
+  const scoreResult = plan ? calculateProjectScore(plan) : { total: 0, grade: 'D', breakdown: { foundation:0, strategy:0, market:0, execution:0 }, suggestions: [] };
+
+  // Find next actionable step
+  const nextStep = plan?.roadmap?.flatMap((p: any) => p.steps).find((s: any) => {
+    const name = typeof s === 'string' ? s : s.title;
+    return !plan?.completedSteps?.includes(name);
+  });
+
+  const nextStepName = nextStep ? (typeof nextStep === 'string' ? nextStep : nextStep.title) : null;
+>>>>>>> Karnex-Completion
 
   return (
     <motion.div
@@ -324,8 +347,20 @@ Return ONLY a JSON array of 3 Persian strings.`;
                 <Brain size={28} />
               </motion.div>
               <div>
+<<<<<<< HEAD
                 <h2 className="text-2xl font-black text-foreground">توصیه‌های هوشمند</h2>
                 <p className="text-muted-foreground">پیشنهادات AI برای رشد سریع‌تر</p>
+=======
+                <span className="text-xs font-bold text-white/60 uppercase tracking-wider">تمرکز امروز</span>
+                <p className="font-bold text-lg md:text-xl mt-1 line-clamp-1">
+                  {nextStepName || "تبریک! تمام مراحل انجام شده است 🎉"}
+                </p>
+                {nextStepName && (
+                  <Link href="/dashboard/roadmap" className="inline-flex items-center gap-1 text-sm mt-2 hover:underline opacity-90">
+                    انجام تسک <ChevronLeft size={14} />
+                  </Link>
+                )}
+>>>>>>> Karnex-Completion
               </div>
             </div>
             <Button
@@ -421,6 +456,7 @@ Return ONLY a JSON array of 3 Persian strings.`;
           </div>
         </Card>
 
+<<<<<<< HEAD
         {/* Smart Tips */}
         <Card variant="gradient" className="relative overflow-hidden border-0 p-0">
           <div className="absolute inset-0 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950" />
@@ -461,5 +497,155 @@ Return ONLY a JSON array of 3 Persian strings.`;
         </Card>
       </motion.div>
     </motion.div>
+=======
+        {/* Project Health Score */}
+        <Card variant="default" className="flex flex-col items-center justify-center text-center relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-muted/20 pointer-events-none" />
+          
+          <h3 className="font-bold text-muted-foreground mb-4 flex items-center gap-2">
+            <Activity size={18} className="text-primary" />
+            اعتبار سنجی ایده
+          </h3>
+          
+          <div className="relative mb-4">
+            <ProgressRing progress={scoreResult.total} size={140} strokeWidth={10} 
+              indicatorColor={
+                scoreResult.grade === 'S' ? 'stroke-purple-500' :
+                scoreResult.grade === 'A' ? 'stroke-emerald-500' :
+                scoreResult.grade === 'B' ? 'stroke-blue-500' :
+                scoreResult.grade === 'C' ? 'stroke-amber-500' :
+                'stroke-red-500'
+              }
+            >
+              <div className="text-center">
+                <span className={`text-4xl font-black block ${
+                   scoreResult.grade === 'S' ? 'text-purple-600' :
+                   scoreResult.grade === 'A' ? 'text-emerald-600' :
+                   scoreResult.grade === 'B' ? 'text-blue-600' :
+                   scoreResult.grade === 'C' ? 'text-amber-600' :
+                   'text-red-500'
+                }`}>{scoreResult.grade}</span>
+                <span className="text-xs text-muted-foreground font-medium uppercase">گرید</span>
+              </div>
+            </ProgressRing>
+          </div>
+
+          <div className="w-full px-8 space-y-1 mb-4 hidden group-hover:block animate-in fade-in slide-in-from-bottom-2 absolute bg-white/90 inset-x-0 bottom-12 backdrop-blur-md pt-2">
+             <div className="flex justify-between text-xs text-muted-foreground">
+                <span>استراتژی</span>
+                <span>{Math.round(scoreResult.breakdown.strategy)}/30</span>
+             </div>
+             <div className="flex justify-between text-xs text-muted-foreground">
+                <span>بازار</span>
+                <span>{Math.round(scoreResult.breakdown.market)}/30</span>
+             </div>
+          </div>
+
+          <div className="flex gap-2 relative z-10">
+            {scoreResult.suggestions.length > 0 ? (
+               <HoverExplainer title="پیشنهاد هوشمند" description={scoreResult.suggestions[0]}>
+                  <Button variant="ghost" size="sm" className="h-8 text-xs text-primary animate-pulse">
+                    <Sparkles size={12} className="mr-1" />
+                    بهبود امتیاز
+                  </Button>
+               </HoverExplainer>
+            ) : (
+              <Badge variant="success" className="h-8">عالی! 🎉</Badge>
+            )}
+          </div>
+        </Card>
+      </div>
+
+      {/* 2. Key Metrics Grid */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatsCard 
+          title="پیشرفت کل" 
+          value={`${progressPercent}%`} 
+          icon={TrendingUp} 
+          trend="up" 
+          trendValue="+12%" 
+          trendLabel="نسبت به هفته قبل"
+          variant="primary"
+        />
+        <StatsCard 
+          title="فاز فعلی" 
+          value={plan?.roadmap?.find((p:any) => p.steps.some((s: any) => {
+            const name = typeof s === 'string' ? s : s.title;
+            return !plan.completedSteps?.includes(name);
+          }))?.phase.split(':')[0] || "تکمیل"} 
+          icon={Map} 
+          variant="accent"
+        />
+         <StatsCard 
+          title="مراحل باقیمانده" 
+          value={totalSteps - completedCount} 
+          icon={CheckCircle2} 
+          variant="secondary"
+        />
+        <StatsCard 
+          title="دستاوردهای کسب‌شده" 
+          value="۳" 
+          icon={Award} 
+          variant="glass"
+          trend="neutral"
+          trendLabel="۱ نشان جدید در انتظار"
+        />
+      </div>
+
+      {/* 3. Quick Actions */}
+      <div>
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-1 h-6 bg-primary rounded-full" />
+          <h2 className="text-xl font-bold text-foreground">دسترسی سریع</h2>
+        </div>
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+           {/* Roadmap */}
+           <Link href="/dashboard/roadmap">
+            <Card variant="default" hover="glow" className="group h-full flex flex-col items-center text-center p-6 border-2 border-transparent hover:border-primary/10 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                <Map size={28} />
+              </div>
+              <h3 className="font-bold text-foreground mb-1">نقشه راه</h3>
+              <p className="text-xs text-muted-foreground line-clamp-2">مسیر قدم به قدم اجرا</p>
+            </Card>
+          </Link>
+
+          {/* Canvas */}
+          <Link href="/dashboard/canvas">
+            <Card variant="default" hover="glow" className="group h-full flex flex-col items-center text-center p-6 border-2 border-transparent hover:border-amber-500/10 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                <LayoutGrid size={28} />
+              </div>
+              <h3 className="font-bold text-foreground mb-1">بوم کسب‌وکار</h3>
+              <p className="text-xs text-muted-foreground line-clamp-2">مدل بیزینس و درآمد</p>
+            </Card>
+          </Link>
+
+          {/* Brand */}
+          <Link href="/dashboard/brand">
+            <Card variant="default" hover="glow" className="group h-full flex flex-col items-center text-center p-6 border-2 border-transparent hover:border-purple-500/10 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                <Palette size={28} />
+              </div>
+              <h3 className="font-bold text-foreground mb-1">هویت بصری</h3>
+              <p className="text-xs text-muted-foreground line-clamp-2">رنگ‌ها و لوگو</p>
+            </Card>
+          </Link>
+
+          {/* Marketing */}
+          <Link href="/dashboard/marketing">
+            <Card variant="default" hover="glow" className="group h-full flex flex-col items-center text-center p-6 border-2 border-transparent hover:border-rose-500/10 transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm">
+                <Megaphone size={28} />
+              </div>
+              <h3 className="font-bold text-foreground mb-1">بازاریابی</h3>
+              <p className="text-xs text-muted-foreground line-clamp-2">استراتژی رشد و تبلیغات</p>
+            </Card>
+          </Link>
+        </div>
+      </div>
+    </div>
+>>>>>>> Karnex-Completion
   );
 }

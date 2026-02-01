@@ -170,7 +170,14 @@ Return ONLY JSON array of 3 strings in Persian with analysis insights.`;
         <div className="space-y-6">
           {plan.roadmap.map((phase, idx) => {
             const phaseTotal = phase.steps.length;
+<<<<<<< HEAD
             const phaseCompleted = phase.steps.filter((s: any) => plan.completedSteps?.includes(getStepTitle(s))).length;
+=======
+            const phaseCompleted = phase.steps.filter((s: string | any) => {
+              const stepName = typeof s === 'string' ? s : s.title;
+              return plan.completedSteps?.includes(stepName);
+            }).length;
+>>>>>>> Karnex-Completion
             const phasePercent = phaseTotal > 0 ? Math.round((phaseCompleted / phaseTotal) * 100) : 0;
             return (
               <div key={idx} className="group">

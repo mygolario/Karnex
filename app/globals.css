@@ -9,10 +9,13 @@
 
 @layer base {
   :root {
-    /* === Primary Colors === */
-    --primary: 250 85% 55%;
+    /* === Stripe-Inspired Palette (Vibrant Professional) === */
+
+    /* Primary (Blurple) */
+    --primary: 243 75% 59%; /* #635bff */
     --primary-foreground: 0 0% 100%;
 
+<<<<<<< HEAD
     /* === Secondary (Success/Emerald) === */
     --secondary: 160 70% 45%;
     --secondary-foreground: 160 10% 10%;
@@ -66,12 +69,57 @@
     --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 
     /* === Glass Effect === */
+=======
+    /* Secondary (Cyan) */
+    --secondary: 190 100% 50%; /* #00d4ff */
+    --secondary-foreground: 190 100% 10%;
+
+    /* Accent (Vibrant Pink) */
+    --accent: 330 85% 60%; /* #ee2d77 */
+    --accent-foreground: 0 0% 100%;
+
+    /* Neutral Backgrounds */
+    --background: 0 0% 100%;
+    --foreground: 215 28% 17%; /* Slate-900ish */
+
+    /* Surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 215 28% 17%;
+
+    /* Muted */
+    --muted: 210 40% 96%; /* Slate-50 */
+    --muted-foreground: 215 16% 47%; /* Slate-500 */
+
+    /* Popover */
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 28% 17%;
+
+    /* Borders */
+    --border: 214 32% 91%; /* Slate-200 */
+    --input: 214 32% 91%;
+    --ring: 243 75% 59%; /* Focus ring = Primary */
+
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* Radius */
+    --radius: 0.5rem; /* 8px - more technical/precise */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-2xl: 1.5rem;
+
+    /* Glass */
+>>>>>>> Karnex-Completion
     --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.2);
-    --glass-blur: 12px;
+    --glass-border: rgba(255, 255, 255, 0.3);
+    --glass-blur: 16px;
   }
 
   .dark {
+<<<<<<< HEAD
     /* === Primary Colors === */
     --primary: 250 85% 65%;
     --primary-foreground: 0 0% 100%;
@@ -111,6 +159,49 @@
 
     /* === Glass Effect (Dark) === */
     --glass-bg: rgba(15, 15, 25, 0.7);
+=======
+    /* === Dark Mode (Rich Navy/Slate) === */
+
+    /* Primary (Light Blurple) */
+    --primary: 243 100% 75%;
+    --primary-foreground: 243 40% 10%;
+
+    /* Secondary (Cyan) */
+    --secondary: 190 90% 60%;
+    --secondary-foreground: 190 90% 10%;
+
+    /* Accent */
+    --accent: 330 80% 65%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Backgrounds (Dark Navy/Slate) */
+    --background: 222 47% 11%; /* #0f172a (Slate 900) */
+    --foreground: 210 40% 98%;
+
+    /* Surfaces */
+    --card: 217 33% 17%; /* Slate 800 */
+    --card-foreground: 210 40% 98%;
+
+    /* Muted */
+    --muted: 217 33% 20%;
+    --muted-foreground: 215 20% 65%;
+
+    /* Popover */
+    --popover: 217 33% 17%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Borders */
+    --border: 217 33% 22%;
+    --input: 217 33% 22%;
+    --ring: 243 100% 75%;
+
+    /* Destructive */
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Glass */
+    --glass-bg: rgba(15, 23, 42, 0.7);
+>>>>>>> Karnex-Completion
     --glass-border: rgba(255, 255, 255, 0.1);
   }
 }

@@ -1,6 +1,7 @@
 {
-  "name": "Karnex",
+  "name": "Karnex: AI Business Assistant",
   "short_name": "Karnex",
+<<<<<<< HEAD
   "description": "دستیار هوشمند کارآفرینی و راه‌اندازی استارتاپ",
   "start_url": "/",
   "display": "standalone",
@@ -13,4 +14,27 @@
       "type": "image/png"
     }
   ]
+=======
+  "description": "The all-in-one platform for Startups, Traditional Businesses, and Creators.",
+  "start_url": "/dashboard?pwa=true",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#7c3aed",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "fa-IR",
+  "dir": "rtl"
+>>>>>>> Karnex-Completion
 }

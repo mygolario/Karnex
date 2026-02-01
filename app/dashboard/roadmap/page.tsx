@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
+<<<<<<< HEAD
 import { toggleStepCompletion } from "@/lib/db";
 import {
   Map, CheckCircle2, Sparkles, Circle, Flag,
@@ -12,6 +13,11 @@ import {
   AlertCircle, Target, ArrowLeft, Clock, FolderOpen,
   ChevronLeft, ChevronRight, Calendar
 } from "lucide-react";
+=======
+import { toggleStepCompletion, RoadmapStep } from "@/lib/db";
+import { Map, CheckCircle2, Sparkles, Circle, Flag, ArrowDown, Clock, AlertCircle, FileText } from "lucide-react";
+import { useRouter } from "next/navigation";
+>>>>>>> Karnex-Completion
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -88,6 +94,7 @@ export default function RoadmapPage() {
     }
   }, [plan]);
 
+<<<<<<< HEAD
   // Get all steps flattened for focus mode
   const allSteps = plan?.roadmap?.flatMap((phase: RoadmapPhase) =>
     phase.steps.map((step) => ({ step: normalizeStep(step), phase }))
@@ -108,11 +115,29 @@ export default function RoadmapPage() {
       ? [...completedSteps, stepTitle]
       : completedSteps.filter(s => s !== stepTitle);
 
+=======
+  // Handle Check/Uncheck
+  const handleToggle = async (step: string | RoadmapStep, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user || !plan) return;
+
+    const stepName = typeof step === 'string' ? step : step.title;
+    const isNowCompleted = !completedSteps.includes(stepName);
+    
+    const newCompletedSteps = isNowCompleted 
+      ? [...completedSteps, stepName] 
+      : completedSteps.filter(s => s !== stepName);
+    
+>>>>>>> Karnex-Completion
     setCompletedSteps(newCompletedSteps);
     updateActiveProject({ completedSteps: newCompletedSteps });
 
     try {
+<<<<<<< HEAD
       await toggleStepCompletion(user.uid, stepTitle, isNowCompleted, plan.id || 'current');
+=======
+      await toggleStepCompletion(user.uid, stepName, isNowCompleted, plan.id || 'current');
+>>>>>>> Karnex-Completion
     } catch (error) {
       console.error("Sync failed", error);
       setCompletedSteps(completedSteps);
@@ -374,6 +399,7 @@ export default function RoadmapPage() {
         </div>
       </div>
 
+<<<<<<< HEAD
       {/* Week Tabs */}
       <div className="relative">
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
@@ -386,6 +412,30 @@ export default function RoadmapPage() {
           >
             <ChevronRight size={20} />
           </Button>
+=======
+      {/* Timeline */}
+      <div className="relative border-r-2 border-border/50 mr-4 md:mr-8 space-y-12">
+        {plan.roadmap.map((phase, phaseIdx) => {
+          const isPhaseComplete = phase.steps.every((s) => {
+             const name = typeof s === 'string' ? s : s.title;
+             return completedSteps.includes(name);
+          });
+          const isPhaseStarted = phase.steps.some((s) => {
+             const name = typeof s === 'string' ? s : s.title;
+             return completedSteps.includes(name);
+          });
+          
+          return (
+            <div key={phaseIdx} className="relative pr-8 md:pr-12 group">
+              {/* Phase Marker */}
+              <div className={`
+                absolute -right-[11px] top-0 w-5 h-5 rounded-full border-4 transition-all duration-500 z-10
+                ${isPhaseComplete ? "bg-primary border-primary scale-110" : 
+                  isPhaseStarted ? "bg-white border-primary" : "bg-muted border-muted-foreground"}
+              `}>
+                {isPhaseComplete && <CheckCircle2 size={12} className="text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />}
+              </div>
+>>>>>>> Karnex-Completion
 
           {plan.roadmap.map((phase: RoadmapPhase, idx: number) => {
             const weekNum = phase.weekNumber || idx + 1;
@@ -445,6 +495,7 @@ export default function RoadmapPage() {
                 <h2 className="text-xl font-bold text-foreground">{activePhase.phase}</h2>
               </div>
 
+<<<<<<< HEAD
               <div className="flex items-center gap-4">
                 <div className="text-right">
                   <div className="text-xs text-muted-foreground mb-1">پیشرفت این هفته</div>
@@ -455,6 +506,82 @@ export default function RoadmapPage() {
                   {phaseProgress === 100 && (
                     <div className="absolute inset-0 flex items-center justify-center text-xl">✅</div>
                   )}
+=======
+                <div className="grid gap-4">
+                  {phase.steps.map((step: string | RoadmapStep, stepIdx: number) => {
+                    const stepName = typeof step === 'string' ? step : step.title;
+                    const isCompleted = completedSteps.includes(stepName);
+                    
+                    return (
+                      <div 
+                        key={stepIdx}
+                        className={`
+                          group/card relative bg-card border transition-all duration-300 rounded-xl p-4
+                          ${isCompleted 
+                            ? "border-primary/20 bg-primary/5 hover:border-primary/40" 
+                            : "border-border hover:border-primary/50 hover:shadow-md hover:-translate-x-1"}
+                        `}
+                      >
+                         <div className="flex items-start gap-4">
+                            {/* Checkbox */}
+                            <button
+                              onClick={(e) => handleToggle(step, e)}
+                              className={`
+                                w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 mt-1 transition-all
+                                ${isCompleted 
+                                  ? "bg-gradient-primary border-transparent text-white scale-110" 
+                                  : "border-muted-foreground/30 text-transparent hover:border-primary hover:scale-105"}
+                              `}
+                            >
+                              <CheckCircle2 size={14} fill="currentColor" className={isCompleted ? "opacity-100" : "opacity-0"} />
+                            </button>
+
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between gap-2">
+                                <h3 className={`font-medium text-lg mb-1 transition-colors ${isCompleted ? "text-muted-foreground line-through decoration-primary/30" : "text-foreground"}`}>
+                                  {stepName}
+                                </h3>
+                                {typeof step !== 'string' && step.priority && (
+                                  <Badge variant={step.priority === 'High' ? 'danger' : 'secondary'} className="text-[10px] h-5">
+                                    {step.priority}
+                                  </Badge>
+                                )}
+                              </div>
+                              
+                              {typeof step !== 'string' && (
+                                <div className="text-sm text-muted-foreground mb-3 space-y-1">
+                                  {step.description && <p>{step.description}</p>}
+                                  <div className="flex items-center gap-3 text-xs opacity-80 pt-1">
+                                    {step.estimatedHours && (
+                                      <div className="flex items-center gap-1">
+                                        <Clock size={12} />
+                                        <span>{step.estimatedHours} ساعت</span>
+                                      </div>
+                                    )}
+                                    {step.category && (
+                                       <div className="flex items-center gap-1">
+                                        <FileText size={12} />
+                                        <span>{step.category}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Action Bar */}
+                              <div className="flex items-center gap-2 mt-2">
+                                <StepGuide 
+                                  stepName={stepName} 
+                                  stepPhase={phase.phase} 
+                                  projectName={plan.projectName}
+                                />
+                              </div>
+                            </div>
+                         </div>
+                      </div>
+                    );
+                  })}
+>>>>>>> Karnex-Completion
                 </div>
               </div>
             </div>

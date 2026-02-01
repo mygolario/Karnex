@@ -4,8 +4,13 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
+<<<<<<< HEAD
 import { Megaphone, TrendingUp, Lightbulb, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
+=======
+import { Megaphone, TrendingUp, Users, Zap, Lightbulb, Target, Sparkles, BarChart3, Globe, Shield, AlertTriangle, Presentation } from "lucide-react";
+import { Card, CardIcon } from "@/components/ui/card";
+>>>>>>> Karnex-Completion
 import { Badge } from "@/components/ui/badge";
 import { ContentGeneratorButton } from "@/components/dashboard/content-generator-button";
 import { CompetitorAnalyzer } from "@/components/dashboard/competitor-analyzer";
@@ -26,6 +31,9 @@ const itemVariants = {
   show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] as const } }
 };
 
+import { MediaKitBuilder } from "@/components/features/media-kit/media-kit-builder";
+import { PitchDeckBuilder } from "@/components/features/pitch-deck/pitch-deck-builder";
+
 export default function MarketingPage() {
   const { user } = useAuth();
   const { activeProject: plan, loading } = useProject();
@@ -42,6 +50,43 @@ export default function MarketingPage() {
     );
   }
 
+  // TRINITY: Render Media Kit Builder for Creators
+  if (plan.projectType === 'creator') {
+    return (
+        <div className="p-6 max-w-7xl mx-auto pb-20 h-[calc(100vh-100px)]">
+             <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <Sparkles size={24} />
+                </div>
+                <div>
+                   <h1 className="text-3xl font-black text-foreground">مدیا کیت ساز</h1>
+                   <p className="text-muted-foreground text-sm">پروفایل حرفه‌ای برای جذب اسپانسر</p>
+                </div>
+             </div>
+             <MediaKitBuilder />
+        </div>
+    );
+  }
+  
+  // TRINITY: Render Pitch Deck Builder for Startups
+  if (plan.projectType === 'startup') {
+    return (
+        <div className="p-6 max-w-7xl mx-auto pb-20 h-[calc(100vh-100px)]">
+             <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <Presentation size={24} />
+                </div>
+                <div>
+                   <h1 className="text-3xl font-black text-foreground">ساخت پیچ دک (Pitch Deck)</h1>
+                   <p className="text-muted-foreground text-sm">ارائه استاندارد برای جذب سرمایه‌گذار</p>
+                </div>
+             </div>
+             <PitchDeckBuilder />
+        </div>
+    );
+  }
+
+  // STANDARD / TRADITIONAL VIEW
   return (
     <motion.div
       variants={containerVariants}

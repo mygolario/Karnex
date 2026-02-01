@@ -6,8 +6,9 @@ interface ProgressRingProps {
   progress: number; // 0 to 100
   size?: number;
   strokeWidth?: number;
-  color?: string; // Tailwind class, e.g., "text-primary"
+  color?: string; // Tailwind class for text color (center)
   trackColor?: string;
+  indicatorColor?: string; // Tailwind class for stroke color
   children?: React.ReactNode;
 }
 
@@ -17,6 +18,7 @@ export function ProgressRing({
   strokeWidth = 8,
   color = "text-primary",
   trackColor = "text-muted/20",
+  indicatorColor = "text-primary", // Default
   children
 }: ProgressRingProps) {
   const radius = (size - strokeWidth) / 2;
@@ -44,7 +46,7 @@ export function ProgressRing({
         
         {/* Progress */}
         <circle
-          className={`${color} transition-all duration-1000 ease-out`}
+          className={`${indicatorColor} transition-all duration-1000 ease-out`}
           stroke="currentColor"
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
