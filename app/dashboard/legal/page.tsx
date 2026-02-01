@@ -11,13 +11,17 @@ import { HoverExplainer } from "@/components/ui/explainer";
 import { LearnMore } from "@/components/ui/learn-more";
 import { featureExplanations, legalExplanations } from "@/lib/knowledge-base";
 
+import { PermitManager } from "@/components/features/permits/permit-manager";
+
 export default function LegalPage() {
   const { user } = useAuth();
   const { activeProject: plan, loading } = useProject();
   const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
-    if (plan && !plan.legalAdvice && !generating && !loading) {
+    // Only generate for startup/creator if missing. 
+    // Traditional uses the checklist which is static/manual for now.
+    if (plan && plan.projectType !== 'traditional' && !plan.legalAdvice && !generating && !loading) {
       generateLegalData(plan.overview, plan.audience);
     }
   }, [plan, loading]);
@@ -67,6 +71,25 @@ export default function LegalPage() {
     );
   }
   if (!plan) return null;
+
+  // TRINITY: Traditional Business View
+  if (plan.projectType === 'traditional') {
+      return (
+        <div className="p-6 max-w-5xl mx-auto space-y-8">
+            <div className="flex items-start gap-4">
+                <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-emerald-500/20">
+                    <FileText size={28} />
+                </div>
+                <div>
+                   <h1 className="text-2xl font-black text-foreground">مجوزها و مراحل قانونی</h1>
+                   <p className="text-muted-foreground">چک‌لیست قدم‌به‌قدم برای راه‌اندازی قانونی {plan.projectName}</p>
+                </div>
+            </div>
+            
+            <PermitManager />
+        </div>
+      );
+  }
 
   if (generating || !plan.legalAdvice) {
     return (

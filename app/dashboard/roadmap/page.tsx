@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { toggleStepCompletion } from "@/lib/db";
-import { Map, CheckCircle2, Sparkles, Circle, Flag, ArrowDown } from "lucide-react";
+import { toggleStepCompletion, RoadmapStep } from "@/lib/db";
+import { Map, CheckCircle2, Sparkles, Circle, Flag, ArrowDown, Clock, AlertCircle, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,20 +26,22 @@ export default function RoadmapPage() {
   }, [plan]);
 
   // Handle Check/Uncheck
-  const handleToggle = async (step: string, e: React.MouseEvent) => {
+  const handleToggle = async (step: string | RoadmapStep, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!user || !plan) return;
 
-    const isNowCompleted = !completedSteps.includes(step);
+    const stepName = typeof step === 'string' ? step : step.title;
+    const isNowCompleted = !completedSteps.includes(stepName);
+    
     const newCompletedSteps = isNowCompleted 
-      ? [...completedSteps, step] 
-      : completedSteps.filter(s => s !== step);
+      ? [...completedSteps, stepName] 
+      : completedSteps.filter(s => s !== stepName);
     
     setCompletedSteps(newCompletedSteps);
     updateActiveProject({ completedSteps: newCompletedSteps });
 
     try {
-      await toggleStepCompletion(user.uid, step, isNowCompleted, plan.id || 'current');
+      await toggleStepCompletion(user.uid, stepName, isNowCompleted, plan.id || 'current');
     } catch (error) {
       console.error("Sync failed", error);
       setCompletedSteps(completedSteps); // Revert
@@ -88,8 +90,14 @@ export default function RoadmapPage() {
       {/* Timeline */}
       <div className="relative border-r-2 border-border/50 mr-4 md:mr-8 space-y-12">
         {plan.roadmap.map((phase, phaseIdx) => {
-          const isPhaseComplete = phase.steps.every((s: string) => completedSteps.includes(s));
-          const isPhaseStarted = phase.steps.some((s: string) => completedSteps.includes(s));
+          const isPhaseComplete = phase.steps.every((s) => {
+             const name = typeof s === 'string' ? s : s.title;
+             return completedSteps.includes(name);
+          });
+          const isPhaseStarted = phase.steps.some((s) => {
+             const name = typeof s === 'string' ? s : s.title;
+             return completedSteps.includes(name);
+          });
           
           return (
             <div key={phaseIdx} className="relative pr-8 md:pr-12 group">
@@ -114,8 +122,9 @@ export default function RoadmapPage() {
                 </div>
 
                 <div className="grid gap-4">
-                  {phase.steps.map((step: string, stepIdx: number) => {
-                    const isCompleted = completedSteps.includes(step);
+                  {phase.steps.map((step: string | RoadmapStep, stepIdx: number) => {
+                    const stepName = typeof step === 'string' ? step : step.title;
+                    const isCompleted = completedSteps.includes(stepName);
                     
                     return (
                       <div 
@@ -142,14 +151,41 @@ export default function RoadmapPage() {
                             </button>
 
                             <div className="flex-1">
-                              <h3 className={`font-medium text-lg mb-1 transition-colors ${isCompleted ? "text-muted-foreground line-through decoration-primary/30" : "text-foreground"}`}>
-                                {step}
-                              </h3>
+                              <div className="flex items-center justify-between gap-2">
+                                <h3 className={`font-medium text-lg mb-1 transition-colors ${isCompleted ? "text-muted-foreground line-through decoration-primary/30" : "text-foreground"}`}>
+                                  {stepName}
+                                </h3>
+                                {typeof step !== 'string' && step.priority && (
+                                  <Badge variant={step.priority === 'High' ? 'danger' : 'secondary'} className="text-[10px] h-5">
+                                    {step.priority}
+                                  </Badge>
+                                )}
+                              </div>
                               
+                              {typeof step !== 'string' && (
+                                <div className="text-sm text-muted-foreground mb-3 space-y-1">
+                                  {step.description && <p>{step.description}</p>}
+                                  <div className="flex items-center gap-3 text-xs opacity-80 pt-1">
+                                    {step.estimatedHours && (
+                                      <div className="flex items-center gap-1">
+                                        <Clock size={12} />
+                                        <span>{step.estimatedHours} ساعت</span>
+                                      </div>
+                                    )}
+                                    {step.category && (
+                                       <div className="flex items-center gap-1">
+                                        <FileText size={12} />
+                                        <span>{step.category}</span>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
                               {/* Action Bar */}
                               <div className="flex items-center gap-2 mt-2">
                                 <StepGuide 
-                                  stepName={step} 
+                                  stepName={stepName} 
                                   stepPhase={phase.phase} 
                                   projectName={plan.projectName}
                                 />

@@ -79,13 +79,6 @@ export function Sidebar() {
           })}
         </nav>
       </div>
-      <div className="mt-auto border-t p-4">
-          <div className="rounded-lg bg-muted/50 p-4">
-              <p className="text-xs text-muted-foreground text-center">
-                  نسخه آزمایشی ۱.۰.۰
-              </p>
-          </div>
-      </div>
     </div>
   );
 }

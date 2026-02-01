@@ -5,31 +5,30 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
-    const { idea, audience, budget } = await req.json();
+    const { idea, audience, budget, projectType } = await req.json();
 
     console.log("DEBUG: POST /api/generate-plan called");
-    console.log("DEBUG: Env Var Present:", !!process.env.OPENROUTER_API_KEY);
-    if(process.env.OPENROUTER_API_KEY) {
-        console.log("DEBUG: Key Start:", process.env.OPENROUTER_API_KEY.substring(0, 5));
-    } else {
-        console.error("DEBUG: OPENROUTER_API_KEY is MISSING");
-    }
+    console.log("DEBUG: Project Type:", projectType);
 
     if (!process.env.OPENROUTER_API_KEY) {
       return NextResponse.json({ error: 'OpenRouter API Key missing' }, { status: 500 });
     }
 
     const systemPrompt = `
-      You are Karnex, an expert startup consultant for the Iranian market.
-      Your Goal: Take a user's business idea and create a detailed execution plan focused on ZERO BUDGET ($0) or low cost.
+      You are Karnex, an expert business consultant specializing in the Iranian market.
+      Your Goal: Create a highly tailored execution plan based on the user's specific business type: ${projectType}.
       
       User Context:
+      - Type: ${projectType} (startup = Scalable Tech, traditional = SME/Shop, creator = Content/Brand)
       - Idea: ${idea}
       - Target Audience: ${audience}
       - Budget Constraint: ${budget}
 
       INSTRUCTIONS:
-      1. Think deeply about how to solve this specific problem in Iran.
+      1. Think deeply about the needs of a "${projectType}" business.
+         - If 'traditional': Focus on location, permits, physical assets, and local marketing.
+         - If 'startup': Focus on MVP, product-market fit, scalability, and investor appeal.
+         - If 'creator': Focus on content strategy, personal branding, platforms, and audience growth.
       2. You MUST reply in PERSIAN (Farsi).
       3. You MUST output ONLY valid JSON.
       

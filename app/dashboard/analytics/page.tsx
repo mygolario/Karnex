@@ -124,7 +124,10 @@ export default function AnalyticsPage() {
         <div className="space-y-4">
           {plan.roadmap.map((phase, idx) => {
             const phaseTotal = phase.steps.length;
-            const phaseCompleted = phase.steps.filter((s: string) => plan.completedSteps?.includes(s)).length;
+            const phaseCompleted = phase.steps.filter((s: string | any) => {
+              const stepName = typeof s === 'string' ? s : s.title;
+              return plan.completedSteps?.includes(stepName);
+            }).length;
             const phasePercent = phaseTotal > 0 ? Math.round((phaseCompleted / phaseTotal) * 100) : 0;
             
             return (

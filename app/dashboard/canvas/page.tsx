@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { HoverExplainer } from "@/components/ui/explainer";
 import { LearnMore } from "@/components/ui/learn-more";
 import { canvasExplanations, featureExplanations } from "@/lib/knowledge-base";
+import { SWOTAnalysisCanvas } from "@/components/features/canvas/swot-analysis";
+import { PersonalBrandCanvas } from "@/components/features/canvas/brand-canvas";
 
 export default function CanvasPage() {
   const { user } = useAuth();
@@ -41,6 +43,18 @@ export default function CanvasPage() {
       </div>
     );
   }
+
+  // --- Specialized Renders ---
+  
+  if (plan.projectType === 'traditional') {
+    return <SWOTAnalysisCanvas />;
+  }
+
+  if (plan.projectType === 'creator') {
+    return <PersonalBrandCanvas />;
+  }
+
+  // --- Default: Lean Canvas (Startup) ---
 
   const cardConfig = [
     {
@@ -92,15 +106,15 @@ export default function CanvasPage() {
                 <LayoutGrid size={24} />
               </div>
               <div>
-                <h1 className="text-3xl font-black text-foreground">بوم کسب‌وکار</h1>
+                <h1 className="text-3xl font-black text-foreground">بوم کسب‌وکار (Lean Canvas)</h1>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge variant="outline" className="text-xs">نسخه ۱.۰</Badge>
-                  <span className="text-sm text-muted-foreground">استراتژی {plan.projectName}</span>
+                  <span className="text-sm text-muted-foreground">استراتژی استارتاپی {plan.projectName}</span>
                 </div>
               </div>
             </div>
             <p className="text-muted-foreground max-w-lg mt-4">
-              این نقشه راه استراتژیک شماست. هر بخش را به دقت بررسی کنید و با بازخوردهای واقعی آن را به‌روز نگه دارید.
+              مناسب برای استارتاپ‌ها: سریع، چابک و متمرکز بر حل مسئله.
             </p>
           </div>
           
@@ -113,8 +127,6 @@ export default function CanvasPage() {
 
       {/* Canvas Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative">
-        {/* Connection Line (Visual Idea - optional, keeping simple for now) */}
-        
         {cardConfig.map((card, idx) => (
           <Card 
             key={idx} 

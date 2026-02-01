@@ -4,32 +4,35 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ProjectProvider } from '@/contexts/project-context';
 import { ThemeProvider } from '@/components/shared/theme-provider';
+import { NetworkStatus } from '@/components/shared/network-status';
+import { CookieBanner } from '@/components/shared/cookie-banner'; 
+import { GoogleAnalytics } from '@/components/shared/analytics'; // Fixed Import
 
 const vazir = Vazirmatn({ subsets: ['arabic', 'latin'] });
 
 export const metadata: Metadata = {
-  title: 'کارنکس | دستیار هوشمند کارآفرینی',
-  description: 'با هوش مصنوعی، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
+  title: 'کارنکس | هم‌بنیان‌گذار هوشمند استارتاپ‌ها، کسب‌وکارها و کریتورها',
+  description: 'پلتفرم جامع برای راه‌اندازی استارتاپ، کسب‌وکار سنتی و برند شخصی. با Genesis Flow ایده خود را به واقعیت تبدیل کنید.',
   metadataBase: new URL('https://www.karnex.ir'),
   openGraph: {
-    title: 'کارنکس | دستیار هوشمند کارآفرینی',
-    description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید.',
+    title: 'کارنکس | هم‌بنیان‌گذار هوشمند استارتاپ‌ها، کسب‌وکارها و کریتورها',
+    description: 'ابزار تخصصی برای استارتاپ‌ها (Visionary)، کسب‌وکارهای سنتی (Owner) و کریتورها (Creator).',
     url: 'https://www.karnex.ir',
     siteName: 'Karnex',
-    images: ['/logo-light.png'],
+    images: ['/logo-official.png'],
     locale: 'fa_IR',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'کارنکس | دستیار هوشمند کارآفرینی',
-    description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید.',
-    images: ['/logo-light.png'],
+    title: 'کارنکس | هم‌بنیان‌گذار هوشمند استارتاپ‌ها، کسب‌وکارها و کریتورها',
+    description: 'ابزار تخصصی برای استارتاپ‌ها (Visionary)، کسب‌وکارهای سنتی (Owner) و کریتورها (Creator).',
+    images: ['/logo-official.png'],
   },
   manifest: '/manifest.json',
   icons: {
-    icon: '/logo-dark.png',
-    apple: '/logo-dark.png',
+    icon: '/logo-official.png',
+    apple: '/logo-official.png',
   },
 };
 
@@ -48,11 +51,34 @@ export default function RootLayout({
           disableTransitionOnChange={false}
         >
           <AuthProvider>
+             <GoogleAnalytics />
             <ProjectProvider>
+              <NetworkStatus />
               {children}
+              <CookieBanner />
             </ProjectProvider>
           </AuthProvider>
         </ThemeProvider>
+        
+        {/* JSON-LD for Google Knowledge Graph */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Karnex",
+              "url": "https://www.karnex.ir",
+              "logo": "https://www.karnex.ir/logo-official.png",
+              "sameAs": [
+                "https://twitter.com/karnex_ir",
+                "https://instagram.com/karnex.ir",
+                "https://linkedin.com/company/karnex"
+              ],
+              "description": "دستیار هوشمند کارآفرینی برای استارتاپ‌ها، کسب‌وکارهای سنتی و تولیدکنندگان محتوا."
+            })
+          }}
+        />
       </body>
     </html>
   );

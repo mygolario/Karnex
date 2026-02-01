@@ -24,7 +24,8 @@ export function exportRoadmapToICS(plan: BusinessPlan): string {
   let dayOffset = 0;
   
   const events = plan.roadmap.flatMap((phase: RoadmapPhase, phaseIdx: number) => {
-    return phase.steps.map((step: string, stepIdx: number) => {
+    return phase.steps.map((step: string | any, stepIdx: number) => {
+      const stepName = typeof step === 'string' ? step : step.title;
       const startDate = new Date(now);
       startDate.setDate(startDate.getDate() + dayOffset);
       dayOffset += 7; // Each task is 1 week apart
@@ -37,9 +38,9 @@ export function exportRoadmapToICS(plan: BusinessPlan): string {
       return `BEGIN:VEVENT
 DTSTART:${formatDate(startDate)}
 DTEND:${formatDate(endDate)}
-SUMMARY:${step}
+SUMMARY:${stepName}
 DESCRIPTION:فاز: ${phase.phase} | پروژه: ${plan.projectName}
-STATUS:${plan.completedSteps?.includes(step) ? 'COMPLETED' : 'TENTATIVE'}
+STATUS:${plan.completedSteps?.includes(stepName) ? 'COMPLETED' : 'TENTATIVE'}
 UID:${plan.id || 'project'}-${phaseIdx}-${stepIdx}@karnex.ir
 END:VEVENT`;
     });

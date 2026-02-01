@@ -28,6 +28,7 @@ import {
   Activity,
   Award
 } from "lucide-react";
+import { calculateProjectScore } from "@/lib/scoring"; // Import
 
 export default function DashboardOverviewPage() {
   const { user } = useAuth();
@@ -78,16 +79,25 @@ export default function DashboardOverviewPage() {
     );
   }
 
+
+
+// ...
+
   // Calculate Stats
   const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1;
   const completedCount = plan?.completedSteps?.length || 0;
   const progressPercent = Math.round((completedCount / totalSteps) * 100);
   
-  // Calculate Health Score (Mock logic for now + progress)
-  const healthScore = Math.min(100, Math.round(progressPercent * 0.8 + 20)); // Base 20 + progress factor
+  // Calculate Score (Real Logic)
+  const scoreResult = plan ? calculateProjectScore(plan) : { total: 0, grade: 'D', breakdown: { foundation:0, strategy:0, market:0, execution:0 }, suggestions: [] };
 
   // Find next actionable step
-  const nextStep = plan?.roadmap?.flatMap((p: any) => p.steps).find((s: string) => !plan?.completedSteps?.includes(s));
+  const nextStep = plan?.roadmap?.flatMap((p: any) => p.steps).find((s: any) => {
+    const name = typeof s === 'string' ? s : s.title;
+    return !plan?.completedSteps?.includes(name);
+  });
+
+  const nextStepName = nextStep ? (typeof nextStep === 'string' ? nextStep : nextStep.title) : null;
 
   return (
     <div className="space-y-8 pb-12">
@@ -125,9 +135,9 @@ export default function DashboardOverviewPage() {
               <div>
                 <span className="text-xs font-bold text-white/60 uppercase tracking-wider">تمرکز امروز</span>
                 <p className="font-bold text-lg md:text-xl mt-1 line-clamp-1">
-                  {nextStep || "تبریک! تمام مراحل انجام شده است 🎉"}
+                  {nextStepName || "تبریک! تمام مراحل انجام شده است 🎉"}
                 </p>
-                {nextStep && (
+                {nextStepName && (
                   <Link href="/dashboard/roadmap" className="inline-flex items-center gap-1 text-sm mt-2 hover:underline opacity-90">
                     انجام تسک <ChevronLeft size={14} />
                   </Link>
@@ -142,29 +152,59 @@ export default function DashboardOverviewPage() {
         </Card>
 
         {/* Project Health Score */}
-        <Card variant="default" className="flex flex-col items-center justify-center text-center relative overflow-hidden">
+        <Card variant="default" className="flex flex-col items-center justify-center text-center relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-muted/20 pointer-events-none" />
           
-          <h3 className="font-bold text-muted-foreground mb-6 flex items-center gap-2">
+          <h3 className="font-bold text-muted-foreground mb-4 flex items-center gap-2">
             <Activity size={18} className="text-primary" />
-            سلامت پروژه
+            اعتبار سنجی ایده
           </h3>
           
-          <div className="relative mb-6">
-            <ProgressRing progress={healthScore} size={160} strokeWidth={12}>
+          <div className="relative mb-4">
+            <ProgressRing progress={scoreResult.total} size={140} strokeWidth={10} 
+              indicatorColor={
+                scoreResult.grade === 'S' ? 'stroke-purple-500' :
+                scoreResult.grade === 'A' ? 'stroke-emerald-500' :
+                scoreResult.grade === 'B' ? 'stroke-blue-500' :
+                scoreResult.grade === 'C' ? 'stroke-amber-500' :
+                'stroke-red-500'
+              }
+            >
               <div className="text-center">
-                <span className="text-4xl font-black text-foreground block">{healthScore}</span>
-                <span className="text-xs text-muted-foreground font-medium uppercase">امتیاز</span>
+                <span className={`text-4xl font-black block ${
+                   scoreResult.grade === 'S' ? 'text-purple-600' :
+                   scoreResult.grade === 'A' ? 'text-emerald-600' :
+                   scoreResult.grade === 'B' ? 'text-blue-600' :
+                   scoreResult.grade === 'C' ? 'text-amber-600' :
+                   'text-red-500'
+                }`}>{scoreResult.grade}</span>
+                <span className="text-xs text-muted-foreground font-medium uppercase">گرید</span>
               </div>
             </ProgressRing>
           </div>
 
-          <div className="flex gap-2">
-            <Link href="/dashboard/roadmap">
-              <Button variant="outline" size="sm" className="h-8 text-xs">
-                بهبود امتیاز
-              </Button>
-            </Link>
+          <div className="w-full px-8 space-y-1 mb-4 hidden group-hover:block animate-in fade-in slide-in-from-bottom-2 absolute bg-white/90 inset-x-0 bottom-12 backdrop-blur-md pt-2">
+             <div className="flex justify-between text-xs text-muted-foreground">
+                <span>استراتژی</span>
+                <span>{Math.round(scoreResult.breakdown.strategy)}/30</span>
+             </div>
+             <div className="flex justify-between text-xs text-muted-foreground">
+                <span>بازار</span>
+                <span>{Math.round(scoreResult.breakdown.market)}/30</span>
+             </div>
+          </div>
+
+          <div className="flex gap-2 relative z-10">
+            {scoreResult.suggestions.length > 0 ? (
+               <HoverExplainer title="پیشنهاد هوشمند" description={scoreResult.suggestions[0]}>
+                  <Button variant="ghost" size="sm" className="h-8 text-xs text-primary animate-pulse">
+                    <Sparkles size={12} className="mr-1" />
+                    بهبود امتیاز
+                  </Button>
+               </HoverExplainer>
+            ) : (
+              <Badge variant="success" className="h-8">عالی! 🎉</Badge>
+            )}
           </div>
         </Card>
       </div>
@@ -182,7 +222,10 @@ export default function DashboardOverviewPage() {
         />
         <StatsCard 
           title="فاز فعلی" 
-          value={plan?.roadmap?.find((p:any) => p.steps.some((s: string) => !plan.completedSteps?.includes(s)))?.phase.split(':')[0] || "تکمیل"} 
+          value={plan?.roadmap?.find((p:any) => p.steps.some((s: any) => {
+            const name = typeof s === 'string' ? s : s.title;
+            return !plan.completedSteps?.includes(name);
+          }))?.phase.split(':')[0] || "تکمیل"} 
           icon={Map} 
           variant="accent"
         />
