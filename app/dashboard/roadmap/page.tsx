@@ -486,7 +486,7 @@ export default function RoadmapPage() {
                                   {stepName}
                                 </h3>
                                 {typeof step !== 'string' && step.priority && (
-                                  <Badge variant={step.priority?.toLowerCase() === 'high' ? 'destructive' : 'secondary'} className="text-[10px] h-5">
+                                  <Badge variant={step.priority?.toLowerCase() === 'high' ? 'danger' : 'secondary'} className="text-[10px] h-5">
                                     {step.priority}
                                   </Badge>
                                 )}
@@ -561,50 +561,11 @@ export default function RoadmapPage() {
       {/* Step Detail Modal */}
       {selectedStep && (
         <StepDetailModal
-          step={selectedStep.step}
-          phaseName={selectedStep.phase.phase}
-          weekNumber={selectedStep.phase.weekNumber}
-          isOpen={!!selectedStep}
-          onClose={() => setSelectedStep(null)}
-          isCompleted={completedSteps.includes(selectedStep.step.title)}
-          onToggleComplete={() => {
-            handleToggle(selectedStep.step.title);
-            setSelectedStep(null);
+          step={{
+            ...selectedStep.step,
+            estimatedHours: selectedStep.step.estimatedHours ? Number(selectedStep.step.estimatedHours) : undefined,
+            priority: selectedStep.step.priority as "high" | "medium" | "low" | undefined
           }}
-          subTasks={getSubTasks(selectedStep.step.title)}
-          onSubTaskToggle={handleSubTaskToggle}
-          onBreakTask={() => handleStuck(selectedStep.step.title)}
-          isBreakingTask={loadingTask === selectedStep.step.title}
-          projectName={plan.projectName}
-        />
-      )}
-    </div>
-  );
-}
-      {/* Celebration if 100% */}
-      {progressPercent === 100 && (
-        <div className="relative overflow-hidden rounded-3xl p-1 bg-gradient-to-br from-yellow-300 via-amber-500 to-orange-500 shadow-2xl shadow-amber-500/30">
-          <div className="bg-card rounded-[22px] p-8 text-center">
-            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Sparkles size={40} className="text-yellow-600" />
-            </div>
-            <h2 className="text-3xl font-black text-foreground mb-3">تبریک! شما قهرمانید! 🏆</h2>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              تمام مراحل نقشه راه ۱۲ هفته‌ای با موفقیت به پایان رسید!
-            </p>
-            <Link href="/dashboard/overview">
-              <Button variant="gradient" size="lg" className="mt-8">
-                بازگشت به داشبورد
-              </Button>
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Step Detail Modal */}
-      {selectedStep && (
-        <StepDetailModal
-          step={selectedStep.step}
           phaseName={selectedStep.phase.phase}
           weekNumber={selectedStep.phase.weekNumber}
           isOpen={!!selectedStep}

@@ -182,7 +182,7 @@ export default function CanvasPage() {
           
           <div className="flex items-center gap-3">
              <AnalyzerButton plan={plan} />
-             <PdfExportButton elementId="lean-canvas" fileName={`${plan.projectName}-canvas`} />
+             <PdfExportButton plan={plan} />
           </div>
         </div>
       </div>
@@ -222,11 +222,11 @@ export default function CanvasPage() {
                       </div>
                    </div>
                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <HoverExplainer title={config.title} description={canvasExplanations[key] || config.description}>
+                      <HoverExplainer title={config.title} description={(canvasExplanations as any)[key] || config.description}>
                          <Button variant="ghost" size="icon" className="h-7 w-7"><Info size={14} /></Button>
                       </HoverExplainer>
                       <SectionRegenerator 
-                         sectionKey={key} 
+                         sectionTitle={config.title}
                          currentContent={cards.map(c => c.content).join('\n')} 
                          onUpdate={(c) => handleSectionUpdate(key, c)} 
                       />

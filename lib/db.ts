@@ -209,6 +209,9 @@ export interface LeanCanvas {
   keyResources?: CanvasSectionContent;
   keyPartners?: CanvasSectionContent;
   costStructure?: CanvasSectionContent;
+  channels?: CanvasSectionContent;
+  unfairAdvantage?: CanvasSectionContent;
+  keyMetrics?: CanvasSectionContent;
 }
 
 // Media Kit structure (For Creators)

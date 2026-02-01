@@ -93,6 +93,16 @@ export function PitchDeckBuilder() {
   const syncWithPlan = () => {
     if (!activeProject) return;
     
+    // Helper to extract text from Canvas content (string or cards)
+    const getText = (content: any): string => {
+        if (!content) return "";
+        if (typeof content === 'string') return content;
+        if (Array.isArray(content)) {
+            return content.map((c: any) => c.content).join('. ');
+        }
+        return "";
+    };
+
     // Simple logic to pull data from plan into current slide if relevat
     let syncedBullets = [...(currentSlide?.bullets || [])];
     let syncedTitle = currentSlide?.title;
@@ -101,11 +111,11 @@ export function PitchDeckBuilder() {
         syncedTitle = activeProject.projectName;
         syncedBullets = [activeProject.tagline];
     } else if (currentSlide?.type === 'problem') {
-        syncedBullets = [activeProject.leanCanvas.problem];
+        syncedBullets = [getText(activeProject.leanCanvas.problem)];
     } else if (currentSlide?.type === 'solution') {
-        syncedBullets = [activeProject.leanCanvas.solution, activeProject.leanCanvas.uniqueValue];
+        syncedBullets = [getText(activeProject.leanCanvas.solution), getText(activeProject.leanCanvas.uniqueValue)];
     } else if (currentSlide?.type === 'business_model') {
-        syncedBullets = [activeProject.leanCanvas.revenueStream];
+        syncedBullets = [getText(activeProject.leanCanvas.revenueStream)];
     }
 
     const updated = slides.map((s, i) => i === currentSlideIndex ? { ...s, title: syncedTitle, bullets: syncedBullets } : s);
