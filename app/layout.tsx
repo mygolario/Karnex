@@ -18,8 +18,9 @@ export const metadata: Metadata = {
   },
   description: 'با هوش مصنوعی، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
   icons: {
-    icon: '/logo-official.png',
-    apple: '/logo-official.png',
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
   },
   keywords: [
     'کارآفرینی',
@@ -58,7 +59,14 @@ export const metadata: Metadata = {
     description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
     url: 'https://www.karnex.ir',
     siteName: 'Karnex',
-    images: ['/logo-official.png'],
+    images: [
+      {
+        url: '/logo.png',
+        width: 800,
+        height: 600,
+        alt: 'کارنکس - دستیار هوشمند کارآفرینی',
+      },
+    ],
     locale: 'fa_IR',
     type: 'website',
   },
@@ -67,7 +75,7 @@ export const metadata: Metadata = {
     title: 'کارنکس | دستیار هوشمند کارآفرینی',
     description: 'با هوش مصنوعی، ایده خود را به یک بیزینس تبدیل کنید.',
     creator: '@karnex_ir',
-    images: ['/logo-official.png'],
+    images: ['/logo.png'],
   },
   manifest: '/manifest.json',
   category: 'technology',
@@ -107,7 +115,7 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "Karnex",
               "url": "https://www.karnex.ir",
-              "logo": "https://www.karnex.ir/logo-official.png",
+              "logo": "https://www.karnex.ir/logo.png",
               "sameAs": [
                 "https://twitter.com/karnex_ir",
                 "https://instagram.com/karnex.ir",
