@@ -457,7 +457,7 @@ export default function NewProjectPage() {
                     <div className="space-y-6">
                          <div className="text-center mb-8">
                             <h2 className="text-2xl font-bold mb-2">در چه حوزه‌ای فعالیت می‌کنید؟</h2>
-                            <p className="text-muted-foreground">انتخاب حوزه به هوش مصنوعی کمک می‌کند پیشنهادات دقیق‌تری بدهد.</p>
+                            <p className="text-muted-foreground">انتخاب حوزه به دستیار کارنکس کمک می‌کند پیشنهادات دقیق‌تری بدهد.</p>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                             {filteredTemplates.map((t) => (

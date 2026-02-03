@@ -50,7 +50,7 @@ export const StripeFeatures = () => {
                         <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-6">
                             <Brain className="w-8 h-8 text-white" />
                         </div>
-                        <h3 className="text-3xl font-black mb-4">هوش مصنوعی مولد ایده</h3>
+                        <h3 className="text-3xl font-black mb-4">دستیار مولد ایده</h3>
                         <p className="text-white/80 text-lg leading-relaxed mb-6">
                             فقط با نوشتن یک جمله ساده، تحلیل کامل بازار، مدل کسب‌وکار، و استراتژی رشد را دریافت کنید. AI ما میلیون‌ها داده را بررسی می‌کند.
                         </p>

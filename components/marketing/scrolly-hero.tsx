@@ -61,7 +61,7 @@ export function ScrollyHero() {
           >
             <Badge variant="outline" className="px-4 py-1.5 text-sm border-primary/20 bg-primary/5 backdrop-blur-md">
               <span className="w-2 h-2 rounded-full bg-primary mr-2 animate-pulse" />
-              نسخه ۲.۰: هوش مصنوعی مولد
+              نسخه ۲.۰: دستیار کارنکس
             </Badge>
           </motion.div>
 

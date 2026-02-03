@@ -96,11 +96,11 @@ export function CommandMenu() {
               <span>نقشه راه</span>
             </Command.Item>
              <Command.Item 
-                onSelect={() => runCommand(() => router.push('/dashboard/library'))}
+                onSelect={() => runCommand(() => router.push('/dashboard/brand'))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
               <ImageIcon className="ml-2 h-4 w-4" />
-              <span>کتابخانه رسانه</span>
+              <span>هویت بصری</span>
             </Command.Item>
           </Command.Group>
 

@@ -189,7 +189,7 @@ export interface BrandKit {
 export interface CanvasCard {
   id: string;
   content: string;
-  color: 'yellow' | 'blue' | 'green' | 'pink' | 'purple' | 'cyan';
+  color: 'yellow' | 'blue' | 'green' | 'pink' | 'purple' | 'cyan' | 'red' | 'orange';
   order?: number;
 }
 
@@ -203,8 +203,9 @@ export interface LeanCanvas {
   solution: CanvasSectionContent;
   uniqueValue: CanvasSectionContent;
   revenueStream: CanvasSectionContent;
-  // New 5 blocks for full BMC
+  // New blocks for full BMC
   customerSegments?: CanvasSectionContent;
+  customerRelations?: CanvasSectionContent;
   keyActivities?: CanvasSectionContent;
   keyResources?: CanvasSectionContent;
   keyPartners?: CanvasSectionContent;
@@ -355,6 +356,8 @@ export interface BusinessPlan {
   id?: string;
   projectName: string;
   tagline: string;
+  description?: string; // Added for AI context
+  template?: string;    // Added for AI context
   overview: string;
   leanCanvas: LeanCanvas;
   swotAnalysis?: SWOTAnalysis; // Traditional

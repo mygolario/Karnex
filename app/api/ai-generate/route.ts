@@ -16,8 +16,8 @@ const CANVAS_GENERATION_PROMPT = `ایده: {businessIdea}
   "keyActivities": "• فعالیت ۱\\n• فعالیت ۲\\n• فعالیت ۳",
   "keyResources": "• منبع ۱\\n• منبع ۲\\n• منبع ۳",
   "uniqueValue": "• ارزش ۱\\n• ارزش ۲\\n• ارزش ۳",
-  "problem": "• مشکل ۱\\n• مشکل ۲\\n• مشکل ۳",
-  "solution": "• راه‌حل ۱\\n• راه‌حل ۲\\n• راه‌حل ۳",
+  "customerRelations": "• رابطه ۱\\n• رابطه ۲\\n• رابطه ۳",
+  "channels": "• کانال ۱\\n• کانال ۲\\n• کانال ۳",
   "customerSegments": "• مشتری ۱\\n• مشتری ۲\\n• مشتری ۳",
   "costStructure": "• هزینه ۱\\n• هزینه ۲\\n• هزینه ۳",
   "revenueStream": "• درآمد ۱\\n• درآمد ۲\\n• درآمد ۳"

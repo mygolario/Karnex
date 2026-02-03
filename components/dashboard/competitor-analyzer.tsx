@@ -211,7 +211,7 @@ ${result.swot?.threats?.map(s => `- ${s}`).join('\n')}
             {analyzing ? <Loader2 size={36} className="animate-spin" /> : <Search size={36} />}
           </motion.div>
 
-          <h3 className="text-2xl font-black mb-3">تحلیل رقبا با هوش مصنوعی کارنکس</h3>
+          <h3 className="text-2xl font-black mb-3">تحلیل رقبا با دستیار کارنکس</h3>
           <p className="text-white/80 mb-8 max-w-lg mx-auto leading-7">
             رقبای ایرانی و بین‌المللی در حوزه «{plan?.projectName}» را شناسایی کنید،
             نقاط قوت و ضعف آن‌ها را بشناسید و تحلیل SWOT اختصاصی دریافت کنید.

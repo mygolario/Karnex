@@ -1,110 +1,123 @@
+/* === Vazirmatn Font Import === */
+@import url("https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ================================================
-   KARNEX DESIGN SYSTEM - Hybrid Approach
-   Modern SaaS + Clean Navigation + Persian Warmth
+   KARNEX DESIGN SYSTEM v2.0 - Bold & Dynamic
+   Hot Pink + Orange on Black | RTL-First Persian
    ================================================ */
 
 @layer base {
   :root {
-    /* === Stripe-Inspired Palette (Vibrant Professional) === */
+    /* === Bold & Dynamic Palette === */
 
-    /* Primary (Blurple) */
-    --primary: 243 75% 59%; /* #635bff */
+    /* Primary (Hot Pink) */
+    --primary: 330 81% 60%; /* #ec4899 */
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary (Cyan) */
-    --secondary: 190 100% 50%; /* #00d4ff */
-    --secondary-foreground: 190 100% 10%;
+    /* Secondary (Orange) */
+    --secondary: 25 95% 53%; /* #f97316 */
+    --secondary-foreground: 0 0% 100%;
 
-    /* Accent (Vibrant Pink) */
-    --accent: 330 85% 60%; /* #ee2d77 */
+    /* Accent (Gradient mix) */
+    --accent: 350 89% 60%; /* Pink-Orange blend */
     --accent-foreground: 0 0% 100%;
 
-    /* Neutral Backgrounds */
+    /* Light Mode Backgrounds */
     --background: 0 0% 100%;
-    --foreground: 215 28% 17%; /* Slate-900ish */
+    --foreground: 0 0% 9%; /* Near black text */
 
     /* Surfaces */
     --card: 0 0% 100%;
-    --card-foreground: 215 28% 17%;
+    --card-foreground: 0 0% 9%;
 
     /* Muted */
-    --muted: 210 40% 96%; /* Slate-50 */
-    --muted-foreground: 215 16% 47%; /* Slate-500 */
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
     /* Popover */
     --popover: 0 0% 100%;
-    --popover-foreground: 215 28% 17%;
+    --popover-foreground: 0 0% 9%;
 
     /* Borders */
-    --border: 214 32% 91%; /* Slate-200 */
-    --input: 214 32% 91%;
-    --ring: 243 75% 59%; /* Focus ring = Primary */
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 330 81% 60%; /* Pink focus ring */
 
     /* Destructive */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
     /* Radius */
-    --radius: 0.5rem; /* 8px - more technical/precise */
-    --radius-sm: 0.25rem;
+    --radius: 0.75rem;
+    --radius-sm: 0.375rem;
     --radius-md: 0.5rem;
     --radius-lg: 0.75rem;
     --radius-xl: 1rem;
     --radius-2xl: 1.5rem;
 
     /* Glass */
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.3);
-    --glass-blur: 16px;
+    --glass-bg: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-blur: 20px;
   }
 
   .dark {
-    /* === Dark Mode (Rich Navy/Slate) === */
+    /* === Dark Mode (True Black) === */
 
-    /* Primary (Light Blurple) */
-    --primary: 243 100% 75%;
-    --primary-foreground: 243 40% 10%;
+    /* Primary (Brighter Pink) */
+    --primary: 330 85% 65%;
+    --primary-foreground: 0 0% 0%;
 
-    /* Secondary (Cyan) */
-    --secondary: 190 90% 60%;
-    --secondary-foreground: 190 90% 10%;
+    /* Secondary (Brighter Orange) */
+    --secondary: 25 100% 60%;
+    --secondary-foreground: 0 0% 0%;
 
     /* Accent */
-    --accent: 330 80% 65%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 350 90% 65%;
+    --accent-foreground: 0 0% 0%;
 
-    /* Backgrounds (Dark Navy/Slate) */
-    --background: 222 47% 11%; /* #0f172a (Slate 900) */
-    --foreground: 210 40% 98%;
+    /* Backgrounds (True Black) */
+    --background: 0 0% 0%; /* #000000 */
+    --foreground: 0 0% 98%;
 
-    /* Surfaces */
-    --card: 217 33% 17%; /* Slate 800 */
-    --card-foreground: 210 40% 98%;
+    /* Surfaces (Dark gray) */
+    --card: 0 0% 7%; /* #121212 */
+    --card-foreground: 0 0% 98%;
 
     /* Muted */
-    --muted: 217 33% 20%;
-    --muted-foreground: 215 20% 65%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 0 0% 65%;
 
     /* Popover */
-    --popover: 217 33% 17%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
 
     /* Borders */
-    --border: 217 33% 22%;
-    --input: 217 33% 22%;
-    --ring: 243 100% 75%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 330 85% 65%;
 
     /* Destructive */
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 70% 45%;
+    --destructive-foreground: 0 0% 100%;
 
     /* Glass */
-    --glass-bg: rgba(15, 23, 42, 0.7);
+    --glass-bg: rgba(0, 0, 0, 0.8);
     --glass-border: rgba(255, 255, 255, 0.1);
+  }
+
+  /* === Persian Typography === */
+  html {
+    font-family: "Vazirmatn", system-ui, sans-serif;
+    direction: rtl;
+  }
+
+  body {
+    font-family: "Vazirmatn", system-ui, sans-serif;
   }
 }
 

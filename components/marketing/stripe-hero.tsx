@@ -36,7 +36,7 @@ export const StripeHero = () => {
             >
                 <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900/5 dark:bg-slate-50/10 border border-slate-200 dark:border-slate-800 backdrop-blur-sm text-sm font-bold text-foreground w-fit mx-auto lg:mx-0 shadow-sm">
                     <span className="flex h-2 w-2 rounded-full bg-green-500 animate-ping" />
-                    <span className="bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">نسخه جدید: Genesis Flow</span>
+                    <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">ایده با تو، مسیرش با کارنکس</span>
                 </div>
             </motion.div>
 
@@ -48,7 +48,7 @@ export const StripeHero = () => {
               className="text-5xl md:text-7xl font-black tracking-tight text-foreground leading-[1.1] md:leading-[1.1]"
             >
               هم‌بنیان‌گذار هوشمند برای <br />
-              <span className="bg-gradient-to-r from-primary via-purple-600 to-pink-500 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
                 هر نوع کسب‌وکار
               </span>
             </motion.h1>

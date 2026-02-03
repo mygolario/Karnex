@@ -17,6 +17,10 @@ const config: Config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Vazirmatn", "system-ui", "sans-serif"],
+        vazir: ["Vazirmatn", "system-ui", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -50,6 +54,22 @@ const config: Config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        // Three Pillars Colors
+        startup: {
+          DEFAULT: "#8b5cf6", // Purple/Violet
+          light: "#a78bfa",
+          dark: "#7c3aed",
+        },
+        traditional: {
+          DEFAULT: "#10b981", // Emerald
+          light: "#34d399",
+          dark: "#059669",
+        },
+        creator: {
+          DEFAULT: "#f59e0b", // Amber
+          light: "#fbbf24",
+          dark: "#d97706",
         },
       },
       borderRadius: {

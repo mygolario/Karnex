@@ -10,12 +10,12 @@ import { PricingPlan, PlanTier, PlanFeature } from './types';
 // Feature definitions with Persian labels
 const FEATURES = {
   aiAssistant: {
-    name: 'دستیار هوش مصنوعی',
+    name: 'دستیار کارنکس',
     tooltip: 'چت با AI برای دریافت مشاوره و راهنمایی',
   },
   aiGenerations: {
     name: 'تولید محتوا با AI',
-    tooltip: 'تعداد درخواست‌های تولید محتوا با هوش مصنوعی',
+    tooltip: 'تعداد درخواست‌های تولید محتوا با دستیار کارنکس',
   },
   projects: {
     name: 'تعداد پروژه',

@@ -66,7 +66,7 @@ export function BentoFeatures() {
                  <div className="bg-purple-500 w-10 h-10 rounded-lg flex items-center justify-center mb-4 text-white">
                     <Zap size={20} />
                 </div>
-                <h3 className="text-xl font-bold mb-2">هوش مصنوعی</h3>
+                <h3 className="text-xl font-bold mb-2">دستیار کارنکس</h3>
                 <p className="text-muted-foreground text-sm">مشاور ۲۴ ساعته اختصاصی کسب‌وکار شما.</p>
             </div>
         </motion.div>

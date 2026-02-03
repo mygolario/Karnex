@@ -8,132 +8,69 @@ import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Map,
-  Store,
-  Video,
-  Scale,
-  Megaphone,
   LayoutGrid,
-  Palette,
-  Crown,
-  Presentation,
-  HelpCircle,
+  FlaskConical,
+  Bot,
+  TrendingUp,
+  FileText,
   Settings,
-  Sparkles,
-  UserCircle,
-  ImageIcon
+  User,
 } from "lucide-react";
-import { useProject } from "@/contexts/project-context";
-import { HoverExplainer } from "@/components/ui/explainer";
+
+const navItems = [
+  { icon: LayoutDashboard, label: "داشبورد", href: "/dashboard/overview" },
+  { icon: LayoutGrid, label: "بوم", href: "/dashboard/canvas" },
+  { icon: Map, label: "نقشه راه", href: "/dashboard/roadmap" },
+  { icon: FlaskConical, label: "اعتبارسنج", href: "/dashboard/validator" },
+  { icon: Bot, label: "دستیار کارنکس", href: "/dashboard/copilot" },
+  { icon: TrendingUp, label: "رشدنما", href: "/dashboard/growth" },
+  { icon: FileText, label: "مستندات", href: "/dashboard/docs" },
+  { icon: Settings, label: "تنظیمات", href: "/dashboard/settings" },
+  { icon: User, label: "پروفایل", href: "/dashboard/profile" },
+];
 
 export function DockNavigation() {
   const pathname = usePathname();
-  const { activeProject } = useProject();
-  
-  const type = activeProject?.projectType || 'startup';
-
-  // Define Menu Items based on Project Type (Same logic as Layout)
-  const common = [
-    { icon: LayoutDashboard, label: "داشبورد", href: "/dashboard/overview" },
-  ];
-
-  let mainItems = [];
-  
-  switch (type) {
-      case 'traditional':
-        mainItems = [
-          ...common,
-          { icon: Map, label: "مراحل", href: "/dashboard/roadmap" },
-          { icon: Store, label: "طرح", href: "/dashboard/canvas" },
-          { icon: Scale, label: "مالی", href: "/dashboard/financial" },
-          { icon: Megaphone, label: "انبار", href: "/dashboard/operations" }, 
-          { icon: ImageIcon, label: "رسانه", href: "/dashboard/library" },
-        ];
-        break;
-      case 'creator':
-        mainItems = [
-          ...common,
-          { icon: Video, label: "رشد", href: "/dashboard/roadmap" },
-          { icon: Palette, label: "برند", href: "/dashboard/brand" },
-          { icon: Megaphone, label: "مدیا کیت", href: "/dashboard/marketing" },
-          { icon: Crown, label: "تعرفه", href: "/dashboard/financial" },
-          { icon: ImageIcon, label: "رسانه", href: "/dashboard/library" },
-        ];
-        break;
-      case 'startup':
-      default:
-        mainItems = [
-          ...common,
-          { icon: Map, label: "نقشه راه", href: "/dashboard/roadmap" },
-          { icon: LayoutGrid, label: "بوم ناب", href: "/dashboard/canvas" },
-          { icon: Presentation, label: "پیچ دک", href: "/dashboard/marketing" },
-          { icon: Scale, label: "بودجه", href: "/dashboard/financial" },
-          { icon: ImageIcon, label: "رسانه", href: "/dashboard/library" },
-        ];
-        break;
-  }
-
-  const systemItems = [
-      { icon: UserCircle, label: "پروفایل", href: "/dashboard/profile" },
-      { icon: Settings, label: "تنظیمات", href: "/dashboard/settings" },
-  ];
-
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-      <motion.div 
-        layoutId="dock"
-        className="flex items-center gap-2 px-4 py-3 bg-white/10 backdrop-blur-2xl border border-white/20 rounded-full shadow-2xl ring-1 ring-black/5 dark:bg-black/20 dark:border-white/10"
-      >
-        {/* Main Items */}
-        {mainItems.map((item) => {
+    <motion.nav
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 200, damping: 25, delay: 0.2 }}
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+    >
+      <div className="flex items-center gap-1 px-4 py-3 rounded-2xl bg-black/60 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40">
+        {navItems.map((item) => {
           const isActive = pathname === item.href;
+          
           return (
-            <Link key={item.href} href={item.href} className="relative group">
-                {isActive && (
-                    <motion.div 
-                        layoutId="active-pill"
-                        className="absolute inset-0 bg-white/20 rounded-xl"
-                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
+            <Link key={item.href} href={item.href}>
+              <motion.div
+                whileHover={{ scale: 1.1, y: -4 }}
+                whileTap={{ scale: 0.95 }}
+                className={cn(
+                  "relative flex flex-col items-center justify-center w-12 h-12 rounded-xl transition-colors",
+                  isActive
+                    ? "bg-white/10 text-white"
+                    : "text-white/50 hover:text-white hover:bg-white/5"
                 )}
-                <div className={cn(
-                    "relative p-3 rounded-xl transition-all duration-200 hover:bg-white/10",
-                    isActive ? "text-white" : "text-white/70 hover:text-white"
-                )}>
-                    <item.icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-                    
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                        {item.label}
-                    </div>
-                </div>
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="dock-active"
+                    className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent rounded-xl"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <item.icon size={20} className="relative z-10" />
+                <span className="text-[10px] mt-1 relative z-10 font-medium">
+                  {item.label}
+                </span>
+              </motion.div>
             </Link>
           );
         })}
-
-        {/* Separator */}
-        <div className="w-px h-8 bg-white/10 mx-1" />
-
-        {/* System Items */}
-        {systemItems.map((item) => {
-             const isActive = pathname === item.href;
-             return (
-               <Link key={item.href} href={item.href} className="relative group">
-                   <div className={cn(
-                       "relative p-3 rounded-xl transition-all duration-200 hover:bg-white/10",
-                       isActive ? "text-white" : "text-white/60 hover:text-white"
-                   )}>
-                       <item.icon size={22} />
-                       {/* Tooltip */}
-                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-                            {item.label}
-                        </div>
-                   </div>
-               </Link>
-             );
-        })}
-
-      </motion.div>
-    </div>
+      </div>
+    </motion.nav>
   );
 }

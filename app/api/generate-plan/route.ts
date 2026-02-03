@@ -43,67 +43,68 @@ export async function POST(req: Request) {
       - Budget Constraint: ${budget}
 
       INSTRUCTIONS:
-      1. Think deeply about the needs of a "${projectType}" business.
-         - If 'traditional': Focus on location, permits, physical assets, and local marketing.
-         - If 'startup': Focus on MVP, product-market fit, scalability, and investor appeal.
-         - If 'creator': Focus on content strategy, personal branding, platforms, and audience growth.
-      2. You MUST reply in PERSIAN (Farsi).
-      3. You MUST output ONLY valid JSON.
-      
-      JSON STRUCTURE REQUIRED:
-      {
-        "projectName": "Short catchy name in Persian",
-        "tagline": "A punchy slogan",
-        "overview": "2 sentences describing the business",
-        "leanCanvas": {
-          "problem": "What pain point are they solving?",
-          "solution": "How they solve it simply",
-          "uniqueValue": "Why them?",
-          "revenueStream": "How they make money (e.g. Subscription, Ads)"
-        },
-        "brandKit": {
-          "primaryColorHex": "#HEXCODE",
-          "secondaryColorHex": "#HEXCODE",
-          "colorPsychology": "Why these colors?",
-          "suggestedFont": "Vazirmatn",
-          "logoConcepts": [
-            { "conceptName": "Concept 1", "description": "Description 1" },
-            { "conceptName": "Concept 2", "description": "Description 2" },
-            { "conceptName": "Concept 3", "description": "Description 3" }
-          ]
-        },
-        "roadmap": [
-           { "phase": "Week 1: Validation", "steps": ["Step 1", "Step 2"] },
-           { "phase": "Week 2: MVP Build", "steps": ["Step 1", "Step 2"] },
-           { "phase": "Week 3: Launch", "steps": ["Step 1", "Step 2"] }
-        ],
-        "marketingStrategy": [
-           "Specific tactic 1",
-           "Specific tactic 2",
-           "Specific tactic 3",
-           "Specific tactic 4"
-        ],
-        "competitors": [
-          { 
-            "name": "Name of ACTUAL competitor company in Iran (e.g. Digikala, Snapp, Torob, Basalam, Tap30)", 
-            "strength": "Their main advantage", 
-            "weakness": "Their main weakness you can exploit", 
-            "channel": "Where they sell (Website/App/Instagram/Physical)" 
-          },
-          { 
-            "name": "Another REAL Iranian competitor company name", 
-            "strength": "Their main advantage", 
-            "weakness": "Their main weakness", 
-            "channel": "Their main channel" 
-          },
-          { 
-            "name": "Third REAL competitor (can be international if relevant)", 
-            "strength": "Their advantage", 
-            "weakness": "Their weakness", 
-            "channel": "Their channel" 
-          }
-        ]
-      }
+       1. Think deeply about the needs of a "${projectType}" business.
+          - If 'traditional': Focus on location, permits, physical assets, and local marketing.
+          - If 'startup': Focus on MVP, product-market fit, scalability, and investor appeal.
+          - If 'creator': Focus on content strategy, personal branding, platforms, and audience growth.
+       2. You MUST reply in PERSIAN (Farsi).
+       3. You MUST output ONLY valid JSON.
+       4. Roadmap Length: Determine the optimal length (4 to 16 weeks) based on complexity.
+       5. Competitors: Search your knowledge base for REAL, EXISTING companies in Iran/Global.
+       
+       JSON STRUCTURE REQUIRED:
+       {
+         "projectName": "Short catchy name in Persian",
+         "tagline": "A punchy slogan",
+         "overview": "2 sentences describing the business",
+         "leanCanvas": {
+           "keyPartners": "Key Partners list",
+           "keyActivities": "Key Activities list",
+           "keyResources": "Key Resources list",
+           "uniqueValue": "Value Propositions",
+           "customerRelations": "Customer Relationships",
+           "channels": "Channels",
+           "customerSegments": "Customer Segments",
+           "costStructure": "Cost Structure",
+           "revenueStream": "Revenue Streams"
+         },
+         "brandKit": {
+           "primaryColorHex": "#HEXCODE",
+           "secondaryColorHex": "#HEXCODE",
+           "colorPsychology": "Why these colors?",
+           "suggestedFont": "Vazirmatn",
+           "logoConcepts": [
+             { "conceptName": "Concept 1", "description": "Description 1" },
+             { "conceptName": "Concept 2", "description": "Description 2" },
+             { "conceptName": "Concept 3", "description": "Description 3" }
+           ]
+         },
+         "roadmap": [
+            { "phase": "Week 1: Validation", "steps": ["Step 1", "Step 2"] },
+            { "phase": "Week 2: MVP", "steps": ["Step 1", "Step 2"] },
+            { "phase": "Week ...: ...", "steps": ["..."] }
+         ],
+         "marketingStrategy": [
+            "Specific tactic 1",
+            "Specific tactic 2",
+            "Specific tactic 3",
+            "Specific tactic 4"
+         ],
+         "competitors": [
+           { 
+             "name": "REAL Competitor Name 1", 
+             "strength": "Actual advantage", 
+             "weakness": "Actual weakness", 
+             "channel": "Main channel" 
+           },
+           { 
+             "name": "REAL Competitor Name 2", 
+             "strength": "Actual advantage", 
+             "weakness": "Actual weakness", 
+             "channel": "Main channel" 
+           }
+         ]
+       }
     `;
 
     // Mock plan removed for brevity in this fix, relying on AI generation.
@@ -127,7 +128,7 @@ export async function POST(req: Request) {
 
     try {
       const structuredPlan = parseJsonFromAI(result.content!);
-      console.log(`✅ 12-week plan generated using ${result.model}`);
+      console.log(`✅ Variable length plan generated using ${result.model}`);
       return NextResponse.json(structuredPlan);
     } catch (parseError) {
       console.error("JSON Parse Error:", parseError);
