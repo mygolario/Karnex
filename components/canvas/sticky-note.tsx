@@ -20,7 +20,9 @@ const colorClasses: Record<CanvasCard['color'], string> = {
   green: "sticky-green",
   pink: "sticky-pink",
   purple: "sticky-purple",
-  cyan: "sticky-cyan"
+  cyan: "sticky-cyan",
+  red: "sticky-red",
+  orange: "sticky-orange"
 };
 
 const colorDotClasses: Record<CanvasCard['color'], string> = {
@@ -29,7 +31,9 @@ const colorDotClasses: Record<CanvasCard['color'], string> = {
   green: "color-dot-green",
   pink: "color-dot-pink",
   purple: "color-dot-purple",
-  cyan: "color-dot-cyan"
+  cyan: "color-dot-cyan",
+  red: "color-dot-red",
+  orange: "color-dot-orange"
 };
 
 const colors: CanvasCard['color'][] = ['yellow', 'blue', 'green', 'pink', 'purple', 'cyan'];

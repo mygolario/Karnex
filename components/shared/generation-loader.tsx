@@ -1,150 +1,109 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState } from "react";
+import { Loader2, Sparkles, Brain, Rocket, Zap, Database, Search } from "lucide-react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 interface GenerationLoaderProps {
   isLoading: boolean;
-  progress?: number; // 0 to 100
   title?: string;
+  progress?: number;
 }
 
-const TIPS = [
-  "در حال تحلیل مدل‌های کسب‌وکار موفق...",
-  "ساختاردهی به جریان‌های درآمدی...",
-  "شناسایی بخش‌های مشتریان هدف...",
-  "بهینه‌سازی ارزش پیشنهادی...",
-  "بررسی استراتژی‌های رشد...",
-  "تدوین ساختار هزینه‌ها...",
-  "تحلیل رقبا و مزیت‌های رقابتی...",
+const LOADING_PHASES = [
+  { text: "تحلیل ورودی‌ها...", icon: Brain },
+  { text: "طراحی مدل کسب‌وکار...", icon: Zap },
+  { text: "بررسی رقبا...", icon: Search },
+  { text: "ساختاردهی داده‌ها...", icon: Database },
+  { text: "تدوین استراتژی نهایی...", icon: Sparkles },
+  { text: "آماده‌سازی داشبورد...", icon: Rocket },
 ];
 
-export function GenerationLoader({ isLoading, progress, title = "در حال ساخت طرح کسب‌وکار" }: GenerationLoaderProps) {
-  const [tipIndex, setTipIndex] = useState(0);
-  const [dots, setDots] = useState("");
+export function GenerationLoader({ isLoading, title = "در حال ساخت...", progress }: GenerationLoaderProps) {
+  const [phaseIndex, setPhaseIndex] = useState(0);
 
-  // Rotate tips
   useEffect(() => {
     if (!isLoading) return;
     const interval = setInterval(() => {
-      setTipIndex((prev) => (prev + 1) % TIPS.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [isLoading]);
-
-  // Animated dots
-  useEffect(() => {
-    if (!isLoading) return;
-    const interval = setInterval(() => {
-      setDots((prev) => (prev.length >= 3 ? "" : prev + "."));
-    }, 500);
+      setPhaseIndex((prev) => (prev + 1) % LOADING_PHASES.length);
+    }, 2500);
     return () => clearInterval(interval);
   }, [isLoading]);
 
   if (!isLoading) return null;
 
+  const CurrentIcon = LOADING_PHASES[phaseIndex].icon;
+
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-md">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          className="relative w-full max-w-md p-8 flex flex-col items-center"
-        >
-          {/* 3D Building Blocks Animation */}
-          <div className="relative h-40 w-40 mb-12 perserve-3d">
-            <div className="absolute inset-0 flex items-center justify-center" style={{ perspective: "1000px" }}>
-              {/* Base Block */}
-              <motion.div
-                className="absolute w-16 h-16 bg-blue-600 rounded-lg shadow-xl"
-                initial={{ y: 50, opacity: 0, scale: 0.5, rotateX: 45, rotateZ: 45 }}
-                animate={{ y: 0, opacity: 1, scale: 1, rotateX: 60, rotateZ: 45 }}
-                transition={{ duration: 0.6, delay: 0, type: "spring" }}
-                style={{ zIndex: 1 }}
-              />
-              {/* Middle Block */}
-              <motion.div
-                className="absolute w-16 h-16 bg-indigo-500 rounded-lg shadow-xl"
-                initial={{ y: -50, opacity: 0, scale: 0.5, rotateX: 45, rotateZ: 45 }}
-                animate={{ y: -25, opacity: 1, scale: 1, rotateX: 60, rotateZ: 45 }}
-                transition={{ duration: 0.6, delay: 0.4, type: "spring" }}
-                style={{ zIndex: 2 }}
-              />
-              {/* Top Block */}
-              <motion.div
-                className="absolute w-16 h-16 bg-purple-500 rounded-lg shadow-xl"
-                initial={{ y: -100, opacity: 0, scale: 0.5, rotateX: 45, rotateZ: 45 }}
-                animate={{ y: -50, opacity: 1, scale: 1, rotateX: 60, rotateZ: 45 }}
-                transition={{ duration: 0.6, delay: 0.8, type: "spring" }}
-                style={{ zIndex: 3 }}
-              />
-
-              {/* Floating Particles */}
-              {[...Array(5)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-2 h-2 bg-yellow-400 rounded-full"
-                  initial={{ opacity: 0, x: 0, y: 0 }}
-                  animate={{
-                    opacity: [0, 1, 0],
-                    x: (Math.random() - 0.5) * 100,
-                    y: (Math.random() - 0.5) * 100 - 50
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: Math.random() * 2,
-                    ease: "easeOut"
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-
-          <h3 className="text-2xl font-bold text-foreground mb-2 text-center text-primary">
-            {title}{dots}
-          </h3>
-
-          <div className="h-8 mb-6 overflow-hidden relative w-full text-center">
-            <AnimatePresence mode="wait">
-              <motion.p
-                key={tipIndex}
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -20, opacity: 0 }}
-                transition={{ duration: 0.4 }}
-                className="text-muted-foreground text-sm absolute w-full font-medium"
-              >
-                {TIPS[tipIndex]}
-              </motion.p>
-            </AnimatePresence>
-          </div>
-
-          {/* Progress Bar */}
-          <div className="w-full h-2 bg-muted rounded-full overflow-hidden relative">
-            <motion.div
-              className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500"
-              initial={{ width: "0%" }}
-              animate={{
-                width: progress !== undefined ? `${progress}%` : "100%",
-                left: progress !== undefined ? "0%" : ["-100%", "100%"]
-              }}
-              transition={
-                progress !== undefined
-                  ? { type: "spring", stiffness: 50 }
-                  : { repeat: Infinity, duration: 2, ease: "linear" }
-              }
-            />
-          </div>
-
-          {progress !== undefined && (
-            <p className="mt-2 text-xs font-mono text-muted-foreground">{progress}%</p>
-          )}
-
-        </motion.div>
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black text-white" dir="rtl">
+      {/* Ambient Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[100px] animate-pulse-glow" />
+         <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.05]" />
       </div>
-    </AnimatePresence>
+
+      <div className="relative z-10 flex flex-col items-center text-center space-y-12">
+        {/* Central Core Animation */}
+        <div className="relative">
+             {/* Glowing Orbs */}
+             <div className="absolute inset-0 bg-primary/30 blur-3xl rounded-full animate-pulse-glow" />
+             <div className="absolute inset-0 bg-secondary/20 blur-2xl rounded-full animate-pulse delay-75" />
+             
+             {/* Spinner */}
+             <div className="relative w-24 h-24">
+                <div className="absolute inset-0 border-4 border-white/10 rounded-full" />
+                <div className="absolute inset-0 border-4 border-t-primary border-r-transparent border-b-secondary border-l-transparent rounded-full animate-spin" />
+                
+                {/* Center Icon */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={phaseIndex}
+                            initial={{ scale: 0.5, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.5, opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <CurrentIcon className="w-8 h-8 text-white" />
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+             </div>
+        </div>
+
+        <div className="space-y-6 max-w-sm">
+             <h2 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 tracking-tight">
+                {title}
+             </h2>
+
+             {/* Animated Text Phase */}
+             <div className="h-8 relative overflow-hidden w-full flex justify-center">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={phaseIndex}
+                        initial={{ y: 20, opacity: 0, filter: "blur(4px)" }}
+                        animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                        exit={{ y: -20, opacity: 0, filter: "blur(4px)" }}
+                        transition={{ duration: 0.5 }}
+                        className="flex items-center gap-2 text-white/60 font-medium absolute text-lg whitespace-nowrap"
+                    >
+                        <span>{LOADING_PHASES[phaseIndex].text}</span>
+                    </motion.div>
+                </AnimatePresence>
+             </div>
+             
+             {/* Fake Progress Bar if undefined, real if defined */}
+            <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden mt-4">
+                <motion.div 
+                    className="h-full bg-gradient-to-r from-primary to-secondary"
+                    initial={{ width: "0%" }}
+                    animate={{ width: "100%" }}
+                    transition={{ duration: 15, ease: "easeInOut" }} // 15s fake loading duration
+                />
+            </div>
+        </div>
+      </div>
+    </div>
   );
 }

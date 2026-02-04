@@ -238,6 +238,19 @@ export interface MediaKit {
   services: ServiceRate[];
   themeColor: string;
   profileImage?: string; // URL or base64 placeholder
+  // New Fields for Redesign
+  partners?: string[]; // List of brand names
+  audience?: {
+    male: number;
+    female: number;
+    topAge: string;
+    topLocations: string[];
+  };
+  globalStats?: {
+    totalFollowers?: number;
+    avgEngagement?: number;
+    monthlyReach?: number;
+  };
 }
 
 // Permit structure (For Traditional Businesses)
@@ -254,7 +267,7 @@ export interface PermitItem {
 // Pitch Deck structure (For Startups)
 export interface PitchDeckSlide {
   id: string;
-  type: 'title' | 'problem' | 'solution' | 'market' | 'business_model' | 'traction' | 'team' | 'ask';
+  type: 'title' | 'problem' | 'solution' | 'market' | 'business_model' | 'traction' | 'team' | 'ask' | 'generic' | string;
   title: string;
   bullets: string[];
   notes?: string;
@@ -275,6 +288,69 @@ export interface BrandCanvas {
   audienceAvatar: string;
   contentPillars: string;
   revenueChannels: string;
+}
+
+// --- Growth / Roshdnama Structures ---
+
+export interface FunnelStage {
+  id: string;
+  name: string; // Acquisition, Activation, etc.
+  value: number; // User count
+  color: string;
+  description: string;
+}
+
+export interface Experiment {
+  id: string;
+  title: string;
+  description: string;
+  iceScore: number; // (Impact + Confidence + Ease) / 3
+  impact: number;
+  confidence: number;
+  ease: number;
+  stage: string; // Funnel stage
+  status: 'idea' | 'running' | 'done';
+}
+
+export interface NorthStar {
+  metric: string;
+  why: string;
+  inputs: { name: string; target: string }[];
+}
+
+export interface GrowthData {
+  northStar?: NorthStar;
+  funnel?: FunnelStage[];
+  experiments?: Experiment[];
+}
+
+// --- Idea Validator Structures ---
+
+export interface ValidationCritique {
+  score: number;
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+}
+
+export interface ValidationAssumption {
+  id: string;
+  text: string;
+  risk: "critical" | "minor";
+  status?: "tested" | "unknown";
+}
+
+export interface ValidationExperiment {
+  title: string;
+  steps: string;
+  metric: string;
+}
+
+export interface IdeaValidationData {
+  critique: ValidationCritique;
+  assumptions: ValidationAssumption[];
+  experiments: ValidationExperiment[];
+  lastUpdated?: string;
 }
 
 // --- Financial Tools ---
@@ -346,9 +422,133 @@ export interface ContentPost {
   id: string;
   title: string;
   platform: 'instagram' | 'youtube' | 'linkedin' | 'twitter' | 'blog';
+  type: 'post' | 'reel' | 'story' | 'video' | 'thread';
   status: 'idea' | 'scripting' | 'filming' | 'editing' | 'scheduled' | 'published';
   date: string; // ISO date string
   notes?: string;
+}
+
+export interface GeneratedDocument {
+  id: string;
+  type: string; // pitch-deck, one-pager, etc.
+  title: string;
+  content: string; // Markdown content
+  createdAt: string;
+}
+
+export interface AssistantData {
+  messages: ChatMessage[];
+  streak: number;
+  totalXp: number;
+  lastVisit?: string;
+  missions?: DailyMission[];
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: number;
+  followUps?: string[];
+  xpReward?: number;
+  actions?: ActionCard[]; 
+}
+
+export type ActionType =
+  | "update_canvas"
+  | "add_roadmap_step"
+  | "generate_content"
+  | "analyze_competitors"
+  | "improve_strategy";
+
+export interface ActionCard {
+  id: string;
+  type: ActionType;
+  title: string;
+  description: string;
+  preview?: string;
+  targetField?: string;
+  newValue?: string;
+  xpReward: number;
+}
+
+export interface DailyMission {
+  id: string;
+  title: string;
+  description: string;
+  xpReward: number;
+  completed: boolean;
+  type: 'quick_win' | 'growth' | 'learning' | 'action';
+  actionPrompt?: string;
+  expiresAt?: string;
+}
+
+// --- Storefront Builder Structures ---
+
+export type StoreVibe = 'minimal' | 'luxury' | 'bold' | 'playful';
+
+export interface StoreConfig {
+  niche: string;
+  vibe: StoreVibe;
+  colors: { primary: string; secondary: string; bg: string };
+  font: string;
+}
+
+export interface StoreContent {
+  hero: { headline: string; subheadline: string; cta: string };
+  products: Array<{ id: string; name: string; price: number; image: string; tag?: string }>;
+  features: Array<{ title: string; desc: string; icon: string }>;
+  testimonials: Array<{ name: string; role: string; comment: string; stars: number }>;
+  footer: { about: string; address: string; email: string };
+}
+
+export interface StorefrontData {
+  config: StoreConfig;
+  content: StoreContent | null;
+  publishedAt?: string;
+  lastGeneratedAt?: string;
+}
+
+
+// --- Customer CRM Structures ---
+
+export interface Customer {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email?: string;
+  tags: string[]; // "vip", "new", "risky"
+  totalSpend: number;
+  lastVisit: string; // ISO date
+  notes?: string;
+  createdAt: string;
+}
+
+
+
+export interface Customer {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email?: string;
+  tags: string[]; // "vip", "new", "risky"
+  totalSpend: number;
+  lastVisit: string; // ISO date
+  notes?: string;
+  createdAt: string;
+}
+
+export interface Campaign {
+  id: string;
+  name: string;
+  type: "birthday" | "followup" | "loyalty" | "feedback" | "custom";
+  status: "active" | "draft" | "completed";
+  message?: string;
+  sentCount: number;
+  openRate: number;
+  createdAt: string;
 }
 
 // Main Business Plan interface
@@ -362,6 +562,7 @@ export interface BusinessPlan {
   leanCanvas: LeanCanvas;
   swotAnalysis?: SWOTAnalysis; // Traditional
   brandCanvas?: BrandCanvas; // Creator
+  contentCalendar?: ContentPost[]; // Creator (Moved to top level)
   financials?: {
     runway?: RunwayCalculation;
     breakEven?: BreakEvenAnalysis;
@@ -370,7 +571,6 @@ export interface BusinessPlan {
   operations?: {
     capTable?: CapTable;
     inventory?: InventoryItem[];
-    contentCalendar?: ContentPost[];
   };
   brandKit: BrandKit;
   roadmap: RoadmapPhase[];
@@ -384,7 +584,15 @@ export interface BusinessPlan {
   audience: string;
   ideaInput?: string;
   projectType: 'startup' | 'traditional' | 'creator';
+  genesisAnswers?: Record<string, any>;
   completedSteps?: string[];
+  growth?: GrowthData; // NEW: Roshdnama Data
+  ideaValidation?: IdeaValidationData; // NEW: Validator Data
+  documents?: GeneratedDocument[]; // NEW: Documents Data
+  assistantData?: AssistantData; // NEW: Assistant Data
+  storefront?: StorefrontData; // NEW: Store Builder Data
+  customers?: Customer[]; // NEW: CRM Data
+  campaigns?: Campaign[]; // NEW: Campaigns Data
   subTasks?: SubTask[];
   createdAt: string;
   updatedAt?: string;
@@ -393,7 +601,7 @@ export interface BusinessPlan {
 // ... (Existing functions)
 
 // Save Operations
-export const saveOperations = async (userId: string, type: 'capTable' | 'inventory' | 'contentCalendar', data: any, projectId: string = 'current') => {
+export const saveOperations = async (userId: string, type: 'capTable' | 'inventory', data: any, projectId: string = 'current') => {
   try {
      const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
      await updateDoc(planRef, { [`operations.${type}`]: data });

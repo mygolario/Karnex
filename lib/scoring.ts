@@ -39,12 +39,12 @@ export const calculateProjectScore = (plan: BusinessPlan): ScoreResult => {
   const totalCanvasFields = 4; // We check 4 key fields
 
   if (plan.projectType === 'startup') {
-    if (plan.leanCanvas?.problem) canvasFilledCount++;
-    if (plan.leanCanvas?.solution) canvasFilledCount++;
+    if (plan.leanCanvas?.keyPartners) canvasFilledCount++;
+    if (plan.leanCanvas?.keyActivities) canvasFilledCount++;
     if (plan.leanCanvas?.uniqueValue) canvasFilledCount++;
     if (plan.leanCanvas?.revenueStream) canvasFilledCount++;
     
-    if (canvasFilledCount < 4) suggestions.push("بوم ناب (Lean Canvas) را کامل کنید.");
+    if (canvasFilledCount < 4) suggestions.push("بوم مدل کسب‌وکار را کامل کنید.");
 
   } else if (plan.projectType === 'traditional') {
     if (plan.swotAnalysis?.strengths) canvasFilledCount++;

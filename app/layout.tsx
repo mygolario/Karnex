@@ -17,11 +17,8 @@ export const metadata: Metadata = {
     template: '%s | کارنکس',
   },
   description: 'با دستیار کارنکس، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
-  icons: {
-    icon: '/logo.png',
-    shortcut: '/logo.png',
-    apple: '/logo.png',
-  },
+  // icons are automatically handled by app/icon.png
+  // openGraph images are automatically handled by app/opengraph-image.png
   keywords: [
     'کارآفرینی',
     'استارتاپ',
@@ -59,14 +56,6 @@ export const metadata: Metadata = {
     description: 'با دستیار کارنکس، ایده خود را به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
     url: 'https://www.karnex.ir',
     siteName: 'Karnex',
-    images: [
-      {
-        url: '/logo.png',
-        width: 800,
-        height: 600,
-        alt: 'کارنکس - دستیار هوشمند کارآفرینی',
-      },
-    ],
     locale: 'fa_IR',
     type: 'website',
   },
@@ -75,7 +64,6 @@ export const metadata: Metadata = {
     title: 'کارنکس | دستیار هوشمند کارآفرینی',
     description: 'با دستیار کارنکس، ایده خود را به یک بیزینس تبدیل کنید.',
     creator: '@karnex_ir',
-    images: ['/logo.png'],
   },
   manifest: '/manifest.json',
   category: 'technology',

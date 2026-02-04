@@ -19,7 +19,9 @@ const colorClasses: Record<CanvasCard['color'], string> = {
   green: "note-green",
   pink: "note-pink",
   purple: "note-purple",
-  cyan: "note-cyan"
+  cyan: "note-cyan",
+  red: "note-red",
+  orange: "note-orange"
 };
 
 const colors: CanvasCard['color'][] = ['yellow', 'blue', 'green', 'pink', 'purple', 'cyan'];

@@ -1,35 +1,14 @@
 "use client";
 
-import React, { useState, createContext, useContext } from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { HelpCircle, ChevronRight, Loader2, Lightbulb, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 // Context for pre-filling AI chat from roadmap
-interface MentorContextType {
-  pendingQuestion: string | null;
-  setPendingQuestion: (question: string | null) => void;
-}
 
-const MentorContext = createContext<MentorContextType>({
-  pendingQuestion: null,
-  setPendingQuestion: () => {}
-});
-
-export function useMentorContext() {
-  return useContext(MentorContext);
-}
-
-export function MentorProvider({ children }: { children: React.ReactNode }) {
-  const [pendingQuestion, setPendingQuestion] = useState<string | null>(null);
-  
-  return (
-    <MentorContext.Provider value={{ pendingQuestion, setPendingQuestion }}>
-      {children}
-    </MentorContext.Provider>
-  );
-}
 
 interface StepGuideProps {
   stepName: string;
@@ -38,10 +17,10 @@ interface StepGuideProps {
 }
 
 export function StepGuide({ stepName, stepPhase, projectName }: StepGuideProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [guide, setGuide] = useState<string | null>(null);
-  const { setPendingQuestion } = useMentorContext();
 
   const fetchGuide = async () => {
     if (guide) {
@@ -85,8 +64,9 @@ export function StepGuide({ stepName, stepPhase, projectName }: StepGuideProps) 
 
   // Open AI chat with pre-filled question about this step
   const askAiMentor = () => {
-    const question = `در مورد مرحله "${stepName}" سوال دارم. چطور باید این کار رو انجام بدم؟`;
-    setPendingQuestion(question);
+    const question = `در مورد مرحله "${stepName}" (فاز: ${stepPhase}) سوال دارم. چطور باید این کار رو انجام بدم؟`;
+    // Navigate to copilot with question as query param
+    router.push(`/dashboard/copilot?q=${encodeURIComponent(question)}`);
   };
 
   return (
@@ -111,7 +91,7 @@ export function StepGuide({ stepName, stepPhase, projectName }: StepGuideProps) 
             className="text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50 h-7 px-2"
           >
             <MessageCircle size={12} className="mr-1.5" />
-            کمک از منتور
+            کمک از دستیار کارنکس
           </Button>
         </div>
       ) : (

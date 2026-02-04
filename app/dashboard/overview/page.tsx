@@ -12,7 +12,7 @@ import {
   Rocket, Map, LayoutGrid, TrendingUp, Target, CheckCircle2, 
   Sparkles, Plus, Calendar, ChevronLeft, Activity, Award,
   Brain, Lightbulb, Loader2, Bell, AlertTriangle, Flame,
-  ArrowUpRight, Clock, FileText, Bot, Zap, BarChart3
+  ArrowUpRight, Clock, FileText, Bot, Zap, BarChart3, Video, Share2
 } from "lucide-react";
 import { calculateProjectScore } from "@/lib/scoring";
 import { ProgressRing } from "@/components/dashboard/progress-ring";
@@ -431,10 +431,19 @@ Be concise, friendly, and actionable. Persian only.`;
           {[
             { href: "/dashboard/canvas", icon: LayoutGrid, label: "بوم", color: "bg-amber-500" },
             { href: "/dashboard/roadmap", icon: Map, label: "نقشه راه", color: "bg-blue-500" },
-            { href: "/dashboard/validator", icon: Target, label: "اعتبارسنج", color: "bg-cyan-500", isNew: true },
             { href: "/dashboard/copilot", icon: Bot, label: "دستیار کارنکس", color: "bg-rose-500", badge: "AI" },
-            { href: "/dashboard/growth", icon: BarChart3, label: "رشدنما", color: "bg-green-500", isNew: true },
-            { href: "/dashboard/docs", icon: FileText, label: "مستندات", color: "bg-purple-500", isNew: true },
+            // Only show these for non-Creator projects
+            ...(plan?.projectType !== 'creator' ? [
+              { href: "/dashboard/validator", icon: Target, label: "اعتبارسنج", color: "bg-cyan-500", isNew: true },
+              { href: "/dashboard/growth", icon: BarChart3, label: "رشدنما", color: "bg-green-500", isNew: true },
+              { href: "/dashboard/docs", icon: FileText, label: "مستندات", color: "bg-purple-500", isNew: true },
+            ] : []),
+            // Only show these for Creator projects
+            ...(plan?.projectType === 'creator' ? [
+              { href: "/dashboard/content-calendar", icon: Calendar, label: "تقویم محتوا", color: "bg-orange-500", isNew: true },
+              { href: "/dashboard/scripts", icon: Video, label: "مدیریت اسکریپت", color: "bg-pink-500", isNew: true },
+              { href: "/dashboard/repurpose", icon: Share2, label: "توزیع محتوا", color: "bg-indigo-500" },
+            ] : [])
           ].map((item) => (
             <Link key={item.href} href={item.href}>
               <Card hover="lift" className="p-4 flex flex-col items-center text-center group cursor-pointer">

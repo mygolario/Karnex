@@ -1,0 +1,52 @@
+﻿
+> karnex-web@0.1.0 build
+> next build && npm run serwist:build
+
+npm : [baseline-browser-mapping] The data in this 
+module is over two months old.  To ensure accurate 
+Baseline data, please update: `npm i 
+baseline-browser-mapping@latest -D`
+At line:1 char:1
++ npm run build 2>&1 | Out-File -Encoding utf8 
+build_log_4.txt
++ ~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([baseli 
+   ne-brows...ping@latest -D`:String) [], RemoteExc  
+  eption
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+   Γû▓ Next.js 16.0.10 (Turbopack)
+   - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+[baseline-browser-mapping] The data in this module 
+is over two months old.  To ensure accurate Baseline 
+data, please update: `npm i 
+baseline-browser-mapping@latest -D`
+ Γ£ô Compiled successfully in 7.2s
+   Running TypeScript ...
+Failed to compile.
+
+./components/canvas/sticky-note.tsx:17:7
+Type error: Type '{ yellow: string; blue: string; 
+green: string; pink: string; purple: string; cyan: 
+string; }' is missing the following properties from 
+type 'Record<"yellow" | "blue" | "green" | "pink" | 
+"purple" | "cyan" | "red" | "orange", string>': red, 
+orange
+
+[0m [90m 15 |[39m }
+ [90m 16 |[39m
+[31m[1m>[22m[39m[90m 17 |[39m [36mconst[39m 
+colorClasses[33m:[39m [33mRecord[39m[33m<[39m[
+33mCanvasCard[39m[[32m'color'[39m][33m,[39m 
+string[33m>[39m [33m=[39m {
+ [90m    |[39m       [31m[1m^[22m[39m
+ [90m 18 |[39m   yellow[33m:[39m 
+[32m"sticky-yellow"[39m[33m,[39m
+ [90m 19 |[39m   blue[33m:[39m 
+[32m"sticky-blue"[39m[33m,[39m
+ [90m 20 |[39m   green[33m:[39m 
+[32m"sticky-green"[39m[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: 
+null

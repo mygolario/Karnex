@@ -71,6 +71,126 @@ export default function InventoryPage() {
     }
   ]);
   const [filter, setFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [newItem, setNewItem] = useState<Partial<InventoryItem>>({
+    name: "",
+    sku: "",
+    category: "",
+    quantity: 0,
+    minQuantity: 5,
+    price: 0,
+    supplier: "",
+    status: "in-stock"
+  });
+
+  const [suggestionItem, setSuggestionItem] = useState<InventoryItem | null>(null);
+
+  // Check for low stock items for AI suggestion
+  useState(() => {
+    const lowStock = items.find(i => i.status === "low-stock" || i.status === "out-of-stock");
+    setSuggestionItem(lowStock || null);
+  });
+
+  const handleExportExcel = () => {
+    const headers = ["نام کالا", "SKU", "دسته‌بندی", "موجودی", "قیمت", "وضعیت"];
+    const csvContent = [
+      headers.join(","),
+      ...items.map(item => [
+        item.name, 
+        item.sku, 
+        item.category, 
+        item.quantity, 
+        item.price, 
+        item.status === "in-stock" ? "موجود" : item.status === "low-stock" ? "رو به اتمام" : "ناموجود"
+      ].join(","))
+    ].join("\n");
+
+    const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `inventory-${new Date().toLocaleDateString('fa-IR')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("خروجی اکسل دانلود شد");
+  };
+
+  const handleRestockRef = (item: InventoryItem) => {
+    const newQuantity = item.minQuantity * 3;
+    setItems(prev => prev.map(i => 
+      i.id === item.id ? { ...i, quantity: newQuantity, status: "in-stock", lastRestock: new Date().toLocaleDateString("fa-IR") } : i
+    ));
+    toast.success(`سفارش مجدد برای ${item.name} ثبت شد`);
+    setSuggestionItem(null);
+  };
+  
+  // Update suggestion when items change
+  const activeSuggestion = items.find(i => i.status === "low-stock" || i.status === "out-of-stock");
+
+  const handleSaveItem = () => {
+    if (!newItem.name || newItem.quantity === undefined) {
+      toast.error("نام کالا و موجودی الزامی است");
+      return;
+    }
+
+    const calculateStatus = (qty: number, min: number): InventoryItem["status"] => {
+      if (qty <= 0) return "out-of-stock";
+      if (qty <= min) return "low-stock";
+      return "in-stock";
+    };
+
+    const status = calculateStatus(newItem.quantity, newItem.minQuantity || 5);
+    const currentDate = new Date().toLocaleDateString("fa-IR");
+
+    if (editingItem) {
+      setItems(prev => prev.map(item => 
+        item.id === editingItem.id ? {
+          ...item,
+          ...newItem as InventoryItem,
+          status
+        } : item
+      ));
+      toast.success("کالا بروزرسانی شد");
+    } else {
+      const item: InventoryItem = {
+        id: `inv-${Date.now()}`,
+        name: newItem.name,
+        sku: newItem.sku || `SKU-${Date.now().toString().slice(-4)}`,
+        category: newItem.category || "عمومی",
+        quantity: newItem.quantity,
+        minQuantity: newItem.minQuantity || 5,
+        price: newItem.price || 0,
+        supplier: newItem.supplier || "نامشخص",
+        lastRestock: currentDate,
+        status
+      };
+      setItems(prev => [...prev, item]);
+      toast.success("کالای جدید اضافه شد");
+    }
+    setIsAddingItem(false);
+    setNewItem({ name: "", sku: "", category: "", quantity: 0, minQuantity: 5, price: 0, supplier: "", status: "in-stock" });
+    setEditingItem(null);
+  };
+
+  const handleEditItem = (item: InventoryItem) => {
+    setEditingItem(item);
+    setNewItem({ ...item });
+    setIsAddingItem(true);
+  };
+
+  const handleDeleteItem = (id: string) => {
+    setItems(prev => prev.filter(i => i.id !== id));
+    toast.success("کالا حذف شد");
+  };
+
+  const filteredItems = items.filter(item => {
+    const matchesFilter = filter === "all" || item.status === filter;
+    const matchesSearch = item.name.includes(searchQuery) || item.sku.includes(searchQuery) || item.category.includes(searchQuery);
+    return matchesFilter && matchesSearch;
+  });
 
   // Check project type
   if (plan?.projectType !== "traditional") {
@@ -108,6 +228,8 @@ export default function InventoryPage() {
     }
   };
 
+
+
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
       {/* Header */}
@@ -125,11 +247,27 @@ export default function InventoryPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="gap-2" onClick={handleExportExcel}>
             <Download size={18} />
             خروجی اکسل
           </Button>
-          <Button className="gap-2 bg-gradient-to-r from-primary to-secondary">
+          <Button 
+            className="gap-2 bg-gradient-to-r from-primary to-secondary"
+            onClick={() => {
+              setEditingItem(null);
+              setNewItem({
+                name: "",
+                sku: "",
+                category: "سایر",
+                quantity: 0,
+                minQuantity: 5,
+                price: 0,
+                supplier: "",
+                status: "in-stock"
+              });
+              setIsAddingItem(true);
+            }}
+          >
             <Plus size={18} />
             کالای جدید
           </Button>
@@ -148,7 +286,9 @@ export default function InventoryPage() {
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">کالا‌های ناموجود</p>
-          <h3 className="text-2xl font-black text-red-600 mb-2">۳ <span className="text-sm font-normal text-muted-foreground">قلم</span></h3>
+          <h3 className="text-2xl font-black text-red-600 mb-2">
+            {items.filter(i => i.status === 'out-of-stock').length} <span className="text-sm font-normal text-muted-foreground">قلم</span>
+          </h3>
           <div className="flex items-center gap-1 text-red-500 text-xs">
             <AlertTriangle size={14} />
             <span>نیاز به سفارش فوری</span>
@@ -156,7 +296,9 @@ export default function InventoryPage() {
         </Card>
         <Card className="p-4">
           <p className="text-xs text-muted-foreground mb-1">کالا‌های رو به اتمام</p>
-          <h3 className="text-2xl font-black text-amber-500 mb-2">۵ <span className="text-sm font-normal text-muted-foreground">قلم</span></h3>
+          <h3 className="text-2xl font-black text-amber-500 mb-2">
+            {items.filter(i => i.status === 'low-stock').length} <span className="text-sm font-normal text-muted-foreground">قلم</span>
+          </h3>
           <div className="flex items-center gap-1 text-amber-500 text-xs">
             <RefreshCw size={14} />
             <span>در حال پردازش</span>
@@ -197,6 +339,8 @@ export default function InventoryPage() {
             <input 
               placeholder="جستجو در انبار..." 
               className="input-premium w-full pr-10 py-2 text-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
@@ -215,7 +359,7 @@ export default function InventoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {items.map((item) => (
+              {filteredItems.map((item) => (
                 <tr key={item.id} className="hover:bg-muted/20 transition-colors">
                   <td className="p-4">
                     <div className="font-bold">{item.name}</div>
@@ -238,11 +382,24 @@ export default function InventoryPage() {
                   </td>
                   <td className="p-4 text-left">
                     <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                         <HistoryIcon size={16} />
-                      </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                       </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0"
+                        onClick={() => handleEditItem(item)}
+                      >
                         <Edit3 size={16} />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+                        onClick={() => handleDeleteItem(item.id)}
+                      >
+                        <Trash2 size={16} />
                       </Button>
                     </div>
                   </td>
@@ -254,33 +411,160 @@ export default function InventoryPage() {
       </Card>
       
       {/* AI Bot Suggestion */}
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-6 text-white relative overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
-              <Sparkles className="w-8 h-8 text-white" />
+      {activeSuggestion && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl p-6 text-white relative overflow-hidden"
+        >
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center">
+                <Sparkles className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-1">دستیار هوشمند انبار</h3>
+                <p className="text-blue-100 max-w-lg">
+                   بر اساس الگوی مصرف، موجودی "{activeSuggestion.name}" رو به اتمام است. آیا مایل به ثبت سفارش مجدد هستید؟
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-xl font-bold mb-1">دستیار هوشمند انبار</h3>
-              <p className="text-blue-100 max-w-lg">
-                بر اساس الگوی مصرف ماه گذشته، پیش‌بینی می‌شود موجودی "قهوه عربیکا" تا ۳ روز دیگر تمام شود. آیا سفارش جدید ثبت شود؟
-              </p>
+            <div className="flex gap-3">
+               <Button 
+                 variant="outline" 
+                 className="bg-transparent border-white/30 text-white hover:bg-white/10"
+                 onClick={() => toast.success("پیشنهاد موقتاً رد شد")}
+               >
+                 فعلاً نه
+               </Button>
+               <Button 
+                 className="bg-white text-blue-700 hover:bg-blue-50"
+                 onClick={() => handleRestockRef(activeSuggestion)}
+               >
+                 ثبت سفارش خودکار
+               </Button>
             </div>
           </div>
-          <div className="flex gap-3">
-             <Button variant="outline" className="bg-transparent border-white/30 text-white hover:bg-white/10">
-               فعلاً نه
-             </Button>
-             <Button className="bg-white text-blue-700 hover:bg-blue-50">
-               ثبت سفارش خودکار
-             </Button>
-          </div>
-        </div>
-        
-        {/* Background decorative elements */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-3xl -ml-12 -mb-12 pointer-events-none" />
-      </div>
+          
+          {/* Background decorative elements */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-3xl -ml-12 -mb-12 pointer-events-none" />
+        </motion.div>
+      )}
+      {/* Add/Edit Modal */}
+      <AnimatePresence>
+        {isAddingItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setIsAddingItem(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-card border border-border rounded-3xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto"
+            >
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <Package size={20} className="text-primary" />
+                {editingItem ? "ویرایش کالا" : "افزودن کالای جدید"}
+              </h3>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">نام کالا *</label>
+                    <input
+                      className="input-premium w-full"
+                      value={newItem.name}
+                      onChange={e => setNewItem(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="نام کالا"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">کد کالا (SKU)</label>
+                    <input
+                      className="input-premium w-full"
+                      value={newItem.sku}
+                      onChange={e => setNewItem(prev => ({ ...prev, sku: e.target.value }))}
+                      placeholder="CF-001"
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">دسته‌بندی</label>
+                    <input
+                      className="input-premium w-full"
+                      value={newItem.category}
+                      onChange={e => setNewItem(prev => ({ ...prev, category: e.target.value }))}
+                      placeholder="مواد اولیه"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">تامین‌کننده</label>
+                    <input
+                      className="input-premium w-full"
+                      value={newItem.supplier}
+                      onChange={e => setNewItem(prev => ({ ...prev, supplier: e.target.value }))}
+                      placeholder="نام تامین‌کننده"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">موجودی فعلی *</label>
+                    <input
+                      type="number"
+                      className="input-premium w-full"
+                      value={newItem.quantity}
+                      onChange={e => setNewItem(prev => ({ ...prev, quantity: parseInt(e.target.value) || 0 }))}
+                      dir="ltr"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-1 block">حداقل موجودی</label>
+                    <input
+                      type="number"
+                      className="input-premium w-full"
+                      value={newItem.minQuantity}
+                      onChange={e => setNewItem(prev => ({ ...prev, minQuantity: parseInt(e.target.value) || 0 }))}
+                      dir="ltr"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium mb-1 block">قیمت خرید (تومان)</label>
+                  <input
+                    type="number"
+                    className="input-premium w-full"
+                    value={newItem.price}
+                    onChange={e => setNewItem(prev => ({ ...prev, price: parseInt(e.target.value) || 0 }))}
+                    placeholder="450000"
+                    dir="ltr"
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button variant="outline" onClick={() => setIsAddingItem(false)} className="flex-1">
+                    انصراف
+                  </Button>
+                  <Button onClick={handleSaveItem} className="flex-1 bg-gradient-to-r from-primary to-secondary">
+                    {editingItem ? "بروزرسانی" : "افزودن کالا"}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

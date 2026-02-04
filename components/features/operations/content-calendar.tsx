@@ -19,7 +19,7 @@ export function ContentCalendar() {
   const { activeProject: plan, updateActiveProject } = useProject();
 
   const [posts, setPosts] = useState<ContentPost[]>(
-    plan?.operations?.contentCalendar || []
+    plan?.contentCalendar || []
   );
 
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -29,6 +29,7 @@ export function ContentCalendar() {
         id: uuidv4(),
         title: "ایده پست جدید",
         platform: 'instagram',
+        type: 'post',
         status: 'idea',
         date: date.toISOString(),
         notes: ""
@@ -47,8 +48,8 @@ export function ContentCalendar() {
   const handleSave = async () => {
     if (!user || !plan) return;
     try {
-        await saveOperations(user.uid, 'contentCalendar', posts, plan.id || 'current');
-        updateActiveProject({ operations: { ...plan.operations, contentCalendar: posts } });
+        // Updated to use the top-level property and the new context method which saves to cloud
+        updateActiveProject({ contentCalendar: posts });
         toast.success("تقویم محتوا ذخیره شد");
     } catch (err) {
         toast.error("خطا در ذخیره سازی");

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
 import { 
@@ -43,16 +44,20 @@ export function CommandMenu() {
 
   return (
     <>
-      <div 
+      <button 
          onClick={() => setOpen(true)}
-         className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-muted/50 hover:bg-muted border border-border/50 rounded-lg text-xs text-muted-foreground cursor-pointer transition-colors"
+         className="hidden md:flex items-center justify-between w-64 px-4 py-2.5 bg-muted/40 hover:bg-muted/60 dark:bg-white/5 dark:hover:bg-white/10 hover:shadow-lg hover:scale-[1.02] border border-border/50 rounded-2xl text-sm text-muted-foreground cursor-pointer transition-all duration-300 group backdrop-blur-sm"
       >
-        <Search size={14} />
-        <span className="opacity-70">جستجو و دستورات...</span>
-        <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded bg-background px-1.5 font-mono text-[10px] font-medium text-muted-foreground border border-border shadow-sm">
-          <span className="text-xs">⌘</span>K
-        </kbd>
-      </div>
+        <div className="flex items-center gap-3">
+           <Search size={16} className="text-muted-foreground/70 group-hover:text-primary transition-colors" />
+           <span className="opacity-50 group-hover:opacity-100 transition-opacity font-medium">جستجو...</span>
+        </div>
+        <div className="flex items-center gap-1">
+            <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded bg-background/50 px-1.5 font-mono text-[10px] font-medium text-muted-foreground border border-white/10 shadow-sm opacity-50 group-hover:opacity-100">
+            <span className="text-xs">⌘</span>K
+            </kbd>
+        </div>
+      </button>
 
       <Command.Dialog
         open={open}
@@ -60,6 +65,7 @@ export function CommandMenu() {
         label="Global Command Menu"
         className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-popover/95 backdrop-blur-xl border border-border shadow-2xl rounded-xl overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-100"
       >
+        <DialogPrimitive.Title className="sr-only">Command Menu</DialogPrimitive.Title>
         <div className="flex items-center border-b border-border/50 px-3" cmdk-input-wrapper="">
           <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
           <Command.Input 

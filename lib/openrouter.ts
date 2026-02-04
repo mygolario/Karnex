@@ -6,20 +6,18 @@
 // Cheap paid models (high reliability, low cost) + Free fallbacks
 // Ordered by preference: Paid Fast -> Free High Quality -> Free Fast
 export const TEXT_MODELS = [
-    // Paid High-Performance Cheap Models (Prioritized)
-    "google/gemini-1.5-flash",          // Extremely cheap, fast, high context
-    "openai/gpt-4o-mini",               // Very cheap, reliable
+    // Fast & Reliable Free/Cheap Models (Prioritized)
+    "openai/gpt-oss-120b",                        // User Preference for Generations
+    "openai/gpt-4o-mini",                         // Standard Fallback
+    "google/gemini-2.0-flash-exp:free",           // Scalable Fallback
 
-    // Free Tier High Quality (Fallbacks)
-    "google/gemini-2.0-flash-exp:free",           // Gemini 2.0 Flash - Fast & Smart
-    "google/gemini-2.0-flash-thinking-exp:free",  // Gemini 2.0 Flash Thinking - Reasoning
-    "deepseek/deepseek-r1:free",                  // DeepSeek R1 - High Reasoning
+    // Reasoning & specialized
+    "deepseek/deepseek-r1:free",                  // High Reasoning
+    "google/gemini-2.0-flash-thinking-exp:free",  // Reasoning Fallback
 
-    // Other Free Models
-    "nvidia/llama-3.1-nemotron-70b-instruct:free",// Nemotron 70B
-    "meta-llama/llama-3.3-70b-instruct:free",     // Llama 3.3 70B
-    "mistralai/mistral-small-24b-instruct-2501:free", // Mistral Small 3
-    "microsoft/phi-4:free",                       // Phi-4
+    // Others
+    "google/gemini-1.5-flash",
+    "microsoft/phi-4:free",
 ];
 
 export interface OpenRouterResponse {
@@ -39,6 +37,7 @@ export async function callOpenRouter(
         maxTokens?: number;
         temperature?: number;
         timeoutMs?: number;
+        modelOverride?: string;
     }
 ): Promise<OpenRouterResponse> {
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -52,12 +51,16 @@ export async function callOpenRouter(
         systemPrompt,
         maxTokens = 2000,
         temperature = 0.7,
-        timeoutMs = 60000, // Increased default timeout for reliability
+        timeoutMs = 25000,
+        modelOverride
     } = options || {};
 
     let lastError: string | null = null;
+    
+    // Use override if provided, otherwise default list
+    const modelsToTry = modelOverride ? [modelOverride] : TEXT_MODELS;
 
-    for (const model of TEXT_MODELS) {
+    for (const model of modelsToTry) {
         console.log(`🤖 Trying model: ${model}`);
 
         try {

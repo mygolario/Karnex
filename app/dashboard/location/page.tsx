@@ -22,6 +22,9 @@ export default function LocationAnalyzerPage() {
   const [address, setAddress] = useState("");
   const [selectedCity, setSelectedCity] = useState("tehran");
 
+  /* State for AI Analysis Data */
+  const [analysisData, setAnalysisData] = useState<any>(null);
+
   // Check project type
   if (plan?.projectType !== "traditional") {
     return (
@@ -40,6 +43,8 @@ export default function LocationAnalyzerPage() {
     );
   }
 
+
+
   const handleAnalyze = async () => {
     if (!address) {
       toast.error("آدرس یا محله را وارد کنید");
@@ -47,12 +52,89 @@ export default function LocationAnalyzerPage() {
     }
 
     setIsAnalyzing(true);
-    // Simulate AI analysis
-    setTimeout(() => {
+    setHasAnalysis(false);
+
+    try {
+      const prompt = `
+        You are an expert Urban Planner and Real Estate Location Analyst for a "${plan?.projectType || 'store'}" business named "${plan?.projectName}" in Iran.
+        
+        Analyze this specific location:
+        City: ${selectedCity}
+        Address/Neighborhood: ${address}
+        Business Description: ${plan?.description || plan?.overview || 'A traditional business'}
+
+        Provide a detailed, realistic analysis in valid JSON format.
+        
+        REQUIRED JSON STRUCTURE:
+        {
+          "score": number (0-10, e.g. 8.5),
+          "scoreReason": "string (short Persian summary)",
+          "population": "string (e.g. '45,000 نفر')",
+          "populationDesc": "string (Persian description of density/power)",
+          "competitorsCount": "number",
+          "competitorsDesc": "string (Persian analysis of competition)",
+          "nearbyCompetitors": ["string (Real specific competitor name 1)", "string (Real specific competitor name 2)"],
+          "rentEstimate": "string (e.g. '۵۰ تا ۷۰ میلیون تومان')",
+          "successMatch": { "label": "string (High/Medium/Low - Persian)", "color": "hex" },
+          "demographics": [
+            { "label": "string (Age group/Type)", "percent": number, "color": "string (hex or tailwind class)" },
+            { "label": "string", "percent": number, "color": "string" }
+          ],
+          "swot": {
+            "strengths": ["string", "string"],
+            "weaknesses": ["string", "string"],
+            "opportunities": ["string", "string"],
+            "threats": ["string", "string"]
+          },
+          "aiInsight": "string (valuable Persian insight about this specific location)",
+          "peakHours": "string (e.g. '18:00 تا 21:00')",
+          "accessLevel": "string (e.g. 'Excellent', 'Good')",
+          "accessPoints": [
+            "string (Persian point 1, e.g. near metro)",
+            "string (Persian point 2)"
+          ],
+          "trafficWarning": "string (Persian traffic warning)",
+          "recommendations": [
+            { "title": "string (e.g. Pricing)", "desc": "string (Persian advice)" },
+            { "title": "string (e.g. Marketing)", "desc": "string (Persian advice)" }
+          ]
+        }
+
+        ENSURE VALID JSON. NO MARKDOWN. NO COMMENTS.
+      `;
+
+      const response = await fetch("/api/ai-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt })
+      });
+
+      if (!response.ok) throw new Error("Analysis failed");
+
+      const data = await response.json();
+      console.log("AI Response:", data); // Debug log
+      
+      let parsedData;
+      try {
+        // Handle potentialmarkdown wrapping from AI
+        const cleanJson = data.content.replace(/```json/g, '').replace(/```/g, '').trim();
+        parsedData = JSON.parse(cleanJson);
+      } catch (e) {
+        console.error("JSON Parse Error:", e);
+        // Fallback or retry logic could go here, for now throw
+        throw new Error("Invalid AI response format");
+      }
+
+      setAnalysisData(parsedData);
       setHasAnalysis(true);
+      toast.success("تحلیل موقعیت مکانی با موفقیت انجام شد");
+
+    } catch (error) {
+      console.error(error);
+      toast.error("خطا در تحلیل منطقه. لطفا دوباره تلاش کنید.");
+    } finally {
       setIsAnalyzing(false);
-      toast.success("تحلیل منطقه آماده شد");
-    }, 2500);
+    }
   };
 
   return (
@@ -115,14 +197,15 @@ export default function LocationAnalyzerPage() {
       </Card>
 
       {/* Analysis Results */}
-      {hasAnalysis && (
+      {hasAnalysis && analysisData && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-6"
         >
-          {/* Top Stats */}
+          {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Score Card */}
             <Card className="p-4 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center">
@@ -133,162 +216,184 @@ export default function LocationAnalyzerPage() {
                   <p className="text-xs text-muted-foreground">مناسب برای {plan?.projectName}</p>
                 </div>
               </div>
-              <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mb-1">۸.۵<span className="text-sm font-normal text-muted-foreground">/۱۰</span></div>
-              <p className="text-sm text-emerald-700/80 dark:text-emerald-400/80">
-                این منطقه پتانسیل بالایی برای کسب‌وکار شما دارد.
+              <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mb-1">
+                {analysisData.score}<span className="text-sm font-normal text-muted-foreground">/۱۰</span>
+              </div>
+              <p className="text-sm text-emerald-700/80 dark:text-emerald-400/80 line-clamp-2">
+                {analysisData.scoreReason}
               </p>
             </Card>
 
-            <Card className="p-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border-blue-500/20">
+            {/* Economics Card (New) */}
+            <Card className="p-4 bg-gradient-to-br from-violet-500/10 to-purple-500/10 border-violet-500/20">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-blue-500 text-white flex items-center justify-center">
-                  <Users size={20} />
+                <div className="w-10 h-10 rounded-xl bg-violet-500 text-white flex items-center justify-center">
+                  <DollarSign size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-blue-700 dark:text-blue-400">جمعیت هدف</h3>
-                  <p className="text-xs text-muted-foreground">تراکم جمعیت در شعاع ۱km</p>
+                  <h3 className="font-bold text-violet-700 dark:text-violet-400">برآورد هزینه</h3>
+                  <p className="text-xs text-muted-foreground">تخمین اجاره ماهانه</p>
                 </div>
               </div>
-              <div className="text-3xl font-black text-blue-600 dark:text-blue-400 mb-1">۴۵,۰۰۰<span className="text-sm font-normal text-muted-foreground">نفر</span></div>
-              <p className="text-sm text-blue-700/80 dark:text-blue-400/80">
-                تراکم جمعیت بالا با قدرت خرید متوسط رو به بالا.
-              </p>
+              <div className="text-2xl font-black text-violet-600 dark:text-violet-400 mb-1">
+                {analysisData.rentEstimate}
+              </div>
+              <Badge variant="outline" className={`mt-1 border-violet-500/30 text-violet-700 dark:text-violet-400 font-normal`}>
+                 احتمال موفقیت: {analysisData.successMatch?.label || 'بالا'}
+              </Badge>
             </Card>
 
+            {/* Competitors Card (Enhanced) */}
             <Card className="p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20">
               <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center">
                   <Store size={20} />
                 </div>
                 <div>
-                  <h3 className="font-bold text-amber-700 dark:text-amber-400">رقبای منطقه</h3>
-                  <p className="text-xs text-muted-foreground">کسب‌وکارهای مشابه فعال</p>
+                  <h3 className="font-bold text-amber-700 dark:text-amber-400">تحلیل رقبا</h3>
+                  <p className="text-xs text-muted-foreground">رقبای اصلی اطراف</p>
                 </div>
               </div>
-              <div className="text-3xl font-black text-amber-600 dark:text-amber-400 mb-1">۱۲<span className="text-sm font-normal text-muted-foreground">کسب‌وکار</span></div>
-              <p className="text-sm text-amber-700/80 dark:text-amber-400/80">
-                رقابت متوسط است. فرصت برای ارائه خدمات بهتر وجود دارد.
-              </p>
+              <div className="text-3xl font-black text-amber-600 dark:text-amber-400 mb-1">
+                {analysisData.competitorsCount}<span className="text-sm font-normal text-muted-foreground"> رقیب</span>
+              </div>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {analysisData.nearbyCompetitors?.map((comp: string, i: number) => (
+                  <span key={i} className="text-[10px] bg-amber-500/10 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded-md">
+                    {comp}
+                  </span>
+                ))}
+              </div>
             </Card>
           </div>
 
           {/* Detailed Analysis Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Demographics */}
+            {/* Demographics & Insight */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="font-bold flex items-center gap-2">
                   <Users className="text-primary" size={20} />
-                  تحلیل جمعیت‌شناسی
+                  تحلیل بافت جمعیتی
                 </h3>
-                <Badge variant="secondary">دقیق</Badge>
+                <Badge variant="secondary">شعاع ۱ کیلومتری</Badge>
               </div>
               <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>گروه سنی ۲۰ تا ۳۵ سال</span>
-                    <span className="font-bold">۴۵٪</span>
+                {analysisData.demographics.map((demo: any, index: number) => (
+                  <div key={index}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>{demo.label}</span>
+                      <span className="font-bold">{demo.percent}٪</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full rounded-full" 
+                        style={{ width: `${demo.percent}%`, backgroundColor: demo.color || '#3b82f6' }} 
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-primary w-[45%]" />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>خانواده‌های جوان</span>
-                    <span className="font-bold">۳۰٪</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 w-[30%]" />
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>دانشجویان</span>
-                    <span className="font-bold">۱۵٪</span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-violet-500 w-[15%]" />
-                  </div>
-                </div>
+                ))}
               </div>
 
               <div className="mt-6 p-4 bg-muted/30 rounded-xl border border-border">
                 <h4 className="font-bold text-sm mb-2 flex items-center gap-2">
                   <Sparkles size={14} className="text-primary" />
-                  تحلیل دستیار کارنکس:
+                  تحلیل هوشمند منطقه:
                 </h4>
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  با توجه به درصد بالای جمعیت جوان منطقه، طراحی دکوراسیون مدرن و ارائه منوی دیجیتال می‌تواند جذابیت بالایی ایجاد کند. همچنین کمپین‌های اینستاگرامی در این منطقه بازدهی بالایی خواهند داشت.
+                <p className="text-sm text-muted-foreground leading-relaxed text-justify">
+                  {analysisData.aiInsight}
                 </p>
               </div>
             </Card>
 
-            {/* Traffic & Access */}
+            {/* SWOT Aanalysis (New) */}
             <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
+               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold flex items-center gap-2">
-                  <Car className="text-primary" size={20} />
-                  تراکم و دسترسی
+                  <TrendingUp className="text-primary" size={20} />
+                  تحلیل استراتژیک (SWOT)
                 </h3>
-                <Badge variant="secondary">Peak Hours</Badge>
               </div>
               
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="p-3 bg-muted/30 rounded-xl text-center">
-                  <Clock className="mx-auto mb-2 text-primary" size={20} />
-                  <p className="text-xs text-muted-foreground mb-1">ساعات اوج شلوغی</p>
-                  <p className="font-bold">۱۸:۰۰ تا ۲۱:۰۰</p>
+              <div className="grid grid-cols-2 gap-3 h-[calc(100%-3rem)]">
+                <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10">
+                   <h5 className="font-bold text-xs text-emerald-600 mb-2 flex items-center gap-1"><CheckCircle2 size={12}/> نقاط قوت</h5>
+                   <ul className="space-y-1">
+                     {analysisData.swot?.strengths?.map((s: string, i: number) => (
+                       <li key={i} className="text-[11px] text-muted-foreground leading-tight">• {s}</li>
+                     ))}
+                   </ul>
                 </div>
-                <div className="p-3 bg-muted/30 rounded-xl text-center">
-                  <Navigation className="mx-auto mb-2 text-primary" size={20} />
-                  <p className="text-xs text-muted-foreground mb-1">دسترسی محلی</p>
-                  <p className="font-bold">عالی</p>
+                <div className="p-3 rounded-xl bg-rose-500/5 border border-rose-500/10">
+                   <h5 className="font-bold text-xs text-rose-600 mb-2 flex items-center gap-1"><AlertTriangle size={12}/> نقاط ضعف</h5>
+                   <ul className="space-y-1">
+                     {analysisData.swot?.weaknesses?.map((s: string, i: number) => (
+                       <li key={i} className="text-[11px] text-muted-foreground leading-tight">• {s}</li>
+                     ))}
+                   </ul>
                 </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 size={16} className="text-emerald-500" />
-                  <span className="text-sm">نزدیک به ایستگاه مترو (۵ دقیقه پیاده)</span>
+                 <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
+                   <h5 className="font-bold text-xs text-blue-600 mb-2 flex items-center gap-1"><Target size={12}/> فرصت‌ها</h5>
+                   <ul className="space-y-1">
+                     {analysisData.swot?.opportunities?.map((s: string, i: number) => (
+                       <li key={i} className="text-[11px] text-muted-foreground leading-tight">• {s}</li>
+                     ))}
+                   </ul>
                 </div>
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 size={16} className="text-emerald-500" />
-                  <span className="text-sm">دارای جای پارک عمومی مناسب</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <AlertTriangle size={16} className="text-amber-500" />
-                  <span className="text-sm">ترافیک سنگین در عصرها</span>
+                 <div className="p-3 rounded-xl bg-amber-500/5 border border-amber-500/10">
+                   <h5 className="font-bold text-xs text-amber-600 mb-2 flex items-center gap-1"><Info size={12}/> تهدیدها</h5>
+                   <ul className="space-y-1">
+                     {analysisData.swot?.threats?.map((s: string, i: number) => (
+                       <li key={i} className="text-[11px] text-muted-foreground leading-tight">• {s}</li>
+                     ))}
+                   </ul>
                 </div>
               </div>
             </Card>
 
-            {/* AI Recommendations */}
-            <Card className="p-6 lg:col-span-2 bg-gradient-to-r from-primary/5 via-secondary/5 to-primary/5 border-primary/20">
-              <h3 className="font-bold mb-4 flex items-center gap-2 text-lg">
-                <Target className="text-primary" size={24} />
-                پیشنهادات استراتژیک برای موفقیت در این منطقه
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-card p-4 rounded-xl border border-border shadow-sm">
-                  <h4 className="font-bold mb-2 text-primary">قیمت‌گذاری</h4>
-                  <p className="text-sm text-muted-foreground">
-                    با توجه به قدرت خرید منطقه، استراتژی قیمت‌گذاری متوسط رو به بالا (Premium Economy) پیشنهاد می‌شود. کیفیت را فدای قیمت نکنید.
-                  </p>
-                </div>
-                <div className="bg-card p-4 rounded-xl border border-border shadow-sm">
-                  <h4 className="font-bold mb-2 text-primary">تبلیغات محلی</h4>
-                  <p className="text-sm text-muted-foreground">
-                    توزیع تراکت در مجتمع‌های مسکونی اطراف و همکاری با سوپرمارکت‌های محلی برای معرفی اولیه بسیار موثر است.
-                  </p>
-                </div>
-                <div className="bg-card p-4 rounded-xl border border-border shadow-sm">
-                  <h4 className="font-bold mb-2 text-primary">ساعات کاری</h4>
-                  <p className="text-sm text-muted-foreground">
-                    حتماً تا ساعت ۲۳:۰۰ باز باشید تا مشتریان شبانه منطقه را از دست ندهید. روزهای تعطیل شلوغ‌ترین روزها خواهند بود.
-                  </p>
-                </div>
-              </div>
+            {/* Recommendations & Traffic */}
+            <Card className="p-6 lg:col-span-2">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div>
+                    <h3 className="font-bold mb-4 flex items-center gap-2 text-sm">
+                      <Target className="text-primary" size={18} />
+                      پیشنهادات عملیاتی
+                    </h3>
+                    <div className="space-y-3">
+                      {analysisData.recommendations.map((rec: any, i: number) => (
+                        <div key={i} className="bg-muted/30 p-3 rounded-lg border border-border/50">
+                          <h4 className="font-bold text-sm text-primary mb-1">{rec.title}</h4>
+                          <p className="text-xs text-muted-foreground leading-relaxed">{rec.desc}</p>
+                        </div>
+                      ))}
+                    </div>
+                 </div>
+                 
+                 <div>
+                    <h3 className="font-bold mb-4 flex items-center gap-2 text-sm">
+                      <Car className="text-primary" size={18} />
+                      وضعیت تردد و دسترسی
+                    </h3>
+                    <div className="space-y-4">
+                       <div className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                          <span className="text-sm text-muted-foreground">ساعات پیک</span>
+                          <span className="font-bold text-sm">{analysisData.peakHours}</span>
+                       </div>
+                       <div className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                          <span className="text-sm text-muted-foreground">وضعیت ترافیک</span>
+                          <span className="font-bold text-sm text-amber-600">{analysisData.trafficWarning || 'عادی'}</span>
+                       </div>
+                       <div className="p-3 bg-muted/20 rounded-lg">
+                          <span className="text-sm text-muted-foreground block mb-2">نقاط دسترسی:</span>
+                          <div className="flex flex-wrap gap-2">
+                            {analysisData.accessPoints?.map((p: string, i: number) => (
+                              <Badge key={i} variant="outline" className="bg-background">{p}</Badge>
+                            ))}
+                          </div>
+                       </div>
+                    </div>
+                 </div>
+               </div>
             </Card>
           </div>
         </motion.div>
@@ -296,8 +401,10 @@ export default function LocationAnalyzerPage() {
 
       {!hasAnalysis && !isAnalyzing && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-50 pointer-events-none filter blur-sm select-none">
-           {/* Placeholder blurred content to show what it looks like */}
-           <Card className="p-32 col-span-full border-dashed"></Card>
+           {/* Placeholder blurred content */}
+           <Card className="p-32 col-span-full border-dashed flex items-center justify-center">
+             <p className="text-xl text-muted-foreground">منتظر دریافت آدرس برای تحلیل...</p>
+           </Card>
         </div>
       )}
     </div>

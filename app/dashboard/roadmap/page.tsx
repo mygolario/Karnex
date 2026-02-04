@@ -12,7 +12,7 @@ import {
   AlertCircle, Target, ArrowLeft, Clock, FolderOpen,
   ChevronLeft, ChevronRight, Calendar, FileText, Brain,
   GripVertical, Play, Pause, AlertTriangle, TrendingUp,
-  BarChart3, Layers, Lightbulb
+  BarChart3, Layers, Lightbulb, RefreshCw
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/dashboard/progress-ring";
 import { StepDetailModal } from "@/components/dashboard/step-detail-modal";
 import { cn } from "@/lib/utils";
-import { StepGuide } from "@/components/dashboard/step-guide";
+import { StepGuide } from "@/components/dashboard";
 
 // Types
 interface RoadmapPhase {
@@ -294,10 +294,7 @@ Priority: high/medium/low. Hours: estimated time. Persian only.`;
         }
       }
       
-      // Auto-estimate weeks
-      if (!estimatedWeeks) {
-        estimateProjectDuration();
-      }
+
     }
   }, [plan]);
 
@@ -388,12 +385,31 @@ Priority: high/medium/low. Hours: estimated time. Persian only.`;
             <div className="flex items-center gap-2">
               <h1 className="text-2xl md:text-3xl font-black text-foreground">نقشه راه هوشمند</h1>
               {isEstimatingWeeks ? (
-                <Loader2 size={16} className="animate-spin text-primary" />
-              ) : estimatedWeeks && (
-                <Badge variant="outline" className="bg-primary/10">
+                 <div className="flex items-center text-xs text-primary bg-primary/5 px-2 py-1 rounded-full">
+                  <Loader2 size={12} className="animate-spin ml-1" />
+                  محاسبه...
+                </div>
+              ) : estimatedWeeks ? (
+                 <div className="flex items-center gap-1 group">
+                    <Badge variant="outline" className="bg-primary/10 border-primary/20">
+                      <Brain size={12} className="ml-1" />
+                      {estimatedWeeks} هفته
+                    </Badge>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={estimateProjectDuration} 
+                      className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="محاسبه مجدد"
+                    >
+                       <RefreshCw size={12} className="text-muted-foreground hover:text-primary" />
+                    </Button>
+                 </div>
+              ) : (
+                <Button variant="outline" size="sm" onClick={estimateProjectDuration} className="h-7 text-xs bg-background/50 backdrop-blur-sm border-dashed">
                   <Brain size={12} className="ml-1" />
-                  {estimatedWeeks} هفته
-                </Badge>
+                  تخمین زمان
+                </Button>
               )}
             </div>
             <p className="text-sm text-muted-foreground mt-1">{plan.projectName}</p>

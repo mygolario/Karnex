@@ -19,13 +19,18 @@ export function AnalyzerButton({ plan }: AnalyzerButtonProps) {
     setLoading(true);
     try {
       const prompt = `
-        Analyze this Lean Canvas for a startup called "${plan.projectName}".
+        Analyze this Business Model Canvas for a project called "${plan.projectName}".
         
         Canvas Data:
-        - Problem: ${plan.leanCanvas.problem}
-        - Solution: ${plan.leanCanvas.solution}
-        - Unique Value: ${plan.leanCanvas.uniqueValue}
-        - Revenue: ${plan.leanCanvas.revenueStream}
+        - Key Partners: ${JSON.stringify(plan.leanCanvas?.keyPartners)}
+        - Key Activities: ${JSON.stringify(plan.leanCanvas?.keyActivities)}
+        - Key Resources: ${JSON.stringify(plan.leanCanvas?.keyResources)}
+        - Value Propositions: ${JSON.stringify(plan.leanCanvas?.uniqueValue)}
+        - Customer Relationships: ${JSON.stringify(plan.leanCanvas?.customerRelations)}
+        - Channels: ${JSON.stringify(plan.leanCanvas?.channels)}
+        - Customer Segments: ${JSON.stringify(plan.leanCanvas?.customerSegments)}
+        - Cost Structure: ${JSON.stringify(plan.leanCanvas?.costStructure)}
+        - Revenue Streams: ${JSON.stringify(plan.leanCanvas?.revenueStream)}
 
         Act like a strict Angel Investor.
         Return ONLY a JSON object with this format (no markdown):
@@ -51,8 +56,8 @@ export function AnalyzerButton({ plan }: AnalyzerButtonProps) {
       console.error(err);
       // Fallback mock
       setAnalysis({
-        strengths: ["ایده شفاف و مشخص است", "بازار هدف به خوبی تعریف شده"],
-        weaknesses: ["مدل درآمدی نیاز به تفصیل دارد", "مزیت رقابتی باید قوی‌تر باشد"],
+        strengths: ["ارزش پیشنهادی شفاف است", "جریان درآمدی مشخص است"],
+        weaknesses: ["بخش مشتریان نیاز به تدقیق دارد", "پایداری مالی باید بررسی شود"],
         score: 75
       });
     } finally {

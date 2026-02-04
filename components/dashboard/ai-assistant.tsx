@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { getPlanFromCloud } from "@/lib/db";
 import { Button } from "@/components/ui/button";
-import { useMentorContext } from "@/components/dashboard/step-guide";
+import { useMentorContext } from "@/components/dashboard/mentor-context";
 import {
   Sparkles,
   Send,

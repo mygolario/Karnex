@@ -65,6 +65,8 @@ export async function POST(req: Request) {
       systemPrompt,
       maxTokens: 800,
       temperature: 0.5,
+      // User request: Use gpt-4o-mini specifically for Assistant
+      modelOverride: "openai/gpt-4o-mini"
     });
 
     if (!result.success) {

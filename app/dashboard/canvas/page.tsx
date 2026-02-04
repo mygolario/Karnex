@@ -9,10 +9,11 @@ import {
   Lightbulb, Gem, Banknote, Users, Activity,
   Package, Handshake, PiggyBank, LayoutGrid, Sparkles, Loader2, 
   Plus, Download, Search, Eye, ArrowRight, Heart, Megaphone,
-  AlertTriangle, Target, AlertCircle
+  AlertTriangle, Target, AlertCircle, Star, Share2
 } from "lucide-react";
 import { PdfExportButton } from "@/components/dashboard/pdf-export-button";
 import { AnalyzerButton } from "@/components/dashboard/analyzer-button";
+import { BMCBlock } from "@/components/dashboard/canvas/bmc-block";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,43 +26,48 @@ const generateId = () => `card-${Date.now()}-${Math.random().toString(36).substr
 const BMC_BLOCKS = {
   keyPartners: {
     title: "شرکای کلیدی",
-    subtitle: "چه کسانی به شما کمک می‌کنند؟",
+    subtitle: "شبکه تأمین‌کنندگان و شرکای بیرون سازمان",
     icon: Handshake,
     bgColor: "from-cyan-500/20 to-cyan-600/10",
     iconBg: "bg-cyan-500",
-    borderColor: "border-cyan-500/30"
+    borderColor: "border-cyan-500/30",
+    description: "چه کسانی به شما در انجام فعالیت‌ها کمک می‌کنند؟ (تأمین‌کنندگان، شرکا، مشاوران)"
   },
   keyActivities: {
     title: "فعالیت‌های کلیدی",
-    subtitle: "چه کارهایی باید انجام دهید؟",
+    subtitle: "مهم‌ترین اقدامات برای عملکرد مدل کسب‌وکار",
     icon: Activity,
     bgColor: "from-blue-500/20 to-blue-600/10",
     iconBg: "bg-blue-500",
-    borderColor: "border-blue-500/30"
+    borderColor: "border-blue-500/30",
+    description: "چه کارهایی باید انجام دهید تا ارزش پیشنهادی خود را خلق و ارائه کنید؟"
   },
   keyResources: {
     title: "منابع کلیدی",
-    subtitle: "چه دارایی‌هایی نیاز دارید؟",
+    subtitle: "دارایی‌های حیاتی برای خلق ارزش",
     icon: Package,
     bgColor: "from-indigo-500/20 to-indigo-600/10",
     iconBg: "bg-indigo-500",
-    borderColor: "border-indigo-500/30"
+    borderColor: "border-indigo-500/30",
+    description: "به چه منابعی (فیزیکی، مالی، انسانی، معنوی) برای اجرای مدل کسب‌وکار نیاز دارید؟"
   },
   uniqueValue: {
     title: "ارزش پیشنهادی",
-    subtitle: "چرا شما خاص هستید؟",
+    subtitle: "چه مشکلی را حل می‌کنید؟",
     icon: Gem,
     bgColor: "from-pink-500/20 to-pink-600/10",
     iconBg: "bg-pink-500",
-    borderColor: "border-pink-500/30"
+    borderColor: "border-pink-500/30",
+    description: "چه ارزشی به مشتری ارائه می‌دهید؟ چرا باید شما را انتخاب کنند؟"
   },
   customerRelations: {
     title: "روابط مشتری",
-    subtitle: "چطور با مشتری ارتباط می‌گیرید؟",
+    subtitle: "نحوه جذب و حفظ مشتری",
     icon: Heart,
     bgColor: "from-rose-500/20 to-rose-600/10",
     iconBg: "bg-rose-500",
-    borderColor: "border-rose-500/30"
+    borderColor: "border-rose-500/30",
+    description: "چگونه با مشتریان خود ارتباط برقرار می‌کنید و آن‌ها را حفظ می‌کنید؟"
   },
   channels: {
     title: "کانال‌ها",
@@ -69,15 +75,17 @@ const BMC_BLOCKS = {
     icon: Megaphone,
     bgColor: "from-orange-500/20 to-orange-600/10",
     iconBg: "bg-orange-500",
-    borderColor: "border-orange-500/30"
+    borderColor: "border-orange-500/30",
+    description: "از چه طریقی محصولات یا خدمات خود را به دست مشتری می‌رسانید؟"
   },
   customerSegments: {
     title: "بخش‌های مشتری",
-    subtitle: "برای چه کسانی ارزش می‌سازید؟",
+    subtitle: "مخاطبان هدف شما",
     icon: Users,
     bgColor: "from-purple-500/20 to-purple-600/10",
     iconBg: "bg-purple-500",
-    borderColor: "border-purple-500/30"
+    borderColor: "border-purple-500/30",
+    description: "مشتریان شما چه کسانی هستند؟ برای چه کسانی ارزش خلق می‌کنید؟"
   },
   costStructure: {
     title: "ساختار هزینه",
@@ -85,50 +93,92 @@ const BMC_BLOCKS = {
     icon: PiggyBank,
     bgColor: "from-red-500/20 to-red-600/10",
     iconBg: "bg-red-500",
-    borderColor: "border-red-500/30"
+    borderColor: "border-red-500/30",
+    description: "مهم‌ترین هزینه‌های کسب‌وکار شما چیست؟ (ثابت، متغیر)"
   },
   revenueStream: {
     title: "جریان درآمد",
-    subtitle: "از چه راه‌هایی پول در می‌آورید؟",
+    subtitle: "روش‌های درآمدزایی",
     icon: Banknote,
     bgColor: "from-emerald-500/20 to-emerald-600/10",
     iconBg: "bg-emerald-500",
-    borderColor: "border-emerald-500/30"
+    borderColor: "border-emerald-500/30",
+    description: "مشتریان برای چه چیزی پول می‌دهند و چگونه؟ (فروش، اشتراک، تبلیغات)"
   }
 };
 
 const BRAND_CANVAS_BLOCKS = {
-  niche: {
-    title: "حوزه فعالیت (Niche)",
-    subtitle: "موضوع اصلی محتوای شما چیست؟",
-    icon: Target,
-    bgColor: "from-purple-500/20 to-purple-600/10",
-    iconBg: "bg-purple-500",
-    borderColor: "border-purple-500/30"
+  identity: {
+    title: "هویت و ارزش‌ها (Identity)",
+    subtitle: "شما کی هستید؟ (ارزش‌ها، شخصیت، داستان)",
+    icon: Gem,
+    bgColor: "from-indigo-500/20 to-indigo-600/10",
+    iconBg: "bg-indigo-500",
+    borderColor: "border-indigo-500/30"
   },
-  audienceAvatar: {
-    title: "پرسونای مخاطب",
-    subtitle: "مخاطب ایده‌آل شما کیست؟",
+  promise: {
+    title: "وعده برند (Brand Promise)",
+    subtitle: "چه قولی به مخاطب می‌دهید؟ (USP)",
+    icon: Star,
+    bgColor: "from-amber-500/20 to-amber-600/10",
+    iconBg: "bg-amber-500",
+    borderColor: "border-amber-500/30"
+  },
+  audience: {
+    title: "مخاطب هدف (Tribe)",
+    subtitle: "برای چه کسانی محتوا می‌سازید؟",
     icon: Users,
     bgColor: "from-blue-500/20 to-blue-600/10",
     iconBg: "bg-blue-500",
     borderColor: "border-blue-500/30"
   },
-  contentPillars: {
-    title: "ستون‌های محتوا",
-    subtitle: "موضوعات اصلی که پوشش می‌دهید",
+  contentStrategy: {
+    title: "استراتژی محتوا",
+    subtitle: "چه موضوعاتی؟ (Content Pillars)",
     icon: LayoutGrid,
     bgColor: "from-pink-500/20 to-pink-600/10",
     iconBg: "bg-pink-500",
     borderColor: "border-pink-500/30"
   },
-  revenueChannels: {
-    title: "کانال‌های درآمدی",
-    subtitle: "چگونه پول در می‌آورید؟",
+  channels: {
+    title: "کانال‌های انتشار",
+    subtitle: "کجا حضور دارید؟ (IG, YT, X)",
+    icon: Share2,
+    bgColor: "from-violet-500/20 to-violet-600/10",
+    iconBg: "bg-violet-500",
+    borderColor: "border-violet-500/30"
+  },
+  monetization: {
+    title: "مدل درآمدی",
+    subtitle: "چگونه درآمد کسب می‌کنید؟",
     icon: Banknote,
     bgColor: "from-emerald-500/20 to-emerald-600/10",
     iconBg: "bg-emerald-500",
     borderColor: "border-emerald-500/30"
+  },
+  resources: {
+    title: "منابع و ابزارها",
+    subtitle: "تجهیزات، تیم و مهارت‌های کلیدی",
+    icon: Package,
+    bgColor: "from-cyan-500/20 to-cyan-600/10",
+    iconBg: "bg-cyan-500",
+    borderColor: "border-cyan-500/30"
+  },
+  collaborators: {
+    title: "شرکا و کامیونیتی",
+    subtitle: "چه کسانی به شما کمک می‌کنند؟",
+    icon: Handshake,
+    bgColor: "from-rose-500/20 to-rose-600/10",
+    iconBg: "bg-rose-500",
+    borderColor: "border-rose-500/30"
+  },
+  investment: {
+    title: "سرمایه‌گذاری",
+    subtitle: "هزینه زمان، پول و انرژی",
+    icon: PiggyBank,
+    bgColor: "from-red-500/20 to-red-600/10",
+    iconBg: "bg-red-500",
+    borderColor: "border-red-500/30"
   }
 };
 
@@ -174,8 +224,9 @@ const sectionColors: Record<string, CanvasCard['color']> = {
   uniqueValue: 'pink', customerRelations: 'yellow', channels: 'orange',
   customerSegments: 'purple', revenueStream: 'green', costStructure: 'pink',
   // Brand Canvas
-  niche: 'purple', audienceAvatar: 'blue',
-  contentPillars: 'pink', revenueChannels: 'green',
+  identity: 'purple', audience: 'blue',
+  contentStrategy: 'pink', monetization: 'green',
+  resources: 'cyan', collaborators: 'pink', investment: 'red', promise: 'orange',
   // SWOT
   strengths: 'green', weaknesses: 'red',
   opportunities: 'blue', threats: 'orange'
@@ -203,7 +254,8 @@ export default function CanvasPage() {
     if (plan.projectType === 'creator') {
       // Initialize Brand Canvas
       const brandCanvas = plan.brandCanvas || {
-        niche: [], audienceAvatar: [], contentPillars: [], revenueChannels: []
+        identity: [], promise: [], audience: [], contentStrategy: [],
+        channels: [], monetization: [], resources: [], collaborators: [], investment: []
       };
 
       Object.entries(BRAND_CANVAS_BLOCKS).forEach(([key]) => {
@@ -211,19 +263,8 @@ export default function CanvasPage() {
         initialState[key] = Array.isArray(content) ? content :
                            (typeof content === 'string' && content ? [{ id: generateId(), content, color: sectionColors[key] || 'blue' }] : []);
       });
-    } else if (plan.projectType === 'traditional') {
-       // Initialize SWOT
-       const swot = plan.swotAnalysis || {
-         strengths: "", weaknesses: "", opportunities: "", threats: ""
-       };
-
-       Object.entries(SWOT_BLOCKS).forEach(([key]) => {
-         const content = (swot as any)[key];
-         // SWOT content is string, convert to single card
-         initialState[key] = content ? [{ id: generateId(), content, color: sectionColors[key] || 'blue' }] : [];
-       });
     } else {
-      // Default: Startup / Lean Canvas (initialize even if plan.leanCanvas is undefined)
+      // Default: BMC (Startup & Traditional)
       const leanCanvas = plan.leanCanvas || {
         keyPartners: [], keyActivities: [], keyResources: [], uniqueValue: [],
         customerRelations: [], channels: [], customerSegments: [],
@@ -239,7 +280,7 @@ export default function CanvasPage() {
     setCanvasState(initialState);
   }, [plan?.id, plan?.projectType]);
 
-  const handleSave = async (newState: CanvasState) => {
+    const handleSave = async (newState: CanvasState) => {
     if (!plan || !updateActiveProject) return;
 
     if (plan.projectType === 'creator') {
@@ -249,15 +290,8 @@ export default function CanvasPage() {
          brandCanvasUpdate[key] = newState[key] || [];
        });
        await updateActiveProject({ brandCanvas: brandCanvasUpdate });
-    } else if (plan.projectType === 'traditional') {
-       // Save SWOT
-       const swotUpdate: any = {};
-       Object.keys(SWOT_BLOCKS).forEach(key => {
-         swotUpdate[key] = newState[key]?.map(c => c.content).join('\n') || "";
-       });
-       await updateActiveProject({ swotAnalysis: swotUpdate });
     } else {
-       // Save Lean Canvas
+       // Save BMC (for both Startup and Traditional)
        const newLeanCanvas: any = { ...plan.leanCanvas };
        Object.keys(BMC_BLOCKS).forEach(key => {
          newLeanCanvas[key] = newState[key] || [];
@@ -308,36 +342,70 @@ export default function CanvasPage() {
     if (!plan) return;
     setIsAutoFilling(true);
 
-    // Determine prompt based on type
-    let prompt = "";
-    let systemPrompt = "Return ONLY valid JSON.";
-
-    // Simplified prompt for example
-    prompt = `Generate canvas content for "${plan.projectName}" (${plan.overview}). Project Type: ${plan.projectType}. Return JSON object matching the canvas keys.`;
-
     try {
-      const response = await fetch("/api/ai-generate", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, systemPrompt }),
-      });
-      const data = await response.json();
-      if (data.success && data.content) {
-        const parsed = JSON.parse(data.content.replace(/```json|```/g, "").trim());
-        const newState = {} as CanvasState;
-
-        const blocksToUse = plan.projectType === 'creator' ? BRAND_CANVAS_BLOCKS :
-                           plan.projectType === 'traditional' ? SWOT_BLOCKS :
-                           BMC_BLOCKS;
-
-        Object.keys(blocksToUse).forEach(key => {
-          const items = Array.isArray(parsed[key]) ? parsed[key] : [parsed[key]];
-          newState[key] = items.filter(Boolean).map((text: string) => ({
-            id: generateId(), content: text, color: sectionColors[key] || 'yellow'
-          }));
+      // Use specialized action for BMC (Startup & Traditional) which guarantees structure
+      if (plan.projectType !== 'creator') {
+         const response = await fetch("/api/ai-generate", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+             action: 'generate-full-canvas',
+             businessIdea: plan.overview || plan.description,
+             projectName: plan.projectName
+          }),
         });
 
-        setCanvasState(newState);
-        handleSave(newState);
+        const data = await response.json();
+        
+        if (data.success && data.canvas) {
+          const newState = { ...canvasState };
+          const parsed = data.canvas; // dedicated endpoint returns parsed object directly
+          
+          Object.keys(BMC_BLOCKS).forEach(key => {
+            // Ensure we handle both string (legacy) and array (new) formats from AI
+            let content = parsed[key];
+            if (typeof content === 'string') {
+               // Split by bullets if it's a single string
+               content = content.split('\n').filter((l: string) => l.trim().length > 0).map((l: string) => l.replace(/^[•-]\s*/, ''));
+            }
+            
+            const items = Array.isArray(content) ? content : [content];
+            
+            // Only update if we have items
+            if (items.length > 0) {
+                 newState[key] = items.filter(Boolean).map((text: string) => ({
+                    id: generateId(), content: text, color: sectionColors[key] || 'blue'
+                 }));
+            }
+          });
+
+          setCanvasState(newState);
+          handleSave(newState);
+        }
+      } else {
+         // Fallback for Creator (Brand Canvas) - keep existing generic prompt for now
+         const prompt = `Generate personal brand canvas content for creator "${plan.projectName}" (${plan.overview}). 
+         Return JSON object matching these keys: identity, promise, audience, contentStrategy, channels, monetization, resources, collaborators, investment.`;
+         
+         const response = await fetch("/api/ai-generate", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt, systemPrompt: "Return ONLY valid JSON." }),
+          });
+
+          const data = await response.json();
+          if (data.success && data.content) {
+            const parsed = JSON.parse(data.content.replace(/```json|```/g, "").trim());
+            const newState = { ...canvasState } as CanvasState;
+
+            Object.keys(BRAND_CANVAS_BLOCKS).forEach(key => {
+              const items = Array.isArray(parsed[key]) ? parsed[key] : [parsed[key]];
+              newState[key] = items.filter(Boolean).map((text: string) => ({
+                id: generateId(), content: text, color: sectionColors[key] || 'purple'
+              }));
+            });
+
+            setCanvasState(newState);
+            handleSave(newState);
+          }
       }
     } catch (err) { console.error(err); }
     finally { setIsAutoFilling(false); }
@@ -430,10 +498,11 @@ Max 3 items.`;
   };
 
   // Determine active blocks based on project type
+  // User requested Standard BMC for everyone (except keeping Brand Canvas for creators optionally, 
+  // but let's make BMC standard for Traditional too).
   const activeBlocks: Record<string, any> =
     plan?.projectType === 'creator' ? BRAND_CANVAS_BLOCKS :
-    plan?.projectType === 'traditional' ? SWOT_BLOCKS :
-    BMC_BLOCKS;
+    BMC_BLOCKS; // Default to BMC for Traditional & Startup
 
   if (loading || !plan) {
     return (
@@ -459,13 +528,11 @@ Max 3 items.`;
           <div>
             <h1 className="text-2xl font-black text-foreground">
               {plan.projectType === 'creator' ? 'بوم برند شخصی' :
-               plan.projectType === 'traditional' ? 'تحلیل SWOT' :
                'بوم مدل کسب‌وکار'}
             </h1>
             <p className="text-muted-foreground text-sm">
               {plan.projectType === 'creator' ? 'استراتژی برند و مخاطب' :
-               plan.projectType === 'traditional' ? 'نقاط قوت، ضعف، فرصت‌ها و تهدیدها' :
-               'طراحی و اعتبارسنجی مدل کسب‌وکار'}
+               'طراحی و اعتبارسنجی مدل کسب‌وکار (استاندارد ۹ بلوک)'}
             </p>
           </div>
         </div>
@@ -478,7 +545,7 @@ Max 3 items.`;
             {isAutoFilling ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
             پر کردن خودکار
           </Button>
-          {plan.projectType === 'startup' && (
+          {(plan.projectType === 'startup' || plan.projectType === 'traditional') && (
             <>
               <Button onClick={generateCompetitorCanvas} disabled={isGeneratingCompetitor} variant="outline" size="sm">
                 {isGeneratingCompetitor ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
@@ -555,42 +622,12 @@ Max 3 items.`;
       </AnimatePresence>
 
       {/* Main Canvas Area */}
-      <div id="bmc-canvas" className="bg-card border border-border rounded-3xl p-4 md:p-6">
-
-        {/* Dynamic Layout */}
-        <div className={`${plan.projectType === 'startup' || !plan.projectType ? 'grid grid-cols-1 md:grid-cols-10 gap-3 md:gap-4' : 'grid grid-cols-1 md:grid-cols-2 gap-4'}`}>
-
-          {/* Default Startup Layout (10-col grid for BMC) */}
-          {(plan.projectType === 'startup' || !plan.projectType) && (
-            <>
-               <BMCBlock field="keyPartners" config={BMC_BLOCKS.keyPartners} cards={canvasState.keyPartners || []}
-                 onAdd={() => handleAddCard('keyPartners')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} className="md:col-span-2 md:row-span-2" />
-               <div className="md:col-span-2 flex flex-col gap-3 md:gap-4">
-                 <BMCBlock field="keyActivities" config={BMC_BLOCKS.keyActivities} cards={canvasState.keyActivities || []}
-                   onAdd={() => handleAddCard('keyActivities')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} />
-                 <BMCBlock field="keyResources" config={BMC_BLOCKS.keyResources} cards={canvasState.keyResources || []}
-                   onAdd={() => handleAddCard('keyResources')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} />
-               </div>
-               <BMCBlock field="uniqueValue" config={BMC_BLOCKS.uniqueValue} cards={canvasState.uniqueValue || []}
-                 onAdd={() => handleAddCard('uniqueValue')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} className="md:col-span-2 md:row-span-2" />
-               <div className="md:col-span-2 flex flex-col gap-3 md:gap-4">
-                 <BMCBlock field="customerRelations" config={BMC_BLOCKS.customerRelations} cards={canvasState.customerRelations || []}
-                   onAdd={() => handleAddCard('customerRelations')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} />
-                 <BMCBlock field="channels" config={BMC_BLOCKS.channels} cards={canvasState.channels || []}
-                   onAdd={() => handleAddCard('channels')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} />
-               </div>
-               <BMCBlock field="customerSegments" config={BMC_BLOCKS.customerSegments} cards={canvasState.customerSegments || []}
-                 onAdd={() => handleAddCard('customerSegments')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} className="md:col-span-2 md:row-span-2" />
-               <BMCBlock field="costStructure" config={BMC_BLOCKS.costStructure} cards={canvasState.costStructure || []}
-                 onAdd={() => handleAddCard('costStructure')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} className="md:col-span-5" />
-               <BMCBlock field="revenueStream" config={BMC_BLOCKS.revenueStream} cards={canvasState.revenueStream || []}
-                 onAdd={() => handleAddCard('revenueStream')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} className="md:col-span-5" />
-            </>
-          )}
-
-          {/* Simple Grid Layout for Other Types */}
-          {plan.projectType !== 'startup' && plan.projectType !== undefined && (
-            Object.entries(activeBlocks).map(([key, config]: [string, any]) => (
+      <div id="bmc-canvas" className="bg-card border border-border rounded-3xl p-4 md:p-6 overflow-hidden">
+        
+        {/* Creator Canvas (3-Col Grid) */}
+        {plan.projectType === 'creator' && (
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" dir="rtl">
+            {Object.entries(activeBlocks).map(([key, config]: [string, any]) => (
               <BMCBlock
                 key={key}
                 field={key}
@@ -600,73 +637,65 @@ Max 3 items.`;
                 onUpdate={handleUpdateCard}
                 onDelete={handleDeleteCard}
               />
-            ))
-          )}
+            ))}
+           </div>
+        )}
 
-        </div>
+        {/* Standard BMC Layout (CSS Grid Areas) */}
+        {(plan.projectType !== 'creator') && (
+          <div 
+            dir="ltr" // Force LTR for layout structure (Partners Left, Segments Right)
+            className="grid gap-3 md:gap-4 min-h-[800px]"
+            style={{
+              gridTemplateColumns: 'repeat(5, 1fr)',
+              gridTemplateRows: 'repeat(2, 1fr) 0.5fr',
+              gridTemplateAreas: `
+                "partners activities value relations segments"
+                "partners resources  value channels  segments"
+                "cost     cost       cost  revenue   revenue"
+              `
+            }}
+          >
+             <BMCBlock field="keyPartners" config={BMC_BLOCKS.keyPartners} cards={canvasState.keyPartners || []}
+               onAdd={() => handleAddCard('keyPartners')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} 
+               style={{ gridArea: 'partners' }} />
+             
+             <BMCBlock field="keyActivities" config={BMC_BLOCKS.keyActivities} cards={canvasState.keyActivities || []}
+               onAdd={() => handleAddCard('keyActivities')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} 
+               style={{ gridArea: 'activities' }} />
+             
+             <BMCBlock field="keyResources" config={BMC_BLOCKS.keyResources} cards={canvasState.keyResources || []}
+               onAdd={() => handleAddCard('keyResources')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} 
+               style={{ gridArea: 'resources' }} />
+             
+             <BMCBlock field="uniqueValue" config={BMC_BLOCKS.uniqueValue} cards={canvasState.uniqueValue || []}
+               onAdd={() => handleAddCard('uniqueValue')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} 
+               style={{ gridArea: 'value' }} />
+             
+             <BMCBlock field="customerRelations" config={BMC_BLOCKS.customerRelations} cards={canvasState.customerRelations || []}
+               onAdd={() => handleAddCard('customerRelations')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} 
+               style={{ gridArea: 'relations' }} />
+             
+             <BMCBlock field="channels" config={BMC_BLOCKS.channels} cards={canvasState.channels || []}
+               onAdd={() => handleAddCard('channels')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} 
+               style={{ gridArea: 'channels' }} />
+             
+             <BMCBlock field="customerSegments" config={BMC_BLOCKS.customerSegments} cards={canvasState.customerSegments || []}
+               onAdd={() => handleAddCard('customerSegments')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} 
+               style={{ gridArea: 'segments' }} />
+             
+             <BMCBlock field="costStructure" config={BMC_BLOCKS.costStructure} cards={canvasState.costStructure || []}
+               onAdd={() => handleAddCard('costStructure')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} 
+               style={{ gridArea: 'cost' }} />
+             
+             <BMCBlock field="revenueStream" config={BMC_BLOCKS.revenueStream} cards={canvasState.revenueStream || []}
+               onAdd={() => handleAddCard('revenueStream')} onUpdate={handleUpdateCard} onDelete={handleDeleteCard} 
+               style={{ gridArea: 'revenue' }} />
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-// Sub-component for rendering a block
-function BMCBlock({ field, config, cards, onAdd, onUpdate, onDelete, className }: {
-  field: string, config: any, cards: CanvasCard[],
-  onAdd: () => void, onUpdate: (key: string, id: string, text: string) => void, onDelete: (key: string, id: string) => void,
-  className?: string
-}) {
-  return (
-    <Card className={`flex flex-col border border-border/50 shadow-sm overflow-hidden h-full min-h-[200px] ${className || ''}`}>
-      <div className={`p-3 border-b bg-gradient-to-r ${config.bgColor} flex items-center justify-between`}>
-        <div className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-lg ${config.iconBg} text-white flex items-center justify-center shadow-lg shadow-black/10`}>
-            <config.icon size={16} />
-          </div>
-          <div>
-            <h3 className="font-bold text-sm leading-tight">{config.title}</h3>
-            <p className="text-[10px] text-muted-foreground opacity-80 line-clamp-1">{config.subtitle}</p>
-          </div>
-        </div>
-        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onAdd}>
-          <Plus size={14} />
-        </Button>
-      </div>
 
-      <div className="p-2 flex-1 space-y-2 bg-card/50">
-        <AnimatePresence>
-          {cards.map((card) => (
-            <motion.div
-              key={card.id}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-            >
-              <div className={`group relative bg-background border border-l-4 rounded-lg p-2.5 text-xs shadow-sm shadow-${card.color}-500/5 hover:shadow-md transition-all`}
-                   style={{ borderLeftColor: `var(--${card.color}-500)` }}>
-                <textarea
-                  className="w-full bg-transparent resize-none outline-none min-h-[40px]"
-                  value={card.content}
-                  onChange={(e) => onUpdate(field, card.id, e.target.value)}
-                  placeholder="..."
-                />
-                 <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 h-5 w-5 md:h-6 md:w-6 text-muted-foreground hover:text-destructive"
-                    onClick={() => onDelete(field, card.id)}
-                  >
-                    <AlertCircle size={12} />
-                  </Button>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
-        {cards.length === 0 && (
-          <div className="h-full flex items-center justify-center opacity-30 cursor-pointer" onClick={onAdd}>
-            <Plus size={24} className="text-muted-foreground" />
-          </div>
-        )}
-      </div>
-    </Card>
-  );
-}

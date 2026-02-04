@@ -108,16 +108,26 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // NEW: Update active project in-place for immediate UI feedback
-  const updateActiveProject = (updates: Partial<BusinessPlan>) => {
-    if (!activeProject) return;
-    setActiveProject(prev => prev ? { ...prev, ...updates } : null);
-    // Also update in projects array
+  // NEW: Update active project in-place for immediate UI feedback AND save to cloud
+  const updateActiveProject = async (updates: Partial<BusinessPlan>) => {
+    if (!activeProject || !user) return;
+    
+    // Optimsitic Update
+    const updatedProject = { ...activeProject, ...updates };
+    setActiveProject(updatedProject);
     setProjects(prevProjects => 
       prevProjects.map(p => 
-        p.id === activeProject.id ? { ...p, ...updates } : p
+        p.id === activeProject.id ? updatedProject : p
       )
     );
+
+    // Save to Cloud (Fire and forget or await if needed, but for context we usually just trigger it)
+    try {
+        await savePlanToCloud(user.uid, updates as any, true, activeProject.id);
+    } catch (err) {
+        console.error("Failed to save project updates", err);
+        // revert if needed? For now we assume eventual consistency or user retry
+    }
   };
 
   return (

@@ -5,7 +5,7 @@ import type { NextRequest } from 'next/server';
 // Note: In serverless, this memory is not shared, but it helps against single-instance floods.
 const rateLimit = new Map();
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const ip = request.headers.get('x-forwarded-for') || 'unknown';
   const path = request.nextUrl.pathname;
 

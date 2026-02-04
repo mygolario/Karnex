@@ -7,45 +7,22 @@ import { useProject } from "@/contexts/project-context";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  Bot,
-  Send,
-  Sparkles,
-  Loader2,
-  Trash2,
-  Download,
-  Lightbulb,
-  Target,
-  TrendingUp,
-  Users,
-  DollarSign,
-  Wand2,
-  MessageSquare,
-  Zap,
-  Copy,
-  Check,
-  Rocket
+  Bot, Send, Loader2, Trash2, Rocket, Zap, Copy, Check, TrendingUp,
+  Target, Users, DollarSign, Wand2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { ChatMessage, AssistantData, DailyMission } from "@/lib/db";
 
 // Mission Control Components
 import { DailyGreeting } from "@/components/dashboard/assistant/daily-greeting";
-import { DailyMissions, Mission, generateDailyMissions } from "@/components/dashboard/assistant/daily-missions";
+import { DailyMissions, generateDailyMissions } from "@/components/dashboard/assistant/daily-missions";
 import { AIInsightCard, AIInsight, generateDailyInsights } from "@/components/dashboard/assistant/ai-insight";
 import { SmartActionCard, ActionCard } from "@/components/dashboard/assistant/action-card";
 import { VoiceInput } from "@/components/dashboard/assistant/voice-input";
 import { Celebration, triggerConfetti, triggerStars } from "@/components/dashboard/assistant/celebration";
 import { XpFloat, XpBadge } from "@/components/dashboard/assistant/xp-float";
 import { StreakDisplay } from "@/components/dashboard/assistant/streak-display";
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: number;
-  followUps?: string[];
-  actions?: ActionCard[];
-  xpReward?: number;
-}
 
 // Prompt templates
 const promptTemplates = [
@@ -56,18 +33,14 @@ const promptTemplates = [
   { icon: Wand2, title: "بهبود", prompt: "چطور ایده‌ام رو بهتر و متمایزتر کنم؟", color: "from-rose-500 to-red-500" },
 ];
 
-const STORAGE_KEY = "karnex_advisor_history";
-const STREAK_KEY = "karnex_assistant_streak";
-const XP_KEY = "karnex_assistant_xp";
-const MAX_HISTORY = 100;
-
 export default function AssistantPage() {
   const { user } = useAuth();
-  const { activeProject: plan } = useProject();
+  const { activeProject: plan, updateActiveProject } = useProject();
 
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [showFollowUps, setShowFollowUps] = useState<string[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -78,111 +51,142 @@ export default function AssistantPage() {
   const [xpGain, setXpGain] = useState({ amount: 0, trigger: false });
 
   // Mission Control state
-  const [missions, setMissions] = useState<Mission[]>([]);
+  const [missions, setMissions] = useState<any[]>([]); 
   const [insights, setInsights] = useState<AIInsight[]>([]);
   const [pendingActions, setPendingActions] = useState<ActionCard[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Calculate project stats
-  const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 0;
-  const completedCount = plan?.completedSteps?.length || 0;
-  const progressPercent = totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
+  const generateId = () => `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-  // Load streak and XP from localStorage
+  // Sanitization Helper to prevent "undefined" Firestore errors
+  const sanitizeForFirestore = (obj: any): any => {
+    if (obj === undefined) return null;
+    if (obj === null) return null;
+    if (Array.isArray(obj)) return obj.map(sanitizeForFirestore);
+    if (typeof obj === 'object') {
+      const newObj: any = {};
+      for (const key in obj) {
+        const val = sanitizeForFirestore(obj[key]);
+        if (val !== undefined) newObj[key] = val;
+      }
+      return newObj;
+    }
+    return obj;
+  };
+
+  // Robust Update Function
+  const updateAssistantData = async (updates: Partial<AssistantData>) => {
+      if (!plan) return;
+      setIsSaving(true);
+      
+      try {
+          const currentData = plan.assistantData || { 
+              messages: [], 
+              streak: 0, 
+              totalXp: 0, 
+              missions: [], 
+              lastVisit: new Date().toDateString() 
+          };
+          
+          const newData = { ...currentData, ...updates };
+
+          // Explicitly sanitize messages array if present
+          if (newData.messages) {
+             newData.messages = newData.messages.map(m => ({
+                 ...m,
+                 followUps: m.followUps || [],
+                 actions: m.actions || [],
+                 xpReward: m.xpReward || 0
+             }));
+          }
+
+          const sanitizedData = sanitizeForFirestore(newData);
+          
+          // Optimistic update via context
+          await updateActiveProject({
+              assistantData: sanitizedData
+          });
+          
+      } catch (err) {
+          console.error("Failed to save assistant data:", err);
+          toast.error("مشکل در ذخیره‌سازی");
+      } finally {
+          setTimeout(() => setIsSaving(false), 800);
+      }
+  };
+
+  // Load Assistant Data
   useEffect(() => {
-    if (user) {
-      const savedStreak = localStorage.getItem(`${STREAK_KEY}_${user.uid}`);
-      const savedXp = localStorage.getItem(`${XP_KEY}_${user.uid}`);
-      const lastVisit = localStorage.getItem(`${STREAK_KEY}_${user.uid}_last`);
-
+    if (plan?.assistantData) {
+      setMessages(plan.assistantData.messages || []);
+      setStreak(plan.assistantData.streak || 0);
+      setTotalXp(plan.assistantData.totalXp || 0);
+      
+      // Check for Streak Logic
+      const lastVisit = plan.assistantData.lastVisit;
       const today = new Date().toDateString();
       const yesterday = new Date(Date.now() - 86400000).toDateString();
 
-      if (lastVisit === today) {
-        // Same day, keep streak
-        setStreak(parseInt(savedStreak || "0"));
-      } else if (lastVisit === yesterday) {
-        // Consecutive day, increment streak
-        const newStreak = (parseInt(savedStreak || "0")) + 1;
-        setStreak(newStreak);
-        localStorage.setItem(`${STREAK_KEY}_${user.uid}`, newStreak.toString());
-
-        // Celebrate streak milestones
-        if ([3, 7, 14, 30].includes(newStreak)) {
-          setTimeout(() => setCelebrationType("stars"), 1000);
+      if (lastVisit !== today) {
+        let newStreak = plan.assistantData.streak || 0;
+        if (lastVisit === yesterday) {
+           newStreak += 1;
+           if ([3, 7, 14, 30].includes(newStreak)) {
+             setTimeout(() => setCelebrationType("stars"), 1000);
+           }
+        } else if (lastVisit && lastVisit !== today) {
+           newStreak = 1;
+        } else {
+            newStreak = 1;
         }
-      } else {
-        // Streak broken
+        
+        if (newStreak !== plan.assistantData.streak) {
+            setStreak(newStreak);
+            updateAssistantData({ streak: newStreak, lastVisit: today });
+        }
+      }
+
+      if (plan.projectName) {
+          const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 0;
+          const completedCount = plan?.completedSteps?.length || 0;
+          const progress = totalSteps > 0 ? Math.round((completedCount / totalSteps) * 100) : 0;
+          setMissions(generateDailyMissions(plan.projectName, progress));
+          setInsights(generateDailyInsights(plan.projectName));
+      }
+
+    } else if (plan) {
+        // Initialize Empty Data
+        updateActiveProject({
+            assistantData: {
+                messages: [],
+                streak: 1,
+                totalXp: 0,
+                lastVisit: new Date().toDateString(),
+                missions: []
+            }
+        });
         setStreak(1);
-        localStorage.setItem(`${STREAK_KEY}_${user.uid}`, "1");
-      }
-
-      localStorage.setItem(`${STREAK_KEY}_${user.uid}_last`, today);
-      setTotalXp(parseInt(savedXp || "0"));
     }
-  }, [user]);
+  }, [plan?.id]);
 
-  // Generate daily missions and insights
-  useEffect(() => {
-    if (plan?.projectName) {
-      setMissions(generateDailyMissions(plan.projectName, progressPercent));
-      setInsights(generateDailyInsights(plan.projectName));
-    }
-  }, [plan?.projectName, progressPercent]);
-
-  // Load chat history
-  useEffect(() => {
-    if (user) {
-      const saved = localStorage.getItem(`${STORAGE_KEY}_${user.uid}`);
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed.length > 0) {
-            setMessages(parsed);
-            return;
-          }
-        } catch (e) {
-          console.error("Failed to parse chat history");
-        }
-      }
-    }
-  }, [user]);
-
-  // Save chat history
-  useEffect(() => {
-    if (user && messages.length > 0) {
-      const toSave = messages.slice(-MAX_HISTORY);
-      localStorage.setItem(`${STORAGE_KEY}_${user.uid}`, JSON.stringify(toSave));
-    }
-  }, [messages, user]);
-
-  // Auto-scroll
+  // Scroll to bottom
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, showFollowUps, pendingActions]);
 
-  // XP helper
   const awardXp = useCallback((amount: number) => {
-    if (user && amount > 0) {
-      setXpGain({ amount, trigger: true });
-      setTotalXp(prev => {
+    setXpGain({ amount, trigger: true });
+    setTotalXp(prev => {
         const newTotal = prev + amount;
-        localStorage.setItem(`${XP_KEY}_${user.uid}`, newTotal.toString());
+        updateAssistantData({ totalXp: newTotal });
         return newTotal;
-      });
-
-      // Small celebration for XP
-      if (amount >= 25) {
-        triggerStars();
-      }
-    }
-  }, [user]);
-
-  const generateId = () => `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    });
+    if (amount >= 25) triggerStars();
+  }, [plan]);
 
   const handleSendMessage = async (customMessage?: string) => {
     const messageToSend = customMessage || input;
@@ -190,26 +194,26 @@ export default function AssistantPage() {
 
     setInput("");
     setShowFollowUps([]);
-    setPendingActions([]);
+    setPendingActions([]); // Clear previous actions on new chat
 
-    const userMessage: Message = {
+    const userMessage: ChatMessage = {
       id: generateId(),
       role: 'user',
       content: messageToSend,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      followUps: [],
+      actions: [],
+      xpReward: 0
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    
+    // Save User Message
+    updateAssistantData({ messages: newMessages });
+
     setIsLoading(true);
-
-    // Award XP for asking a question
-    awardXp(10);
-
-    // Mark mission as completed if matches
-    const questionMission = missions.find(m => m.type === "quick_win" && !m.completed);
-    if (questionMission) {
-      handleMissionComplete(questionMission.id);
-    }
+    awardXp(10); // XP for chatting
 
     try {
       const projectContext = plan ? {
@@ -220,13 +224,9 @@ export default function AssistantPage() {
         budget: plan.budget,
         leanCanvas: plan.leanCanvas,
         roadmap: plan.roadmap,
-        completedSteps: plan.completedSteps,
-        marketingStrategy: plan.marketingStrategy,
       } : {};
 
-      const conversationHistory = messages
-        .slice(-8)
-        .map(m => ({ role: m.role, content: m.content }));
+      const conversationHistory = messages.slice(-8).map(m => ({ role: m.role, content: m.content }));
 
       const res = await fetch('/api/advisor-chat', {
         method: 'POST',
@@ -242,187 +242,103 @@ export default function AssistantPage() {
       const data = await res.json();
 
       if (data.reply) {
-        const assistantMessage: Message = {
+        const assistantMessage: ChatMessage = {
           id: generateId(),
           role: 'assistant',
           content: data.reply,
           timestamp: Date.now(),
           followUps: data.followUps || [],
           actions: data.actions || [],
-          xpReward: data.xpReward
+          xpReward: data.xpReward || 0
         };
 
-        setMessages(prev => [...prev, assistantMessage]);
+        const updatedMessages = [...newMessages, assistantMessage];
+        setMessages(updatedMessages);
+        
+        // Save Assistant Message
+        updateAssistantData({ messages: updatedMessages });
 
-        if (data.followUps?.length > 0) {
-          setShowFollowUps(data.followUps);
-        }
-
-        if (data.actions?.length > 0) {
-          setPendingActions(data.actions);
-        }
+        if (data.followUps?.length > 0) setShowFollowUps(data.followUps);
+        if (data.actions?.length > 0) setPendingActions(data.actions);
+        if (data.xpReward) awardXp(data.xpReward);
       }
     } catch (error) {
       console.error(error);
-      setMessages(prev => [...prev, {
-        id: generateId(),
-        role: 'assistant',
-        content: 'متاسفانه ارتباط قطع شد. لطفا دوباره تلاش کنید.',
-        timestamp: Date.now()
-      }]);
+      toast.error("خطا در ارتباط با دستیار");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleMissionClick = (mission: Mission) => {
-    if (mission.actionPrompt) {
-      handleSendMessage(mission.actionPrompt);
-    }
-  };
-
-  const handleMissionComplete = (missionId: string) => {
-    setMissions(prev => prev.map(m =>
-      m.id === missionId ? { ...m, completed: true } : m
-    ));
-
-    const mission = missions.find(m => m.id === missionId);
-    if (mission) {
-      awardXp(mission.xpReward);
-      setCelebrationType("mission");
-    }
-  };
-
-  const handleActionApply = async (action: ActionCard) => {
-    // TODO: Implement actual action application
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    awardXp(action.xpReward);
-    triggerConfetti();
-  };
-
-  const handleActionDismiss = (actionId: string) => {
-    setPendingActions(prev => prev.filter(a => a.id !== actionId));
-  };
-
-  const handleInsightAction = (insight: AIInsight) => {
-    if (insight.actionPrompt) {
-      handleSendMessage(insight.actionPrompt);
-    }
-    if (insight.xpReward) {
-      awardXp(insight.xpReward);
-    }
-  };
-
-  const handleVoiceTranscript = (text: string) => {
-    setInput(text);
-    // Auto-send voice input
-    setTimeout(() => handleSendMessage(text), 500);
-  };
-
   const clearHistory = () => {
-    if (user) {
-      localStorage.removeItem(`${STORAGE_KEY}_${user.uid}`);
       setMessages([]);
       setShowFollowUps([]);
       setPendingActions([]);
-    }
+      updateAssistantData({ messages: [] });
+      toast.success("تاریخچه چت پاک شد");
   };
 
-  const copyMessage = (content: string, id: string) => {
-    navigator.clipboard.writeText(content);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
-  };
-
-  const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString("fa-IR", {
-      hour: "2-digit",
-      minute: "2-digit"
-    });
+  const handleMissionComplete = (missionId: string) => {
+      setMissions(prev => prev.map(m => m.id === missionId ? { ...m, completed: true } : m));
+      const mission = missions.find(m => m.id === missionId);
+      if (mission) {
+          awardXp(mission.xpReward || 20);
+          setCelebrationType("mission");
+      }
   };
 
   return (
     <div className="h-[calc(100vh-10rem)] md:h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-4">
+      
+      <Celebration type={celebrationType || "confetti"} trigger={celebrationType !== null} onComplete={() => setCelebrationType(null)} />
+      <XpFloat amount={xpGain.amount} trigger={xpGain.trigger} position={{ x: 50, y: 30 }} onComplete={() => setXpGain({ amount: 0, trigger: false })} />
 
-      {/* Celebrations */}
-      <Celebration
-        type={celebrationType || "confetti"}
-        trigger={celebrationType !== null}
-        onComplete={() => setCelebrationType(null)}
-      />
-
-      {/* XP Float */}
-      <XpFloat
-        amount={xpGain.amount}
-        trigger={xpGain.trigger}
-        position={{ x: 50, y: 30 }}
-        onComplete={() => setXpGain({ amount: 0, trigger: false })}
-      />
-
-      {/* Left Sidebar - Missions & Insights */}
-      <aside className="hidden lg:flex flex-col w-80 shrink-0 gap-4 overflow-y-auto no-scrollbar">
-        {/* Daily Greeting */}
+      {/* Sidebar - Missions & Insights (Hidden on mobile) */}
+      <aside className="hidden lg:flex flex-col w-80 shrink-0 gap-4 overflow-y-auto no-scrollbar pb-10">
         <DailyGreeting
-          userName={user?.displayName || user?.email?.split("@")[0]}
+          userName={user?.displayName || "کاربر"}
           projectName={plan?.projectName}
           streak={streak}
           totalXp={totalXp}
-          progressPercent={progressPercent}
+          progressPercent={0} // Calc stats if needed
           todayMission={missions.find(m => !m.completed)?.title}
         />
-
-        {/* Daily Missions */}
-        <DailyMissions
-          missions={missions}
-          onMissionClick={handleMissionClick}
-          onMissionComplete={handleMissionComplete}
-        />
-
-        {/* AI Insights */}
-        <AIInsightCard
-          insights={insights}
-          onAction={handleInsightAction}
-        />
+        <DailyMissions missions={missions} onMissionClick={(m) => m.actionPrompt && handleSendMessage(m.actionPrompt)} onMissionComplete={handleMissionComplete} />
+        <AIInsightCard insights={insights} onAction={(i) => i.actionPrompt && handleSendMessage(i.actionPrompt)} />
       </aside>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-card/30 rounded-2xl border border-border/40 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 bg-muted/20 rounded-3xl border border-muted-foreground/10 overflow-hidden shadow-sm">
+        
         {/* Header */}
-        <div className="shrink-0 p-4 md:p-5 border-b border-border/40 bg-gradient-to-l from-primary/5 to-transparent">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", delay: 0.1 }}
-                className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-lg shadow-primary/30"
-              >
-                <Bot size={24} />
-              </motion.div>
-              <div>
-                <h1 className="text-xl font-black text-foreground flex items-center gap-2">
-                  مرکز فرماندهی
-                  <Badge variant="accent" className="text-[10px] gap-1">
-                    <Zap size={10} />
-                    AI
-                  </Badge>
-                </h1>
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                  دستیار کسب‌وکار هوشمند
-                </p>
-              </div>
-            </div>
-
+        <div className="shrink-0 p-4 border-b border-border/40 bg-background/50 backdrop-blur-sm flex justify-between items-center">
             <div className="flex items-center gap-3">
-              {/* Stats badges */}
-              <div className="hidden md:flex items-center gap-2">
-                <StreakDisplay streak={streak} size="sm" showLabel={false} />
-              </div>
-
-              {/* Actions */}
-              {messages.length > 0 && (
-                <div className="flex items-center gap-1">
+                 <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-primary/20">
+                    <Bot size={20} />
+                 </div>
+                 <div>
+                    <h1 className="font-bold flex items-center gap-2">مرکز فرماندهی <Badge variant="secondary" className="text-[10px] h-5">Beta</Badge></h1>
+                    <p className="text-xs text-muted-foreground">دستیار هوشمند شما</p>
+                 </div>
+            </div>
+            
+            {/* Actions & Status */}
+            <div className="flex items-center gap-1">
+                <AnimatePresence>
+                    {isSaving && (
+                        <motion.div 
+                            initial={{ opacity: 0, x: 10 }} 
+                            animate={{ opacity: 1, x: 0 }} 
+                            exit={{ opacity: 0 }}
+                            className="text-[10px] text-muted-foreground mr-2 font-medium bg-background/50 px-2 py-1 rounded-full border border-primary/20 flex items-center gap-1"
+                        >
+                            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                            در حال ذخیره...
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+                
+                {messages.length > 0 && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -431,256 +347,96 @@ export default function AssistantPage() {
                   >
                     <Trash2 size={16} />
                   </Button>
-                </div>
-              )}
+                )}
             </div>
-          </div>
         </div>
 
-        {/* Messages Area */}
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 no-scrollbar"
-        >
-          {/* Empty state */}
-          {messages.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="h-full flex flex-col items-center justify-center text-center p-8"
-            >
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 2, repeat: Infinity }}
-                className="w-20 h-20 rounded-3xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white mb-6 shadow-xl shadow-primary/30"
-              >
-                <Rocket size={40} />
-              </motion.div>
-              <h2 className="text-2xl font-black text-foreground mb-3">
-                سلام! من مشاور کسب‌وکار شما هستم 👋
-              </h2>
-              <p className="text-muted-foreground mb-8 max-w-md leading-8">
-                هر سوالی درباره کسب‌وکارتون دارید بپرسید.
-                یا از قالب‌های آماده استفاده کنید.
-              </p>
-
-              {/* Quick templates */}
-              <div className="flex flex-wrap justify-center gap-2 max-w-lg">
-                {promptTemplates.map((template, i) => (
-                  <motion.button
-                    key={i}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                    onClick={() => handleSendMessage(template.prompt)}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium",
-                      "bg-muted hover:bg-muted/80 text-foreground border border-border/50",
-                      "hover:border-primary/30 hover:shadow-lg transition-all"
-                    )}
-                  >
-                    <template.icon size={16} />
-                    {template.title}
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-          )}
-
-          {/* Messages */}
-          <div className="max-w-3xl mx-auto space-y-4">
-            {messages.map((msg, index) => (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                className={cn(
-                  "flex",
-                  msg.role === 'user' ? "justify-start" : "justify-end"
-                )}
-              >
-                <div className={cn(
-                  "max-w-[85%] group relative",
-                  msg.role === 'user' ? "pr-10" : "pl-10"
-                )}>
-                  <div
-                    className={cn(
-                      "p-4 md:p-5 rounded-2xl text-sm leading-8",
-                      msg.role === 'user'
-                        ? "bg-gradient-to-l from-primary to-purple-600 text-white rounded-br-sm shadow-lg shadow-primary/20"
-                        : "bg-card border border-border/50 text-foreground rounded-bl-sm shadow-sm"
-                    )}
-                  >
-                    <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap">
-                      {msg.content}
-                    </div>
-
-                    {/* XP reward badge */}
-                    {msg.xpReward && msg.role === 'assistant' && (
-                      <div className="mt-3 pt-3 border-t border-border/30">
-                        <XpBadge amount={msg.xpReward} variant="small" />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Message Meta */}
-                  <div className={cn(
-                    "flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground",
-                    msg.role === 'user' ? "justify-start" : "justify-end"
-                  )}>
-                    <span>{formatTime(msg.timestamp)}</span>
-                    {msg.role === 'assistant' && (
-                      <button
-                        onClick={() => copyMessage(msg.content, msg.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-foreground"
-                        title="کپی"
-                      >
-                        {copiedId === msg.id ? <Check size={12} /> : <Copy size={12} />}
-                      </button>
-                    )}
-                  </div>
+        {/* Messages */}
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6">
+            {messages.length === 0 ? (
+                <div className="h-full flex flex-col items-center justify-center text-center p-8">
+                     <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary mb-6 animate-pulse">
+                        <Rocket size={40} />
+                     </div>
+                     <h2 className="text-2xl font-black mb-2">چطور می‌تونم کمکت کنم؟</h2>
+                     <p className="text-muted-foreground mb-8 max-w-sm">از بین سوالات آماده انتخاب کن یا سوال خودت رو بپرس.</p>
+                     
+                     <div className="flex flex-wrap justify-center gap-2 max-w-lg">
+                        {promptTemplates.map((t, i) => (
+                            <button key={i} onClick={() => handleSendMessage(t.prompt)} className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium bg-background border hover:border-primary hover:text-primary transition-all shadow-sm">
+                                <t.icon size={14} /> {t.title}
+                            </button>
+                        ))}
+                     </div>
                 </div>
-              </motion.div>
-            ))}
-
-            {/* Loading Indicator */}
-            {isLoading && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex justify-end"
-              >
-                <div className="bg-card border border-border/50 p-5 rounded-2xl rounded-bl-sm flex items-center gap-3 shadow-sm">
-                  <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]" />
-                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]" />
-                    <div className="w-2 h-2 bg-primary rounded-full animate-bounce" />
-                  </div>
-                  <span className="text-sm text-muted-foreground">در حال تحلیل...</span>
+            ) : (
+                <div className="max-w-3xl mx-auto space-y-6">
+                    {messages.map((msg) => (
+                        <div key={msg.id} className={cn("flex", msg.role === 'user' ? "justify-end" : "justify-start")}>
+                            <div className={cn(
+                                "max-w-[85%] rounded-2xl p-5 text-sm leading-7 shadow-sm",
+                                msg.role === 'user' 
+                                    ? "bg-primary text-primary-foreground rounded-br-none" 
+                                    : "bg-background border rounded-bl-none"
+                            )}>
+                                <div className="prose prose-sm max-w-none dark:prose-invert whitespace-pre-wrap dark:text-gray-200">
+                                    {msg.content}
+                                </div>
+                                {msg.role === 'assistant' && (
+                                    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/10 text-[10px] opacity-70">
+                                        <span>AI Assistant</span>
+                                        <button onClick={() => { navigator.clipboard.writeText(msg.content); toast.success("کپی شد"); }}>
+                                            <Copy size={12} className="hover:text-primary" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                    {isLoading && (
+                        <div className="flex justify-start">
+                             <div className="bg-background border px-4 py-3 rounded-2xl rounded-bl-none flex items-center gap-1 shadow-sm">
+                                <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce"></span>
+                             </div>
+                        </div>
+                    )}
                 </div>
-              </motion.div>
             )}
-
-            {/* Pending Action Cards */}
-            <AnimatePresence>
-              {pendingActions.length > 0 && !isLoading && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="space-y-3"
-                >
-                  {pendingActions.map((action) => (
-                    <SmartActionCard
-                      key={action.id}
-                      action={action}
-                      onApply={handleActionApply}
-                      onDismiss={handleActionDismiss}
-                    />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Follow-up Suggestions */}
-            <AnimatePresence>
-              {showFollowUps.length > 0 && !isLoading && pendingActions.length === 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  className="flex flex-wrap justify-end gap-2 pt-2"
-                >
-                  {showFollowUps.map((q, i) => (
-                    <motion.button
-                      key={i}
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: i * 0.1 }}
-                      onClick={() => handleSendMessage(q)}
-                      className="text-xs bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded-full transition-all border border-primary/20 hover:scale-105"
-                    >
-                      {q}
-                    </motion.button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Input Area */}
-        <div className="shrink-0 p-4 md:p-5 border-t border-border/40 bg-card/50 backdrop-blur-xl">
-          <form
-            onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
-            className="max-w-3xl mx-auto"
-          >
-            <div className="flex gap-3 items-end">
-              {/* Voice input */}
-              <VoiceInput
-                onTranscript={handleVoiceTranscript}
-                disabled={isLoading}
-                className="shrink-0"
-              />
-
-              <div className="flex-1 relative">
-                <textarea
-                  ref={inputRef}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  placeholder="سوالت رو بپرس..."
-                  className="input-premium w-full min-h-[52px] max-h-32 resize-none py-3.5 pl-12"
-                  dir="rtl"
-                  rows={1}
-                />
-                <div className="absolute left-3 bottom-3 text-xs text-muted-foreground">
-                  Enter ↵
+            
+            {/* Follow Ups */}
+            {showFollowUps.length > 0 && !isLoading && (
+                <div className="flex flex-wrap justify-end gap-2 max-w-3xl mx-auto pt-2">
+                    {showFollowUps.map((q, i) => (
+                        <button key={i} onClick={() => handleSendMessage(q)} className="text-xs bg-primary/5 text-primary px-3 py-1.5 rounded-lg border border-primary/20 hover:bg-primary/10 transition-colors">
+                            {q}
+                        </button>
+                    ))}
                 </div>
-              </div>
-
-              <Button
-                type="submit"
-                variant="gradient"
-                size="lg"
-                disabled={!input.trim() || isLoading}
-                className="shrink-0 h-[52px] w-[52px] rounded-xl"
-              >
-                {isLoading ? (
-                  <Loader2 size={20} className="animate-spin" />
-                ) : (
-                  <Send size={20} />
-                )}
-              </Button>
-            </div>
-
-            {/* Quick templates for mobile */}
-            <div className="flex gap-2 mt-3 overflow-x-auto no-scrollbar pb-1">
-              {promptTemplates.slice(0, 4).map((template, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => handleSendMessage(template.prompt)}
-                  disabled={isLoading}
-                  className={cn(
-                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap shrink-0",
-                    "bg-muted/50 hover:bg-muted text-muted-foreground hover:text-foreground",
-                    "border border-border/50 transition-all disabled:opacity-50"
-                  )}
-                >
-                  <template.icon size={12} />
-                  {template.title}
-                </button>
-              ))}
-            </div>
-          </form>
+            )}
         </div>
+
+        {/* Input */}
+        <div className="shrink-0 p-4 bg-background border-t">
+            <div className="max-w-3xl mx-auto flex gap-2 items-end">
+                <VoiceInput onTranscript={(text) => handleSendMessage(text)} disabled={isLoading} />
+                <div className="flex-1 relative">
+                    <textarea
+                        ref={inputRef}
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
+                        placeholder="اینجا بنویس..."
+                        className="w-full min-h-[50px] max-h-32 resize-none rounded-xl border bg-muted/30 p-3 pl-10 focus:ring-2 ring-primary/20 outline-none text-sm custom-scrollbar"
+                    />
+                </div>
+                <Button size="icon" className="h-[50px] w-[50px] rounded-xl shrink-0" onClick={() => handleSendMessage()} disabled={!input.trim() || isLoading}>
+                    <Send size={20} />
+                </Button>
+            </div>
+        </div>
+
       </div>
     </div>
   );

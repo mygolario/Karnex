@@ -23,7 +23,7 @@ interface RoadmapPhase {
 
 export async function POST(req: Request) {
   try {
-    const { idea, audience, budget, projectType } = await req.json();
+      const { idea, audience, budget, projectType, genesisAnswers } = await req.json();
 
     console.log("DEBUG: POST /api/generate-plan called");
     console.log("DEBUG: Project Type:", projectType);
@@ -31,6 +31,10 @@ export async function POST(req: Request) {
     if (!process.env.OPENROUTER_API_KEY) {
       return NextResponse.json({ error: 'OpenRouter API Key missing' }, { status: 500 });
     }
+
+    const formattedAnswers = genesisAnswers 
+      ? Object.entries(genesisAnswers).map(([key, val]) => `- ${key}: ${val}`).join('\n') 
+      : 'None provided';
 
     const systemPrompt = `
       You are Karnex, an expert business consultant specializing in the Iranian market.
@@ -41,6 +45,8 @@ export async function POST(req: Request) {
       - Idea: ${idea}
       - Target Audience: ${audience}
       - Budget Constraint: ${budget}
+      - Specific Configuration (Genesis Answers):
+      ${formattedAnswers}
 
       INSTRUCTIONS:
        1. Think deeply about the needs of a "${projectType}" business.

@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
+import { cn } from "@/lib/utils";
 
 export function DashboardHeader() {
   const { user } = useAuth();
@@ -86,15 +87,17 @@ export function DashboardHeader() {
 
         {/* Notifications - Enhanced */}
         <div className="relative" ref={notifRef}>
-          <button 
+          <motion.button 
+            whileHover={{ scale: 1.05, rotate: [0, -10, 10, -10, 0] }}
+            transition={{ duration: 0.5 }}
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2.5 rounded-xl hover:bg-muted/80 transition-all duration-200 group"
+            className="relative w-10 h-10 flex items-center justify-center rounded-full bg-muted/40 hover:bg-muted transition-all duration-200"
           >
             <Bell size={20} className="text-muted-foreground group-hover:text-foreground transition-colors" />
             {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-primary rounded-full ring-2 ring-background animate-pulse" />
+              <span className="absolute top-2 right-2.5 w-2 h-2 bg-primary rounded-full ring-2 ring-background animate-pulse shadow-[0_0_8px_rgba(var(--primary-rgb),0.5)]" />
             )}
-          </button>
+          </motion.button>
 
           <AnimatePresence>
             {showNotifications && (
@@ -102,40 +105,66 @@ export function DashboardHeader() {
                 initial={{ opacity: 0, y: 10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-                className="absolute left-0 top-full mt-2 w-80 bg-card border border-border rounded-2xl shadow-2xl shadow-black/10 overflow-hidden"
+                transition={{ duration: 0.2 }}
+                className="absolute left-0 top-full mt-3 w-80 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border border-white/20 shadow-2xl rounded-2xl overflow-hidden ring-1 ring-black/5"
               >
-                <div className="p-4 border-b border-border flex items-center justify-between">
-                  <h3 className="font-bold text-foreground">اعلانات</h3>
+                <div className="p-4 border-b border-border/50 flex items-center justify-between bg-muted/30">
+                  <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+                    <Bell size={14} className="text-primary" />
+                    اعلانات
+                  </h3>
                   <button 
                     onClick={() => setShowNotifications(false)}
-                    className="p-1 hover:bg-muted rounded-lg transition-colors"
+                    className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors"
                   >
-                    <X size={16} className="text-muted-foreground" />
+                    <X size={14} className="text-muted-foreground" />
                   </button>
                 </div>
-                <div className="max-h-64 overflow-y-auto">
+                <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
                   {notifications.length === 0 ? (
-                    <div className="p-8 text-center text-muted-foreground">
-                      <Bell size={32} className="mx-auto mb-2 opacity-30" />
-                      <p className="text-sm">اعلان جدیدی ندارید</p>
+                    <div className="p-8 text-center text-muted-foreground/50 flex flex-col items-center">
+                      <div className="w-12 h-12 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+                         <Bell size={20} className="opacity-40" />
+                      </div>
+                      <p className="text-xs font-medium">همه چی آرومه!</p>
+                      <p className="text-[10px] mt-1">هیچ اعلان جدیدی ندارید</p>
                     </div>
                   ) : (
                     notifications.map(notif => (
                       <div 
                         key={notif.id}
-                        className={`p-4 hover:bg-muted/50 transition-colors cursor-pointer border-b border-border/50 last:border-0 ${!notif.read ? 'bg-primary/5' : ''}`}
+                        className={cn(
+                          "p-4 hover:bg-muted/40 transition-all cursor-pointer border-b border-border/40 last:border-0 relative group",
+                          !notif.read ? "bg-primary/5 hover:bg-primary/10" : ""
+                        )}
                       >
+                         {!notif.read && (
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary transform scale-y-0 group-hover:scale-y-100 transition-transform origin-center" />
+                         )}
                         <div className="flex items-start gap-3">
-                          {!notif.read && <span className="w-2 h-2 bg-primary rounded-full mt-2 shrink-0" />}
-                          <div className={!notif.read ? '' : 'mr-5'}>
-                            <p className="text-sm font-medium text-foreground">{notif.title}</p>
-                            <p className="text-xs text-muted-foreground mt-1">{notif.time}</p>
+                          <div className={cn(
+                            "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5",
+                            !notif.read ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                          )}>
+                             <Sparkles size={14} />
                           </div>
+                          <div className="flex-1">
+                            <p className={cn("text-xs font-medium text-foreground leading-relaxed", !notif.read && "font-bold")}>{notif.title}</p>
+                            <p className="text-[10px] text-muted-foreground mt-1.5 flex items-center gap-1">
+                                <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
+                                {notif.time}
+                            </p>
+                          </div>
+                          {!notif.read && <span className="w-2 h-2 bg-blue-500 rounded-full mt-1.5 shrink-0 shadow-sm" />}
                         </div>
                       </div>
                     ))
                   )}
+                </div>
+                <div className="p-2 border-t border-border/50 bg-muted/20">
+                     <button className="w-full py-2 text-xs font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors">
+                        مشاهده همه اعلانات
+                     </button>
                 </div>
               </motion.div>
             )}
