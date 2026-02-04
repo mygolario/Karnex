@@ -8,7 +8,6 @@ import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPa
 import { auth } from "@/lib/firebase";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { 
   Rocket, 
   Mail, 
@@ -16,12 +15,13 @@ import {
   Eye, 
   EyeOff, 
   ArrowLeft,
-  Sparkles,
   Loader2,
   CheckCircle2,
   AlertCircle,
-  X
+  X,
+  Sparkles
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -49,8 +49,9 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       router.push("/dashboard/overview");
     } catch (err: any) {
-      if (err.code === "auth/user-not-found") {
-        setError("کاربری با این ایمیل یافت نشد");
+      console.error("Login Error:", err);
+      if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
+        setError("اطلاعات ورود اشتباه است");
       } else if (err.code === "auth/wrong-password") {
         setError("رمز عبور اشتباه است");
       } else if (err.code === "auth/invalid-email") {
@@ -58,7 +59,7 @@ export default function LoginPage() {
       } else if (err.code === "auth/too-many-requests") {
         setError("تعداد تلاش زیاد. لطفاً کمی صبر کنید");
       } else {
-        setError("ایمیل یا رمز عبور اشتباه است");
+        setError("خطا در ورود. لطفاً اتصال اینترنت خود را بررسی کنید");
       }
     } finally {
       setLoading(false);
@@ -71,13 +72,13 @@ export default function LoginPage() {
     
     try {
       const provider = new GoogleAuthProvider();
-      // Force account selection every time
       provider.setCustomParameters({
         prompt: 'select_account'
       });
       await signInWithPopup(auth, provider);
       router.push("/dashboard/overview");
     } catch (err: any) {
+      console.error("Google Login Error:", err);
       if (err.code === "auth/popup-closed-by-user") {
         // User closed popup, no error needed
       } else if (err.code === "auth/cancelled-popup-request") {
@@ -99,7 +100,7 @@ export default function LoginPage() {
     try {
       await sendPasswordResetEmail(auth, resetEmail);
       setSuccess("لینک بازیابی به ایمیل شما ارسال شد");
-      setShowForgotPassword(false);
+      setTimeout(() => setShowForgotPassword(false), 3000);
       setResetEmail("");
     } catch (err: any) {
       if (err.code === "auth/user-not-found") {
@@ -113,276 +114,281 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex" dir="rtl">
-      {/* Left Side - Visual */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-purple-600 to-secondary" />
-        
-        {/* Pattern Overlay */}
+    <div className="min-h-screen flex w-full bg-background overflow-hidden" dir="rtl">
+      
+      {/* Decorative Background Elements */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full blur-[120px] opacity-40 animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/20 rounded-full blur-[120px] opacity-40 animate-pulse delay-1000" />
+      </div>
+
+      {/* Left Side - Visual (Desktop Only) */}
+      <motion.div 
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="hidden lg:flex lg:w-1/2 relative flex-col justify-center items-center text-center p-12 text-white overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-purple-600 to-secondary opacity-95" />
         <div className="absolute inset-0 pattern-dots opacity-20" />
         
-        {/* Floating Shapes */}
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 bg-white/10 rounded-full blur-3xl animate-float" style={{ animationDelay: "-3s" }} />
-        
-        {/* Content */}
-        <div className="relative z-10 flex flex-col justify-center items-center text-center p-12 text-white">
-          <div className="w-20 h-20 rounded-2xl flex items-center justify-center mb-8 shadow-2xl overflow-hidden">
-            <Image src="/logo.png" alt="کارنکس" width={80} height={80} className="w-20 h-20 object-cover" />
-          </div>
+        <div className="relative z-10 max-w-lg">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="w-32 h-32 mx-auto bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl flex items-center justify-center mb-8 border border-white/20"
+          >
+             <Image src="/logo.png" alt="Karnex Logo" width={100} height={100} className="w-24 h-24 object-contain drop-shadow-xl" />
+          </motion.div>
+
+          <motion.h1 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-5xl font-black mb-6 tracking-tight"
+          >
+            آینده کسب‌وکار شما <br/>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-amber-200">
+              از اینجا شروع می‌شود
+            </span>
+          </motion.h1>
+
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="text-lg text-white/90 leading-relaxed mb-10"
+          >
+            به هزاران کارآفرین بپیوندید که با هوش مصنوعی کارنکس، ایده‌های خود را به واقعیت تبدیل کرده‌اند.
+          </motion.p>
           
-          <h1 className="text-4xl font-black mb-4">
-            خوش آمدید به کارنکس
-          </h1>
-          
-          <p className="text-lg text-white/80 max-w-md mb-8">
-            با ورود به حساب کاربری، به داشبورد پروژه‌های خود دسترسی پیدا کنید
-          </p>
-          
-          <div className="flex items-center gap-4 text-sm text-white/60">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
-              ۵۰۰+ کارآفرین
-            </div>
-            <div className="w-1 h-1 bg-white/40 rounded-full" />
-            <div>۹۹٪ رضایت</div>
-          </div>
+          <motion.div 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="flex items-center justify-center gap-6"
+          >
+             <div className="flex -space-x-4 space-x-reverse">
+                {[1,2,3,4].map((i) => (
+                  <div key={i} className="w-10 h-10 rounded-full border-2 border-primary bg-white/20 backdrop-blur-sm" />
+                ))}
+             </div>
+             <div className="text-right">
+                <div className="font-bold text-xl">۸,۰۰۰+</div>
+                <div className="text-xs text-white/70">کاربر فعال</div>
+             </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background">
-        <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-              <Image src="/logo.png" alt="کارنکس" width={40} height={40} className="w-10 h-10 object-cover" />
-            </div>
-            <span className="text-xl font-black text-foreground">کارنکس</span>
+      <motion.div 
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.6 }}
+        className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative z-10"
+      >
+        <div className="w-full max-w-md space-y-8">
+          
+          {/* Mobile Header */}
+          <div className="lg:hidden text-center mb-8">
+             <div className="w-16 h-16 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
+                <Image src="/logo.png" alt="Karnex" width={50} height={50} className="object-contain" />
+             </div>
+             <h2 className="text-2xl font-bold text-foreground">کارنکس</h2>
           </div>
 
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-foreground mb-2">
-              ورود به حساب کاربری
-            </h2>
-            <p className="text-muted-foreground">
-              حساب ندارید؟{" "}
-              <Link href="/signup" className="text-primary hover:underline font-medium">
-                ثبت‌نام کنید
-              </Link>
-            </p>
+          <div className="text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-foreground mb-2">خوش آمدید! 👋</h2>
+            <p className="text-muted-foreground">برای دسترسی به پنل مدیریت وارد شوید</p>
           </div>
 
-          <Card variant="default" padding="lg">
-            {/* Google Login */}
-            <Button
-              variant="outline"
-              size="lg"
-              className="w-full mb-6 gap-3"
-              onClick={handleGoogleLogin}
-              disabled={loading}
-            >
-              <svg className="w-5 h-5" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-              ورود با گوگل
-            </Button>
-
-            {/* Divider */}
-            <div className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-card px-2 text-muted-foreground">یا</span>
-              </div>
-            </div>
-
-            {/* Success Message */}
-            {success && (
-              <div className="bg-secondary/10 text-secondary text-sm p-3 rounded-xl mb-4 flex items-center gap-2">
-                <CheckCircle2 size={16} />
-                {success}
-              </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-xl mb-4 flex items-center gap-2">
-                <AlertCircle size={16} />
-                {error}
-              </div>
-            )}
-
-            {/* Email Form */}
-            <form onSubmit={handleEmailLogin} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  ایمیل
-                </label>
-                <div className="relative">
-                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="example@email.com"
-                    className="input-premium pr-10"
-                    required
-                    dir="ltr"
-                    autoComplete="email"
-                    aria-label="ایمیل"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  رمز عبور
-                </label>
-                <div className="relative">
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="input-premium pr-10 pl-10"
-                    required
-                    dir="ltr"
-                    autoComplete="current-password"
-                    aria-label="رمز عبور"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                    aria-label={showPassword ? "پنهان کردن رمز" : "نمایش رمز"}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" className="rounded border-border" />
-                  <span className="text-muted-foreground">مرا به خاطر بسپار</span>
-                </label>
-                <button 
-                  type="button"
-                  onClick={() => setShowForgotPassword(true)}
-                  className="text-primary hover:underline"
-                >
-                  فراموشی رمز عبور
-                </button>
-              </div>
-
+          <Card className="border-none shadow-2xl bg-card/50 backdrop-blur-sm overflow-hidden p-6 sm:p-8">
+            <div className="space-y-6">
+              
               <Button
-                type="submit"
-                variant="gradient"
+                variant="outline"
                 size="lg"
-                className="w-full"
+                className="w-full relative h-12 border-primary/20 hover:bg-primary/5 hover:border-primary/50 transition-all group"
+                onClick={handleGoogleLogin}
                 disabled={loading}
               >
-                {loading ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    در حال ورود...
-                  </>
-                ) : (
-                  <>
-                    ورود به حساب
-                    <ArrowLeft size={18} />
-                  </>
-                )}
+                <div className="absolute left-4">
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                </div>
+                <span className="font-medium">ورود با حساب گوگل</span>
               </Button>
-            </form>
-          </Card>
 
-          {/* Back to Home */}
-          <div className="text-center mt-6">
-            <Link href="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              ← بازگشت به صفحه اصلی
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Forgot Password Modal */}
-      {showForgotPassword && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
-          onClick={() => setShowForgotPassword(false)}
-        >
-          <Card 
-            variant="default" 
-            padding="lg" 
-            className="max-w-md w-full animate-in zoom-in-95"
-            onClick={(e: React.MouseEvent) => e.stopPropagation()}
-          >
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h3 className="text-lg font-bold text-foreground">بازیابی رمز عبور</h3>
-                <p className="text-sm text-muted-foreground">لینک بازیابی به ایمیل شما ارسال می‌شود</p>
-              </div>
-              <button 
-                onClick={() => setShowForgotPassword(false)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">
-                  ایمیل
-                </label>
-                <div className="relative">
-                  <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <input
-                    type="email"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                    placeholder="example@email.com"
-                    className="input-premium pr-10"
-                    required
-                    dir="ltr"
-                  />
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-muted/50" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">یا ورود با ایمیل</span>
                 </div>
               </div>
 
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setShowForgotPassword(false)}
-                  className="flex-1"
-                >
-                  انصراف
-                </Button>
-                <Button
-                  type="submit"
-                  variant="gradient"
-                  className="flex-1"
-                  disabled={resetLoading}
-                >
-                  {resetLoading ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    "ارسال لینک"
-                  )}
-                </Button>
-              </div>
-            </form>
+              <form onSubmit={handleEmailLogin} className="space-y-4">
+                 <AnimatePresence>
+                    {error && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg flex items-center gap-2 overflow-hidden"
+                      >
+                        <AlertCircle size={16} className="shrink-0" />
+                        {error}
+                      </motion.div>
+                    )}
+                 </AnimatePresence>
+
+                 <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground/80">ایمیل</label>
+                    <div className="relative group">
+                       <Mail className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                       <input 
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full bg-muted/30 border border-border rounded-xl px-10 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
+                          placeholder="name@example.com"
+                          dir="ltr"
+                          required
+                       />
+                    </div>
+                 </div>
+
+                 <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                       <label className="text-sm font-medium text-foreground/80">رمز عبور</label>
+                       <button
+                         type="button"
+                         onClick={() => setShowForgotPassword(true)}
+                         className="text-xs text-primary hover:underline font-medium"
+                       >
+                         فراموشی رمز؟
+                       </button>
+                    </div>
+                    <div className="relative group">
+                       <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                       <input 
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full bg-muted/30 border border-border rounded-xl px-10 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
+                          placeholder="••••••••"
+                          dir="ltr"
+                          required
+                       />
+                       <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                       >
+                          {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                       </button>
+                    </div>
+                 </div>
+
+                 <Button
+                    type="submit"
+                    className="w-full h-12 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 shadow-lg shadow-primary/20 rounded-xl"
+                    disabled={loading}
+                 >
+                    {loading ? (
+                       <Loader2 className="animate-spin" />
+                    ) : (
+                       <span className="flex items-center gap-2 text-base">
+                          ورود به حساب
+                          <ArrowLeft size={18} />
+                       </span>
+                    )}
+                 </Button>
+              </form>
+            </div>
+            
+            <div className="mt-8 text-center text-sm text-muted-foreground">
+              حساب کاربری ندارید؟{" "}
+              <Link href="/signup" className="text-primary font-bold hover:underline transition-all">
+                ثبت‌نام کنید
+              </Link>
+            </div>
           </Card>
         </div>
-      )}
+      </motion.div>
+
+      {/* Forgot Password Modal */}
+      <AnimatePresence>
+        {showForgotPassword && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setShowForgotPassword(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-card w-full max-w-md p-6 rounded-2xl shadow-2xl relative border border-border/50"
+            >
+              <button 
+                onClick={() => setShowForgotPassword(false)} 
+                className="absolute left-4 top-4 text-muted-foreground hover:text-foreground"
+              >
+                 <X size={20} />
+              </button>
+
+              <div className="text-center mb-6">
+                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
+                    <Mail size={24} />
+                 </div>
+                 <h3 className="text-xl font-bold">بازیابی رمز عبور</h3>
+                 <p className="text-sm text-muted-foreground mt-2">
+                    ایمیل خود را وارد کنید تا لینک بازیابی ارسال شود
+                 </p>
+              </div>
+
+              {success ? (
+                 <div className="bg-green-500/10 text-green-600 text-center p-4 rounded-xl flex flex-col items-center gap-2">
+                    <CheckCircle2 size={32} />
+                    <span>{success}</span>
+                 </div>
+              ) : (
+                 <form onSubmit={handleForgotPassword} className="space-y-4">
+                    <div className="space-y-2">
+                       <label className="text-sm font-medium">ایمیل</label>
+                       <input 
+                          type="email"
+                          value={resetEmail}
+                          onChange={(e) => setResetEmail(e.target.value)}
+                          className="w-full bg-muted/30 border border-border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-left"
+                          placeholder="name@example.com"
+                          dir="ltr"
+                          required
+                       />
+                    </div>
+                     {error && (
+                        <p className="text-sm text-destructive">{error}</p>
+                     )}
+                    <Button type="submit" className="w-full h-10" disabled={resetLoading}>
+                       {resetLoading ? <Loader2 className="animate-spin" /> : "ارسال لینک"}
+                    </Button>
+                 </form>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

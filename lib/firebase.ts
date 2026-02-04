@@ -1,18 +1,18 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { 
-  initializeFirestore, 
-  persistentLocalCache, 
+import {
+  initializeFirestore,
+  persistentLocalCache,
   persistentMultipleTabManager,
   disableNetwork,
-  enableNetwork
+  enableNetwork,
 } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfigStr = process.env.NEXT_PUBLIC_FIREBASE_CONFIG;
 
 if (!firebaseConfigStr) {
-  throw new Error('NEXT_PUBLIC_FIREBASE_CONFIG is not defined');
+  throw new Error("NEXT_PUBLIC_FIREBASE_CONFIG is not defined");
 }
 
 const firebaseConfig = JSON.parse(firebaseConfigStr);
@@ -22,7 +22,7 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
 // Initialize Analytics (Client-side only)
 let analytics;
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   isSupported().then((supported) => {
     if (supported) {
       analytics = getAnalytics(app);
@@ -36,27 +36,13 @@ export const auth = getAuth(app);
 // This handles connection issues gracefully and reduces console errors
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
+    tabManager: persistentMultipleTabManager(),
   }),
-  ignoreUndefinedProperties: true
+  ignoreUndefinedProperties: true,
 });
 
-// Disable network initially to prevent connection errors in regions with network restrictions
-// Operations will use local cache and sync when network is enabled
-if (typeof window !== 'undefined') {
-  disableNetwork(db).catch(() => {
-    // Ignore errors during disable - this just prevents noisy console logs
-  });
-  
-  // Try to enable network after a short delay
-  // This gives the app time to initialize before attempting connection
-  setTimeout(() => {
-    enableNetwork(db).catch(() => {
-      // Network enable failed - app will continue in offline mode
-      console.log('[Firebase] Running in offline mode');
-    });
-  }, 3000);
-}
+// Network is enabled by default.
+// We rely on Firestore's built-in offline persistence and connection management.
 
 export { app, analytics };
 
@@ -65,5 +51,4 @@ export const enableFirestoreNetwork = () => enableNetwork(db);
 export const disableFirestoreNetwork = () => disableNetwork(db);
 
 // Helper to get the App ID for storage paths
-export const appId = 'karnex-live';
- 
+export const appId = "karnex-live";
