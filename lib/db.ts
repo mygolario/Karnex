@@ -9,7 +9,11 @@ import {
   arrayRemove,
   collection,
   getDocs,
-  addDoc
+  addDoc,
+  query,
+  collectionGroup,
+  orderBy,
+  limit
 } from "firebase/firestore";
 import { db, appId } from "@/lib/firebase";
 
@@ -410,10 +414,13 @@ export interface CapTable {
 export interface InventoryItem {
   id: string;
   name: string;
+  sku?: string;
   category: string;
   quantity: number;
   minQuantity: number; // Low stock alert level
   unitPrice: number;
+  supplier?: string;
+  lastRestock?: string;
   status: 'ok' | 'low' | 'out';
 }
 
@@ -540,6 +547,37 @@ export interface Customer {
   createdAt: string;
 }
 
+// --- Location Analyzer Structures ---
+
+export interface LocationAnalysis {
+  id?: string;
+  city: string;
+  address: string;
+  score: number;
+  scoreReason: string;
+  population: string;
+  populationDesc: string;
+  competitorsCount: number;
+  competitorsDesc: string;
+  nearbyCompetitors: string[];
+  rentEstimate: string;
+  successMatch: { label: string; color: string };
+  demographics: { label: string; percent: number; color: string }[];
+  swot: {
+    strengths: string[];
+    weaknesses: string[];
+    opportunities: string[];
+    threats: string[];
+  };
+  aiInsight: string;
+  peakHours: string;
+  accessLevel: string;
+  accessPoints: string[];
+  trafficWarning: string;
+  recommendations: { title: string; desc: string }[];
+  createdAt: string;
+}
+
 export interface Campaign {
   id: string;
   name: string;
@@ -592,10 +630,32 @@ export interface BusinessPlan {
   assistantData?: AssistantData; // NEW: Assistant Data
   storefront?: StorefrontData; // NEW: Store Builder Data
   customers?: Customer[]; // NEW: CRM Data
+
   campaigns?: Campaign[]; // NEW: Campaigns Data
+  locationAnalysis?: LocationAnalysis; // NEW: Location Data
   subTasks?: SubTask[];
   createdAt: string;
   updatedAt?: string;
+}
+
+// --- Admin & System Logging ---
+
+export interface SystemLog {
+  id: string;
+  type: 'auth' | 'project' | 'error' | 'admin' | 'subscription';
+  action: string;
+  details?: string;
+  userId?: string;
+  userEmail?: string;
+  timestamp: string;
+  ip?: string;
+}
+
+export interface AdminStats {
+  totalUsers: number;
+  totalProjects: number;
+  activeSubscriptions: number;
+  totalRevenue: number; // Mock or calc
 }
 
 // ... (Existing functions)
@@ -762,33 +822,77 @@ export const getPlanFromCloud = async (userId: string, projectId: string = 'curr
     );
 
     const docSnap = await Promise.race([fetchPromise, timerPromise]);
-
-    if (docSnap && docSnap.exists()) {
+    
+    if (docSnap.exists()) {
       return { id: docSnap.id, ...docSnap.data() } as BusinessPlan;
     }
     return null;
-
-  } catch (error: any) {
-    if (!error.message.includes("Firestore Read Timeout")) {
-      console.warn("Network read failed. Attempting logic cache check...", error.message);
-    }
-
-    try {
-      const cachedSnap = await getDocFromCache(planRef);
-      if (cachedSnap && cachedSnap.exists()) {
-        console.log("✓ Retrieved plan from cache.");
-        return { id: cachedSnap.id, ...cachedSnap.data() } as BusinessPlan;
-      }
-    } catch (cacheError) { }
-
-    if (error.message.includes("offline") || error.code === 'unavailable' || error.message.includes("Timeout")) {
-      return null;
-    }
-
-    console.error("Critical Error fetching plan:", error);
-    throw error;
+  } catch (error) {
+    console.error("Error fetching plan:", error);
+    return null;
   }
 };
+
+// --- Admin Functions ---
+
+// 1. Log System Event
+export const logSystemEvent = async (logData: Omit<SystemLog, 'id' | 'timestamp'>) => {
+  try {
+    const colRef = collection(db, 'system_logs');
+    await addDoc(colRef, {
+      ...logData,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("Error logging system event:", error);
+    // Be silent about logging errors to avoid crash loops
+  }
+};
+
+// 2. Get All Users (Admin)
+// Note: This requires the 'users' collection to be populated. 
+// If authentication happens but no doc is created in 'users', this won't find them.
+// We must ensure createUserProfile is called on signup.
+export const getAllUsersAdmin = async () => {
+    try {
+        const colRef = collection(db, 'users');
+        const snap = await getDocs(colRef);
+        return snap.docs.map(d => ({ id: d.id, ...d.data() })) as unknown as UserProfile[];
+    } catch (error) {
+        console.error("Admin: Error fetching users", error);
+        return [];
+    }
+}
+
+// 3. Get All Projects (Admin)
+// This is trickier because plans are nested under `artifacts/{appId}/users/{userId}/plans`
+// Collection Group Queries are needed: db.collectionGroup('plans')
+export const getAllProjectsAdmin = async () => {
+    try {
+        // Requires a composite index in Firestore usually, or simple index on single field
+        const projectsQuery = query(collectionGroup(db, 'plans')); 
+        const snap = await getDocs(projectsQuery);
+        return snap.docs.map(d => ({ id: d.id, ...d.data() })) as BusinessPlan[];
+    } catch (error) {
+        console.error("Admin: Error fetching all projects", error);
+        return [];
+    }
+}
+
+// 4. Get System Logs
+export const getSystemLogs = async (limitCount = 50) => {
+    try {
+        const colRef = collection(db, 'system_logs');
+        const q = query(colRef, orderBy('timestamp', 'desc'), limit(limitCount));
+        const snap = await getDocs(q);
+        return snap.docs.map(d => ({ id: d.id, ...d.data() })) as SystemLog[];
+    } catch (error) {
+        console.error("Admin: Error fetching logs", error);
+        return [];
+    }
+}
+
+// End of Admin Functions (Cleaned up block)
 
 // Toggle Step
 export const toggleStepCompletion = async (userId: string, stepName: string, isCompleted: boolean, projectId: string = 'current') => {

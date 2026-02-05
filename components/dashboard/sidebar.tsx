@@ -59,7 +59,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
   const traditionalRoutes: Route[] = [
     { icon: Store, label: "فروشگاه ساز", href: "/dashboard/storefront" },
     { icon: Target, label: "بوم مدل کسب‌وکار", href: "/dashboard/canvas" },
-    { icon: Users, label: "مدیریت مشتریان (CRM)", href: "/dashboard/followup" },
+    { icon: Users, label: "مدیریت مشتریان (CRM)", href: "/dashboard/crm" },
     { icon: Package, label: "انبارداری", href: "/dashboard/inventory" },
     { icon: MapPin, label: "تحلیل موقعیت مکانی", href: "/dashboard/location" },
     { icon: TrendingUp, label: "رشدنما (Growth)", href: "/dashboard/growth" },

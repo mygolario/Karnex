@@ -110,17 +110,7 @@ export default function StoreBuilderPage() {
     }
   };
 
-  const handlePublish = () => {
-     updateActiveProject({
-        storefront: {
-           config,
-           content,
-           publishedAt: new Date().toISOString(),
-           lastGeneratedAt: plan?.storefront?.lastGeneratedAt
-        }
-     });
-     toast.success("فروشگاه با موفقیت منتشر شد! 🚀");
-  };
+
 
   const isMobile = viewMode === 'mobile';
 
@@ -250,10 +240,7 @@ export default function StoreBuilderPage() {
                         <RefreshCw size={16} className="mr-2" />
                         تولید مجدد
                      </Button>
-                     <Button onClick={handlePublish} className="rounded-xl h-10 bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-600/20 text-white font-bold px-6">
-                        <CheckCircle2 size={18} className="mr-2" />
-                        تایید و انتشار نهایی
-                     </Button>
+
                   </div>
                </header>
 

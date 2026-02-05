@@ -1,14 +1,35 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth.token.email == 'kavehtkts@gmail.com';
+    }
+
     // Allow authenticated users to read/write their own data
     match /artifacts/{appId}/users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
     
     // Standard User Data Rule
     match /users/{userId}/{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Admin: Users List Access
+    match /users/{userId} {
+      allow read, list: if isAdmin();
+    }
+    
+    // Admin: System Logs
+    match /system_logs/{logId} {
+      allow read, write: if request.auth != null; // Allow logging from anywhere for now? Or just auth users
+    }
+    
+    // Collection Group Queries for Plans
+    match /{path=**}/plans/{planId} {
+      allow read: if isAdmin();
     }
   }
 }
