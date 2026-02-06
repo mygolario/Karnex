@@ -294,68 +294,9 @@ export interface BrandCanvas {
   revenueChannels: string;
 }
 
-// --- Growth / Roshdnama Structures ---
-
-export interface FunnelStage {
-  id: string;
-  name: string; // Acquisition, Activation, etc.
-  value: number; // User count
-  color: string;
-  description: string;
-}
-
-export interface Experiment {
-  id: string;
-  title: string;
-  description: string;
-  iceScore: number; // (Impact + Confidence + Ease) / 3
-  impact: number;
-  confidence: number;
-  ease: number;
-  stage: string; // Funnel stage
-  status: 'idea' | 'running' | 'done';
-}
-
-export interface NorthStar {
-  metric: string;
-  why: string;
-  inputs: { name: string; target: string }[];
-}
-
-export interface GrowthData {
-  northStar?: NorthStar;
-  funnel?: FunnelStage[];
-  experiments?: Experiment[];
-}
-
 // --- Idea Validator Structures ---
+// Removed
 
-export interface ValidationCritique {
-  score: number;
-  summary: string;
-  strengths: string[];
-  weaknesses: string[];
-}
-
-export interface ValidationAssumption {
-  id: string;
-  text: string;
-  risk: "critical" | "minor";
-  status?: "tested" | "unknown";
-}
-
-export interface ValidationExperiment {
-  title: string;
-  steps: string;
-  metric: string;
-}
-
-export interface IdeaValidationData {
-  critique: ValidationCritique;
-  assumptions: ValidationAssumption[];
-  experiments: ValidationExperiment[];
-  lastUpdated?: string;
-}
 
 // --- Financial Tools ---
 
@@ -410,19 +351,7 @@ export interface CapTable {
   lastUpdated: string;
 }
 
-// Traditional: Inventory Tracker
-export interface InventoryItem {
-  id: string;
-  name: string;
-  sku?: string;
-  category: string;
-  quantity: number;
-  minQuantity: number; // Low stock alert level
-  unitPrice: number;
-  supplier?: string;
-  lastRestock?: string;
-  status: 'ok' | 'low' | 'out';
-}
+// Traditional: Inventory Tracker - Removed
 
 // Creator: Content Calendar
 export interface ContentPost {
@@ -435,13 +364,7 @@ export interface ContentPost {
   notes?: string;
 }
 
-export interface GeneratedDocument {
-  id: string;
-  type: string; // pitch-deck, one-pager, etc.
-  title: string;
-  content: string; // Markdown content
-  createdAt: string;
-}
+// GeneratedDocument Removed
 
 export interface AssistantData {
   messages: ChatMessage[];
@@ -490,62 +413,9 @@ export interface DailyMission {
   expiresAt?: string;
 }
 
-// --- Storefront Builder Structures ---
+// --- Storefront Builder Structures - Removed
 
-export type StoreVibe = 'minimal' | 'luxury' | 'bold' | 'playful';
-
-export interface StoreConfig {
-  niche: string;
-  vibe: StoreVibe;
-  colors: { primary: string; secondary: string; bg: string };
-  font: string;
-}
-
-export interface StoreContent {
-  hero: { headline: string; subheadline: string; cta: string };
-  products: Array<{ id: string; name: string; price: number; image: string; tag?: string }>;
-  features: Array<{ title: string; desc: string; icon: string }>;
-  testimonials: Array<{ name: string; role: string; comment: string; stars: number }>;
-  footer: { about: string; address: string; email: string };
-}
-
-export interface StorefrontData {
-  config: StoreConfig;
-  content: StoreContent | null;
-  publishedAt?: string;
-  lastGeneratedAt?: string;
-}
-
-
-// --- Customer CRM Structures ---
-
-export interface Customer {
-  id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email?: string;
-  tags: string[]; // "vip", "new", "risky"
-  totalSpend: number;
-  lastVisit: string; // ISO date
-  notes?: string;
-  createdAt: string;
-}
-
-
-
-export interface Customer {
-  id: string;
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email?: string;
-  tags: string[]; // "vip", "new", "risky"
-  totalSpend: number;
-  lastVisit: string; // ISO date
-  notes?: string;
-  createdAt: string;
-}
+// --- Customer CRM Structures - Removed
 
 // --- Location Analyzer Structures ---
 
@@ -608,7 +478,7 @@ export interface BusinessPlan {
   };
   operations?: {
     capTable?: CapTable;
-    inventory?: InventoryItem[];
+    // inventory removed
   };
   brandKit: BrandKit;
   roadmap: RoadmapPhase[];
@@ -624,12 +494,12 @@ export interface BusinessPlan {
   projectType: 'startup' | 'traditional' | 'creator';
   genesisAnswers?: Record<string, any>;
   completedSteps?: string[];
-  growth?: GrowthData; // NEW: Roshdnama Data
-  ideaValidation?: IdeaValidationData; // NEW: Validator Data
-  documents?: GeneratedDocument[]; // NEW: Documents Data
+  // growth removed
+  // ideaValidation removed
+  // documents removed
   assistantData?: AssistantData; // NEW: Assistant Data
-  storefront?: StorefrontData; // NEW: Store Builder Data
-  customers?: Customer[]; // NEW: CRM Data
+  // storefront removed
+  // customers removed
 
   campaigns?: Campaign[]; // NEW: Campaigns Data
   locationAnalysis?: LocationAnalysis; // NEW: Location Data

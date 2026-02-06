@@ -3,11 +3,11 @@
 import { cn } from "@/lib/utils";
 import { 
   // Common
-  LayoutGrid, Map, FlaskConical, Bot, TrendingUp, FileText,
+  LayoutGrid, Map, Bot,
   // Startup
   Presentation, Target, Rocket,
   // Traditional
-  Store, Users, Package, MapPin, Lightbulb, MessageSquare,
+  MapPin, 
   // Creator
   Calendar, Video, BarChart2, DollarSign, Share2, UserCheck, 
   // UI
@@ -50,21 +50,12 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
   const startupRoutes: Route[] = [
     { icon: Presentation, label: "پیچ دک (Pitch Deck)", href: "/dashboard/pitch-deck" },
     { icon: Target, label: "بوم مدل کسب‌وکار", href: "/dashboard/canvas" },
-    { icon: FlaskConical, label: "اعتبارسنجی ایده", href: "/dashboard/validator" },
-    { icon: TrendingUp, label: "رشدنما (Growth)", href: "/dashboard/growth" },
-    { icon: FileText, label: "مستندات", href: "/dashboard/docs" },
   ];
 
   // --- 3. Traditional Routes ---
   const traditionalRoutes: Route[] = [
-    { icon: Store, label: "فروشگاه ساز", href: "/dashboard/storefront" },
     { icon: Target, label: "بوم مدل کسب‌وکار", href: "/dashboard/canvas" },
-    { icon: Users, label: "مدیریت مشتریان (CRM)", href: "/dashboard/crm" },
-    { icon: Package, label: "انبارداری", href: "/dashboard/inventory" },
     { icon: MapPin, label: "تحلیل موقعیت مکانی", href: "/dashboard/location" },
-    { icon: TrendingUp, label: "رشدنما (Growth)", href: "/dashboard/growth" },
-    { icon: FlaskConical, label: "اعتبارسنجی ایده", href: "/dashboard/validator" },
-    { icon: FileText, label: "مستندات", href: "/dashboard/docs" },
   ];
 
   // --- 4. Creator Routes ---
