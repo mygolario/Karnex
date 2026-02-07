@@ -415,7 +415,19 @@ export interface DailyMission {
 
 // --- Storefront Builder Structures - Removed
 
-// --- Customer CRM Structures - Removed
+// --- Customer CRM Structures ---
+export interface Customer {
+  id: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  tags: string[];
+  totalSpend: number;
+  lastVisit: string;
+  createdAt: string;
+  email?: string;
+  notes?: string;
+}
 
 // --- Location Analyzer Structures ---
 
@@ -499,7 +511,7 @@ export interface BusinessPlan {
   // documents removed
   assistantData?: AssistantData; // NEW: Assistant Data
   // storefront removed
-  // customers removed
+  customers?: Customer[]; // Restored for CRM
 
   campaigns?: Campaign[]; // NEW: Campaigns Data
   locationAnalysis?: LocationAnalysis; // NEW: Location Data

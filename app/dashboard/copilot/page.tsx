@@ -13,7 +13,6 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ChatMessage, AssistantData } from "@/lib/db";
-import { VoiceInput } from "@/components/dashboard/assistant/voice-input";
 import { DollarSign } from "lucide-react";
 
 // Professional Prompts - Enhanced Visuals
@@ -318,10 +317,6 @@ export default function CopilotPage() {
              </div>
              <div>
                 <h1 className="font-bold text-base tracking-tight flex items-center gap-2">دستیار هوشمند کارنکس</h1>
-                <span className="text-[10px] uppercase tracking-wider font-medium text-muted-foreground flex items-center gap-1.5 opacity-80">
-                    <div className={cn("w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(255,255,255,0.5)]", activePersona.badgeColor)}></div>
-                    {activePersona.badge}
-                </span>
              </div>
         </div>
         
@@ -482,7 +477,7 @@ export default function CopilotPage() {
 
                     <div className="flex items-center justify-between px-3 pb-3">
                          <div className="flex items-center gap-1">
-                            <VoiceInput onTranscript={(text) => handleSendMessage(text)} disabled={isLoading} />
+                            {/* Voice Input Removed */}
                          </div>
 
                          <Button 

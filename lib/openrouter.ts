@@ -5,19 +5,11 @@
 
 // Cheap paid models (high reliability, low cost) + Free fallbacks
 // Ordered by preference: Paid Fast -> Free High Quality -> Free Fast
+// Google Gemini Models (Preferred Priority)
 export const TEXT_MODELS = [
-    // Fast & Reliable Free/Cheap Models (Prioritized)
-    "openai/gpt-oss-120b",                        // User Preference for Generations
-    "openai/gpt-4o-mini",                         // Standard Fallback
-    "google/gemini-2.0-flash-exp:free",           // Scalable Fallback
-
-    // Reasoning & specialized
-    "deepseek/deepseek-r1:free",                  // High Reasoning
-    "google/gemini-2.0-flash-thinking-exp:free",  // Reasoning Fallback
-
-    // Others
-    "google/gemini-1.5-flash",
-    "microsoft/phi-4:free",
+    "google/gemini-2.5-flash-lite",  // Priority 1
+    "google/gemini-2.5-flash",       // Priority 2
+    "google/gemini-3-flash-preview"  // Priority 3
 ];
 
 export interface OpenRouterResponse {

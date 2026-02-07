@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { TEXT_MODELS } from '@/lib/openrouter';
 
 export const maxDuration = 60;
 
@@ -75,12 +76,8 @@ export async function POST(req: Request) {
     }
     `;
 
-    // Using only Google Gemini models from OpenRouter
-    const models = [
-      "google/gemini-2.0-flash-exp:free",
-      "google/gemini-2.0-flash-001",
-      "google/gemini-pro-1.5",
-    ];
+    // Using only Google Gemini models from OpenRouter configuration
+    const models = TEXT_MODELS;
 
     let response;
     for (const model of models) {

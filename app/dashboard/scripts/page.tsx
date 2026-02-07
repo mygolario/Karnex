@@ -355,8 +355,7 @@ export default function ScriptsPage() {
                  سناریو را در حالت تله‌پرامپتر باز کنید و جلوی دوربین قرار بگیرید.
                </p>
                <Button 
-                 variant="outline" 
-                 className="w-full border-slate-700 hover:bg-slate-800 text-white gap-2 h-12"
+                 className="w-full bg-white text-slate-900 hover:bg-white/90 gap-2 h-12 font-bold transition-all"
                  onClick={() => setIsTeleprompterOpen(true)}
                >
                  <Maximize2 size={18} />
@@ -393,7 +392,7 @@ export default function ScriptsPage() {
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground opacity-50 p-8 text-center">
                             <Video size={64} className="mb-4 stroke-1" />
                             <p className="text-lg font-medium">هنوز سناریویی ندارید</p>
-                            <p className="text-sm">از پنل سمت راست موضوع را وارد کنید تا هوش مصنوعی برایتان بنویسد.</p>
+                            <p className="text-sm">از پنل سمت راست موضوع را وارد کنید تا کارنکس برایتان بنویسد.</p>
                         </div>
                     ) : (
                         <Textarea 

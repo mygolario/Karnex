@@ -10,12 +10,13 @@ import { Button } from "@/components/ui/button";
 interface CanvasCardProps {
   card: ICanvasCard;
   sectionId: string;
+  sectionColor?: string;
   onUpdate: (id: string, content: string) => void;
   onDelete: (id: string) => void;
   isOverlay?: boolean;
 }
 
-export function CanvasCard({ card, sectionId, onUpdate, onDelete, isOverlay }: CanvasCardProps) {
+export function CanvasCard({ card, sectionId, sectionColor, onUpdate, onDelete, isOverlay }: CanvasCardProps) {
   const {
     attributes,
     listeners,
@@ -37,15 +38,18 @@ export function CanvasCard({ card, sectionId, onUpdate, onDelete, isOverlay }: C
     transition,
   };
 
+  // Visually pleasing sticky note colors (more pastel/modern)
   const colorVariants: Record<string, string> = {
-    yellow: "bg-yellow-100 border-yellow-200 text-yellow-900 group-hover:border-yellow-300",
-    blue: "bg-blue-100 border-blue-200 text-blue-900 group-hover:border-blue-300",
-    green: "bg-green-100 border-green-200 text-green-900 group-hover:border-green-300",
-    pink: "bg-pink-100 border-pink-200 text-pink-900 group-hover:border-pink-300",
-    purple: "bg-purple-100 border-purple-200 text-purple-900 group-hover:border-purple-300",
-    red: "bg-red-100 border-red-200 text-red-900 group-hover:border-red-300",
-    orange: "bg-orange-100 border-orange-200 text-orange-900 group-hover:border-orange-300",
-    cyan: "bg-cyan-100 border-cyan-200 text-cyan-900 group-hover:border-cyan-300",
+    yellow: "bg-[#fef9c3] text-yellow-900 border-l-4 border-l-yellow-400 dark:bg-yellow-900/40 dark:text-yellow-100 dark:border-l-yellow-500",
+    blue: "bg-[#e0f2fe] text-blue-900 border-l-4 border-l-blue-400 dark:bg-blue-900/40 dark:text-blue-100 dark:border-l-blue-500",
+    green: "bg-[#dcfce7] text-green-900 border-l-4 border-l-green-400 dark:bg-green-900/40 dark:text-green-100 dark:border-l-green-500",
+    pink: "bg-[#fce7f3] text-pink-900 border-l-4 border-l-pink-400 dark:bg-pink-900/40 dark:text-pink-100 dark:border-l-pink-500",
+    purple: "bg-[#f3e8ff] text-purple-900 border-l-4 border-l-purple-400 dark:bg-purple-900/40 dark:text-purple-100 dark:border-l-purple-500",
+    red: "bg-[#fee2e2] text-red-900 border-l-4 border-l-red-400 dark:bg-red-900/40 dark:text-red-100 dark:border-l-red-500",
+    orange: "bg-[#ffedd5] text-orange-900 border-l-4 border-l-orange-400 dark:bg-orange-900/40 dark:text-orange-100 dark:border-l-orange-500",
+    cyan: "bg-[#cffafe] text-cyan-900 border-l-4 border-l-cyan-400 dark:bg-cyan-900/40 dark:text-cyan-100 dark:border-l-cyan-500",
+    indigo: "bg-[#e0e7ff] text-indigo-900 border-l-4 border-l-indigo-400 dark:bg-indigo-900/40 dark:text-indigo-100 dark:border-l-indigo-500",
+    rose: "bg-[#ffe4e6] text-rose-900 border-l-4 border-l-rose-400 dark:bg-rose-900/40 dark:text-rose-100 dark:border-l-rose-500",
   };
 
   if (isDragging) {
@@ -54,7 +58,7 @@ export function CanvasCard({ card, sectionId, onUpdate, onDelete, isOverlay }: C
         ref={setNodeRef} 
         style={style}
         className={cn(
-           "h-[80px] w-full rounded-lg border-2 border-dashed border-primary/40 bg-primary/5 opacity-50",
+           "h-[80px] w-full rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 opacity-50",
            "animate-pulse"
         )}
       />
@@ -66,22 +70,24 @@ export function CanvasCard({ card, sectionId, onUpdate, onDelete, isOverlay }: C
       ref={setNodeRef}
       style={style}
       className={cn(
-        "group relative flex flex-col gap-1 rounded-lg border p-2 shadow-sm transition-all hover:shadow-md",
-        colorVariants[card.color || 'blue'],
-        isOverlay && "cursor-grabbing shadow-xl rotate-2 scale-105 z-50 opacity-90",
-        !isOverlay && "hover:-translate-y-0.5"
+        "group relative flex flex-col gap-1 rounded-r-lg rounded-l-[2px] p-3 shadow-sm transition-all duration-200",
+        // Base styling for sticky note feel
+        colorVariants[sectionColor || card.color || 'blue'],
+        isOverlay 
+            ? "cursor-grabbing shadow-2xl rotate-2 scale-105 z-50 opacity-95 ring-2 ring-black/5" 
+            : "hover:shadow-md hover:-translate-y-0.5 hover:rotate-1"
       )}
     >
-      {/* Drag Handle & Delete */}
-      <div className="flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity absolute top-1 right-1 left-1">
-        <div {...attributes} {...listeners} className="cursor-grab p-0.5 hover:bg-black/5 rounded">
-             <GripVertical size={12} className="text-black/40" />
+      {/* Drag Handle & Delete overlay */}
+      <div className="flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute top-0.5 right-0.5 left-0.5">
+        <div {...attributes} {...listeners} className="cursor-grab p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded active:cursor-grabbing">
+             <GripVertical size={13} className="text-black/30 dark:text-white/30" />
         </div>
         <button 
            onClick={() => onDelete(card.id)}
-           className="text-red-500/60 hover:text-red-600 hover:bg-red-100/50 rounded p-0.5 transition-colors"
+           className="text-red-500/50 hover:text-red-600 hover:bg-white/40 dark:hover:bg-black/20 rounded p-0.5 transition-colors"
         >
-            <X size={12} />
+            <X size={13} />
         </button>
       </div>
 
@@ -90,7 +96,7 @@ export function CanvasCard({ card, sectionId, onUpdate, onDelete, isOverlay }: C
         value={card.content}
         onChange={(e) => onUpdate(card.id, e.target.value)}
         placeholder="بنویسید..."
-        className="w-full bg-transparent resize-none border-none focus:ring-0 text-xs leading-relaxed p-0 pt-3 min-h-[50px] outline-none"
+        className="w-full bg-transparent resize-none border-none focus:ring-0 text-sm leading-relaxed p-0 pt-2 min-h-[60px] outline-none placeholder:text-black/20 dark:placeholder:text-white/20 font-medium"
         spellCheck={false}
       />
     </div>

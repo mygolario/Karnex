@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { TEXT_MODELS } from '@/lib/openrouter';
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         // Using Google Gemini models only
-        model: "google/gemini-2.0-flash-001",
+        model: TEXT_MODELS[0],
         messages: [
           { role: "system", content: "تو یک متخصص تحلیل بازار ایران هستی. فقط JSON خالص برگردان." },
           { role: "user", content: prompt }

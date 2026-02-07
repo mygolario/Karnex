@@ -429,9 +429,7 @@ export function PitchDeckBuilder() {
             </div>
 
             <div className="flex items-center gap-2">
-                 <Button variant="outline" size="sm" onClick={syncWithPlan} title="Reload content from Plan">
-                    <RefreshCw size={14} className="mr-1" /> سینک مجدد
-                </Button>
+                {/* Re-sync button removed */}
                 <Button variant="default" size="sm" onClick={() => handleSave()} disabled={loading}>
                     <Save size={14} className="mr-1" /> {loading ? '...' : 'ذخیره'}
                 </Button>

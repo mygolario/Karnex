@@ -18,7 +18,9 @@ import { useCanvas } from "./canvas-context";
 import { CanvasSection } from "./canvas-section";
 import { CanvasCard } from "./canvas-card";
 import { CanvasCard as ICanvasCard } from "@/lib/db";
+import { cn } from "@/lib/utils";
 import { 
+    X, GripVertical,
     // BMC Icons
     Handshake, Activity, Package, Gem, Heart, Megaphone, Users, PiggyBank, Banknote,
     // Brand Icons
@@ -52,7 +54,11 @@ const BRAND_LAYOUT = [
     { id: 'investment', title: 'سرمایه', icon: PiggyBank, color: 'red' },
 ];
 
-export function CanvasBoard() {
+interface CanvasBoardProps {
+    highlightedSectionId?: string;
+}
+
+export function CanvasBoard({ highlightedSectionId }: CanvasBoardProps) {
   const { canvasState, moveCard, addCard, updateCard, deleteCard } = useCanvas();
   const { activeProject } = useProject();
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -63,8 +69,8 @@ export function CanvasBoard() {
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
-  const isBrand = activeProject?.projectType === 'creator';
-  const layout = isBrand ? BRAND_LAYOUT : BMC_LAYOUT;
+  const isBrand = false; // Forced off: activeProject?.projectType === 'creator';
+  const layout = BMC_LAYOUT; // Always use BMC layout
 
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -109,25 +115,7 @@ export function CanvasBoard() {
       onDragEnd={handleDragEnd}
     >
       {/* Layout Render */}
-      {isBrand ? (
-          /* Grid for Brand Canvas */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" dir="rtl">
-              {layout.map(section => (
-                  <CanvasSection 
-                     key={section.id}
-                     id={section.id}
-                     title={section.title}
-                     icon={section.icon}
-                     color={section.color}
-                     cards={canvasState[section.id] || []}
-                     onAddCard={() => addCard(section.id)}
-                     onUpdateCard={(cardId, content) => updateCard(section.id, cardId, content)}
-                     onDeleteCard={(cardId) => deleteCard(section.id, cardId)}
-                  />
-              ))}
-          </div>
-      ) : (
-          /* Complex Grid for BMC */
+      {/* Complex Grid for BMC */}
           <div 
             dir="ltr" 
             className="grid gap-4 min-h-[800px]"
@@ -141,7 +129,10 @@ export function CanvasBoard() {
               `
             }}
           >
-              {layout.map(section => (
+              {layout.map(section => {
+                  const isDimmed = highlightedSectionId && highlightedSectionId !== section.id;
+                  
+                  return (
                   <CanvasSection 
                      key={section.id}
                      id={section.id}
@@ -152,13 +143,15 @@ export function CanvasBoard() {
                      onAddCard={() => addCard(section.id)}
                      onUpdateCard={(cardId, content) => updateCard(section.id, cardId, content)}
                      onDeleteCard={(cardId) => deleteCard(section.id, cardId)}
-                     className="min-h-0" // override
+                     className={cn(
+                        "min-h-0 transition-opacity duration-300", 
+                        isDimmed && "opacity-20 pointer-events-none grayscale"
+                     )}
                      // @ts-ignore
                      style={{ gridArea: section.area }}
                   />
-              ))}
+              )})}
           </div>
-      )}
 
       {/* Drag Overlay */}
       <DragOverlay>

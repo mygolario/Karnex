@@ -309,7 +309,7 @@ export default function ContentCalendarPage() {
                <DialogHeader>
                  <DialogTitle>انتخاب استراتژی محتوا</DialogTitle>
                  <DialogDescription>
-                   هوش مصنوعی تقویم شما را بر اساس هدف انتخابی پر می‌کند.
+                   کارنکس تقویم شما را بر اساس هدف انتخابی پر می‌کند.
                  </DialogDescription>
                </DialogHeader>
                <div className="grid gap-4 py-4">

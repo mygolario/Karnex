@@ -28,6 +28,7 @@ interface Route {
   label: string;
   href: string;
   badge?: string;
+  hidden?: boolean;
 }
 
 export function DashboardSidebar({ className, variant = "desktop" }: SidebarProps) {
@@ -43,28 +44,29 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
   const commonRoutes: Route[] = [
     { icon: LayoutGrid, label: "پیشخوان", href: "/dashboard/overview" },
     { icon: Map, label: "نقشه راه (Roadmap)", href: "/dashboard/roadmap" },
+    { icon: Target, label: "تحلیل کسب و کار", href: "/dashboard/canvas" }, // Moved here
     { icon: Bot, label: "دستیار کارنکس", href: "/dashboard/copilot", badge: "AI" },
   ];
 
   // --- 2. Startup Routes ---
   const startupRoutes: Route[] = [
     { icon: Presentation, label: "پیچ دک (Pitch Deck)", href: "/dashboard/pitch-deck" },
-    { icon: Target, label: "بوم مدل کسب‌وکار", href: "/dashboard/canvas" },
+    // { icon: Target, label: "تحلیل کسب و کار", href: "/dashboard/canvas" }, // Moved to common
   ];
 
   // --- 3. Traditional Routes ---
   const traditionalRoutes: Route[] = [
-    { icon: Target, label: "بوم مدل کسب‌وکار", href: "/dashboard/canvas" },
+    // { icon: Target, label: "تحلیل کسب و کار", href: "/dashboard/canvas" }, // Moved to common
     { icon: MapPin, label: "تحلیل موقعیت مکانی", href: "/dashboard/location" },
   ];
 
   // --- 4. Creator Routes ---
   const creatorRoutes: Route[] = [
-    { icon: Target, label: "بوم برند شخصی", href: "/dashboard/canvas" },
+    // { icon: Target, label: "بوم برند شخصی", href: "/dashboard/canvas" }, // Removed
     // { icon: UserCheck, label: "مدیا کیت (Media Kit)", href: "/dashboard/media-kit" }, // Disabled by user request
     { icon: Calendar, label: "تقویم محتوا", href: "/dashboard/content-calendar" },
     { icon: Video, label: "مدیریت اسکریپت", href: "/dashboard/scripts" },
-    { icon: Share2, label: "توزیع محتوا", href: "/dashboard/repurpose" },
+    { icon: Share2, label: "توزیع محتوا", href: "/dashboard/repurpose", hidden: true }, // Disabled
     { icon: DollarSign, label: "تعرفه اسپانسری", href: "/dashboard/sponsor-rates" },
   ];
 
@@ -74,7 +76,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
     ...(isStartup ? startupRoutes : []),
     ...(isTraditional ? traditionalRoutes : []),
     ...(isCreator ? creatorRoutes : []),
-  ];
+  ].filter(route => !route.hidden);
 
   // Base Styling
   const baseClasses = "flex flex-col h-full bg-card border-l border-border";

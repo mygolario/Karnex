@@ -36,30 +36,11 @@ export default function CanvasPage() {
   );
 }
 
-function CanvasPageContent({ plan }: { plan: any }) {
-    // This component is inside the provider, so it can access context if needed, 
-    // or we can just let the Board handle everything.
-    // However, the "Auto Fill" buttons were in the header.
-    // To properly implement "Auto Fill", we need access to `addCard` or `setCanvasState` from context.
-
-    // For this redesign, let's keep the layout simple: Header + Board.
-    // We will re-implement the header actions later or assuming they are part of the Board component 
-    // or we can move the Header into a separate component that uses `useCanvas`.
-
-    return (
-        <div className="max-w-7xl mx-auto space-y-6 pb-12">
-            <CanvasHeader plan={plan} />
-            <div id="bmc-canvas" className="bg-card border border-border rounded-3xl p-4 md:p-6 overflow-hidden">
-                <CanvasBoard />
-            </div>
-        </div>
-    )
-}
-
-
 import { useCanvas } from "@/components/dashboard/canvas/canvas-context";
+import { useCanvasWizard } from "@/hooks/use-canvas-wizard";
+import { CanvasWizard } from "@/components/dashboard/canvas/canvas-wizard";
 
-function CanvasHeader({ plan }: { plan: any }) {
+function CanvasHeader({ plan, onOpenWizard }: { plan: any, onOpenWizard: () => void }) {
     const { autoFillCanvas, isSaving } = useCanvas();
 
     return (
@@ -70,29 +51,77 @@ function CanvasHeader({ plan }: { plan: any }) {
           </div>
           <div>
             <h1 className="text-2xl font-black text-foreground">
-              {plan.projectType === 'creator' ? 'بوم برند شخصی' :
-               'بوم مدل کسب‌وکار'}
+              تحلیل کسب و کار
             </h1>
             <p className="text-muted-foreground text-sm">
-              {plan.projectType === 'creator' ? 'استراتژی برند و مخاطب' :
-               'طراحی و اعتبارسنجی مدل کسب‌وکار (استاندارد ۹ بلوک)'}
+              نقشه‌ای یک‌صفحه‌ای که در یک نگاه نشان می‌دهد ایده شما چطور کار می‌کند و چگونه به درآمد می‌رسد.
             </p>
           </div>
         </div>
         
         <div className="flex items-center gap-2">
             <Button 
-                variant="shimmer" 
+                variant="default" // Primary action
+                size="sm" 
+                onClick={onOpenWizard}
+                className="shadow-lg shadow-primary/20"
+            >
+                <Sparkles size={16} className="ml-2" />
+                راهنمای هوشمند
+            </Button>
+            
+            <Button 
+                variant="ghost" 
                 size="sm" 
                 onClick={autoFillCanvas} 
                 disabled={isSaving}
+                className="text-muted-foreground"
             >
-                {isSaving ? <Loader2 size={16} className="ml-2 animate-spin" /> : <Sparkles size={16} className="ml-2" />}
-                پر کردن خودکار
+                {isSaving ? <Loader2 size={16} className="ml-2 animate-spin" /> : <Eye size={16} className="ml-2" />}
+                نمونه خودکار
             </Button>
         </div>
       </div>
     );
+}
+
+function CanvasPageContent({ plan }: { plan: any }) {
+    const wizard = useCanvasWizard();
+
+    // Mapping for Focus Mode:
+    // The wizard steps rely on IDs like "customer_segments"
+    // The Board uses IDs like "customerSegments" (camelCase)
+    // We need to map them if they differ.
+    // Checking `dnd-board.tsx`: 
+    // BMC_LAYOUT uses camelCase: customerSegments, valueProposition, etc.
+    // Checking `use-canvas-wizard.ts`:
+    // It uses snake_case: customer_segments, value_propositions.
+    // We need a mapper.
+
+    const activeSectionId = wizard.isOpen ? wizard.currentStep.id : undefined;
+
+    return (
+        <div className="max-w-7xl mx-auto space-y-6 pb-12">
+            <CanvasHeader plan={plan} onOpenWizard={wizard.openWizard} />
+            
+            <div id="bmc-canvas" className="bg-card border border-border rounded-3xl p-4 md:p-6 overflow-hidden min-h-[800px]">
+                <CanvasBoard highlightedSectionId={activeSectionId} />
+            </div>
+
+            <CanvasWizard 
+                isOpen={wizard.isOpen}
+                currentStep={wizard.currentStep}
+                currentStepIndex={wizard.currentStepIndex}
+                totalSteps={wizard.totalSteps}
+                currentInput={wizard.currentInput}
+                onInputChange={wizard.setCurrentInput}
+                onNext={wizard.nextStep}
+                onSkip={wizard.skipStep}
+                onPrev={wizard.prevStep}
+                onClose={wizard.closeWizard}
+            />
+        </div>
+    )
 }
 
 

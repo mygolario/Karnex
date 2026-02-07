@@ -133,7 +133,7 @@ export default function MediaKitPage() {
             toast.success("بایو جدید پیشنهاد شد (می‌توانید ویرایش کنید)");
         }
     } catch (e) {
-        toast.error("خطا در ارتباط با هوش مصنوعی");
+        toast.error("خطا در ارتباط با کارنکس");
     } finally {
         setIsGeneratingBio(false);
     }
@@ -265,7 +265,7 @@ export default function MediaKitPage() {
                             <Label className="flex justify-between">
                                 <span>درباره من (Bio)</span>
                                 <Button variant="ghost" size="sm" onClick={handleEnhanceBio} disabled={isGeneratingBio} className="h-6 text-xs text-violet-600 hover:text-violet-700 bg-violet-50 hover:bg-violet-100">
-                                    <Sparkles size={12} className="mr-1" /> {isGeneratingBio ? "در حال نوشتن..." : "بهبود با هوش مصنوعی"}
+                                    <Sparkles size={12} className="mr-1" /> {isGeneratingBio ? "در حال نوشتن..." : "بهبود با کارنکس"}
                                 </Button>
                             </Label>
                             <Textarea 

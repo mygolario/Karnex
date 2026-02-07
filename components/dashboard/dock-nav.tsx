@@ -19,7 +19,7 @@ import {
 
 const navItems = [
   { icon: LayoutDashboard, label: "داشبورد", href: "/dashboard/overview" },
-  { icon: LayoutGrid, label: "بوم", href: "/dashboard/canvas" },
+  { icon: LayoutGrid, label: "تحلیل", href: "/dashboard/canvas" },
   { icon: Map, label: "نقشه راه", href: "/dashboard/roadmap" },
   { icon: FlaskConical, label: "اعتبارسنج", href: "/dashboard/validator" },
   { icon: Bot, label: "دستیار کارنکس", href: "/dashboard/copilot" },
