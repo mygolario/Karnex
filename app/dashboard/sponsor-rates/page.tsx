@@ -1,5 +1,7 @@
 "use client";
 
+import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
+
 import { useState } from "react";
 import { useProject } from "@/contexts/project-context";
 import { motion } from "framer-motion";
@@ -72,9 +74,12 @@ export default function SponsorRatesPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
       {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+
+
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4" data-tour-id="sponsor-header">
         <div>
           <div className="flex items-center gap-3 mb-2">
+             <PageTourHelp tourId="sponsorship" />
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center">
               <Calculator className="w-6 h-6 text-white" />
             </div>
@@ -88,7 +93,7 @@ export default function SponsorRatesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Input Form */}
-        <Card className="p-6 space-y-8">
+        <Card className="p-6 space-y-8" data-tour-id="rate-calculator">
           <div>
             <Label className="mb-3 block text-base">پلتفرم شما</Label>
             <div className="grid grid-cols-2 gap-4">

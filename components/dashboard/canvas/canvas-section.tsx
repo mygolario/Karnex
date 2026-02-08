@@ -116,18 +116,25 @@ export function CanvasSection({
 
       {/* Cards Area */}
       <div className="flex-1 p-2.5 space-y-2.5 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200 dark:scrollbar-thumb-gray-800 scrollbar-track-transparent">
-        <SortableContext items={cards.map(c => c.id)} strategy={verticalListSortingStrategy}>
-           {cards.map(card => (
-             <CanvasCard 
-               key={card.id} 
-               card={card} 
-               sectionId={id} 
-               sectionColor={color}
-               onUpdate={onUpdateCard} 
-               onDelete={onDeleteCard}
-             />
-           ))}
-        </SortableContext>
+        {(() => {
+           // Dedup cards to prevent key errors and ensure valid IDs
+           const uniqueCards = Array.from(new Map(cards.filter(c => c && c.id).map(c => [c.id, c])).values());
+           
+           return (
+            <SortableContext items={uniqueCards.map(c => c.id)} strategy={verticalListSortingStrategy}>
+              {uniqueCards.map(card => (
+                <CanvasCard 
+                  key={card.id} 
+                  card={card} 
+                  sectionId={id} 
+                  sectionColor={color}
+                  onUpdate={onUpdateCard} 
+                  onDelete={onDeleteCard}
+                />
+              ))}
+            </SortableContext>
+           );
+        })()}
         
         {cards.length === 0 && !isOver && (
             <div 

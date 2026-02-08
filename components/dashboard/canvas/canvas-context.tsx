@@ -29,7 +29,12 @@ export function useCanvas() {
   return context;
 }
 
-const generateId = () => `card-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+const generateId = () => {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return `card-${crypto.randomUUID()}`;
+    }
+    return `card-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
 
 export function CanvasProvider({ children }: { children: React.ReactNode }) {
   const { activeProject: plan, updateActiveProject } = useProject();

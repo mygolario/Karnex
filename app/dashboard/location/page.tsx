@@ -9,6 +9,7 @@ import { LocationProvider, useLocation } from "@/components/dashboard/location/l
 import { LocationScore } from "@/components/dashboard/location/location-score";
 import { DemographicsCard } from "@/components/dashboard/location/demographics-card";
 import { CompetitorList } from "@/components/dashboard/location/competitor-list";
+import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
 import { useState } from "react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -67,7 +68,8 @@ function LocationPageContent() {
             {/* Header */}
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                    <PageTourHelp tourId="location-analyzer" />
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-500/20" data-tour-id="location-header">
                     <MapPin className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -78,7 +80,7 @@ function LocationPageContent() {
             </div>
 
             {/* Input Section */}
-            <Card className="p-6">
+            <Card className="p-6" data-tour-id="location-inputs">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <div className="md:col-span-1">
                     <label className="text-sm font-medium mb-1 block">شهر</label>
@@ -114,6 +116,7 @@ function LocationPageContent() {
                     className="w-full h-[42px] bg-gradient-to-r from-primary to-secondary gap-2 shadow-lg shadow-primary/25"
                     onClick={handleAnalyze}
                     disabled={loading}
+                    data-tour-id="analyze-btn"
                     >
                     {loading ? <Loader2 className="animate-spin" /> : <Search size={18} />}
                     تحلیل منطقه
@@ -136,7 +139,7 @@ function LocationPageContent() {
             )}
 
             {!analysis && !loading && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-50 pointer-events-none filter blur-sm select-none">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 opacity-50 pointer-events-none filter blur-sm select-none" data-tour-id="results-placeholder">
                     {/* Placeholder blurred content for visual cue */}
                     <Card className="p-32 col-span-full border-dashed flex items-center justify-center bg-muted/20">
                     <div className="text-center">

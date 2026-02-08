@@ -85,7 +85,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
     : "flex w-full"; // Mobile is handled by Sheet Wrapper
 
   return (
-    <div className={cn(baseClasses, positionClasses, className)}>
+    <div className={cn(baseClasses, positionClasses, className)} data-tour-id="sidebar-nav">
       {/* Header / Logo */}
       <div className="h-16 flex items-center px-6 border-b border-border/50 shrink-0">
         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">

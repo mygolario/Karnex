@@ -38,7 +38,7 @@ export default function DashboardOverviewPage() {
     const hour = new Date().getHours();
     if (hour < 5) setGreeting("شب بخیر");
     else if (hour < 12) setGreeting("صبح بخیر");
-    else if (hour < 18) setGreeting("ظهر بخیر");
+    else if (hour < 17) setGreeting("روز بخیر");
     else setGreeting("عصر بخیر");
     
     // Mock streak
@@ -113,7 +113,7 @@ export default function DashboardOverviewPage() {
               {new Date().toLocaleDateString('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' })}
            </div>
            <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tight">
-             {greeting}، <span className="text-primary">{user?.displayName?.split(' ')[0] || "کاربر عزیز"}</span>!
+             {greeting}، <span className="text-primary">{user?.displayName?.split(' ')[0] || "دوست عزیز"}</span>
            </h1>
         </div>
         

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { 
   Settings, LogOut, User, Crown, 
-  ChevronDown, CreditCard, Sparkles
+  ChevronDown, CreditCard, Sparkles, CircleHelp
 } from "lucide-react";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 // import { CommandMenu } from "@/components/dashboard/command-menu";
@@ -76,6 +76,16 @@ export function DashboardHeader() {
       <div className="flex items-center gap-2">
         {/* Theme Toggle */}
         <ThemeToggle />
+
+        {/* Help / Restart Tour Button */}
+        <button
+           onClick={() => window.dispatchEvent(new Event('restart-tour'))}
+           className="p-2 rounded-xl hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
+           title="راهنما و شروع مجدد تور"
+           data-tour-id="help-button"
+        >
+           <CircleHelp size={20} />
+        </button>
 
         {/* User Avatar & Dropdown - Premium Design */}
         <div className="relative" ref={userMenuRef}>

@@ -1,5 +1,7 @@
 "use client";
 
+import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
+
 import { useState, useRef, useEffect } from "react";
 import { useProject } from "@/contexts/project-context";
 import { motion, AnimatePresence } from "framer-motion";
@@ -197,10 +199,13 @@ export default function ScriptsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
+
+
       {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4" data-tour-id="scripts-header">
         <div>
           <div className="flex items-center gap-3 mb-2">
+             <PageTourHelp tourId="scripts" />
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/20">
               <Video className="w-7 h-7 text-white" />
             </div>
@@ -214,7 +219,7 @@ export default function ScriptsPage() {
         <div className="flex gap-2">
            <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
              <SheetTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="gap-2" data-tour-id="scripts-list">
                     <History size={16} /> تاریخچه
                 </Button>
              </SheetTrigger>
@@ -337,6 +342,7 @@ export default function ScriptsPage() {
                    className="w-full text-base gap-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-lg shadow-red-500/20"
                    onClick={handleGenerate}
                    disabled={isGenerating}
+                   data-tour-id="new-script-btn"
                 >
                    {isGenerating ? <Loader2 className="animate-spin" /> : <Sparkles />}
                    {step === 1 ? "نوشتن سناریو" : "بازنویسی سناریو"}

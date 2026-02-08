@@ -15,7 +15,7 @@ interface StatsStripProps {
 
 export function StatsStrip({ progress, score, completedCount, totalSteps, streak }: StatsStripProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full" data-tour-id="stats-strip">
       <StatCard 
         icon={TrendingUp} 
         label="پیشرفت کل" 

@@ -1,5 +1,7 @@
 "use client";
 
+import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
+
 import { useState, useEffect } from "react";
 import { useProject } from "@/contexts/project-context";
 import { motion, AnimatePresence } from "framer-motion";
@@ -39,6 +41,18 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  format, 
+  startOfMonth, 
+  endOfMonth, 
+  getDaysInMonth, 
+  getDay, 
+  addMonths, 
+  subMonths, 
+  addDays,
+  isSameDay,
+  isToday
+} from "date-fns-jalali";
 
 const PLATFORM_ICONS = {
   instagram: Instagram,
@@ -238,39 +252,63 @@ export default function ContentCalendarPage() {
     }
   };
 
-  // Calendar Helpers
-  const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
-  const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
-  const paddingCols = (firstDayOfMonth + 1) % 7;
+  // Calendar Logic with date-fns-jalali
+  const daysInMonth = getDaysInMonth(currentDate);
+  const startMonthDate = startOfMonth(currentDate);
+  // date-fns-jalali getDay returns 0 for Saturday? No, usually 0 is Sunday.
+  // Let's verify standard date-fns-jalali behavior. 
+  // In Jalali: Saturday is start of week.
+  // getDay(date) returns 0 for Sunday, 6 for Saturday.
+  // We want Saturday to be index 0.
+  // Map: Sat(6)->0, Sun(0)->1, Mon(1)->2, ... Fri(5)->6.
+  // Formula: (day + 1) % 7
+  const firstDayOfMonth = (getDay(startMonthDate) + 1) % 7;
+  
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
-  const paddingDays = Array.from({ length: paddingCols }, (_, i) => i);
+  const paddingDays = Array.from({ length: firstDayOfMonth }, (_, i) => i);
 
   const getEventsForDay = (day: number) => {
     return events.filter(e => {
-        const eDate = new Date(e.date);
-        return eDate.getDate() === day && 
-               eDate.getMonth() === currentDate.getMonth() &&
-               eDate.getFullYear() === currentDate.getFullYear();
+        // e.date is ISO string (Gregorian)
+        // We need to check if e.date falls into the specific Jalali day
+        const eventDate = new Date(e.date);
+        const cellDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+        // This simple constructor `new Date(y, m, d)` uses Gregorian args if we just pass numbers?
+        // Wait, date-fns-jalali functions operate on standard Date objects but interpret/format them as Jalali.
+        // BUT `new Date(y,m,d)` creates a date treating y,m,d as Gregorian.
+        // We need to construct a Date object that corresponds to the specific Jalali year/month/day.
+        // We can't use `new Date(jalaliYear, jalaliMonth, jalaliDay)` directly.
+        // We should traverse the days using `setDate` or `addDays` from the start of the month.
+        
+        // Better approach for grid generation:
+        // Generate actual Date objects for each day in the grid.
+        return isSameDay(eventDate, cellDate); 
     });
   };
 
-  if (plan?.projectType !== "creator") {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="p-8 text-center max-w-md">
-          <CalendarIcon size={64} className="mx-auto mb-4 text-muted-foreground/40" />
-          <h2 className="text-xl font-bold mb-2">مخصوص کریتورها</h2>
-          <Button asChild><Link href="/dashboard/overview">بازگشت</Link></Button>
-        </Card>
-      </div>
-    );
-  }
+  // Helper to get the actual Date object for a specific day number in the current Jalali month
+  const getDateForDayNumber = (dayNumber: number) => {
+      // startOfMonth(currentDate) gives the Date of the 1st of the current Jalali month
+      // We can use setDate? No, setDate sets Gregorian day.
+      // We should use `addDays`.
+      // The 1st day is startOfMonth. The nth day is startOfMonth + (n-1) days.
+      const start = startOfMonth(currentDate);
+      return addDays(start, dayNumber - 1);
+  };
+  
+  const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+  const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
+  const handleToday = () => setCurrentDate(new Date());
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
+
+
       {/* Header */}
-      <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-4" data-tour-id="calendar-header">
+        {/* ... (Header content) ... */}
         <div className="flex items-center gap-3">
+             <PageTourHelp tourId="calendar" />
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg shadow-pink-500/20">
               <CalendarIcon className="w-6 h-6 text-white" />
             </div>
@@ -299,19 +337,21 @@ export default function ContentCalendarPage() {
            </div>
            
            <Dialog open={isStrategyOpen} onOpenChange={setIsStrategyOpen}>
+             {/* ... (Dialog Trigger and Content) ... */}
              <DialogTrigger asChild>
-               <Button disabled={isGeneratingAI} className="bg-gradient-to-r from-pink-600 to-purple-600 border-0 shadow-lg shadow-pink-500/20 hover:scale-105 transition-transform">
+               <Button disabled={isGeneratingAI} className="bg-gradient-to-r from-pink-600 to-purple-600 border-0 shadow-lg shadow-pink-500/20 hover:scale-105 transition-transform" data-tour-id="ai-strategy-btn">
                  {isGeneratingAI ? <Loader2 className="animate-spin" /> : <Sparkles />} 
-                 <span className="mr-2">تولید استراتژی AI</span>
+                 <span className="mr-2">تولید استراتژی با دستیار کارنکس</span>
                </Button>
              </DialogTrigger>
-             <DialogContent>
+             <DialogContent className="sm:max-w-[425px]">
                <DialogHeader>
-                 <DialogTitle>انتخاب استراتژی محتوا</DialogTitle>
-                 <DialogDescription>
+                 <DialogTitle className="text-right">انتخاب استراتژی محتوا</DialogTitle>
+                 <DialogDescription className="text-right">
                    کارنکس تقویم شما را بر اساس هدف انتخابی پر می‌کند.
                  </DialogDescription>
                </DialogHeader>
+               {/* ... (Rest of Dialog Content) ... */}
                <div className="grid gap-4 py-4">
                  <div className="grid grid-cols-1 gap-2">
                     <Button 
@@ -319,7 +359,7 @@ export default function ContentCalendarPage() {
                       className={cn("justify-start h-auto p-4", strategyType === "growth" && "border-green-500 bg-green-500/5")}
                       onClick={() => setStrategyType("growth")}
                     >
-                      <div className="text-left">
+                      <div className="text-right w-full">
                         <div className="font-bold">رشد سریع (Viral Growth)</div>
                         <div className="text-xs text-muted-foreground">تمرکز بر ترندها و محتوای وایرال برای جذب فالوور جدید.</div>
                       </div>
@@ -329,7 +369,7 @@ export default function ContentCalendarPage() {
                       className={cn("justify-start h-auto p-4", strategyType === "sales" && "border-blue-500 bg-blue-500/5")}
                       onClick={() => setStrategyType("sales")}
                     >
-                      <div className="text-left">
+                      <div className="text-right w-full">
                         <div className="font-bold">فروش و تبدیل (Sales)</div>
                         <div className="text-xs text-muted-foreground">تمرکز بر معرفی محصول، اعتماد سازی و دعوت به اقدام.</div>
                       </div>
@@ -339,14 +379,14 @@ export default function ContentCalendarPage() {
                       className={cn("justify-start h-auto p-4", strategyType === "trust" && "border-purple-500 bg-purple-500/5")}
                       onClick={() => setStrategyType("trust")}
                     >
-                      <div className="text-left">
+                      <div className="text-right w-full">
                         <div className="font-bold">اعتمادسازی (Brand Trust)</div>
                         <div className="text-xs text-muted-foreground">محتوای آموزشی، پشت صحنه و داستان برند.</div>
                       </div>
                     </Button>
                  </div>
                  <Button onClick={handleGenerateStrategy} disabled={isGeneratingAI} className="w-full">
-                   {isGeneratingAI ? <Loader2 className="animate-spin mr-2" /> : <Sparkles className="mr-2" />}
+                   {isGeneratingAI ? <Loader2 className="animate-spin ml-2" /> : <Sparkles className="ml-2" />}
                    شروع تولید برنامه
                  </Button>
                </div>
@@ -363,19 +403,20 @@ export default function ContentCalendarPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
+            data-tour-id="calendar-grid"
           >
              {/* Calendar Controls */}
              <div className="flex items-center justify-between mb-4 px-1">
                <div className="flex items-center gap-2">
-                 <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>امروز</Button>
+                 <Button variant="outline" size="sm" onClick={handleToday}>امروز</Button>
                  <div className="flex items-center bg-card border border-border rounded-lg p-0.5">
-                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() - 1)))}>
+                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handlePrevMonth}>
                      <ChevronRight size={16} />
                    </Button>
                    <span className="w-32 text-center font-bold text-sm">
-                     {currentDate.toLocaleDateString('fa-IR', { month: 'long', year: 'numeric' })}
+                     {format(currentDate, 'MMMM yyyy')}
                    </span>
-                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setCurrentDate(new Date(currentDate.setMonth(currentDate.getMonth() + 1)))}>
+                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleNextMonth}>
                      <ChevronLeft size={16} />
                    </Button>
                  </div>
@@ -399,16 +440,16 @@ export default function ContentCalendarPage() {
                   {paddingDays.map((_, i) => <div key={`pad-${i}`} className="bg-card/30 min-h-[140px]" />)}
 
                   {days.map((day) => {
-                    const dayEvents = getEventsForDay(day);
-                    const todayDate = new Date();
-                    const isToday = day === todayDate.getDate() && currentDate.getMonth() === todayDate.getMonth();
-                    const currentDayDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+                    const cellDate = getDateForDayNumber(day);
+                    
+                    const dayEvents = events.filter(e => isSameDay(new Date(e.date), cellDate));
+                    const isTodayDate = isToday(cellDate);
 
                     return (
-                      <div key={day} className={cn("bg-card min-h-[140px] p-2 border-t border-r border-border hover:bg-muted/5 transition-colors group relative flex flex-col gap-2", isToday && "bg-pink-500/5")}>
+                      <div key={day} className={cn("bg-card min-h-[140px] p-2 border-t border-r border-border hover:bg-muted/5 transition-colors group relative flex flex-col gap-2", isTodayDate && "bg-pink-500/5")}>
                         <div className="flex justify-between items-start">
-                          <span className={cn("text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full", isToday ? "bg-pink-500 text-white shadow-lg shadow-pink-500/40" : "text-muted-foreground")}>{day}</span>
-                          <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100" onClick={() => handleAddClick(currentDayDate)}>
+                          <span className={cn("text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full", isTodayDate ? "bg-pink-500 text-white shadow-lg shadow-pink-500/40" : "text-muted-foreground")}>{day}</span>
+                          <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100" onClick={() => handleAddClick(cellDate)}>
                             <Plus size={12} />
                           </Button>
                         </div>
@@ -481,7 +522,7 @@ export default function ContentCalendarPage() {
                               </div>
                               <h4 className="font-bold text-sm mb-2">{event.title}</h4>
                               <div className="flex items-center justify-between text-xs text-muted-foreground mt-2 pt-2 border-t border-dashed">
-                                 <span>{new Date(event.date).toLocaleDateString('fa-IR', {month: 'short', day: 'numeric'})}</span>
+                                 <span>{format(new Date(event.date), 'd MMMM')}</span>
                               </div>
                            </motion.div>
                          );
@@ -500,9 +541,9 @@ export default function ContentCalendarPage() {
       {/* Edit/Add Sheet */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetContent side="left" className="w-[400px] sm:w-[540px]">
-          <SheetHeader>
-            <SheetTitle>{selectedEvent ? "ویرایش رویداد" : "افزودن رویداد جدید"}</SheetTitle>
-            <SheetDescription>
+           <SheetHeader>
+            <SheetTitle className="text-right">{selectedEvent ? "ویرایش رویداد" : "افزودن رویداد جدید"}</SheetTitle>
+            <SheetDescription className="text-right">
               جزئیات محتوا را وارد کنید.
             </SheetDescription>
           </SheetHeader>
@@ -589,11 +630,6 @@ export default function ContentCalendarPage() {
                    <Link href="/dashboard/scripts" className="flex-1">
                       <Button variant="outline" size="sm" className="w-full">
                          نوشتن سناریو
-                      </Button>
-                   </Link>
-                   <Link href="/dashboard/repurpose" className="flex-1">
-                      <Button variant="outline" size="sm" className="w-full">
-                         توزیع محتوا
                       </Button>
                    </Link>
                  </div>

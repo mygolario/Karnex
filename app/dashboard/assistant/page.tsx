@@ -1,5 +1,7 @@
 "use client";
 
+import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
+
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
@@ -310,9 +312,12 @@ export default function AssistantPage() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col min-w-0 bg-muted/20 rounded-3xl border border-muted-foreground/10 overflow-hidden shadow-sm">
         
+
+
         {/* Header */}
-        <div className="shrink-0 p-4 border-b border-border/40 bg-background/50 backdrop-blur-sm flex justify-between items-center">
+        <div className="shrink-0 p-4 border-b border-border/40 bg-background/50 backdrop-blur-sm flex justify-between items-center" data-tour-id="copilot-header">
             <div className="flex items-center gap-3">
+                 <PageTourHelp tourId="copilot" />
                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-primary/20">
                     <Bot size={20} />
                  </div>
@@ -361,7 +366,7 @@ export default function AssistantPage() {
                      <h2 className="text-2xl font-black mb-2">چطور می‌تونم کمکت کنم؟</h2>
                      <p className="text-muted-foreground mb-8 max-w-sm">از بین سوالات آماده انتخاب کن یا سوال خودت رو بپرس.</p>
                      
-                     <div className="flex flex-wrap justify-center gap-2 max-w-lg">
+                     <div className="flex flex-wrap justify-center gap-2 max-w-lg" data-tour-id="prompt-templates">
                         {promptTemplates.map((t, i) => (
                             <button key={i} onClick={() => handleSendMessage(t.prompt)} className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium bg-background border hover:border-primary hover:text-primary transition-all shadow-sm">
                                 <t.icon size={14} /> {t.title}
@@ -418,7 +423,7 @@ export default function AssistantPage() {
         </div>
 
         {/* Input */}
-        <div className="shrink-0 p-4 bg-background border-t">
+        <div className="shrink-0 p-4 bg-background border-t" data-tour-id="chat-input">
             <div className="max-w-3xl mx-auto flex gap-2 items-end">
                 <VoiceInput onTranscript={(text) => handleSendMessage(text)} disabled={isLoading} />
                 <div className="flex-1 relative">

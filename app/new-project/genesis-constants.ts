@@ -19,6 +19,7 @@ export const PILLARS = [
     icon: Rocket,
     color: 'from-blue-600 to-indigo-600',
     gradient: 'bg-gradient-to-br from-blue-500/20 to-indigo-500/20',
+    projectPlaceholder: "مثلاً: اسنپ، دیجی‌کالا، علی‌بابا...",
     questions: [
       {
         id: 'tech_stack',
@@ -48,6 +49,7 @@ export const PILLARS = [
     icon: Store,
     color: 'from-emerald-600 to-teal-600',
     gradient: 'bg-gradient-to-br from-emerald-500/20 to-teal-500/20',
+    projectPlaceholder: "مثلاً: رستوران نایب، فروشگاه افق، املاک تهران...",
     questions: [
        {
         id: 'location_type',
@@ -68,6 +70,7 @@ export const PILLARS = [
     icon: Video,
     color: 'from-pink-600 to-rose-600',
     gradient: 'bg-gradient-to-br from-pink-500/20 to-rose-500/20',
+    projectPlaceholder: "مثلاً: کانال یوتیوب تکنولوژی، ولاگ سفر، اینستاگرام آشپزی...",
     questions: [
        {
         id: 'platform',
@@ -75,7 +78,8 @@ export const PILLARS = [
         options: [
             { id: 'youtube', label: 'یوتیوب', icon: Video },
             { id: 'instagram', label: 'اینستاگرام', icon: Camera },
-            { id: 'tiktok', label: 'تیک‌تاک / آپارات', icon: Smartphone },
+            { id: 'tiktok', label: 'تیک‌تاک', icon: Smartphone },
+            { id: 'aparat', label: 'آپارات', icon: Video },
             { id: 'podcast', label: 'پادکست', icon: Mic },
         ]
       }

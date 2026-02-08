@@ -57,7 +57,7 @@ export function RoadmapKanban({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full min-h-[500px]">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full min-h-[500px]" data-tour-id="kanban-board">
       {/* Todo Column */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between px-2">

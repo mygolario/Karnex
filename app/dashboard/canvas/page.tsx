@@ -40,12 +40,15 @@ import { useCanvas } from "@/components/dashboard/canvas/canvas-context";
 import { useCanvasWizard } from "@/hooks/use-canvas-wizard";
 import { CanvasWizard } from "@/components/dashboard/canvas/canvas-wizard";
 
+import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
+
 function CanvasHeader({ plan, onOpenWizard }: { plan: any, onOpenWizard: () => void }) {
     const { autoFillCanvas, isSaving } = useCanvas();
 
     return (
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4" data-tour-id="canvas-header">
         <div className="flex items-center gap-4">
+          <PageTourHelp tourId="canvas" />
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
             <LayoutGrid size={28} />
           </div>
@@ -76,6 +79,7 @@ function CanvasHeader({ plan, onOpenWizard }: { plan: any, onOpenWizard: () => v
                 onClick={autoFillCanvas} 
                 disabled={isSaving}
                 className="text-muted-foreground"
+                data-tour-id="ai-auto-fill"
             >
                 {isSaving ? <Loader2 size={16} className="ml-2 animate-spin" /> : <Eye size={16} className="ml-2" />}
                 نمونه خودکار
@@ -104,7 +108,7 @@ function CanvasPageContent({ plan }: { plan: any }) {
         <div className="max-w-7xl mx-auto space-y-6 pb-12">
             <CanvasHeader plan={plan} onOpenWizard={wizard.openWizard} />
             
-            <div id="bmc-canvas" className="bg-card border border-border rounded-3xl p-4 md:p-6 overflow-hidden min-h-[800px]">
+            <div id="bmc-canvas" className="bg-card border border-border rounded-3xl p-4 md:p-6 overflow-hidden min-h-[800px]" data-tour-id="canvas-board">
                 <CanvasBoard highlightedSectionId={activeSectionId} />
             </div>
 

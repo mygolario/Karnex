@@ -36,24 +36,24 @@ export function GenerationLoader({ isLoading, title = "در حال ساخت...",
   const CurrentIcon = LOADING_PHASES[phaseIndex].icon;
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black text-white" dir="rtl">
+    <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background text-foreground" dir="rtl">
       {/* Ambient Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[100px] animate-pulse-glow" />
-         <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.05]" />
+         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[120px] animate-pulse-glow" />
+         <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-[0.02]" />
       </div>
 
       <div className="relative z-10 flex flex-col items-center text-center space-y-12">
         {/* Central Core Animation */}
         <div className="relative">
              {/* Glowing Orbs */}
-             <div className="absolute inset-0 bg-primary/30 blur-3xl rounded-full animate-pulse-glow" />
-             <div className="absolute inset-0 bg-secondary/20 blur-2xl rounded-full animate-pulse delay-75" />
+             <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse-glow" />
+             <div className="absolute inset-0 bg-secondary/10 blur-2xl rounded-full animate-pulse delay-75" />
              
              {/* Spinner */}
              <div className="relative w-24 h-24">
-                <div className="absolute inset-0 border-4 border-white/10 rounded-full" />
-                <div className="absolute inset-0 border-4 border-t-primary border-r-transparent border-b-secondary border-l-transparent rounded-full animate-spin" />
+                <div className="absolute inset-0 border-4 border-muted/20 rounded-full" />
+                <div className="absolute inset-0 border-4 border-t-primary border-r-transparent border-b-secondary/50 border-l-transparent rounded-full animate-spin" />
                 
                 {/* Center Icon */}
                 <div className="absolute inset-0 flex items-center justify-center">
@@ -65,7 +65,7 @@ export function GenerationLoader({ isLoading, title = "در حال ساخت...",
                             exit={{ scale: 0.5, opacity: 0 }}
                             transition={{ duration: 0.3 }}
                         >
-                            <CurrentIcon className="w-8 h-8 text-white" />
+                            <CurrentIcon className="w-8 h-8 text-primary" />
                         </motion.div>
                     </AnimatePresence>
                 </div>
@@ -73,7 +73,7 @@ export function GenerationLoader({ isLoading, title = "در حال ساخت...",
         </div>
 
         <div className="space-y-6 max-w-sm">
-             <h2 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 tracking-tight">
+             <h2 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/60 tracking-tight">
                 {title}
              </h2>
 
@@ -86,7 +86,7 @@ export function GenerationLoader({ isLoading, title = "در حال ساخت...",
                         animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
                         exit={{ y: -20, opacity: 0, filter: "blur(4px)" }}
                         transition={{ duration: 0.5 }}
-                        className="flex items-center gap-2 text-white/60 font-medium absolute text-lg whitespace-nowrap"
+                        className="flex items-center gap-2 text-muted-foreground font-medium absolute text-lg whitespace-nowrap"
                     >
                         <span>{LOADING_PHASES[phaseIndex].text}</span>
                     </motion.div>
@@ -94,7 +94,7 @@ export function GenerationLoader({ isLoading, title = "در حال ساخت...",
              </div>
              
              {/* Fake Progress Bar if undefined, real if defined */}
-            <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden mt-4">
+            <div className="w-full h-1 bg-muted/20 rounded-full overflow-hidden mt-4">
                 <motion.div 
                     className="h-full bg-gradient-to-r from-primary to-secondary"
                     initial={{ width: "0%" }}

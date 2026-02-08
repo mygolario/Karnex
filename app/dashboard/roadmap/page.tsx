@@ -12,6 +12,8 @@ import { Layers, KanbanSquare, CalendarDays, Loader2, Sparkles, Trophy } from "l
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
+
 export default function RoadmapPage() {
   const { 
     loading, 
@@ -54,9 +56,11 @@ export default function RoadmapPage() {
     <div className="container mx-auto max-w-7xl py-6 space-y-8 pb-24">
       
       {/* 1. Header & Controls */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6" data-tour-id="roadmap-header">
+        <div className="flex items-center gap-4">
+          <PageTourHelp tourId="roadmap" /> 
+           <div>
+              <h1 className="text-3xl font-black tracking-tight text-foreground flex items-center gap-3">
              <span className="bg-primary/10 p-2 rounded-xl text-primary">
                <Layers size={28} />
              </span>
@@ -65,6 +69,7 @@ export default function RoadmapPage() {
           <p className="text-muted-foreground mt-2 max-w-lg leading-relaxed">
             اینجا مرکز فرماندهی شماست. <span className="text-foreground font-medium">قدم به قدم</span> پیش بروید و مسیر رشد محصول خود را بسازید.
           </p>
+        </div>
         </div>
 
         {/* View Switcher */}
@@ -133,7 +138,7 @@ export default function RoadmapPage() {
             className="space-y-6"
           >
             {/* Phase Selection Dropdown (Only for Kanban) */}
-            <div className="flex items-center gap-4 bg-background sticky top-0 z-20 py-2">
+            <div className="flex items-center gap-4 bg-background sticky top-0 z-20 py-2" data-tour-id="phases-container">
               <span className="text-sm font-medium text-muted-foreground">نمایش فاز:</span>
               <Select 
                 value={String(currentPhaseIndex)} 

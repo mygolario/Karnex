@@ -42,7 +42,10 @@ export function QuickAccessGrid({ projectType }: QuickAccessGridProps) {
                 whileHover={{ y: -4 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
              >
-                <Card className="p-4 h-full border-border/40 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all bg-card/50 backdrop-blur-sm relative overflow-hidden">
+                <Card 
+                  className="p-4 h-full border-border/40 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 transition-all bg-card/50 backdrop-blur-sm relative overflow-hidden"
+                  data-tour-id={item.label === "نقشه راه" ? "quick-roadmap" : item.label === "دستیار هوشمند" ? "quick-copilot" : undefined}
+                >
                     <div className={cn("absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity bg-gradient-to-br", item.color)} />
                     
                     <div className="flex flex-col items-center text-center gap-3">
