@@ -185,21 +185,12 @@ export function Footer() {
           </div>
           
           {/* Enamad */}
-          <div className="flex items-center justify-center bg-white rounded-lg p-2 max-w-[150px]">
-            <a 
-              referrerPolicy='origin' 
-              target='_blank' 
-              href='https://trustseal.enamad.ir/?id=696845&Code=LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4'
-            >
-              <img 
-                referrerPolicy='origin' 
-                src='https://trustseal.enamad.ir/logo.aspx?id=696845&Code=LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4' 
-                alt='' 
-                style={{ cursor: 'pointer' }}
-                {...{ code: 'LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4' } as any}
-              />
-            </a>
-          </div>
+          <div 
+            className="flex items-center justify-center bg-white rounded-lg p-2 max-w-[150px]"
+            dangerouslySetInnerHTML={{
+              __html: `<a referrerpolicy='origin' target='_blank' href='https://trustseal.enamad.ir/?id=696845&Code=LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4'><img referrerpolicy='origin' src='https://trustseal.enamad.ir/logo.aspx?id=696845&Code=LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4' alt='' style='cursor:pointer' code='LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4'></a>`
+            }}
+          />
         </div>
 
         {/* Bottom Bar */}
