@@ -190,12 +190,14 @@ export function Footer() {
               referrerPolicy='origin' 
               target='_blank' 
               href='https://trustseal.enamad.ir/?id=696845&Code=LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4'
+              className="flex items-center justify-center w-full h-full min-w-[80px] min-h-[80px]"
             >
               <img 
                 referrerPolicy='origin' 
                 src='https://trustseal.enamad.ir/logo.aspx?id=696845&Code=LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4' 
                 alt='' 
                 style={{ cursor: 'pointer' }}
+                className="w-auto h-auto"
                 {...{ code: 'LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4' } as any}
               />
             </a>
