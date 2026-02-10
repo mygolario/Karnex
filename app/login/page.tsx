@@ -98,11 +98,16 @@ export default function LoginPage() {
     setSuccess("");
 
     try {
-      await sendPasswordResetEmail(auth, resetEmail);
+      const actionCodeSettings = {
+        url: `${window.location.origin}/reset-password`,
+        handleCodeInApp: false,
+      };
+      await sendPasswordResetEmail(auth, resetEmail, actionCodeSettings);
       setSuccess("لینک بازیابی به ایمیل شما ارسال شد");
       setTimeout(() => setShowForgotPassword(false), 3000);
       setResetEmail("");
     } catch (err: any) {
+      console.error("Forgot Password Error:", err);
       if (err.code === "auth/user-not-found") {
         setError("کاربری با این ایمیل یافت نشد");
       } else {

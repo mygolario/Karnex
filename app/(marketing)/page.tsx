@@ -5,7 +5,7 @@ import { Footer } from "@/components/shared/footer";
 import { HeroSection } from "@/components/marketing/hero-section";
 import { FeaturesSection } from "@/components/marketing/features-section";
 import { HowItWorksSection } from "@/components/marketing/how-it-works-section";
-import { Testimonials } from "@/components/marketing/testimonials";
+
 import { PricingSection } from "@/components/marketing/pricing-section";
 import { FAQ } from "@/components/marketing/faq";
 import { CTASection } from "@/components/marketing/cta-section";
@@ -26,8 +26,7 @@ export default function MarketingPage() {
         {/* How It Works - 4 steps with connector lines */}
         <HowItWorksSection />
 
-        {/* Testimonials - Three pillars themed cards */}
-        <Testimonials />
+
 
         {/* Pricing - 4 plans with monthly/yearly toggle */}
         <PricingSection />

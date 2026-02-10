@@ -1,75 +1,103 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, DollarSign, Store } from "lucide-react";
+import { CheckCircle2, DollarSign, Store, TrendingUp, Users, AlertTriangle, ArrowRight } from "lucide-react";
 import { useLocation } from "./location-context";
+import { motion } from "framer-motion";
 
 export function LocationScore() {
   const { analysis } = useLocation();
 
   if (!analysis) return null;
 
+  // Safely access metrics with defaults
+  const metrics = analysis.metrics || {
+    footfallIndex: 'Medium',
+    spendPower: 'Medium',
+    riskRewardRatio: 50,
+    competitionDensity: 'Medium'
+  };
+
+  const getMetricColor = (val: string) => {
+    if (val === 'High') return 'text-emerald-500';
+    if (val === 'Medium') return 'text-amber-500';
+    return 'text-red-500';
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {/* Score Card */}
-      <Card className="p-4 bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/20">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center">
-            <CheckCircle2 size={20} />
-          </div>
-          <div>
-            <h3 className="font-bold text-emerald-700 dark:text-emerald-400">امتیاز مکان</h3>
-            <p className="text-xs text-muted-foreground">میزان تناسب با شغل شما</p>
-          </div>
-        </div>
-        <div className="text-3xl font-black text-emerald-600 dark:text-emerald-400 mb-1">
-          {analysis.score}<span className="text-sm font-normal text-muted-foreground">/۱۰</span>
-        </div>
-        <p className="text-sm text-emerald-700/80 dark:text-emerald-400/80 line-clamp-2">
-          {analysis.scoreReason}
-        </p>
-      </Card>
+    <div className="space-y-6">
+      {/* Key Metrics Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        
+        {/* Footfall */}
+        <Card className="p-4 bg-card/30 backdrop-blur border-white/5">
+            <div className="flex items-center gap-2 mb-2 text-muted-foreground">
+                <Users size={16} />
+                <span className="text-xs">پاخور (Footfall)</span>
+            </div>
+            <div className={`text-lg font-bold ${getMetricColor(metrics.footfallIndex)}`}>
+                {metrics.footfallIndex === 'High' ? 'بسیار بالا' : metrics.footfallIndex === 'Medium' ? 'متوسط' : 'کم'}
+            </div>
+        </Card>
 
-      {/* Economics Card */}
-      <Card className="p-4 bg-gradient-to-br from-violet-500/10 to-purple-500/10 border-violet-500/20">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-violet-500 text-white flex items-center justify-center">
-            <DollarSign size={20} />
-          </div>
-          <div>
-            <h3 className="font-bold text-violet-700 dark:text-violet-400">برآورد هزینه</h3>
-            <p className="text-xs text-muted-foreground">تخمین اجاره ماهانه</p>
-          </div>
-        </div>
-        <div className="text-2xl font-black text-violet-600 dark:text-violet-400 mb-1">
-          {analysis.rentEstimate}
-        </div>
-        <Badge variant="outline" className="mt-1 border-violet-500/30 text-violet-700 dark:text-violet-400 font-normal">
-            احتمال موفقیت: {analysis.successMatch?.label || 'بالا'}
-        </Badge>
-      </Card>
+        {/* Spend Power */}
+        <Card className="p-4 bg-card/30 backdrop-blur border-white/5">
+            <div className="flex items-center gap-2 mb-2 text-muted-foreground">
+                <DollarSign size={16} />
+                <span className="text-xs">قدرت خرید</span>
+            </div>
+            <div className={`text-lg font-bold ${getMetricColor(metrics.spendPower)}`}>
+                {metrics.spendPower === 'High' ? 'بالا' : metrics.spendPower === 'Medium' ? 'متوسط' : 'پایین'}
+            </div>
+        </Card>
 
-      {/* Competitors Card */}
-      <Card className="p-4 bg-gradient-to-br from-amber-500/10 to-orange-500/10 border-amber-500/20">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center">
-            <Store size={20} />
-          </div>
-          <div>
-            <h3 className="font-bold text-amber-700 dark:text-amber-400">تحلیل رقبا</h3>
-            <p className="text-xs text-muted-foreground">رقبای اصلی اطراف</p>
-          </div>
-        </div>
-        <div className="text-3xl font-black text-amber-600 dark:text-amber-400 mb-1">
-          {analysis.competitorsCount}<span className="text-sm font-normal text-muted-foreground"> رقیب</span>
-        </div>
-        <div className="flex flex-wrap gap-1 mt-1">
-          {analysis.nearbyCompetitors?.map((comp: string, i: number) => (
-            <span key={i} className="text-[10px] bg-amber-500/10 text-amber-800 dark:text-amber-300 px-1.5 py-0.5 rounded-md">
-              {comp}
-            </span>
-          ))}
-        </div>
-      </Card>
+        {/* Risk/Reward */}
+        <Card className="p-4 bg-card/30 backdrop-blur border-white/5 col-span-2 md:col-span-2">
+             <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                    <TrendingUp size={16} />
+                    <span className="text-xs">ریسک / پاداش</span>
+                </div>
+                <span className="text-xs font-mono text-white">{metrics.riskRewardRatio}%</span>
+            </div>
+            <div className="h-2 w-full bg-secondary/30 rounded-full overflow-hidden">
+                <div 
+                    className="h-full bg-gradient-to-r from-emerald-500 to-amber-500" 
+                    style={{ width: `${metrics.riskRewardRatio}%` }}
+                />
+            </div>
+        </Card>
+      </div>
+
+      {/* SWOT Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card className="p-5 border-l-4 border-l-emerald-500 bg-emerald-500/5">
+            <h4 className="font-bold text-emerald-600 mb-3 text-sm flex items-center gap-2">
+                <CheckCircle2 size={16} /> نقاط قوت (Strengths)
+            </h4>
+            <ul className="space-y-2">
+                {analysis.swot.strengths.slice(0, 3).map((s, i) => (
+                    <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
+                        <span className="mt-1.5 w-1 h-1 rounded-full bg-emerald-400 shrink-0" />
+                        {s}
+                    </li>
+                ))}
+            </ul>
+        </Card>
+
+         <Card className="p-5 border-l-4 border-l-red-500 bg-red-500/5">
+            <h4 className="font-bold text-red-600 mb-3 text-sm flex items-center gap-2">
+                <AlertTriangle size={16} /> نقاط ضعف (Weaknesses)
+            </h4>
+             <ul className="space-y-2">
+                {analysis.swot.weaknesses.slice(0, 3).map((s, i) => (
+                    <li key={i} className="text-xs text-muted-foreground flex items-start gap-2">
+                        <span className="mt-1.5 w-1 h-1 rounded-full bg-red-400 shrink-0" />
+                        {s}
+                    </li>
+                ))}
+            </ul>
+        </Card>
+      </div>
     </div>
   );
 }

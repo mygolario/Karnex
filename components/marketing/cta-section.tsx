@@ -98,41 +98,11 @@ export const CTASection = () => {
                   <ArrowLeft className="mr-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="/contact">
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="h-16 px-10 text-lg rounded-2xl border-2 border-white/30 text-white bg-white/10 hover:bg-white/20 backdrop-blur-sm font-bold"
-                >
-                  درخواست دمو
-                </Button>
-              </Link>
+
             </motion.div>
           </div>
           
-          {/* Trust indicators */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16"
-          >
-            {[
-              { icon: Rocket, label: "۲,۰۰۰+ کاربر فعال", color: "text-blue-400" },
-              { icon: Star, label: "۴.۹ امتیاز کاربران", color: "text-yellow-400" },
-              { icon: Shield, label: "امنیت بالا", color: "text-emerald-400" },
-              { icon: Clock, label: "پشتیبانی ۲۴/۷", color: "text-purple-400" },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className="flex flex-col items-center gap-2 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm"
-              >
-                <item.icon className={`w-6 h-6 ${item.color}`} />
-                <span className="text-sm text-gray-300 font-medium text-center">{item.label}</span>
-              </div>
-            ))}
-          </motion.div>
+
         </div>
       </div>
     </section>

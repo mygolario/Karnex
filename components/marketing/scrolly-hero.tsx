@@ -128,7 +128,7 @@ export function ScrollyHero() {
                {[
                   { icon: Rocket, title: "استارتاپ", color: "bg-blue-500" },
                   { icon: Store, title: "کسب‌وکار سنتی", color: "bg-emerald-500" },
-                  { icon: Video, title: "کریتور", color: "bg-purple-500" },
+                  { icon: Video, title: "تولید محتوا", color: "bg-purple-500" },
               ].map((item, i) => (
                   <motion.div 
                     key={i}

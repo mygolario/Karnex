@@ -7,7 +7,7 @@ const steps = [
   {
     number: "۱",
     title: "مسیرت رو انتخاب کن",
-    description: "استارتاپ، کسب‌وکار سنتی یا کریتور؟ بر اساس هدفت مسیر اختصاصی بگیر.",
+    description: "استارتاپ، کسب‌وکار سنتی یا تولید کننده محتوا؟ بر اساس هدفت مسیر اختصاصی بگیر.",
     color: "from-primary to-pink-600",
   },
   {
@@ -32,7 +32,7 @@ const steps = [
 
 export const HowItWorksSection = () => {
   return (
-    <section className="py-24 lg:py-32 relative overflow-hidden bg-muted/20">
+    <section id="how-it-works" className="py-24 lg:py-32 relative overflow-hidden bg-muted/20">
       {/* Background pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />
       

@@ -58,58 +58,94 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const analyzeLocation = async (city: string, address: string) => {
     setLoading(true);
     try {
+        // COMPLETE REDESIGN PHASE 2: "The Urban Strategist"
         const prompt = `
-        You are an expert Urban Planner and Real Estate Location Analyst for a "${activeProject?.projectType || 'store'}" business named "${activeProject?.projectName}" in Iran.
+        ROLE: Senior Retail Location Strategist & Investment Analyst.
         
-        Analyze this specific location:
+        CONTEXT:
+        You are advising a major investor who demands data-driven insights, not generic advice.
+        You have access to "REAL-TIME MAP DATA" (OSM) provided below.
+        
+        INPUT:
         City: ${city}
-        Address/Neighborhood: ${address}
-        Business Description: ${activeProject?.description || activeProject?.overview || 'A traditional business'}
-
-        Provide a detailed, realistic analysis in valid JSON format.
+        Address: ${address}
+        Project Type: "${activeProject?.projectType}"
+        Business Name: "${activeProject?.projectName}"
         
-        REQUIRED JSON STRUCTURE:
+        YOUR TASK:
+        Perform a Deep-Dive Feasibility Study.
+        
+        1.  **VERIFY:** Cross-reference the provided OSM data with your internal knowledge of the neighborhood's socioeconomic status.
+        2.  **ESTIMATE:** metrics like "Footfall", "Spend Power", and "Risk".
+        3.  **ANALYZE:** Why is this specific street good or bad? (e.g. "One-way street", "Hard to park", "Near Metro").
+        
+        OUTPUT FORMAT (JSON Persian):
         {
-          "score": number (0-10, e.g. 8.5),
-          "scoreReason": "string (short Persian summary)",
-          "population": "string (e.g. '45,000 نفر')",
-          "populationDesc": "string (Persian description of density/power)",
-          "competitorsCount": number,
-          "competitorsDesc": "string (Persian analysis of competition)",
-          "nearbyCompetitors": ["string (Real specific competitor name 1)", "string (Real specific competitor name 2)"],
-          "rentEstimate": "string (e.g. '۵۰ تا ۷۰ میلیون تومان')",
-          "successMatch": { "label": "string (High/Medium/Low - Persian)", "color": "hex" },
+          "locationConfidence": "High" | "Medium" | "Low",
+          "anchorLandmark": "string (Major traffic generator nearby)",
+          "score": number (0-10, strict evaluation),
+          "scoreReason": "string (Professional justification, max 2 sentences)",
+          
+          "metrics": {
+             "footfallIndex": "High" | "Medium" | "Low",
+             "spendPower": "High" | "Medium" | "Low" (Local disposable income),
+             "riskRewardRatio": number (0-100, where 100 is High Risk/High Reward),
+             "competitionDensity": "High" | "Medium" | "Low"
+          },
+
+          "population": "string (e.g. '15,000 in 1km radius')",
+          "populationDesc": "string (Demographic profile summary)",
+          
+          "competitorAnalysis": {
+            "saturationLevel": "Blue Ocean (Opportunity)" | "Red Ocean (Saturated)" | "Niche Market",
+            "marketGap": "string (What specific concept is missing?)",
+            "competitorCount": number,
+            "directCompetitors": [
+              { "name": "string", "distance": "string", "strength": "string", "weakness": "string" }
+            ]
+          },
+          
+          "rentEstimate": "string (Price range per meter or total monthly)",
+          "successMatch": { "label": "Excellent" | "Good" | "Risky", "color": "emerald" | "amber" | "red" },
+          
           "demographics": [
-            { "label": "string (Age group/Type)", "percent": number, "color": "string (hex or tailwind class)" },
-            { "label": "string", "percent": number, "color": "string" }
+            { "label": "Young Professionals (25-35)", "percent": number, "color": "#8884d8" },
+            { "label": "Families", "percent": number, "color": "#00C49F" },
+            { "label": "Students", "percent": number, "color": "#FFBB28" },
+            { "label": "Seniors", "percent": number, "color": "#FF8042" }
+            // Sum must be approx 100
           ],
+          
           "swot": {
             "strengths": ["string", "string"],
             "weaknesses": ["string", "string"],
             "opportunities": ["string", "string"],
             "threats": ["string", "string"]
           },
-          "aiInsight": "string (valuable Persian insight about this specific location)",
-          "peakHours": "string (e.g. '18:00 تا 21:00')",
-          "accessLevel": "string (e.g. 'Excellent', 'Good')",
-          "accessPoints": [
-            "string (Persian point 1, e.g. near metro)",
-            "string (Persian point 2)"
-          ],
-          "trafficWarning": "string (Persian traffic warning)",
+          
+          "aiInsight": "string (One 'Inside Scoop' tip a pro broker would know)",
           "recommendations": [
-            { "title": "string (e.g. Pricing)", "desc": "string (Persian advice)" },
-            { "title": "string (e.g. Marketing)", "desc": "string (Persian advice)" }
+             { "title": "string", "desc": "string" }
           ]
         }
-
-        ENSURE VALID JSON. NO MARKDOWN. NO COMMENTS.
+        
+        RULES:
+        - **Accurate OSM Data:** Use the provided list of places.
+        - **Realistic Scores:** Do not give 9/10 easily. Be critical.
+        - **Language:** Professional Persian (Business Farsi).
       `;
 
       const response = await fetch("/api/ai-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({
+          prompt,
+          action: 'analyze-location',
+          city,
+          address,
+          activeProject,
+          modelOverride: 'google/gemini-2.5-flash-lite' 
+        }),
       });
 
       if (!response.ok) throw new Error("Analysis failed");
@@ -117,12 +153,19 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
       
       let parsedData;
-      try {
-        const cleanJson = data.content.replace(/```json/g, '').replace(/```/g, '').trim();
-        parsedData = JSON.parse(cleanJson);
-      } catch (e) {
-        console.error("JSON Parse Error:", e);
-        throw new Error("Invalid AI response format");
+      
+      // FIX: Check if server already returned parsed analysis object (preferred)
+      if (data.analysis) {
+        parsedData = data.analysis;
+      } else {
+        // Fallback for parsing string content
+        try {
+            const cleanJson = data.content.replace(/```json/g, '').replace(/```/g, '').trim();
+            parsedData = JSON.parse(cleanJson);
+        } catch (e) {
+            console.error("JSON Parse Error:", e);
+            throw new Error("Invalid AI response format");
+        }
       }
 
       const analysisData: LocationAnalysis = {

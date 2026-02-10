@@ -206,7 +206,7 @@ export default function MediaKitPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <Card className="p-8 text-center max-w-md">
           <UserCheck size={64} className="mx-auto mb-4 text-muted-foreground/40" />
-          <h2 className="text-xl font-bold mb-2">مخصوص کریتورها</h2>
+          <h2 className="text-xl font-bold mb-2">مخصوص تولید کنندگان محتوا</h2>
           <p className="text-muted-foreground mb-4">این ابزار فقط برای پروژه‌های Creator فعال است.</p>
           <Link href="/dashboard/overview"><Button>بازگشت</Button></Link>
         </Card>

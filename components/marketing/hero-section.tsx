@@ -143,7 +143,7 @@ export const HeroSection = () => {
             مسیر اختصاصی برای{" "}
             <span className="text-startup font-bold">استارتاپ‌ها</span>،{" "}
             <span className="text-traditional font-bold">کسب‌وکارهای سنتی</span> و{" "}
-            <span className="text-creator font-bold">کریتورها</span>.
+            <span className="text-creator font-bold">تولید کنندگان محتوا</span>.
             <br className="hidden md:block" />
             از ایده تا اولین درآمد، ما کنارتونیم.
           </motion.p>
@@ -164,16 +164,7 @@ export const HeroSection = () => {
                 <ArrowLeft className="mr-2 h-5 w-5" />
               </Button>
             </Link>
-            <Link href="/#demo">
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="h-16 px-10 text-lg rounded-2xl border-2 border-border hover:border-primary/50 hover:bg-primary/5 transition-all font-bold"
-              >
-                <Play className="ml-2 h-5 w-5 fill-current" />
-                مشاهده دمو
-              </Button>
-            </Link>
+
           </motion.div>
 
           {/* Three Pillars Preview */}
@@ -197,30 +188,13 @@ export const HeroSection = () => {
             />
             <PillarCard 
               icon={Video} 
-              title="کریتور" 
+              title="تولید کننده محتوا" 
               color="bg-creator" 
               delay={0.9} 
             />
           </motion.div>
 
-          {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="flex flex-wrap justify-center gap-8 mt-16 pt-8 border-t border-border/50"
-          >
-            {[
-              { value: "۲,۰۰۰+", label: "کاربر فعال" },
-              { value: "۱۵,۰۰۰+", label: "پروژه ساخته شده" },
-              { value: "۹۸٪", label: "رضایت کاربران" },
-            ].map((stat, i) => (
-              <div key={i} className="text-center">
-                <div className="text-3xl md:text-4xl font-black text-foreground">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
-              </div>
-            ))}
-          </motion.div>
+
         </div>
       </div>
 

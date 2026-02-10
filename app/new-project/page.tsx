@@ -74,6 +74,10 @@ export default function NewProjectPage() {
     setIsGenerating(true);
     setError("");
     
+    // Create AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+
     try {
         const res = await fetch("/api/generate-plan", {
             method: "POST",
@@ -86,9 +90,15 @@ export default function NewProjectPage() {
                 audience: "General", 
                 budget: "Not specified" 
             }),
+            signal: controller.signal
         });
 
-        if (!res.ok) throw new Error("Failed to generate plan");
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(errorData.error || "Failed to generate plan");
+        }
 
         const data = await res.json();
         
@@ -101,15 +111,23 @@ export default function NewProjectPage() {
             genesisAnswers: answers,
         };
 
+        // Switch to "Building Empire" state
+        setIsGenerating(false);
+        setIsCreatingProject(true);
+
         // Directly create project and redirect
         await createNewProject(completePlan);
         router.push("/dashboard");
 
-    } catch (err) {
+    } catch (err: any) {
         console.error("Failed to generate", err);
-        setError("خطا در تولید استراتژی. لطفاً دوباره تلاش کنید.");
-    } finally {
+        if (err.name === 'AbortError') {
+            setError("زمان انتظار به پایان رسید. لطفاً دوباره تلاش کنید.");
+        } else {
+            setError(err.message || "خطا در تولید استراتژی. لطفاً دوباره تلاش کنید.");
+        }
         setIsGenerating(false);
+        setIsCreatingProject(false); 
     }
   };
 

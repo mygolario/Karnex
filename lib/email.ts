@@ -6,6 +6,7 @@ export type EmailTemplate =
   | 'verification' 
   | 'password_reset' 
   | 'subscription_success' 
+  | 'contact'
   | 'invoice';
 
 interface SendEmailParams {
@@ -14,9 +15,10 @@ interface SendEmailParams {
   templateName: EmailTemplate; // We can use this to select HTML templates later
   htmlContent: string; // Direct HTML for now, or use template IDs
   name?: string;
+  cc?: string; // Add optional CC field
 }
 
-export const sendEmail = async ({ to, subject, htmlContent, name }: SendEmailParams) => {
+export const sendEmail = async ({ to, subject, htmlContent, name, cc }: SendEmailParams) => {
   const apiKey = process.env.BREVO_API_KEY;
 
   if (!apiKey) {
@@ -38,6 +40,7 @@ export const sendEmail = async ({ to, subject, htmlContent, name }: SendEmailPar
           email: "support@karnex.ir"
         },
         to: [{ email: to, name: name || to }],
+        cc: cc ? [{ email: cc }] : undefined,
         subject: subject,
         htmlContent: htmlContent,
       })

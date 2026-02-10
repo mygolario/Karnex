@@ -17,50 +17,35 @@ export function CompetitorList() {
             پیشنهادات عملیاتی
           </h3>
           <div className="space-y-3">
-            {analysis.recommendations.map((rec, i) => (
+            {analysis.recommendations?.map((rec, i) => (
               <div key={i} className="bg-muted/30 p-3 rounded-lg border border-border/50">
                 <h4 className="font-bold text-sm text-primary mb-1">{rec.title}</h4>
                 <p className="text-xs text-muted-foreground leading-relaxed">{rec.desc}</p>
               </div>
             ))}
+            {(!analysis.recommendations || analysis.recommendations.length === 0) && (
+                <div className="p-4 text-center text-muted-foreground text-xs">هیچ پیشنهادی ثبت نشده است.</div>
+            )}
           </div>
         </div>
         
+        
         <div>
-          <h3 className="font-bold mb-4 flex items-center gap-2 text-sm">
-            <Car className="text-primary" size={18} />
-            وضعیت تردد و دسترسی
-          </h3>
-          <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
-                <span className="text-sm text-muted-foreground">ساعات پیک</span>
-                <span className="font-bold text-sm">{analysis.peakHours}</span>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
-                <span className="text-sm text-muted-foreground">وضعیت ترافیک</span>
-                <span className="font-bold text-sm text-amber-600">{analysis.trafficWarning || 'عادی'}</span>
-              </div>
-              <div className="p-3 bg-muted/20 rounded-lg">
-                <span className="text-sm text-muted-foreground block mb-2">نقاط دسترسی:</span>
-                <div className="flex flex-wrap gap-2">
-                  {analysis.accessPoints?.map((p, i) => (
-                    <Badge key={i} variant="outline" className="bg-background">{p}</Badge>
-                  ))}
-                </div>
-              </div>
-          </div>
-
-           <div className="mt-6">
+           {/* Traffic section removed as data is not available in LocationAnalysis interface */}
+           <div className="mt-0">
               <h3 className="font-bold mb-3 flex items-center gap-2 text-sm">
                <Store className="text-primary" size={18} />
                لیست رقبای شناسایی شده
               </h3>
               <div className="flex flex-wrap gap-2">
-                {analysis.nearbyCompetitors?.map((comp, i) => (
+                {analysis.competitorAnalysis?.directCompetitors?.map((comp, i) => (
                     <Badge key={i} variant="secondary" className="px-3 py-1 text-xs">
-                        {comp}
+                        {comp.name}
                     </Badge>
                 ))}
+                {(!analysis.competitorAnalysis?.directCompetitors || analysis.competitorAnalysis.directCompetitors.length === 0) && (
+                    <span className="text-xs text-muted-foreground">رقیب مستقیمی یافت نشد.</span>
+                )}
             </div>
            </div>
         </div>

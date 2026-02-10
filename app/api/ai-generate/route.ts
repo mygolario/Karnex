@@ -26,7 +26,99 @@ const CANVAS_GENERATION_PROMPT = `ایده: {businessIdea}
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { action, prompt, systemPrompt, maxTokens = 2000, businessIdea, projectName } = body;
+    const { action, prompt, systemPrompt, maxTokens = 2000, businessIdea, projectName, modelOverride, city, address, activeProject } = body;
+
+
+    // Handle Competitor Search (OSM Integration) - MOVED TO TOP to prevent generic handler from catching it
+    if (action === 'analyze-location') {
+       // 1. Geocode
+       const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address + ', ' + city + ', Iran')}&format=json&limit=1`;
+       const geoRes = await fetch(geoUrl, { headers: { 'User-Agent': 'Karnex-App/1.0' } });
+       const geoData = await geoRes.json();
+       
+       let osmData = "No real-time data available.";
+       
+       if (geoData && geoData.length > 0) {
+          const { lat, lon } = geoData[0];
+          
+          // 2. Identify Category to Search
+          // Simple mapping from projectType to OSM tags
+          let osmTag = 'amenity="cafe"'; // default
+          const type = activeProject?.projectType?.toLowerCase() || '';
+          if (type.includes('rest') || type.includes('food')) osmTag = 'amenity="restaurant"';
+          if (type.includes('cloth') || type.includes('fash')) osmTag = 'shop="clothes"';
+          if (type.includes('super') || type.includes('grocer')) osmTag = 'shop="supermarket"';
+          if (type.includes('tech') || type.includes('mobile')) osmTag = 'shop="mobile_phone"';
+          if (type.includes('beau') || type.includes('salon')) osmTag = 'shop="beauty"';
+
+          // 3. Overpass Query
+          const query = `
+            [out:json][timeout:25];
+            (
+              node[${osmTag}](around:500,${lat},${lon});
+              way[${osmTag}](around:500,${lat},${lon});
+              relation[${osmTag}](around:500,${lat},${lon});
+            );
+            out body;
+            >;
+            out skel qt;
+          `;
+          
+          try {
+              const overpassRes = await fetch("https://overpass-api.de/api/interpreter", {
+                  method: "POST",
+                  body: query
+              });
+              const overpassJson = await overpassRes.json();
+              if (overpassJson.elements) {
+                  const places = overpassJson.elements
+                    .filter((el: any) => el.tags?.name || el.tags?.['name:fa'])
+                    .slice(0, 8)
+                    .map((el: any) => `- ${el.tags['name:fa'] || el.tags.name} (${el.tags.amenity || el.tags.shop})`);
+                  
+                  if (places.length > 0) {
+                      osmData = `REAL-TIME MAP DATA (VERIFIED): \n${places.join('\n')}`;
+                  }
+              }
+          } catch (e) {
+              console.error("OSM Fetch Error:", e);
+          }
+       }
+
+       const enhancedPrompt = `
+       ${prompt}
+       
+       [IMPORTANT]
+       I have fetched REAL-TIME DATA from OpenStreetMap for this location:
+       ${osmData}
+       
+       INSTRUCTIONS:
+       1. If the Real-Time Data lists specific names, USE THEM in the "directCompetitors" array.
+       2. If the data is empty, fall back to your internal knowledge but be very conservative.
+       `;
+       
+       const result = await callOpenRouter(enhancedPrompt, {
+          systemPrompt: 'You are a GIS Analyst. Use the provided Real-Time OSM Data if available.',
+          maxTokens: 3000,
+          temperature: 0.4, // Lower temperature for fact-based results
+          modelOverride: modelOverride || 'google/gemini-2.5-flash-lite'
+       });
+       
+        if (!result.success) {
+          return NextResponse.json({ error: result.error }, { status: 503 });
+        }
+    
+        try {
+            let content = result.content!;
+            if (content.includes("```json")) {
+                content = content.split("```json")[1].split("```")[0].trim();
+            }
+            const json = JSON.parse(content);
+            return NextResponse.json({ success: true, analysis: json });
+        } catch (e) {
+            return NextResponse.json({ error: 'Failed to parse location analysis' }, { status: 500 });
+        }
+    }
 
     // Handle full canvas generation
     if (action === 'generate-full-canvas') {
@@ -42,6 +134,7 @@ export async function POST(req: Request) {
         systemPrompt: 'تو متخصص کسب‌وکار هستی. فقط JSON فارسی خروجی بده.',
         maxTokens: 2000,
         temperature: 0.5,
+        modelOverride
       });
 
       if (!result.success) {
@@ -239,6 +332,7 @@ export async function POST(req: Request) {
       systemPrompt: systemPrompt || 'فقط به فارسی پاسخ بده.',
       maxTokens,
       temperature: 0.5,
+      modelOverride,
     });
 
     if (!result.success) {
@@ -250,6 +344,8 @@ export async function POST(req: Request) {
       model: result.model,
       content: result.content,
     });
+
+
 
   } catch (error) {
     console.error("AI Generate Error:", error);

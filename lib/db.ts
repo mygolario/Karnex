@@ -435,16 +435,43 @@ export interface LocationAnalysis {
   id?: string;
   city: string;
   address: string;
+  
+  // Core Metrics
   score: number;
   scoreReason: string;
-  population: string;
-  populationDesc: string;
-  competitorsCount: number;
-  competitorsDesc: string;
-  nearbyCompetitors: string[];
+  locationConfidence?: string;
+  anchorLandmark?: string;
+  
+  metrics?: {
+    footfallIndex: "High" | "Medium" | "Low";
+    spendPower: "High" | "Medium" | "Low";
+    riskRewardRatio: number;
+    competitionDensity: "High" | "Medium" | "Low";
+  };
+
+  // Demographics
+  population?: string;
+  populationDesc?: string;
+  demographics: Array<{ label: string; percent: number; color: string }>;
+
+  // Market & Competitors
+  competitorAnalysis?: {
+    saturationLevel?: string;
+    marketGap?: string;
+    competitorCount?: number;
+    directCompetitors?: Array<{
+        name: string;
+        distance: string;
+        strength: string;
+        weakness: string;
+    }>;
+  };
+
+  // Financials
   rentEstimate: string;
   successMatch: { label: string; color: string };
-  demographics: { label: string; percent: number; color: string }[];
+
+  // Strategy
   swot: {
     strengths: string[];
     weaknesses: string[];
@@ -452,11 +479,8 @@ export interface LocationAnalysis {
     threats: string[];
   };
   aiInsight: string;
-  peakHours: string;
-  accessLevel: string;
-  accessPoints: string[];
-  trafficWarning: string;
-  recommendations: { title: string; desc: string }[];
+  recommendations?: Array<{ title: string; desc: string }>;
+  
   createdAt: string;
 }
 

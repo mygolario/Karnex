@@ -63,7 +63,7 @@ export const StripeHero = () => {
               با تکنولوژی <strong className="text-foreground">Genesis</strong>، مسیر اختصاصی خود را بسازید. 
               ابزارهای تخصصی برای <span className="text-foreground border-b-2 border-primary/20">استارتاپ‌ها</span>،{" "}
               <span className="text-foreground border-b-2 border-emerald-500/20">کسب‌وکارهای سنتی</span> و{" "}
-              <span className="text-foreground border-b-2 border-pink-500/20">کریتورها</span>.
+              <span className="text-foreground border-b-2 border-pink-500/20">تولید کنندگان محتوا</span>.
             </motion.p>
 
             {/* CTAs */}
@@ -156,7 +156,7 @@ export const StripeHero = () => {
                         <div className="w-10 h-10 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center mb-3">
                             <Video size={20} />
                         </div>
-                        <h4 className="font-bold text-sm">کریتور</h4>
+                        <h4 className="font-bold text-sm">تولید محتوا</h4>
                         <div className="mt-2 h-1.5 w-12 bg-pink-100 rounded-full" />
                     </div>
                 </div>
