@@ -72,7 +72,7 @@ export async function POST(req: Request) {
     }
 
     const id = await saveToMediaLibrary(userId, {
-      imageUrl,
+      url: imageUrl,
       prompt,
       category,
       subcategory,

@@ -4,21 +4,7 @@
  * Manages user subscriptions, feature access, and billing.
  */
 
-import { 
-  getFirestore, 
-  doc, 
-  getDoc, 
-  setDoc, 
-  updateDoc,
-  collection,
-  query,
-  where,
-  orderBy,
-  limit,
-  getDocs,
-  Timestamp
-} from 'firebase/firestore';
-import { app } from '@/lib/firebase';
+import { createClient } from '@/lib/supabase';
 import { 
   Subscription, 
   SubscriptionStatus, 
@@ -32,35 +18,41 @@ import {
 } from '../payment/types';
 import { getPlanById } from '../payment/pricing';
 
-const db = getFirestore(app);
-
 // === Subscription Management ===
 
 /**
  * Get user's current subscription
  */
 export async function getUserSubscription(userId: string): Promise<Subscription | null> {
+  const supabase = createClient();
   try {
-    const subscriptionRef = doc(db, 'subscriptions', userId);
-    const subscriptionDoc = await getDoc(subscriptionRef);
+    const { data, error } = await supabase
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
     
-    if (!subscriptionDoc.exists()) {
+    if (error) {
+       console.error('Error getting subscription:', error);
+       return null;
+    }
+    
+    if (!data) {
       return null;
     }
     
-    const data = subscriptionDoc.data();
     return {
-      id: subscriptionDoc.id,
-      userId,
-      planId: data.planId,
+      id: data.id,
+      userId: data.user_id,
+      planId: data.plan_id,
       tier: data.tier as PlanTier,
       status: data.status as SubscriptionStatus,
-      billingCycle: data.billingCycle as BillingCycle,
-      currentPeriodStart: data.currentPeriodStart?.toDate() || new Date(),
-      currentPeriodEnd: data.currentPeriodEnd?.toDate() || new Date(),
-      cancelAtPeriodEnd: data.cancelAtPeriodEnd || false,
-      createdAt: data.createdAt?.toDate() || new Date(),
-      updatedAt: data.updatedAt?.toDate() || new Date(),
+      billingCycle: data.billing_cycle as BillingCycle,
+      currentPeriodStart: new Date(data.current_period_start),
+      currentPeriodEnd: new Date(data.current_period_end),
+      cancelAtPeriodEnd: data.cancel_at_period_end || false,
+      createdAt: new Date(data.created_at),
+      updatedAt: new Date(data.updated_at),
     };
   } catch (error) {
     console.error('Error getting subscription:', error);
@@ -89,6 +81,7 @@ export async function createSubscription(
   planId: string,
   billingCycle: BillingCycle
 ): Promise<Subscription> {
+  const supabase = createClient();
   const plan = getPlanById(planId);
   if (!plan) {
     throw new Error(`Plan not found: ${planId}`);
@@ -103,7 +96,39 @@ export async function createSubscription(
     periodEnd.setFullYear(periodEnd.getFullYear() + 1);
   }
   
-  const subscription: Omit<Subscription, 'id'> = {
+  const subscriptionData = {
+    user_id: userId,
+    plan_id: planId,
+    tier: plan.tier,
+    status: 'active',
+    billing_cycle: billingCycle,
+    current_period_start: now.toISOString(),
+    current_period_end: periodEnd.toISOString(),
+    cancel_at_period_end: false,
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
+  };
+
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .upsert(subscriptionData, { onConflict: 'user_id' })
+    .select()
+    .single();
+
+  if (error) throw error;
+  
+  // Also update user profile for quick access if needed (optional since we query subscriptions table)
+  // But let's keep it if other parts of the app rely on profile.subscription
+  await supabase.from('profiles').update({
+     subscription: {
+        planId: planId,
+        status: 'active',
+        autoRenew: true
+     }
+  }).eq('id', userId);
+  
+  return {
+    id: data.id,
     userId,
     planId,
     tier: plan.tier,
@@ -115,25 +140,6 @@ export async function createSubscription(
     createdAt: now,
     updatedAt: now,
   };
-  
-  const subscriptionRef = doc(db, 'subscriptions', userId);
-  await setDoc(subscriptionRef, {
-    ...subscription,
-    currentPeriodStart: Timestamp.fromDate(now),
-    currentPeriodEnd: Timestamp.fromDate(periodEnd),
-    createdAt: Timestamp.fromDate(now),
-    updatedAt: Timestamp.fromDate(now),
-  });
-  
-  // Also update user document for quick access
-  const userRef = doc(db, 'users', userId);
-  await setDoc(userRef, {
-    subscriptionStatus: plan.tier,
-    subscriptionDate: Timestamp.fromDate(now),
-    planId,
-  }, { merge: true });
-  
-  return { id: userId, ...subscription };
 }
 
 /**
@@ -143,11 +149,24 @@ export async function updateSubscription(
   userId: string,
   updates: SubscriptionUpdate
 ): Promise<void> {
-  const subscriptionRef = doc(db, 'subscriptions', userId);
-  await updateDoc(subscriptionRef, {
-    ...updates,
-    updatedAt: Timestamp.now(),
-  });
+  const supabase = createClient();
+  
+  const dbUpdates: any = {
+      updated_at: new Date().toISOString()
+  };
+
+  if (updates.status) dbUpdates.status = updates.status;
+  if (updates.cancelAtPeriodEnd !== undefined) dbUpdates.cancel_at_period_end = updates.cancelAtPeriodEnd;
+  if (updates.currentPeriodEnd) dbUpdates.current_period_end = updates.currentPeriodEnd.toISOString();
+  if (updates.planId) dbUpdates.plan_id = updates.planId;
+  // Add other mappings as needed
+
+  const { error } = await supabase
+    .from('subscriptions')
+    .update(dbUpdates)
+    .eq('user_id', userId);
+
+  if (error) throw error;
 }
 
 /**
@@ -222,15 +241,30 @@ export async function getFeatureLimit(
 export async function recordTransaction(
   transaction: Omit<Transaction, 'id' | 'createdAt'>
 ): Promise<string> {
-  const transactionsRef = collection(db, 'transactions');
-  const newTransactionRef = doc(transactionsRef);
+  const supabase = createClient();
   
-  await setDoc(newTransactionRef, {
-    ...transaction,
-    createdAt: Timestamp.now(),
-  });
-  
-  return newTransactionRef.id;
+  const { data, error } = await supabase
+    .from('transactions')
+    .insert({
+      user_id: transaction.userId,
+      plan_id: transaction.planId,
+      subscription_id: transaction.subscriptionId,
+      amount: transaction.amount,
+      currency: transaction.currency,
+      status: transaction.status,
+      gateway: transaction.gateway,
+      card_pan: transaction.cardPan,
+      ref_id: transaction.refId,
+      description: transaction.description,
+      metadata: transaction.metadata,
+      created_at: new Date().toISOString(),
+      completed_at: transaction.completedAt ? transaction.completedAt.toISOString() : null
+    })
+    .select('id')
+    .single();
+
+  if (error) throw error;
+  return data.id;
 }
 
 /**
@@ -241,21 +275,28 @@ export async function updateTransactionStatus(
   status: TransactionStatus,
   additionalData?: Partial<Transaction>
 ): Promise<void> {
-  const transactionRef = doc(db, 'transactions', transactionId);
+  const supabase = createClient();
   
-  const updates: Record<string, unknown> = { status };
+  const updates: any = { status };
   
   if (status === 'completed') {
-    updates.completedAt = Timestamp.now();
+    updates.completed_at = new Date().toISOString();
   } else if (status === 'refunded') {
-    updates.refundedAt = Timestamp.now();
+    updates.refunded_at = new Date().toISOString();
   }
   
   if (additionalData) {
-    Object.assign(updates, additionalData);
+     if (additionalData.refId) updates.ref_id = additionalData.refId;
+     if (additionalData.metadata) updates.metadata = additionalData.metadata;
+     // map other fields if needed
   }
   
-  await updateDoc(transactionRef, updates);
+  const { error } = await supabase
+    .from('transactions')
+    .update(updates)
+    .eq('id', transactionId);
+
+  if (error) throw error;
 }
 
 /**
@@ -265,35 +306,34 @@ export async function getUserTransactions(
   userId: string,
   limitCount = 10
 ): Promise<Transaction[]> {
-  const transactionsRef = collection(db, 'transactions');
-  const q = query(
-    transactionsRef,
-    where('userId', '==', userId),
-    orderBy('createdAt', 'desc'),
-    limit(limitCount)
-  );
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(limitCount);
   
-  const snapshot = await getDocs(q);
+  if (error) {
+    console.error('Error fetching transactions:', error);
+    return [];
+  }
   
-  return snapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      userId: data.userId,
-      planId: data.planId,
-      subscriptionId: data.subscriptionId,
-      amount: data.amount,
-      currency: data.currency,
-      status: data.status,
-      gateway: data.gateway,
-      gatewayRef: data.gatewayRef,
-      refId: data.refId,
-      cardPan: data.cardPan,
-      description: data.description,
-      metadata: data.metadata,
-      createdAt: data.createdAt?.toDate() || new Date(),
-      completedAt: data.completedAt?.toDate(),
-      refundedAt: data.refundedAt?.toDate(),
-    } as Transaction;
-  });
+  return data.map((t: any) => ({
+    id: t.id,
+    userId: t.user_id,
+    planId: t.plan_id,
+    subscriptionId: t.subscription_id,
+    amount: t.amount,
+    currency: t.currency,
+    status: t.status,
+    gateway: t.gateway,
+    refId: t.ref_id,
+    cardPan: t.card_pan,
+    description: t.description,
+    metadata: t.metadata,
+    createdAt: new Date(t.created_at),
+    completedAt: t.completed_at ? new Date(t.completed_at) : undefined,
+    refundedAt: t.refunded_at ? new Date(t.refunded_at) : undefined,
+  })) as Transaction[];
 }

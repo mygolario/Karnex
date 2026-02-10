@@ -4,12 +4,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, sendPasswordResetEmail } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
-  Rocket, 
   Mail, 
   Lock, 
   Eye, 
@@ -18,8 +16,7 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  X,
-  Sparkles
+  X
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -35,6 +32,8 @@ export default function LoginPage() {
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
 
+  const supabase = createClient();
+
   // Clear error when input changes
   useEffect(() => {
     if (error) setError("");
@@ -46,20 +45,25 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
       router.push("/dashboard/overview");
+      router.refresh(); // Refresh to update server components/middleware
     } catch (err: any) {
       console.error("Login Error:", err);
-      if (err.code === "auth/user-not-found" || err.code === "auth/invalid-credential") {
+      if (err.message === "Invalid login credentials") {
         setError("اطلاعات ورود اشتباه است");
-      } else if (err.code === "auth/wrong-password") {
-        setError("رمز عبور اشتباه است");
-      } else if (err.code === "auth/invalid-email") {
-        setError("فرمت ایمیل نامعتبر است");
-      } else if (err.code === "auth/too-many-requests") {
-        setError("تعداد تلاش زیاد. لطفاً کمی صبر کنید");
+      } else if (err.message.includes("Email not confirmed")) {
+        setError("لطفاً ایمیل خود را تأیید کنید");
       } else {
-        setError("خطا در ورود. لطفاً اتصال اینترنت خود را بررسی کنید");
+        setError("خطا در ورود. لطفاً دوباره تلاش کنید");
       }
     } finally {
       setLoading(false);
@@ -71,22 +75,18 @@ export default function LoginPage() {
     setLoading(true);
     
     try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({
-        prompt: 'select_account'
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
-      await signInWithPopup(auth, provider);
-      router.push("/dashboard/overview");
+
+      if (error) throw error;
+      // Redirect happens automatically
     } catch (err: any) {
       console.error("Google Login Error:", err);
-      if (err.code === "auth/popup-closed-by-user") {
-        // User closed popup, no error needed
-      } else if (err.code === "auth/cancelled-popup-request") {
-        // Ignore
-      } else {
-        setError("خطا در ورود با گوگل. لطفاً دوباره تلاش کنید");
-      }
-    } finally {
+      setError("خطا در ورود با گوگل. لطفاً دوباره تلاش کنید");
       setLoading(false);
     }
   };
@@ -98,21 +98,18 @@ export default function LoginPage() {
     setSuccess("");
 
     try {
-      const actionCodeSettings = {
-        url: `${window.location.origin}/reset-password`,
-        handleCodeInApp: false,
-      };
-      await sendPasswordResetEmail(auth, resetEmail, actionCodeSettings);
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
       setSuccess("لینک بازیابی به ایمیل شما ارسال شد");
       setTimeout(() => setShowForgotPassword(false), 3000);
       setResetEmail("");
     } catch (err: any) {
       console.error("Forgot Password Error:", err);
-      if (err.code === "auth/user-not-found") {
-        setError("کاربری با این ایمیل یافت نشد");
-      } else {
-        setError("خطا در ارسال ایمیل. لطفاً دوباره تلاش کنید");
-      }
+      setError("خطا در ارسال ایمیل. لطفاً دوباره تلاش کنید");
     } finally {
       setResetLoading(false);
     }

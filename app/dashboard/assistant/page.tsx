@@ -36,7 +36,7 @@ const promptTemplates = [
 ];
 
 export default function AssistantPage() {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const { activeProject: plan, updateActiveProject } = useProject();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -298,7 +298,7 @@ export default function AssistantPage() {
       {/* Sidebar - Missions & Insights (Hidden on mobile) */}
       <aside className="hidden lg:flex flex-col w-80 shrink-0 gap-4 overflow-y-auto no-scrollbar pb-10">
         <DailyGreeting
-          userName={user?.displayName || "کاربر"}
+          userName={userProfile?.full_name || "کاربر"}
           projectName={plan?.projectName}
           streak={streak}
           totalXp={totalXp}

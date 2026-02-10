@@ -59,9 +59,9 @@ export function useSubscription(): UseSubscriptionReturn {
       setError(null);
       
       const [sub, userTier, userFeatures] = await Promise.all([
-        getUserSubscription(user.uid),
-        getUserTier(user.uid),
-        getUserFeatures(user.uid),
+        getUserSubscription(user.id),
+        getUserTier(user.id),
+        getUserFeatures(user.id),
       ]);
       
       setSubscription(sub);

@@ -50,7 +50,7 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
     const refreshProfile = async () => {
         if (!user) return;
         try {
-            const data = await getGamificationProfile(user.uid);
+            const data = await getGamificationProfile(user.id);
             setProfile(data);
         } catch (err) {
             console.error("Failed to load gamification profile", err);
@@ -68,7 +68,7 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
         // Play sound? (Optional)
 
         try {
-            const result = await addGamificationXp(user.uid, amount, reason);
+            const result = await addGamificationXp(user.id, amount, reason);
 
             if (result) {
                 setProfile(prev => prev ? {

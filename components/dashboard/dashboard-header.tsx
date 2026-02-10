@@ -9,8 +9,6 @@ import { ThemeToggle } from "@/components/shared/theme-toggle";
 // import { CommandMenu } from "@/components/dashboard/command-menu";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +16,7 @@ import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { cn } from "@/lib/utils";
 
 export function DashboardHeader() {
-  const { user } = useAuth();
+  const { user, signOut, userProfile } = useAuth();
   const { activeProject } = useProject();
   const router = useRouter();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -36,7 +34,7 @@ export function DashboardHeader() {
   }, []);
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await signOut();
     router.push('/');
   };
 
@@ -94,15 +92,15 @@ export function DashboardHeader() {
             className="flex items-center gap-2 p-1.5 pr-3 rounded-xl hover:bg-muted/80 transition-all duration-200 group"
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-primary/20">
-              {user?.photoURL ? (
-                <img src={user.photoURL} alt="" className="w-full h-full rounded-xl object-cover" />
+              {(userProfile?.avatar_url || user?.user_metadata?.avatar_url) ? (
+                <img src={userProfile?.avatar_url || user?.user_metadata?.avatar_url} alt="" className="w-full h-full rounded-xl object-cover" />
               ) : (
-                user?.displayName?.[0] || "U"
+                (userProfile?.full_name?.[0] || user?.user_metadata?.full_name?.[0] || "U")
               )}
             </div>
             <div className="hidden md:block text-right">
               <p className="text-sm font-semibold text-foreground leading-tight">
-                {user?.displayName || "کاربر"}
+                {userProfile?.full_name || user?.user_metadata?.full_name || "کاربر"}
               </p>
               <div className="flex items-center gap-1">
                 <Crown size={10} className="text-yellow-500" />
@@ -125,15 +123,15 @@ export function DashboardHeader() {
                 <div className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 border-b border-border">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-lg font-bold shadow-lg shadow-primary/20">
-                      {user?.photoURL ? (
-                        <img src={user.photoURL} alt="" className="w-full h-full rounded-2xl object-cover" />
+                      {(userProfile?.avatar_url || user?.user_metadata?.avatar_url) ? (
+                        <img src={userProfile?.avatar_url || user?.user_metadata?.avatar_url} alt="" className="w-full h-full rounded-2xl object-cover" />
                       ) : (
-                        user?.displayName?.[0] || "U"
+                        (userProfile?.full_name?.[0] || user?.user_metadata?.full_name?.[0] || "U")
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-foreground truncate">
-                        {user?.displayName || "کاربر"}
+                        {userProfile?.full_name || user?.user_metadata?.full_name || "کاربر"}
                       </p>
                       <p className="text-xs text-muted-foreground truncate">
                         {user?.email || "ایمیل ثبت نشده"}

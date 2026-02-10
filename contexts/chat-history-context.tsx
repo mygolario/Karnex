@@ -2,8 +2,7 @@
 
 import { useState, useEffect, createContext, useContext } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { collection, addDoc, getDocs, query, orderBy, limit, doc, deleteDoc } from "firebase/firestore";
-import { db, appId } from "@/lib/firebase";
+import { createClient } from "@/lib/supabase";
 
 export interface ChatMessage {
   id?: string;
@@ -44,6 +43,7 @@ export function ChatHistoryProvider({ children }: { children: React.ReactNode })
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [loading, setLoading] = useState(true);
+  const supabase = createClient();
 
   // Load sessions on mount
   useEffect(() => {
@@ -60,13 +60,21 @@ export function ChatHistoryProvider({ children }: { children: React.ReactNode })
     if (!user) return;
     setLoading(true);
     try {
-      const colRef = collection(db, "artifacts", appId, "users", user.uid, "chats");
-      const q = query(colRef, orderBy("updatedAt", "desc"), limit(20));
-      const snap = await getDocs(q);
+      const { data, error } = await supabase
+        .from('chat_sessions')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
       
-      const loadedSessions = snap.docs.map(d => ({
+      const loadedSessions = data.map((d: any) => ({
         id: d.id,
-        ...(d.data() as any)
+        title: d.title,
+        messages: d.messages || [],
+        createdAt: d.created_at,
+        updatedAt: d.updated_at
       })) as ChatSession[];
       
       setSessions(loadedSessions);
@@ -97,25 +105,48 @@ export function ChatHistoryProvider({ children }: { children: React.ReactNode })
     };
 
     if (currentSession) {
+      const updatedMessages = [...currentSession.messages, message];
       const updatedSession = {
         ...currentSession,
-        messages: [...currentSession.messages, message],
+        messages: updatedMessages,
         updatedAt: new Date().toISOString()
       };
+      
       setCurrentSession(updatedSession);
 
-      // Save to Firestore
+      // Save to Supabase
       try {
         if (currentSession.id) {
           // Update existing
-          // For simplicity, we'll just track locally for now
-          // Full implementation would use updateDoc
+           await supabase
+            .from('chat_sessions')
+            .update({
+              messages: updatedMessages,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', currentSession.id);
+            
+            // Update local sessions list to reflect change
+            setSessions(prev => prev.map(s => s.id === currentSession.id ? updatedSession : s));
         } else {
           // Create new
-          const colRef = collection(db, "artifacts", appId, "users", user.uid, "chats");
-          const docRef = await addDoc(colRef, updatedSession);
-          setCurrentSession({ ...updatedSession, id: docRef.id });
-          await refreshSessions();
+          const { data, error } = await supabase
+            .from('chat_sessions')
+            .insert({
+              user_id: user.id,
+              title: updatedSession.title,
+              messages: updatedMessages,
+              created_at: updatedSession.createdAt,
+              updated_at: updatedSession.updatedAt
+            })
+            .select('id')
+            .single();
+            
+          if (error) throw error;
+          
+          const newSessionWithId = { ...updatedSession, id: data.id };
+          setCurrentSession(newSessionWithId);
+          setSessions(prev => [newSessionWithId, ...prev]);
         }
       } catch (error) {
         console.error("Error saving chat:", error);
@@ -133,8 +164,14 @@ export function ChatHistoryProvider({ children }: { children: React.ReactNode })
   const deleteSession = async (sessionId: string) => {
     if (!user) return;
     try {
-      const docRef = doc(db, "artifacts", appId, "users", user.uid, "chats", sessionId);
-      await deleteDoc(docRef);
+      const { error } = await supabase
+        .from('chat_sessions')
+        .delete()
+        .eq('id', sessionId)
+        .eq('user_id', user.id); // Ensure ownership
+
+      if (error) throw error;
+
       setSessions(prev => prev.filter(s => s.id !== sessionId));
       if (currentSession?.id === sessionId) {
         setCurrentSession(null);

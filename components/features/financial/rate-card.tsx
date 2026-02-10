@@ -48,7 +48,7 @@ export function RateCardCalculator() {
     if (!user || !plan) return;
     try {
         const dataToSave = { ...data, lastUpdated: new Date().toISOString() };
-        await saveFinancials(user.uid, 'rateCard', dataToSave, plan.id || 'current');
+        await saveFinancials(user.id, 'rateCard', dataToSave, plan.id || 'current');
         updateActiveProject({ financials: { ...plan.financials, rateCard: dataToSave } });
         toast.success("تعرفه‌ها ذخیره شد");
     } catch (err) {

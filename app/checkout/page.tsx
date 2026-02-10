@@ -22,7 +22,7 @@ import { BillingCycle } from "@/lib/payment/types";
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, loading: authLoading } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuth();
   
   const planId = searchParams.get("planId") || "";
   const cycle = (searchParams.get("cycle") || "monthly") as BillingCycle;
@@ -72,7 +72,7 @@ function CheckoutContent() {
         amount,
         currency: "IRR",
         planId: plan.id,
-        userId: user.uid,
+        userId: user.id,
         userEmail: user.email || undefined,
         returnUrl: `${window.location.origin}/dashboard?upgrade=success`,
         callbackUrl: `${window.location.origin}/api/payment/callback`,
@@ -156,11 +156,11 @@ function CheckoutContent() {
                   <div className="flex items-center gap-3 bg-muted/30 rounded-lg p-3">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                       <span className="font-bold text-primary">
-                        {user.displayName?.[0] || user.email?.[0] || "U"}
+                        {user.email?.[0]?.toUpperCase() || "U"}
                       </span>
                     </div>
                     <div>
-                      <div className="font-medium text-foreground">{user.displayName || "کاربر"}</div>
+                      <div className="font-medium text-foreground">{userProfile?.full_name || "کاربر"}</div>
                       <div className="text-sm text-muted-foreground">{user.email}</div>
                     </div>
                   </div>

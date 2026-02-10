@@ -54,7 +54,7 @@ export function CapTableManager() {
     if (!user || !plan) return;
     try {
         const dataToSave = { ...data, lastUpdated: new Date().toISOString() };
-        await saveOperations(user.uid, 'capTable', dataToSave, plan.id || 'current');
+        await saveOperations(user.id, 'capTable', dataToSave, plan.id || 'current');
         updateActiveProject({ operations: { ...plan.operations, capTable: dataToSave } });
         toast.success("جدول سهام ذخیره شد");
     } catch (err) {

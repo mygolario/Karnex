@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useProject } from "@/contexts/project-context";
+import { useAuth } from "@/contexts/auth-context";
 import { MediaKit, saveMediaKit } from "@/lib/db";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
@@ -64,6 +65,7 @@ const DEFAULT_MEDIA_KIT: MediaKit = {
 };
 
 export default function MediaKitPage() {
+  const { user } = useAuth();
   const { activeProject: plan, updateActiveProject } = useProject();
   const [data, setData] = useState<MediaKit>(DEFAULT_MEDIA_KIT);
   const [isSaving, setIsSaving] = useState(false);
@@ -98,7 +100,9 @@ export default function MediaKitPage() {
       
       // Explicitly save to ensure specific collection update if needed (context does plan update, this is specific field)
       // Actually context is enough if it saves the whole plan, but for safety with sub-collections:
-      await saveMediaKit(plan.id || (plan.projectName === "Demo Project" ? "demo" : ""), data, plan.id);
+      if (plan.id && user) {
+        await saveMediaKit(user.id, data, plan.id);
+      }
       
       toast.success("مدیاکیت ذخیره شد");
     } catch (e) {

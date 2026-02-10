@@ -56,7 +56,7 @@ export function PermitManager() {
     
     // Auto-save debounced or immediate
     try {
-      await savePermits(user.uid, updatedPermits, activeProject.id);
+      await savePermits(user.id, updatedPermits, activeProject.id);
       updateActiveProject({ permits: updatedPermits });
     } catch (err) {
       console.error(err);

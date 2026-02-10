@@ -14,11 +14,9 @@ import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, userProfile, signOut } = useAuth();
   const { activeProject, refreshProjects } = useProject();
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -30,7 +28,7 @@ export default function SettingsPage() {
     
     setIsDeleting(true);
     try {
-      await deleteProject(user.uid, activeProject.id);
+      await deleteProject(user.id, activeProject.id); // Use user.id
       if (refreshProjects) await refreshProjects();
       router.push('/projects');
     } catch (error) {
@@ -43,7 +41,7 @@ export default function SettingsPage() {
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    await signOut();
     router.push('/');
   };
 
@@ -77,8 +75,8 @@ export default function SettingsPage() {
           
           <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
             <div className="w-28 h-28 bg-gradient-to-br from-primary to-purple-600 rounded-[2rem] flex items-center justify-center text-white shadow-2xl shadow-primary/30 ring-4 ring-background transform group-hover:scale-105 transition-transform duration-500">
-              {user?.photoURL ? (
-                <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-[2rem] object-cover" />
+              {userProfile?.avatar_url ? (
+                <img src={userProfile.avatar_url} alt="Profile" className="w-full h-full rounded-[2rem] object-cover" />
               ) : (
                 <User size={48} />
               )}
@@ -87,7 +85,7 @@ export default function SettingsPage() {
             <div className="flex-1 text-center md:text-right space-y-3">
               <div className="flex flex-col md:flex-row items-center gap-3 mb-1">
                 <h2 className="text-3xl font-black text-foreground">
-                  {user?.displayName || user?.email?.split('@')[0] || "کاربر مهمان"}
+                  {userProfile?.full_name || user?.email?.split('@')[0] || "کاربر مهمان"}
                 </h2>
                 <Badge variant="success" className="px-3 py-1 shadow-md shadow-emerald-500/20">
                   <Crown size={12} className="mr-1 text-yellow-300" />
@@ -102,7 +100,7 @@ export default function SettingsPage() {
                 </div>
                 <div className="flex items-center gap-2 bg-muted/50 px-3 py-1.5 rounded-lg opacity-70">
                   <Shield size={16} />
-                  <span className="text-xs font-mono">ID: {user?.uid.slice(0, 8)}...</span>
+                  <span className="text-xs font-mono">ID: {user?.id.slice(0, 8)}...</span>
                 </div>
               </div>
             </div>

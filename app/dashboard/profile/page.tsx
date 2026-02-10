@@ -29,9 +29,9 @@ export default function ProfilePage() {
   useEffect(() => {
     if (userProfile) {
       setFormData({
-        firstName: userProfile.firstName || '',
-        lastName: userProfile.lastName || '',
-        phoneNumber: userProfile.phoneNumber || '',
+        firstName: userProfile.first_name || '',
+        lastName: userProfile.last_name || '',
+        phoneNumber: userProfile.phone_number || '',
         bio: userProfile.bio || ''
       });
     }
@@ -41,11 +41,13 @@ export default function ProfilePage() {
     if (!user) return;
     setIsLoading(true);
     try {
-      await updateUserProfile(user.uid, {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phoneNumber: formData.phoneNumber,
-        bio: formData.bio
+      await updateUserProfile(user.id, {
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        phone_number: formData.phoneNumber,
+        bio: formData.bio,
+        // Also update full_name if first/last are present
+        full_name: `${formData.firstName} ${formData.lastName}`.trim()
       });
       await refreshProfile();
       toast.success("پروفایل با موفقیت بروزرسانی شد");
@@ -101,7 +103,7 @@ export default function ProfilePage() {
             <Card variant="default" padding="lg" className="space-y-6">
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold">
-                  {userProfile.firstName?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
+                  {userProfile.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
                 </div>
                 <div>
                   <h2 className="text-xl font-bold">{user?.email || 'کاربر'}</h2>

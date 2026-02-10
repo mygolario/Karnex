@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { addDoc, collection } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge"; // Ensure this matches UI kit
@@ -27,6 +26,7 @@ export default function SupportPage() {
   const [priority, setPriority] = useState("normal");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const supabase = createClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,16 +34,20 @@ export default function SupportPage() {
     setLoading(true);
 
     try {
-      await addDoc(collection(db, "users", user.uid, "tickets"), {
-        subject,
-        category,
-        priority,
-        message,
-        status: 'open',
-        userId: user.uid,
-        userEmail: user.email, // For admin convenience
-        createdAt: new Date().toISOString()
-      });
+      const { error } = await supabase
+        .from('tickets')
+        .insert({
+          user_id: user.id,
+          user_email: user.email,
+          subject,
+          category,
+          priority,
+          message,
+          status: 'open',
+          created_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
       
       toast.success("تیکت شما با موفقیت ثبت شد");
       setSubject("");

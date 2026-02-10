@@ -5,8 +5,7 @@ import { createPortal } from "react-dom";
 import { MessageSquarePlus, Star, Send, X, Check, Loader2, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
-import { collection, addDoc } from "firebase/firestore";
-import { db, appId } from "@/lib/firebase";
+import { saveFeedback } from "@/lib/db";
 
 export function FeedbackWidget() {
   const { user } = useAuth();
@@ -42,25 +41,18 @@ export function FeedbackWidget() {
       // Store feedback under the user's collection for proper permissions
       // If no user, store under a public feedback collection
       const feedbackData = {
-        userId: user?.uid || "anonymous",
-        userEmail: user?.email || "anonymous",
+        user_id: user?.id || "anonymous", // Use .id for Supabase
+        user_email: user?.email || "anonymous",
         rating,
         category,
         comment: comment.trim(),
         createdAt: new Date().toISOString(),
-        userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
-        page: typeof window !== "undefined" ? window.location.pathname : "unknown"
+        user_agent: typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
+        page: typeof window !== "undefined" ? window.location.pathname : "unknown",
+        status: 'new' as const
       };
 
-      if (user) {
-        // Store under user's plans/feedback for permission
-        const feedbackRef = collection(db, "artifacts", appId, "users", user.uid, "feedback");
-        await addDoc(feedbackRef, feedbackData);
-      } else {
-        // For anonymous users, try the public path
-        const feedbackRef = collection(db, "artifacts", appId, "feedback");
-        await addDoc(feedbackRef, feedbackData);
-      }
+      await saveFeedback(feedbackData);
       
       setSubmitted(true);
       setTimeout(() => {

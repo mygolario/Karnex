@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { createClient } from "@/lib/supabase";
 import { UserProfile } from "@/lib/db";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,9 +30,26 @@ export default function AdminPage() {
       
       const fetchData = async () => {
         try {
-          // This requires Firestore rules to allow read for admin
-          const usersSnap = await getDocs(collection(db, "users"));
-          const usersList = usersSnap.docs.map(d => d.data() as UserProfile);
+          const supabase = createClient();
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('*');
+            
+          if (error) throw error;
+          
+          const usersList = data.map((d: any) => ({
+            id: d.id,
+            email: d.email,
+            full_name: d.full_name,
+            avatar_url: d.avatar_url,
+            role: d.role,
+            subscription: d.subscription || { planId: 'free', status: 'active' },
+            credits: d.credits || { aiTokens: 0, projectsUsed: 0 },
+            settings: d.settings || {},
+            created_at: d.created_at,
+            updated_at: d.updated_at
+          })) as UserProfile[];
+          
           setUsers(usersList);
         } catch (error) {
           console.error("Admin Fetch Error:", error);
@@ -50,7 +66,8 @@ export default function AdminPage() {
 
   const totalRevenue = users.reduce((acc, u) => {
     // Mock calculation based on plan
-    const price = u.subscription.planId === 'pro' ? 399000 : u.subscription.planId === 'plus' ? 249000 : 0;
+    const planId = u.subscription?.planId;
+    const price = planId === 'pro' ? 399000 : planId === 'plus' ? 249000 : 0;
     return acc + price;
   }, 0);
 
@@ -77,7 +94,7 @@ export default function AdminPage() {
         />
         <StatsCard 
           title="مشترکین فعال" 
-          value={users.filter(u => u.subscription.planId !== 'free').length} 
+          value={users.filter(u => u.subscription?.planId !== 'free').length} 
           icon={<CheckCircle2 className="text-green-500" />} 
           trend="+5%" 
         />
@@ -119,25 +136,25 @@ export default function AdminPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                     {users.map(u => (
-                        <tr key={u.uid} className="hover:bg-muted/20 transition-colors">
+                        <tr key={u.id} className="hover:bg-muted/20 transition-colors">
                             <td className="p-4">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center font-bold text-xs">
                                         {u.email?.[0]?.toUpperCase()}
                                     </div>
                                     <div>
-                                        <div className="font-bold text-sm">{u.displayName || 'بدون نام'}</div>
+                                        <div className="font-bold text-sm">{u.full_name || 'بدون نام'}</div>
                                         <div className="text-xs text-muted-foreground">{u.email}</div>
                                     </div>
                                 </div>
                             </td>
                             <td className="p-4">
-                                <Badge variant={u.subscription.planId === 'pro' ? 'secondary' : 'outline'}>
-                                    {u.subscription.planId.toUpperCase()}
+                                <Badge variant={u.subscription?.planId === 'pro' ? 'secondary' : 'outline'}>
+                                    {u.subscription?.planId?.toUpperCase() || 'FREE'}
                                 </Badge>
                             </td>
                             <td className="p-4 text-sm text-muted-foreground" dir="ltr">
-                                {new Date(u.createdAt).toLocaleDateString('fa-IR')}
+                                {u.created_at ? new Date(u.created_at).toLocaleDateString('fa-IR') : '-'}
                             </td>
                             <td className="p-4">
                                 <div className="flex items-center gap-1 text-green-500 text-sm">

@@ -43,7 +43,7 @@ export function RunwayCalculator() {
     if (!user || !plan) return;
     try {
         const dataToSave = { ...input, lastUpdated: new Date().toISOString() };
-        await saveFinancials(user.uid, 'runway', dataToSave, plan.id || 'current');
+        await saveFinancials(user.id, 'runway', dataToSave, plan.id || 'current');
         updateActiveProject({ financials: { ...plan.financials, runway: dataToSave } });
         toast.success("محاسبات ذخیره شد");
     } catch (err) {

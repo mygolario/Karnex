@@ -53,7 +53,7 @@ const documentTypes: DocumentType[] = [
 
 export function DocumentGenerator() {
   const { activeProject: plan } = useProject();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const [selectedDoc, setSelectedDoc] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generatedDoc, setGeneratedDoc] = useState<any>(null);
@@ -72,7 +72,7 @@ export function DocumentGenerator() {
           documentType: docType,
           projectData: {
             projectName: plan?.projectName,
-            founderName: user?.displayName,
+            founderName: userProfile?.full_name || user?.user_metadata?.full_name || "User",
             overview: plan?.overview,
             audience: plan?.audience,
             revenueModel: (plan as any)?.leanCanvas?.revenueStreams

@@ -29,7 +29,7 @@ const itemVariants: Variants = {
 };
 
 export default function DashboardOverviewPage() {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const { activeProject: plan, loading } = useProject();
   const [greeting, setGreeting] = useState("سلام");
   const [actionStreak, setActionStreak] = useState(0);
@@ -113,7 +113,7 @@ export default function DashboardOverviewPage() {
               {new Date().toLocaleDateString('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' })}
            </div>
            <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tight">
-             {greeting}، <span className="text-primary">{user?.displayName?.split(' ')[0] || "دوست عزیز"}</span>
+             {greeting}، <span className="text-primary">{userProfile?.full_name?.split(' ')[0] || "دوست عزیز"}</span>
            </h1>
         </div>
         

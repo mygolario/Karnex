@@ -18,13 +18,11 @@ import {
   ImageIcon
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
-import { signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 
 export function CommandMenu() {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -126,7 +124,7 @@ export function CommandMenu() {
               <span>تنظیمات</span>
             </Command.Item>
             <Command.Item 
-                onSelect={() => runCommand(() => signOut(auth).then(() => router.push('/')))}
+                onSelect={() => runCommand(() => signOut().then(() => router.push('/')))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-destructive/10 aria-selected:text-destructive data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive"
             >
               <LogOut className="ml-2 h-4 w-4" />

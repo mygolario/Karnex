@@ -26,7 +26,7 @@ export function SWOTAnalysisCanvas() {
     },
     async (newData) => {
         if (!user) return;
-        await saveSWOT(user.uid, newData, plan?.id || 'current');
+        await saveSWOT(user.id, newData, plan?.id || 'current');
         updateActiveProject({ swotAnalysis: newData });
     }
   );

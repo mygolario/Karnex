@@ -1,37 +1,18 @@
-import {
-  doc,
-  setDoc,
-  getDoc,
-  getDocFromCache,
-  updateDoc,
-  deleteDoc,
-  arrayUnion,
-  arrayRemove,
-  collection,
-  getDocs,
-  addDoc,
-  query,
-  collectionGroup,
-  orderBy,
-  limit
-} from "firebase/firestore";
-import { db, appId } from "@/lib/firebase";
+import { createClient } from "@/lib/supabase";
 
 // Define the Data Structure (TypeScript Interface)
 
 // User Profile Structure (Enhanced)
 export interface UserProfile {
-  uid: string;
+  id: string; // Changed from uid to id to match Supabase
   email: string;
-  displayName?: string;
-  firstName?: string;
-  lastName?: string;
-  phoneNumber?: string;
-  isPhoneVerified?: boolean;
-  dateOfBirth?: string; // ISO date
+  role?: 'user' | 'admin'; // Added role
+  full_name?: string; // Changed from displayName
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
   bio?: string;
-  photoURL?: string;
-  role: 'user' | 'admin';
+  avatar_url?: string; // Changed from photoURL
   subscription: {
     planId: 'free' | 'plus' | 'pro';
     status: 'active' | 'expired' | 'canceled';
@@ -50,13 +31,11 @@ export interface UserProfile {
     theme: 'light' | 'dark' | 'system';
     language: 'fa' | 'en';
   };
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
-// ... existing interfaces
-
-
+// ... existing interfaces (Keep them as is for now, will map to JSONB)
 // Roadmap Step detailed structure
 export interface RoadmapStep {
   title: string;
@@ -86,6 +65,7 @@ export interface SubTask {
   parentStep: string;
   text: string;
   isCompleted: boolean;
+  order?: number; // Added order
 }
 
 // Competitor structure
@@ -400,6 +380,7 @@ export interface ActionCard {
   targetField?: string;
   newValue?: string;
   xpReward: number;
+  
 }
 
 export interface DailyMission {
@@ -544,6 +525,22 @@ export interface BusinessPlan {
   updatedAt?: string;
 }
 
+// Media Library Items
+export type MediaCategory = 'logo' | 'pattern' | 'mockup' | 'hero' | 'color_mood' | 'social' | 'cover';
+
+export interface MediaItem {
+  id: string;
+  userId: string;
+  projectId?: string;
+  url: string;
+  category: MediaCategory;
+  subcategory?: string; // E.g., 'instagram_story'
+  prompt?: string;
+  model?: string;
+  projectName?: string;
+  createdAt: string;
+}
+
 // --- Admin & System Logging ---
 
 export interface SystemLog {
@@ -564,511 +561,478 @@ export interface AdminStats {
   totalRevenue: number; // Mock or calc
 }
 
-// ... (Existing functions)
 
-// Save Operations
-export const saveOperations = async (userId: string, type: 'capTable' | 'inventory', data: any, projectId: string = 'current') => {
-  try {
-     const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-     await updateDoc(planRef, { [`operations.${type}`]: data });
-     return true;
-  } catch (error) {
-    console.error(`Error saving operations (${type}):`, error);
-    throw error;
+// --- Functions to Interact with Supabase ---
+
+export const createUserProfile = async (userData: { uid: string, email?: string | null }) => {
+  const supabase = createClient();
+  
+  const newProfile: any = {
+    id: userData.uid,
+    email: userData.email || "",
+    role: 'user',
+    subscription: {
+      planId: 'free',
+      status: 'active',
+      autoRenew: false
+    },
+    credits: {
+      aiTokens: 10,
+      projectsUsed: 0
+    },
+    settings: {
+      emailNotifications: true,
+      smsNotifications: false,
+      theme: 'system',
+      language: 'fa'
+    },
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+
+  const { error } = await supabase
+    .from('profiles')
+    .insert(newProfile);
+
+  if (error) {
+    console.error("Error creating profile:", error.message, error.code, error.details, error.hint, JSON.stringify(error));
+    // Try fetching in case it was created concurrently
+    return getUserProfile(userData.uid);
   }
+
+  return newProfile as UserProfile;
 };
 
-// ... (Existing functions)
+export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
 
-// Save Financials
-export const saveFinancials = async (userId: string, type: 'runway' | 'breakEven' | 'rateCard', data: any, projectId: string = 'current') => {
-  try {
-     const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-     await updateDoc(planRef, { [`financials.${type}`]: data });
-     return true;
-  } catch (error) {
-    console.error(`Error saving financials (${type}):`, error);
-    throw error;
-  }
-};
-
-// Get All User Projects
-export const getUserProjects = async (userId: string): Promise<BusinessPlan[]> => {
-  try {
-    const colRef = collection(db, 'artifacts', appId, 'users', userId, 'plans');
-    const snap = await getDocs(colRef); // Fetch all
-
-    return snap.docs.map(d => ({
-      id: d.id,
-      ...(d.data() as any)
-    })) as BusinessPlan[];
-  } catch (error) {
-    console.error("Error fetching projects:", error);
-    return [];
-  }
-};
-
-// Create New Project (Auto ID)
-export const createProject = async (userId: string, planData: any) => {
-  try {
-    const colRef = collection(db, 'artifacts', appId, 'users', userId, 'plans');
-    // We use addDoc for auto-generated UUIDs
-    const docRef = await addDoc(colRef, {
-      ...planData,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    });
-    return docRef.id;
-  } catch (error) {
-    console.error("Error creating project:", error);
-    throw error;
-  }
-}
-
-// Save Legal Advice 
-export const saveLegalAdvice = async (userId: string, legalData: any, projectId: string = 'current') => {
-  try {
-    const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-    await updateDoc(planRef, { legalAdvice: legalData });
-    return true;
-  } catch (error) {
-    console.error("Error saving legal advice:", error);
-    throw error;
-  }
-};
-
-// Save Media Kit
-export const saveMediaKit = async (userId: string, mediaKitData: any, projectId: string = 'current') => {
-  try {
-     const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-     await updateDoc(planRef, { mediaKit: mediaKitData });
-     return true;
-  } catch (error) {
-    console.error("Error saving media kit:", error);
-    throw error;
-  }
-};
-
-// Save Permits
-export const savePermits = async (userId: string, permits: any[], projectId: string = 'current') => {
-  try {
-     const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-     await updateDoc(planRef, { permits: permits });
-     return true;
-  } catch (error) {
-    console.error("Error saving permits:", error);
-    throw error;
-  }
-};
-
-// Save Pitch Deck
-export const savePitchDeck = async (userId: string, deck: any[], projectId: string = 'current') => {
-  try {
-     const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-     await updateDoc(planRef, { pitchDeck: deck });
-     return true;
-  } catch (error) {
-    console.error("Error saving pitch deck:", error);
-    throw error;
-  }
-};
-
-// Save SWOT Analysis
-export const saveSWOT = async (userId: string, swot: SWOTAnalysis, projectId: string = 'current') => {
-  try {
-     const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-     await updateDoc(planRef, { swotAnalysis: swot });
-     return true;
-  } catch (error) {
-    console.error("Error saving SWOT:", error);
-    throw error;
-  }
-};
-
-// Save Brand Canvas
-export const saveBrandCanvas = async (userId: string, canvas: BrandCanvas, projectId: string = 'current') => {
-  try {
-     const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-     await updateDoc(planRef, { brandCanvas: canvas });
-     return true;
-  } catch (error) {
-    console.error("Error saving Brand Canvas:", error);
-    throw error;
-  }
-};
-
-// Save Plan (Update existing) 
-export const savePlanToCloud = async (userId: string, planData: any, merge: boolean = true, projectId: string = 'current') => {
-  try {
-    const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-
-    // Ensure we don't accidentally overwrite 'current' if we meant a specific ID, but here projectId handles that.
-    await setDoc(planRef, {
-      ...planData,
-      updatedAt: new Date().toISOString()
-    }, { merge });
-
-    return true;
-  } catch (error) {
-    console.error("Error saving plan:", error);
-    throw error;
-  }
-};
-
-// Get Single Plan
-export const getPlanFromCloud = async (userId: string, projectId: string = 'current') => {
-  const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-
-  try {
-    const timeoutMs = 15000;
-    const fetchPromise = getDoc(planRef);
-
-    const timerPromise = new Promise<any>((_, reject) =>
-      setTimeout(() => reject(new Error("Firestore Read Timeout")), timeoutMs)
-    );
-
-    const docSnap = await Promise.race([fetchPromise, timerPromise]);
-    
-    if (docSnap.exists()) {
-      return { id: docSnap.id, ...docSnap.data() } as BusinessPlan;
+  if (error) {
+    if (error.code !== 'PGRST116') { // PGRST116 is "not found"
+         console.error("Error fetching profile:", error.message, error.code, error.details, error.hint, JSON.stringify(error));
     }
     return null;
-  } catch (error) {
+  }
+  return data as UserProfile;
+};
+
+export const updateUserProfile = async (userId: string, updates: Partial<UserProfile>) => {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('profiles')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', userId);
+
+  if (error) throw error;
+  return true;
+};
+
+// --- Project Functions with JSONB ---
+
+export const createProject = async (userId: string, planData: any) => {
+  console.log("📤 Creating project via API for user:", userId);
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
+  
+  try {
+    const res = await fetch("/api/create-project", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, planData }),
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${res.status}`);
+    }
+    
+    const data = await res.json();
+    console.log("✅ Project created with ID:", data.id);
+    return data.id;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error("Project creation timed out. Please try again.");
+    }
+    throw error;
+  }
+};
+
+export const getUserProjects = async (userId: string): Promise<BusinessPlan[]> => {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('user_id', userId)
+    .order('updated_at', { ascending: false });
+
+  if (error) {
+    console.error("Error fetching projects:", error.message, error.code, error.details, error.hint, JSON.stringify(error));
+    return [];
+  }
+
+  return data.map((p: any) => ({
+    id: p.id,
+    ...p.data,
+    // Ensure critical fields are synced
+    projectName: p.project_name,
+    tagline: p.tagline,
+    updatedAt: p.updated_at,
+    createdAt: p.created_at
+  }));
+};
+
+export const getPlanFromCloud = async (userId: string, projectId: string) => {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('id', projectId)
+    .single();
+
+  if (error) {
     console.error("Error fetching plan:", error);
     return null;
   }
+
+  return {
+    id: data.id,
+    ...data.data,
+    projectName: data.project_name,
+    tagline: data.tagline,
+    updatedAt: data.updated_at,
+    createdAt: data.created_at
+  } as BusinessPlan;
 };
 
-// --- Admin Functions ---
+export const savePlanToCloud = async (userId: string, planData: any, merge: boolean = true, projectId: string) => {
+    const supabase = createClient();
 
-// 1. Log System Event
-export const logSystemEvent = async (logData: Omit<SystemLog, 'id' | 'timestamp'>) => {
-  try {
-    const colRef = collection(db, 'system_logs');
-    await addDoc(colRef, {
-      ...logData,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error) {
-    console.error("Error logging system event:", error);
-    // Be silent about logging errors to avoid crash loops
-  }
-};
-
-// 2. Get All Users (Admin)
-// Note: This requires the 'users' collection to be populated. 
-// If authentication happens but no doc is created in 'users', this won't find them.
-// We must ensure createUserProfile is called on signup.
-export const getAllUsersAdmin = async () => {
-    try {
-        const colRef = collection(db, 'users');
-        const snap = await getDocs(colRef);
-        return snap.docs.map(d => ({ id: d.id, ...d.data() })) as unknown as UserProfile[];
-    } catch (error) {
-        console.error("Admin: Error fetching users", error);
-        return [];
-    }
-}
-
-// 3. Get All Projects (Admin)
-// This is trickier because plans are nested under `artifacts/{appId}/users/{userId}/plans`
-// Collection Group Queries are needed: db.collectionGroup('plans')
-export const getAllProjectsAdmin = async () => {
-    try {
-        // Requires a composite index in Firestore usually, or simple index on single field
-        const projectsQuery = query(collectionGroup(db, 'plans')); 
-        const snap = await getDocs(projectsQuery);
-        return snap.docs.map(d => ({ id: d.id, ...d.data() })) as BusinessPlan[];
-    } catch (error) {
-        console.error("Admin: Error fetching all projects", error);
-        return [];
-    }
-}
-
-// 4. Get System Logs
-export const getSystemLogs = async (limitCount = 50) => {
-    try {
-        const colRef = collection(db, 'system_logs');
-        const q = query(colRef, orderBy('timestamp', 'desc'), limit(limitCount));
-        const snap = await getDocs(q);
-        return snap.docs.map(d => ({ id: d.id, ...d.data() })) as SystemLog[];
-    } catch (error) {
-        console.error("Admin: Error fetching logs", error);
-        return [];
-    }
-}
-
-// End of Admin Functions (Cleaned up block)
-
-// Toggle Step
-export const toggleStepCompletion = async (userId: string, stepName: string, isCompleted: boolean, projectId: string = 'current') => {
-  try {
-    const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-
-    await updateDoc(planRef, {
-      completedSteps: isCompleted ? arrayUnion(stepName) : arrayRemove(stepName)
-    });
-
+    // Prepare update data
+    // Supabase needs "patch" style for deep JSON updates if we want to merge, 
+    // but typically we overwrite the JSON blob OR use jsonb_set logic.
+    // For simplicity, we fetch-merge-save or just rely on 'data' replacements if granular updates aren't critical.
+    // Given the previous Firebase logic, it was often deep updates. 
+    
+    // Strategy: Fetch current data if merge is true, merge in memory, then save.
+    // Or if Supabase client supports deep merge? accessing jsonb keys is possible but strict.
+    
+    // We will do a READ - MERGE - WRITE to be safe for now, 
+    // or just update specific top level keys if `planData` is robust.
+    
+    // IMPORTANT: If `planData` is big, this might be heavy.
+    
+    // Let's assume `planData` contains the parts we want to update.
+    
+    // 1. Fetch current
+    const { data: currentProject } = await supabase
+        .from('projects')
+        .select('data, project_name, tagline')
+        .eq('id', projectId)
+        .single();
+    
+    if (!currentProject) throw new Error("Project not found");
+    
+    const newData = merge ? { ...currentProject.data, ...planData } : planData;
+    
+    // Sync top fields if present
+    const updates: any = {
+        data: newData,
+        updated_at: new Date().toISOString()
+    };
+    
+    if (planData.projectName) updates.project_name = planData.projectName;
+    if (planData.tagline) updates.tagline = planData.tagline;
+    
+    const { error } = await supabase
+        .from('projects')
+        .update(updates)
+        .eq('id', projectId);
+        
+    if (error) throw error;
     return true;
-  } catch (error) {
-    console.error("Error toggling step:", error);
-    throw error;
-  }
 };
 
-// Delete Project
-export const deleteProject = async (userId: string, projectId: string = 'current') => {
-  try {
-    const planRef = doc(db, 'artifacts', appId, 'users', userId, 'plans', projectId);
-    await deleteDoc(planRef);
-    return true;
-  } catch (error) {
-    console.error("Error deleting project:", error);
-    throw error;
-  }
+// Helper for saving specific sections (Backward compat wrapper around savePlanToCloud)
+const updateProjectSection = async (userId: string, section: string, data: any, projectId: string = 'current') => {
+   // Warning: 'current' logic needs to be handled by caller (ProjectContext) to resolve to ID.
+   // DB layer should prefer explicit IDs.
+   if (projectId === 'current') {
+       console.warn("DB: explicit projectId required for Supabase");
+       return false;
+   }
+   return savePlanToCloud(userId, { [section]: data }, true, projectId);
 };
 
-// ========================================
-// MEDIA LIBRARY (AI-Generated Content)
-// ========================================
-
-export type MediaCategory = 'logo' | 'pattern' | 'mockup' | 'hero' | 'color_mood' | 'social' | 'cover';
-
-export interface MediaLibraryItem {
-  id?: string;
-  imageUrl: string;
-  prompt: string;
-  category: MediaCategory;
-  subcategory?: string; // e.g., 'tshirt', 'instagram', 'geometric'
-  model: string;
-  projectId?: string;
-  projectName?: string;
-  createdAt: string;
-}
-
-// Save to Media Library
-export const saveToMediaLibrary = async (userId: string, item: Omit<MediaLibraryItem, 'id'>): Promise<string> => {
-  try {
-    const colRef = collection(db, 'artifacts', appId, 'users', userId, 'media-library');
-    const docRef = await addDoc(colRef, {
-      ...item,
-      createdAt: item.createdAt || new Date().toISOString()
-    });
-    return docRef.id;
-  } catch (error) {
-    console.error("Error saving to media library:", error);
-    throw error;
-  }
+export const saveOperations = async (userId: string, type: 'capTable' | 'inventory', data: any, projectId: string) => {
+    // operations is a nested field. We need to construct the update object structure.
+    // simpler to just call savePlanToCloud with the nested structure?
+    // Structure: { operations: { [type]: data } }
+    
+    // But we need to be careful not to wipe other operation fields if we do flat merge.
+    // The READ-MERGE-WRITE in savePlanToCloud handles this since we pass { operations: ... }
+    // Wait, { operations: { capTable: ... } } passed to savePlanToCloud
+    // checks: merge=true -> newData = { ...oldData, ...planData }
+    // oldData.operations might be overwriten by planData.operations if we are not careful about deep merge.
+    // Spread operator ... is shallow! 
+    
+    // FIX: We need deep merge or specific path updates.
+    // For now, let's just do a specific fetch-merge here to be safe.
+    
+    const supabase = createClient();
+    const { data: current } = await supabase.from('projects').select('data').eq('id', projectId).single();
+    if (!current) return false;
+    
+    const ops = current.data.operations || {};
+    ops[type] = data;
+    
+    return savePlanToCloud(userId, { operations: ops }, true, projectId);
 };
 
-// Get Media Library with optional filters
-export const getMediaLibrary = async (
-  userId: string,
-  filters?: { category?: MediaCategory; projectId?: string; limit?: number }
-): Promise<MediaLibraryItem[]> => {
-  try {
-    const colRef = collection(db, 'artifacts', appId, 'users', userId, 'media-library');
-    const snap = await getDocs(colRef);
+// Similar wrappers for other specific saves
+export const saveFinancials = async (userId: string, type: 'runway' | 'breakEven' | 'rateCard', data: any, projectId: string) => {
+    const supabase = createClient();
+    const { data: current } = await supabase.from('projects').select('data').eq('id', projectId).single();
+    if (!current) return false;
+    
+    const fins = current.data.financials || {};
+    fins[type] = data;
+    
+    return savePlanToCloud(userId, { financials: fins }, true, projectId);
+};
 
-    let items = snap.docs.map(d => ({
-      id: d.id,
-      ...(d.data() as Omit<MediaLibraryItem, 'id'>)
-    })) as MediaLibraryItem[];
+export const saveMediaKit = async (userId: string, mediaKitData: any, projectId: string) => {
+    return savePlanToCloud(userId, { mediaKit: mediaKitData }, true, projectId);
+};
 
-    // Apply filters
-    if (filters?.category) {
-      items = items.filter(item => item.category === filters.category);
-    }
-    if (filters?.projectId) {
-      items = items.filter(item => item.projectId === filters.projectId);
-    }
+export const saveLegalAdvice = async (userId: string, legalData: any, projectId: string) => {
+    return savePlanToCloud(userId, { legalAdvice: legalData }, true, projectId);
+};
 
-    // Sort by date (newest first)
-    items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+export const savePermits = async (userId: string, permits: any[], projectId: string) => {
+    return savePlanToCloud(userId, { permits: permits }, true, projectId);
+};
 
-    // Apply limit
-    if (filters?.limit) {
-      items = items.slice(0, filters.limit);
-    }
+export const savePitchDeck = async (userId: string, deck: any[], projectId: string) => {
+    return savePlanToCloud(userId, { pitchDeck: deck }, true, projectId);
+};
 
-    return items;
-  } catch (error) {
-    console.error("Error fetching media library:", error);
+export const saveSWOT = async (userId: string, swot: SWOTAnalysis, projectId: string) => {
+    return savePlanToCloud(userId, { swotAnalysis: swot }, true, projectId);
+};
+
+export const saveBrandCanvas = async (userId: string, canvas: BrandCanvas, projectId: string) => {
+    return savePlanToCloud(userId, { brandCanvas: canvas }, true, projectId);
+};
+
+export const deleteProject = async (userId: string, projectId: string) => {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('projects')
+    .delete()
+    .eq('id', projectId)
+    .eq('user_id', userId);
+    
+  if (error) throw error;
+  return true;
+};
+
+// --- Media Library ---
+
+export const getMediaLibrary = async (userId: string, filters?: { 
+  category?: MediaCategory, 
+  projectId?: string,
+  limit?: number
+}) => {
+  const supabase = createClient();
+  let query = supabase
+    .from('media_library')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (filters?.category) query = query.eq('category', filters.category);
+  if (filters?.projectId) query = query.eq('project_id', filters.projectId);
+  if (filters?.limit) query = query.limit(filters.limit);
+
+  const { data, error } = await query;
+  
+  if (error) {
+    console.error("Error fetching media:", error);
     return [];
   }
+  
+  return data.map((item: any) => ({
+      ...item,
+      // flatten meta if needed or keep as is
+      prompt: item.meta?.prompt,
+      model: item.meta?.model,
+      projectName: item.meta?.projectName,
+      subcategory: item.meta?.subcategory
+  })) as MediaItem[];
 };
 
-// Delete from Media Library
-export const deleteFromMediaLibrary = async (userId: string, itemId: string): Promise<boolean> => {
-  try {
-    const itemRef = doc(db, 'artifacts', appId, 'users', userId, 'media-library', itemId);
-    await deleteDoc(itemRef);
-    return true;
-  } catch (error) {
-    console.error("Error deleting from media library:", error);
-    throw error;
-  }
+export const saveToMediaLibrary = async (userId: string, item: Partial<MediaItem>) => {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('media_library')
+    .insert({
+      user_id: userId,
+      project_id: item.projectId,
+      url: item.url!,
+      category: item.category!,
+      meta: {
+          prompt: item.prompt,
+          model: item.model,
+          subcategory: item.subcategory,
+          projectName: item.projectName
+      }
+    })
+    .select('id')
+    .single();
+
+  if (error) throw error;
+  return data.id;
 };
 
-// ========================================
-// GAMIFICATION SYSTEM
-// ========================================
+export const deleteFromMediaLibrary = async (userId: string, itemId: string) => {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('media_library')
+    .delete()
+    .eq('id', itemId)
+    .eq('user_id', userId);
 
-export interface GamificationProfile {
-  userId: string;
-  totalXp: number;
-  level: number;
-  currentStreak: number;
-  lastLoginDate: string; // ISO Date YYYY-MM-DD
-  achievements: string[]; // IDs of unlocked achievements
-  history: {
-    action: string;
-    xp: number;
-    date: string;
-  }[];
+  if (error) throw error;
+  return true;
+};
+
+// --- Feedback ---
+
+export interface Feedback {
+  id?: string;
+  user_id: string; // or 'anonymous'
+  user_email?: string;
+  rating: number;
+  category: string;
+  comment: string;
+  page: string;
+  user_agent: string;
+  created_at?: string;
+  status: 'new' | 'read' | 'archived';
 }
 
-export const getGamificationProfile = async (userId: string): Promise<GamificationProfile> => {
-  try {
-    const docRef = doc(db, 'artifacts', appId, 'users', userId, 'gamification', 'profile');
-    const snap = await getDoc(docRef);
+export const saveFeedback = async (feedback: Feedback) => {
+  const supabase = createClient();
+  const { error } = await supabase
+    .from('feedback')
+    .insert({
+      user_id: feedback.user_id,
+      user_email: feedback.user_email,
+      rating: feedback.rating,
+      category: feedback.category,
+      comment: feedback.comment,
+      page: feedback.page,
+      user_agent: feedback.user_agent,
+      status: 'new',
+      created_at: new Date().toISOString()
+    });
 
-    if (snap.exists()) {
-      return snap.data() as GamificationProfile;
-    }
-
-    // Create default profile if not exists
-    const defaultProfile: GamificationProfile = {
-      userId,
-      totalXp: 0,
-      level: 1,
-      currentStreak: 0,
-      lastLoginDate: new Date().toISOString().split('T')[0],
-      achievements: [],
-      history: []
-    };
-
-    await setDoc(docRef, defaultProfile);
-    return defaultProfile;
-
-  } catch (error) {
-    console.error("Error fetching gamification profile:", error);
-    throw error;
-  }
+  if (error) throw error;
+  return true;
 };
 
-export const updateGamificationProfile = async (userId: string, updates: Partial<GamificationProfile>) => {
-  try {
-    const docRef = doc(db, 'artifacts', appId, 'users', userId, 'gamification', 'profile');
-    await updateDoc(docRef, updates);
-  } catch (error) {
-    console.error("Error updating gamification profile:", error);
-  }
-};
+// --- Roadmap Helpers ---
 
-export const addGamificationXp = async (userId: string, amount: number, actionName: string) => {
-  try {
-    const docRef = doc(db, 'artifacts', appId, 'users', userId, 'gamification', 'profile');
-    const snap = await getDoc(docRef);
-
-    if (!snap.exists()) return null;
-
-    const profile = snap.data() as GamificationProfile;
-    const newXp = profile.totalXp + amount;
-
-    // Simple level formula: Level = 1 + floor(sqrt(XP / 100))
-    // Or constant scaling: Level * 1000 XP ? 
-    // Let's use: Level N requires N * 500 XP total?
-    // Let's stick to a simple formula: Level = Math.floor(Xp / 500) + 1
-    const newLevel = Math.floor(newXp / 500) + 1;
-    const levelUp = newLevel > profile.level;
-
-    const update: any = {
-      totalXp: newXp,
-      level: newLevel,
-      history: arrayUnion({
-        action: actionName,
-        xp: amount,
-        date: new Date().toISOString()
-      })
-    };
-
-    await updateDoc(docRef, update);
-
-    return { newLevel, levelUp, newXp };
-
-  } catch (error) {
-    console.error("Error adding XP:", error);
-    return null;
-  }
-};
-
-// --- User Profile Operations ---
-
-export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
-  try {
-    const userRef = doc(db, 'users', userId); // Root-level users collection
-    const snap = await getDoc(userRef);
+export const toggleStepCompletion = async (userId: string, stepName: string, isCompleted: boolean, projectId: string) => {
+  // We need to fetch current completedSteps, update, and save.
+  const supabase = createClient();
+  
+  // 1. Fetch current project data to get completedSteps
+  const { data: currentProject, error } = await supabase
+    .from('projects')
+    .select('data')
+    .eq('id', projectId)
+    .single();
     
-    if (snap.exists()) {
-      return snap.data() as UserProfile;
-    }
-    return null;
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-    return null;
+  if (error || !currentProject) {
+      console.error("Error fetching project for toggleStep:", error);
+      throw new Error("Project not found");
   }
+  
+  let completedSteps: string[] = currentProject.data.completedSteps || [];
+  
+  if (isCompleted) {
+    if (!completedSteps.includes(stepName)) {
+        completedSteps.push(stepName);
+    }
+  } else {
+    completedSteps = completedSteps.filter((s: string) => s !== stepName);
+  }
+  
+  // 2. Save updated list
+  return savePlanToCloud(userId, { completedSteps }, true, projectId);
 };
 
-export const createUserProfile = async (user: any) => {
-  try {
-    const userRef = doc(db, 'users', user.uid);
-    const snap = await getDoc(userRef);
+// --- Gamification ---
 
-    if (!snap.exists()) {
-      const newProfile: UserProfile = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName || '',
-        photoURL: user.photoURL || '',
-        role: 'user',
-        subscription: {
-          planId: 'free',
-          status: 'active',
-        },
-        credits: {
-          aiTokens: 5000,
-          projectsUsed: 0,
-        },
-        settings: {
-          emailNotifications: true,
-          smsNotifications: false,
-          theme: 'system',
-          language: 'fa',
-        },
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      await setDoc(userRef, newProfile);
-      return newProfile;
-    }
-    return snap.data() as UserProfile;
-  } catch (error) {
-    console.error("Error creating user profile:", error);
-    throw error;
+export interface GamificationProfile {
+  totalXp: number;
+  level: number;
+  streak: number;
+  badges: string[];
+  lastActive?: string;
+}
+
+const XP_PER_LEVEL = 100;
+
+export const getGamificationProfile = async (userId: string): Promise<GamificationProfile> => {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('gamification')
+    .eq('id', userId)
+    .single();
+
+  if (error || !data?.gamification) {
+    return { totalXp: 0, level: 1, streak: 0, badges: [] };
   }
+
+  return data.gamification as GamificationProfile;
 };
 
-export const updateUserProfile = async (userId: string, data: Partial<UserProfile>) => {
-  try {
-    const userRef = doc(db, 'users', userId);
-    await setDoc(userRef, {
-      ...data,
-      updatedAt: new Date().toISOString()
-    }, { merge: true });
-    return true;
-  } catch (error) {
-    console.error("Error updating profile:", error);
-    throw error;
+export const addGamificationXp = async (userId: string, amount: number, reason: string): Promise<{ newXp: number; newLevel: number; levelUp: boolean } | null> => {
+  const supabase = createClient();
+  
+  const current = await getGamificationProfile(userId);
+  const newXp = current.totalXp + amount;
+  const newLevel = Math.floor(newXp / XP_PER_LEVEL) + 1;
+  const levelUp = newLevel > current.level;
+
+  const updated: GamificationProfile = {
+    ...current,
+    totalXp: newXp,
+    level: newLevel,
+    lastActive: new Date().toISOString(),
+  };
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ gamification: updated, updated_at: new Date().toISOString() })
+    .eq('id', userId);
+
+  if (error) {
+    console.error("Failed to save XP:", error);
+    return null;
   }
+
+  return { newXp, newLevel, levelUp };
 };

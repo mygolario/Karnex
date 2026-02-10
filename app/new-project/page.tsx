@@ -101,6 +101,7 @@ export default function NewProjectPage() {
         }
 
         const data = await res.json();
+        console.log("✅ AI plan received, preparing to save...");
         
         // Use generated plan
         const completePlan = {
@@ -115,12 +116,19 @@ export default function NewProjectPage() {
         setIsGenerating(false);
         setIsCreatingProject(true);
 
-        // Directly create project and redirect
-        await createNewProject(completePlan);
+        // Create project with a safety timeout
+        console.log("🏗️ Creating project in Supabase...");
+        const createPromise = createNewProject(completePlan);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Project creation timed out")), 30000)
+        );
+        
+        await Promise.race([createPromise, timeoutPromise]);
+        console.log("✅ Project created, redirecting to dashboard");
         router.push("/dashboard");
 
     } catch (err: any) {
-        console.error("Failed to generate", err);
+        console.error("❌ Failed to generate/create project:", err);
         if (err.name === 'AbortError') {
             setError("زمان انتظار به پایان رسید. لطفاً دوباره تلاش کنید.");
         } else {

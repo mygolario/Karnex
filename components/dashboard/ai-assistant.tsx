@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { getPlanFromCloud } from "@/lib/db";
+import { useProject } from "@/contexts/project-context";
 import { Button } from "@/components/ui/button";
 import { useMentorContext } from "@/components/dashboard/mentor-context";
 import {
@@ -32,6 +32,7 @@ const defaultSuggestions = ["راهنمایی سریع", "سوال دارم"];
 
 export function AiAssistant() {
   const { user } = useAuth();
+  const { activeProject } = useProject();
   const router = useRouter();
   const pathname = usePathname();
   const { pendingQuestion, setPendingQuestion } = useMentorContext();
@@ -40,20 +41,12 @@ export function AiAssistant() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [quickResponse, setQuickResponse] = useState<string | null>(null);
-  const [planContext, setPlanContext] = useState<any>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Get suggestions based on current page
   const currentSuggestions = pageSuggestions[pathname] || defaultSuggestions;
-
-  // Load the Business Plan Context
-  useEffect(() => {
-    if (user) {
-      getPlanFromCloud(user.uid).then(setPlanContext);
-    }
-  }, [user]);
 
   // Handle pending questions from AI Mentor button
   useEffect(() => {
@@ -100,7 +93,7 @@ export function AiAssistant() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: messageToSend,
-          planContext: planContext || {},
+          planContext: activeProject || {},
           generateFollowUps: false
         })
       });
