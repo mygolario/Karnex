@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { TEXT_MODELS } from '@/lib/openrouter';
+import { checkAILimit } from '@/lib/ai-limit-middleware';
 
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
+    // === AI Usage Limit Check ===
+    const { errorResponse } = await checkAILimit();
+    if (errorResponse) return errorResponse;
+
     const { projectName, projectIdea, audience } = await req.json();
 
     if (!process.env.OPENROUTER_API_KEY) {

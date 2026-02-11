@@ -2,15 +2,22 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useProject } from "@/contexts/project-context";
-import { LocationAnalysis, saveOperations } from "@/lib/db";
+import { LocationAnalysis } from "@/lib/db";
 import { toast } from "sonner";
 
 interface LocationContextType {
   analysis: LocationAnalysis | null;
   loading: boolean;
-  history: LocationAnalysis[]; // Future proofing for multiple analyses
+  history: LocationAnalysis[];
+  comparisonItems: LocationAnalysis[];
+  comparisonMode: boolean;
   saveAnalysis: (data: LocationAnalysis) => Promise<void>;
   analyzeLocation: (city: string, address: string) => Promise<void>;
+  loadFromHistory: (item: LocationAnalysis) => void;
+  addToComparison: (item: LocationAnalysis) => void;
+  removeFromComparison: (id: string) => void;
+  toggleComparisonMode: () => void;
+  deleteFromHistory: (createdAt: string) => Promise<void>;
 }
 
 const LocationContext = createContext<LocationContextType | undefined>(undefined);
@@ -19,10 +26,16 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const { activeProject, updateActiveProject } = useProject();
   const [analysis, setAnalysis] = useState<LocationAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
+  const [history, setHistory] = useState<LocationAnalysis[]>([]);
+  const [comparisonItems, setComparisonItems] = useState<LocationAnalysis[]>([]);
+  const [comparisonMode, setComparisonMode] = useState(false);
 
   useEffect(() => {
     if (activeProject?.locationAnalysis) {
       setAnalysis(activeProject.locationAnalysis);
+    }
+    if (activeProject?.locationHistory) {
+      setHistory(activeProject.locationHistory);
     }
   }, [activeProject]);
 
@@ -30,20 +43,15 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     if (!activeProject) return;
     setLoading(true);
     try {
-      // Optimistic
       setAnalysis(data);
 
-      // Persist using generic update since we added it to BusinessPlan root or operations
-      // Looking at db.ts, I put it on root `locationAnalysis`.
-      // But updateActiveProject usually merges root fields.
-      
-      // Let's use a specialized save if needed, but updateActiveProject should suffice for root fields if configured.
-      // Alternatively, we can use the `savePlanToCloud` logic or create a specific helper.
-      // For now, I'll update the context and assume it syncs.
-      // Wait, let's look at `useProject`: usually exposes `updateActiveProject` which calls `savePlanToCloud`.
-      
+      // Build updated history (newest first, max 10)
+      const newHistory = [data, ...history.filter(h => h.createdAt !== data.createdAt)].slice(0, 10);
+      setHistory(newHistory);
+
       await updateActiveProject({
-        locationAnalysis: data
+        locationAnalysis: data,
+        locationHistory: newHistory,
       });
       
       toast.success("تحلیل ذخیره شد");
@@ -55,11 +63,53 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loadFromHistory = (item: LocationAnalysis) => {
+    setAnalysis(item);
+  };
+
+  const addToComparison = (item: LocationAnalysis) => {
+    if (comparisonItems.length >= 3) {
+      toast.error("حداکثر ۳ مکان قابل مقایسه است");
+      return;
+    }
+    if (comparisonItems.find(c => c.createdAt === item.createdAt)) return;
+    setComparisonItems(prev => [...prev, item]);
+    if (!comparisonMode) setComparisonMode(true);
+  };
+
+  const removeFromComparison = (createdAt: string) => {
+    setComparisonItems(prev => prev.filter(c => c.createdAt !== createdAt));
+  };
+
+  const toggleComparisonMode = () => {
+    setComparisonMode(prev => !prev);
+    if (comparisonMode) setComparisonItems([]);
+  };
+
+  const deleteFromHistory = async (createdAt: string) => {
+    if (!activeProject) return;
+    const newHistory = history.filter(h => h.createdAt !== createdAt);
+    setHistory(newHistory);
+    
+    // If the currently viewed analysis is the one being deleted, clear it
+    if (analysis?.createdAt === createdAt) {
+      setAnalysis(newHistory[0] || null);
+    }
+
+    // Remove from comparison too
+    setComparisonItems(prev => prev.filter(c => c.createdAt !== createdAt));
+
+    await updateActiveProject({
+      locationHistory: newHistory,
+      locationAnalysis: analysis?.createdAt === createdAt ? (newHistory[0] ?? undefined) : (analysis ?? undefined),
+    });
+    toast.success("تحلیل حذف شد");
+  };
+
   const analyzeLocation = async (city: string, address: string) => {
     setLoading(true);
     try {
-        // COMPLETE REDESIGN PHASE 2: "The Urban Strategist"
-        const prompt = `
+      const prompt = `
         ROLE: Senior Retail Location Strategist & Investment Analyst.
         
         CONTEXT:
@@ -78,6 +128,11 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         1.  **VERIFY:** Cross-reference the provided OSM data with your internal knowledge of the neighborhood's socioeconomic status.
         2.  **ESTIMATE:** metrics like "Footfall", "Spend Power", and "Risk".
         3.  **ANALYZE:** Why is this specific street good or bad? (e.g. "One-way street", "Hard to park", "Near Metro").
+        4.  **PROFILE:** Write a 2-sentence personality profile of this neighborhood.
+        5.  **IDENTIFY GAPS:** What business concepts are MISSING in this area? What would thrive here?
+        6.  **PRIORITIZE:** Rank your recommendations by urgency.
+        7.  **SCORE COMPETITORS:** Rate each competitor on 4 axes (product, marketing, price, support) from 0-10.
+        8.  **BREAK DOWN RISK:** Score 4 risk categories independently.
         
         OUTPUT FORMAT (JSON Persian):
         {
@@ -101,7 +156,13 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
             "marketGap": "string (What specific concept is missing?)",
             "competitorCount": number,
             "directCompetitors": [
-              { "name": "string", "distance": "string", "strength": "string", "weakness": "string" }
+              { 
+                "name": "string", 
+                "distance": "string", 
+                "strength": "string", 
+                "weakness": "string",
+                "scores": { "product": number(0-10), "marketing": number(0-10), "price": number(0-10), "support": number(0-10) }
+              }
             ]
           },
           
@@ -113,7 +174,6 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
             { "label": "Families", "percent": number, "color": "#00C49F" },
             { "label": "Students", "percent": number, "color": "#FFBB28" },
             { "label": "Seniors", "percent": number, "color": "#FF8042" }
-            // Sum must be approx 100
           ],
           
           "swot": {
@@ -124,6 +184,26 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
           },
           
           "aiInsight": "string (One 'Inside Scoop' tip a pro broker would know)",
+          
+          "neighborhoodProfile": "string (2-sentence personality profile of the area - e.g. 'محله‌ای پرتحرک با بافت جوان و دانشجویی. فضای تجاری رقابتی اما فرصت‌های خلاقانه در بخش غذا و کافه.')",
+          
+          "marketGapCards": [
+            { "title": "string (Missing concept name)", "description": "string (Why this would work here)", "potential": "High" | "Medium" | "Low" }
+          ],
+          
+          "prioritizedRecommendations": [
+            { "title": "string", "desc": "string", "urgency": "فوری" | "مهم" | "پیشنهادی" }
+          ],
+          
+          "riskBreakdown": {
+            "financial": number (0-100),
+            "competition": number (0-100),
+            "accessibility": number (0-100),
+            "market": number (0-100)
+          },
+          
+          "peakHours": "string (e.g. 'ساعات ۱۷ تا ۲۱ بیشترین تردد')",
+          
           "recommendations": [
              { "title": "string", "desc": "string" }
           ]
@@ -133,6 +213,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         - **Accurate OSM Data:** Use the provided list of places.
         - **Realistic Scores:** Do not give 9/10 easily. Be critical.
         - **Language:** Professional Persian (Business Farsi).
+        - **Competitor scores** must be realistic and differentiated.
+        - **Market gap cards** should be specific and actionable (minimum 2, maximum 4).
+        - **prioritizedRecommendations** must have at least 3 items with mixed urgency levels.
       `;
 
       const response = await fetch("/api/ai-generate", {
@@ -154,11 +237,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       
       let parsedData;
       
-      // FIX: Check if server already returned parsed analysis object (preferred)
       if (data.analysis) {
         parsedData = data.analysis;
       } else {
-        // Fallback for parsing string content
         try {
             const cleanJson = data.content.replace(/```json/g, '').replace(/```/g, '').trim();
             parsedData = JSON.parse(cleanJson);
@@ -187,7 +268,13 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <LocationContext.Provider value={{ analysis, loading, history: [], saveAnalysis, analyzeLocation }}>
+    <LocationContext.Provider value={{ 
+      analysis, loading, history, 
+      comparisonItems, comparisonMode,
+      saveAnalysis, analyzeLocation, loadFromHistory,
+      addToComparison, removeFromComparison, toggleComparisonMode,
+      deleteFromHistory
+    }}>
       {children}
     </LocationContext.Provider>
   );

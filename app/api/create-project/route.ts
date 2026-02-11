@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { checkProjectLimit } from '@/lib/usage-tracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +37,18 @@ export async function POST(req: Request) {
     // Ensure the userId matches the authenticated user
     if (user.id !== userId) {
       return NextResponse.json({ error: 'User ID mismatch' }, { status: 403 });
+    }
+
+    // === Project Limit Check ===
+    const projectCheck = await checkProjectLimit(userId);
+    if (!projectCheck.allowed) {
+      return NextResponse.json({
+        error: 'محدودیت تعداد پروژه',
+        message: `شما به سقف ${projectCheck.limit} پروژه فعال رسیده‌اید. برای ایجاد پروژه جدید، پلن خود را ارتقا دهید.`,
+        limitReached: true,
+        used: projectCheck.used,
+        limit: projectCheck.limit,
+      }, { status: 403 });
     }
 
     const projectId = crypto.randomUUID();

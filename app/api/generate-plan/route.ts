@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { callOpenRouter, parseJsonFromAI } from '@/lib/openrouter';
+import { checkAILimit } from '@/lib/ai-limit-middleware';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -23,6 +24,10 @@ interface RoadmapPhase {
 
 export async function POST(req: Request) {
   try {
+    // === AI Usage Limit Check ===
+    const { errorResponse } = await checkAILimit();
+    if (errorResponse) return errorResponse;
+
       const { idea, audience, budget, projectType, genesisAnswers } = await req.json();
 
     console.log("DEBUG: POST /api/generate-plan called");

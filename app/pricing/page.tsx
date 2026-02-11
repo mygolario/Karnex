@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ArrowLeft, Star, ArrowRight } from "lucide-react";
+import { Check, ArrowLeft, Star, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -8,56 +8,82 @@ import { Navbar } from "@/components/shared/navbar";
 import { Footer } from "@/components/shared/footer";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 const plans = [
   {
     id: "free",
     name: "رایگان",
-    price: "۰",
-    description: "برای شروع و تست ایده‌های اولیه",
+    monthlyPrice: 0,
+    priceLabel: "۰",
+    period: "برای همیشه",
+    description: "شروع کنید و امتحان کنید",
     features: [
-      "۳ ایده در ماه",
-      "بوم مدل کسب‌وکار پایه",
-      "پرسونای مخاطب (۱ مورد)",
-      "پشتیبانی ایمیلی"
+      "۱ پروژه فعال",
+      "۲۰ درخواست AI در ماه",
+      "دسترسی به تمام امکانات",
+      "تمام حالت‌های داشبورد",
     ],
     cta: "شروع رایگان",
     popular: false,
-    priceNum: 0
+  },
+  {
+    id: "plus",
+    name: "پلاس",
+    monthlyPrice: 299000,
+    priceLabel: "۲۹۹,۰۰۰",
+    originalYearlyPrice: "۲۹۹,۰۰۰",
+    yearlyPriceLabel: "۲۳۹,۰۰۰",
+    period: "تومان/ماه",
+    description: "برای کارآفرینان جدی",
+    features: [
+      "۵ پروژه فعال",
+      "۱۰۰ درخواست AI در ماه",
+      "دسترسی به تمام امکانات",
+      "تمام حالت‌های داشبورد",
+    ],
+    cta: "خرید پلاس",
+    popular: false,
   },
   {
     id: "pro",
-    name: "حرفه‌ای",
-    price: "۹۹،۰۰۰",
-    description: "برای کارآفرینان جدی و استارتاپ‌ها",
+    name: "پرو",
+    monthlyPrice: 699000,
+    priceLabel: "۶۹۹,۰۰۰",
+    originalYearlyPrice: "۶۹۹,۰۰۰",
+    yearlyPriceLabel: "۵۵۹,۰۰۰",
+    period: "تومان/ماه",
+    description: "محبوب‌ترین انتخاب",
     features: [
-      "نامحدود ایده",
-      "بوم مدل کسب‌وکار پیشرفته",
-      "نقشه راه کامل اجرایی",
-      "تحلیل دقیق رقبا",
-      "استراتژی بازاریابی ۳۶۰ درجه",
-      "پشتیبانی اولویت‌دار"
+      "۱۵ پروژه فعال",
+      "۵۰۰ درخواست AI در ماه",
+      "دسترسی به تمام امکانات",
+      "تمام حالت‌های داشبورد",
+      "پشتیبانی اولویت‌دار",
     ],
-    cta: "خرید اشتراک",
+    cta: "خرید پرو",
     popular: true,
-    priceNum: 99000
   },
   {
-    id: "enterprise",
-    name: "سازمانی",
-    price: "تماس",
-    description: "برای شتاب‌دهنده‌ها و تیم‌های بزرگ",
+    id: "ultra",
+    name: "اولترا",
+    monthlyPrice: 1490000,
+    priceLabel: "۱,۴۹۰,۰۰۰",
+    originalYearlyPrice: "۱,۴۹۰,۰۰۰",
+    yearlyPriceLabel: "۱,۱۹۲,۰۰۰",
+    period: "تومان/ماه",
+    description: "بدون محدودیت",
     features: [
-      "دسترسی تیمی (تا ۱۰ نفر)",
-      "API اختصاصی",
-      "مشاوره اختصاصی منتورینگ",
-      "قرارداد رسمی شرکتی",
-      "پشتیبانی ۲۴/۷ تلفنی"
+      "پروژه نامحدود",
+      "۲,۰۰۰ درخواست AI در ماه",
+      "دسترسی به تمام امکانات",
+      "تمام حالت‌های داشبورد",
+      "پشتیبانی اولویت‌دار",
+      "مشاوره اختصاصی",
     ],
-    cta: "تماس با فروش",
+    cta: "خرید اولترا",
     popular: false,
-    priceNum: 0
-  }
+  },
 ];
 
 export default function PricingPage() {
@@ -66,11 +92,7 @@ export default function PricingPage() {
   const [loading, setLoading] = useState<string | null>(null);
 
   const handlePurchase = async (plan: typeof plans[0]) => {
-    if (plan.priceNum === 0) {
-      if (plan.id === "enterprise") {
-        router.push("/contact");
-        return;
-      }
+    if (plan.monthlyPrice === 0) {
       router.push("/signup");
       return;
     }
@@ -82,7 +104,7 @@ export default function PricingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planId: plan.id,
-          amount: plan.priceNum,
+          amount: plan.monthlyPrice, // Backend handles discount logic if isAnnual is true
           isAnnual
         }),
       });
@@ -107,101 +129,151 @@ export default function PricingPage() {
         
         <main className="pt-32 pb-24">
             <section className="relative z-10 container px-4 md:px-6">
-                <div className="text-center max-w-3xl mx-auto mb-16">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-sm font-medium mb-6">
-                    <Star className="w-4 h-4 fill-emerald-600" />
-                    سرمایه‌گذاری هوشمندانه
-                </div>
-                <h1 className="text-4xl md:text-6xl font-black mb-6 tracking-tight">
-                    انتخاب پلن مناسب برای <span className="text-primary">مسیر موفقیت</span>
-                </h1>
-                <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-                    از نسخه رایگان برای تست استفاده کنید و هر زمان آماده بودید، قدرت کامل کارنکس را آزاد کنید.
-                </p>
-
-                <div className="flex items-center justify-center gap-4 mb-8 bg-muted/30 p-2 rounded-full w-fit mx-auto border border-border">
-                    <button
-                        onClick={() => setIsAnnual(false)}
-                        className={cn(
-                            "px-6 py-2 rounded-full text-sm font-bold transition-all",
-                            !isAnnual ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                        )}
+                
+                {/* Header */}
+                <div className="text-center max-w-3xl mx-auto mb-12">
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-sm font-medium mb-6"
                     >
-                        ماهانه
-                    </button>
-                    <button
-                        onClick={() => setIsAnnual(true)}
-                        className={cn(
-                            "px-6 py-2 rounded-full text-sm font-bold transition-all relative",
-                            isAnnual ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
-                        )}
-                    >
-                        سالانه
-                        <span className="absolute -top-3 -left-2 bg-emerald-500 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm animate-pulse">
-                            ۲۰٪ تخفیف
-                        </span>
-                    </button>
-                </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto items-start">
-                {plans.map((plan) => (
-                    <div
-                    key={plan.id}
-                    className={cn(
-                        "relative bg-card rounded-3xl p-8 border transition-all duration-300 flex flex-col",
-                        plan.popular 
-                        ? "border-primary shadow-2xl scale-105 z-10 ring-2 ring-primary/20" 
-                        : "border-border shadow-lg hover:shadow-xl hover:-translate-y-1 z-0"
-                    )}
-                    >
-                    {plan.popular && (
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-primary to-purple-600 text-white text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wide shadow-lg">
-                        محبوب‌ترین
-                        </div>
-                    )}
+                        <Star className="w-4 h-4 fill-emerald-600" />
+                        سرمایه‌گذاری هوشمندانه
+                    </motion.div>
                     
-                    <div className="mb-6">
-                        <h3 className="text-2xl font-black mb-2">{plan.name}</h3>
-                        <p className="text-sm text-muted-foreground min-h-[40px] leading-relaxed">{plan.description}</p>
-                    </div>
-
-                    <div className="mb-8">
-                        <div className="flex items-baseline gap-1">
-                        <span className="text-5xl font-black text-foreground">{plan.price}</span>
-                        {plan.price !== "تماس" && <span className="text-sm font-medium text-muted-foreground">تومان / ماه</span>}
-                        </div>
-                    </div>
-
-                    <div className="flex-1">
-                        <ul className="space-y-4 mb-8">
-                            {plan.features.map((feature) => (
-                            <li key={feature} className="flex items-start gap-3 text-sm font-medium">
-                                <div className="mt-0.5 rounded-full bg-emerald-500/10 p-1 shrink-0">
-                                <Check className="h-3 w-3 text-emerald-600" />
-                                </div>
-                                <span className="text-foreground/80">{feature}</span>
-                            </li>
-                            ))}
-                        </ul>
-                    </div>
-
-                    <Button 
-                        onClick={() => handlePurchase(plan)}
-                        disabled={loading === plan.id}
-                        variant={plan.popular ? "default" : "outline"} 
-                        className={cn(
-                        "w-full h-14 rounded-2xl text-base font-bold transition-all shadow-sm", 
-                        plan.popular 
-                            ? "bg-primary hover:bg-primary/90 hover:scale-[1.02] shadow-primary/25" 
-                            : "border-border hover:bg-muted hover:border-primary/50"
-                        )}
+                    <motion.h1 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="text-4xl md:text-5xl font-black mb-6 tracking-tight"
                     >
-                        {loading === plan.id ? "در حال پردازش..." : plan.cta}
-                        {plan.popular && !loading && <ArrowLeft className="mr-2 h-4 w-4" />}
-                    </Button>
-                    </div>
-                ))}
+                        پلن مناسب <span className="text-primary">خودت رو انتخاب کن</span>
+                    </motion.h1>
+                    
+                    <motion.p 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="text-xl text-muted-foreground mb-8"
+                    >
+                        بدون نیاز به کارت اعتباری برای شروع
+                    </motion.p>
+
+                    {/* Toggle */}
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.3 }}
+                        className="inline-flex items-center gap-4 p-1.5 rounded-full bg-muted border border-border"
+                    >
+                        <button
+                            onClick={() => setIsAnnual(false)}
+                            className={cn(
+                                "px-6 py-2.5 rounded-full font-bold transition-all",
+                                !isAnnual ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            ماهانه
+                        </button>
+                        <button
+                            onClick={() => setIsAnnual(true)}
+                            className={cn(
+                                "px-6 py-2.5 rounded-full font-bold transition-all flex items-center gap-2 relative",
+                                isAnnual ? "bg-white dark:bg-slate-800 shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                            )}
+                        >
+                            سالانه
+                            <span className="text-xs bg-gradient-to-r from-primary to-secondary text-white px-2 py-0.5 rounded-full shadow-sm animate-pulse">
+                                ۲۰٪ تخفیف
+                            </span>
+                        </button>
+                    </motion.div>
+                </div>
+
+                {/* Plans Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto items-start">
+                    {plans.map((plan, index) => (
+                        <motion.div
+                            key={plan.id}
+                            initial={{ opacity: 0, y: 40 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.1 + 0.4 }}
+                            className={cn(
+                                "relative bg-card rounded-3xl p-6 border transition-all duration-300 flex flex-col h-full",
+                                plan.popular 
+                                ? "border-primary shadow-2xl scale-105 z-10 ring-2 ring-primary/20 lg:-mt-4 lg:mb-4" 
+                                : "border-border shadow-lg hover:shadow-xl hover:-translate-y-1 z-0"
+                            )}
+                        >
+                            {plan.popular && (
+                                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                                    <div className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-xs font-bold shadow-lg whitespace-nowrap">
+                                        <Sparkles className="w-3 h-3" />
+                                        محبوب‌ترین
+                                    </div>
+                                </div>
+                            )}
+                            
+                            <div className="mb-6">
+                                <h3 className="text-xl font-black mb-2">{plan.name}</h3>
+                                <p className="text-xs text-muted-foreground min-h-[40px] leading-relaxed">{plan.description}</p>
+                            </div>
+
+                            <div className="mb-6">
+                                <div className="flex flex-col">
+                                    {isAnnual && plan.originalYearlyPrice ? (
+                                        <>
+                                            <span className="text-sm text-muted-foreground line-through mb-1 opacity-70">
+                                                {plan.originalYearlyPrice}
+                                            </span>
+                                            <div className="flex items-baseline gap-1">
+                                                <span className="text-3xl font-black text-foreground">{plan.yearlyPriceLabel}</span>
+                                                <span className="text-xs font-medium text-muted-foreground">{plan.period}</span>
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-3xl font-black text-foreground">{plan.priceLabel}</span>
+                                            <span className="text-xs font-medium text-muted-foreground">{plan.period}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="mb-6">
+                                <Button 
+                                    onClick={() => handlePurchase(plan)}
+                                    disabled={loading === plan.id}
+                                    variant={plan.popular ? "default" : "outline"} 
+                                    className={cn(
+                                        "w-full h-12 rounded-xl text-sm font-bold transition-all shadow-sm", 
+                                        plan.popular 
+                                            ? "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-primary/25" 
+                                            : "border-border hover:bg-muted hover:border-primary/50"
+                                    )}
+                                >
+                                    {loading === plan.id ? "در حال پردازش..." : plan.cta}
+                                </Button>
+                            </div>
+
+                            <div className="flex-1">
+                                <p className="text-xs font-bold text-foreground mb-4 opacity-80">شامل:</p>
+                                <ul className="space-y-3">
+                                    {plan.features.map((feature) => (
+                                        <li key={feature} className="flex items-start gap-2 text-xs font-medium">
+                                            <div className={cn(
+                                                "mt-0.5 rounded-full p-0.5 shrink-0",
+                                                plan.popular ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                                            )}>
+                                                <Check className="h-3 w-3" />
+                                            </div>
+                                            <span className="text-foreground/80 leading-snug">{feature}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </motion.div>
+                    ))}
                 </div>
             </section>
         </main>

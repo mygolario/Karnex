@@ -31,26 +31,26 @@ export function BillingSection() {
   }
 
   const plan = subscription ? getPlanById(subscription.planId) : null;
-  const tierIcons = {
+  const tierIcons: Record<string, React.ElementType> = {
     free: Zap,
-    pro: Sparkles,
-    team: Users,
-    enterprise: Crown,
+    plus: Sparkles,
+    pro: Crown,
+    ultra: Crown,
   };
-  const TierIcon = tierIcons[tier];
+  const TierIcon = tierIcons[tier] || Zap;
 
-  const tierColors = {
+  const tierColors: Record<string, string> = {
     free: "bg-muted text-muted-foreground",
-    pro: "bg-primary/10 text-primary",
-    team: "bg-purple-500/10 text-purple-600",
-    enterprise: "bg-amber-500/10 text-amber-600",
+    plus: "bg-primary/10 text-primary",
+    pro: "bg-purple-500/10 text-purple-600",
+    ultra: "bg-amber-500/10 text-amber-600",
   };
 
-  const tierLabels = {
+  const tierLabels: Record<string, string> = {
     free: "رایگان",
-    pro: "حرفه‌ای",
-    team: "تیمی",
-    enterprise: "سازمانی",
+    plus: "پلاس",
+    pro: "پرو",
+    ultra: "اولترا",
   };
 
   return (
@@ -170,25 +170,17 @@ export function BillingSection() {
         
         <div className="space-y-4">
           <UsageItem
-            label="تولید محتوا با AI"
-            used={15}
-            limit={features.aiGenerations}
+            label="درخواست‌های AI"
+            used={15} // TODO: Connect to actual usage
+            limit={features.aiRequestsPerMonth}
             icon={Sparkles}
           />
           <UsageItem
-            label="پروژه‌ها"
-            used={1}
+            label="پروژه‌های فعال"
+            used={1} // TODO: Connect to actual usage
             limit={features.projectLimit}
             icon={CreditCard}
           />
-          {features.teamMembers > 0 && (
-            <UsageItem
-              label="اعضای تیم"
-              used={2}
-              limit={features.teamMembers}
-              icon={Users}
-            />
-          )}
         </div>
       </Card>
 

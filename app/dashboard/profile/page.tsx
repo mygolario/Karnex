@@ -2,37 +2,57 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { updateUserProfile } from "@/lib/db"; // You need to export this from db.ts
+import { updateUserProfile } from "@/lib/db";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  User, CreditCard, Shield, Clock, 
-  MapPin, Mail, Phone, Calendar, 
-  CheckCircle2, AlertTriangle, Loader2 
+import {
+  User,
+  CreditCard,
+  Shield,
+  Clock,
+  MapPin,
+  Mail,
+  Phone,
+  Calendar,
+  CheckCircle2,
+  AlertTriangle,
+  Loader2,
+  Camera,
+  Sparkles,
+  ChevronLeft,
+  Lock,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
+import DatePicker from "react-multi-date-picker";
+import persian from "react-date-object/calendars/persian";
+import persian_fa from "react-date-object/locales/persian_fa";
 
 export default function ProfilePage() {
   const { user, userProfile, refreshProfile } = useAuth();
-  const [isActiveTab, setIsActiveTab] = useState<'profile' | 'subscription' | 'security'>('profile');
+  const [isActiveTab, setIsActiveTab] = useState<
+    "profile" | "subscription" | "security"
+  >("profile");
   const [isLoading, setIsLoading] = useState(false);
-  
+
   // Form States
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phoneNumber: '',
-    bio: ''
+    firstName: "",
+    lastName: "",
+    phoneNumber: "",
+    birthDate: "",
+    bio: "",
   });
 
   useEffect(() => {
     if (userProfile) {
       setFormData({
-        firstName: userProfile.first_name || '',
-        lastName: userProfile.last_name || '',
-        phoneNumber: userProfile.phone_number || '',
-        bio: userProfile.bio || ''
+        firstName: userProfile.first_name || "",
+        lastName: userProfile.last_name || "",
+        phoneNumber: userProfile.phone_number || "",
+        birthDate: userProfile.birth_date || "",
+        bio: userProfile.bio || "",
       });
     }
   }, [userProfile]);
@@ -45,12 +65,12 @@ export default function ProfilePage() {
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone_number: formData.phoneNumber,
+        birth_date: formData.birthDate,
         bio: formData.bio,
-        // Also update full_name if first/last are present
-        full_name: `${formData.firstName} ${formData.lastName}`.trim()
+        full_name: `${formData.firstName} ${formData.lastName}`.trim(),
       });
       await refreshProfile();
-      toast.success("پروفایل با موفقیت بروزرسانی شد");
+      toast.success("پروفایل شما با موفقیت بروزرسانی شد");
     } catch (error) {
       console.error(error);
       toast.error("خطا در ذخیره تغییرات");
@@ -59,169 +79,425 @@ export default function ProfilePage() {
     }
   };
 
-  if (!userProfile) return <div className="p-12 text-center"><Loader2 className="animate-spin mx-auto"/></div>;
+  if (!userProfile)
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="animate-spin text-primary w-10 h-10" />
+      </div>
+    );
+
+  const sidebarItems = [
+    { id: "profile", label: "اطلاعات شخصی", icon: User },
+    { id: "subscription", label: "اشتراک و پرداخت", icon: CreditCard },
+    { id: "security", label: "امنیت و ورود", icon: Shield },
+  ] as const;
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-black text-foreground mb-2">حساب کاربری</h1>
-        <p className="text-muted-foreground">مدیریت اطلاعات شخصی، اشتراک و امنیت</p>
+    <div className="max-w-5xl mx-auto pb-20 animate-fade-in-up space-y-8">
+      {/* Premium Header */}
+      <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-900 to-slate-900 text-white shadow-2xl shadow-indigo-900/20 p-8 md:p-10 flex flex-col md:flex-row items-center gap-8">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10 bg-center" />
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/30 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+        <div className="relative z-10 w-24 h-24 bg-white/10 backdrop-blur-xl rounded-3xl flex items-center justify-center border border-white/20 shadow-inner group">
+          <User
+            size={40}
+            className="text-white/90 group-hover:scale-110 transition-transform duration-500"
+          />
+          <div className="absolute inset-0 rounded-3xl bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        </div>
+
+        <div className="relative z-10 flex-1 text-center md:text-right">
+          <h1 className="text-3xl md:text-4xl font-black mb-3 tracking-tight">
+            حساب کاربری
+          </h1>
+          <p className="text-white/70 text-lg max-w-2xl leading-relaxed">
+            اطلاعات شخصی، جزئیات اشتراک و تنظیمات امنیتی خود را مدیریت کنید.
+          </p>
+        </div>
+
+
+        <div className="hidden md:block relative z-10">
+          <div className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/10 flex items-center gap-3">
+            <Sparkles size={18} className="text-yellow-300 animate-pulse" />
+            <span className="font-bold text-sm">
+              عضویت{" "}
+              {userProfile.subscription.planId === "pro" ? "ویژه" : "پایه"}
+            </span>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Sidebar Nav */}
-        <div className="lg:col-span-1 space-y-2">
-          <button 
-            onClick={() => setIsActiveTab('profile')}
-            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${isActiveTab === 'profile' ? 'bg-primary/10 text-primary font-bold' : 'text-muted-foreground hover:bg-muted'}`}
+        <div className="lg:col-span-3 space-y-4">
+          <Card
+            variant="glass"
+            className="p-3 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-white/20 dark:border-white/5 sticky top-24"
           >
-            <User size={18} />
-            اطلاعات شخصی
-          </button>
-          <button 
-            onClick={() => setIsActiveTab('subscription')}
-            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${isActiveTab === 'subscription' ? 'bg-primary/10 text-primary font-bold' : 'text-muted-foreground hover:bg-muted'}`}
-          >
-            <CreditCard size={18} />
-            اشتراک و پرداخت
-          </button>
-          <button 
-            onClick={() => setIsActiveTab('security')}
-            className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${isActiveTab === 'security' ? 'bg-primary/10 text-primary font-bold' : 'text-muted-foreground hover:bg-muted'}`}
-          >
-            <Shield size={18} />
-            امنیت و ورود
-          </button>
+            <div className="space-y-1">
+              {sidebarItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setIsActiveTab(item.id)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 group relative overflow-hidden ${
+                    isActiveTab === item.id
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/25"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  }`}
+                >
+                  <item.icon
+                    size={18}
+                    className={`relative z-10 ${isActiveTab === item.id ? "animate-bounce-gentle" : ""}`}
+                  />
+                  <span className="font-bold relative z-10 text-sm">
+                    {item.label}
+                  </span>
+                  {isActiveTab === item.id && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </Card>
+
+
         </div>
 
         {/* Content Area */}
-        <div className="lg:col-span-3 space-y-6">
-          
+        <div className="lg:col-span-9 space-y-6">
           {/* PROFILE TAB */}
-          {isActiveTab === 'profile' && (
-            <Card variant="default" padding="lg" className="space-y-6">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-3xl font-bold">
-                  {userProfile.first_name?.[0] || user?.email?.[0]?.toUpperCase() || 'U'}
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold">{user?.email || 'کاربر'}</h2>
-                  <Badge variant={userProfile.subscription.planId === 'pro' ? 'secondary' : 'default'} className="mt-1">
-                    {userProfile.subscription.planId === 'free' ? 'کاربر عادی' : 'کاربر ویژه'}
-                  </Badge>
-                </div>
-              </div>
+          {isActiveTab === "profile" && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Card variant="glass" className="p-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-primary via-purple-500 to-transparent opacity-50" />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">نام</label>
-                  <input 
-                    className="input-premium w-full" 
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                    placeholder="نام خود را وارد کنید"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">نام خانوادگی</label>
-                  <input 
-                    className="input-premium w-full"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                    placeholder="نام خانوادگی"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">شماره موبایل</label>
-                  <input 
-                    className="input-premium w-full"
-                    value={formData.phoneNumber}
-                    onChange={(e) => setFormData({...formData, phoneNumber: e.target.value})}
-                    placeholder="0912..."
-                    dir="ltr"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">تاریخ تولد</label>
-                  <input 
-                    type="date"
-                    className="input-premium w-full"
-                    disabled
-                    placeholder="به زودی"
-                  />
-                </div>
-              </div>
+                <div className="flex flex-col md:flex-row items-center gap-8 mb-10">
+                  <div className="relative group cursor-pointer">
+                    <div className="w-28 h-28 rounded-[2rem] bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-4xl font-black shadow-2xl shadow-blue-500/30 transform group-hover:scale-105 transition-all duration-300 ring-4 ring-background">
+                      {userProfile.first_name?.[0] ||
+                        user?.email?.[0]?.toUpperCase() ||
+                        "U"}
+                    </div>
+                    <div className="absolute inset-0 rounded-[2rem] bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 backdrop-blur-[2px]">
+                      <Camera size={32} className="text-white drop-shadow-lg" />
+                    </div>
+                    <div className="absolute -bottom-2 -right-2 bg-background p-1.5 rounded-xl border border-border shadow-sm">
+                      <div className="bg-green-500 w-3 h-3 rounded-full animate-pulse" />
+                    </div>
+                  </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">درباره من</label>
-                <textarea 
-                  className="input-premium w-full min-h-[100px]"
-                  value={formData.bio}
-                  onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                  placeholder="مختصری درباره خود بنویسید..."
-                />
-              </div>
+                  <div className="flex-1 text-center md:text-right space-y-2">
+                    <div className="flex items-center justify-center md:justify-start gap-3">
+                      <h2 className="text-2xl font-black text-foreground">
+                        {user?.email || "کاربر مهمان"}
+                      </h2>
+                      <Badge
+                        variant={
+                          userProfile.subscription.planId === "pro"
+                            ? "default"
+                            : "secondary"
+                        }
+                        className="px-2 py-0.5"
+                      >
+                        {userProfile.subscription.planId === "free"
+                          ? "اشتراک پایه"
+                          : "کاربر ویژه"}
+                      </Badge>
+                    </div>
+                    <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-2 text-sm">
+                      <Shield size={14} className="text-primary" />
+                      شناسه کاربر:{" "}
+                      <span className="font-mono bg-muted px-2 py-0.5 rounded text-xs">
+                        {user?.id.slice(0, 12)}...
+                      </span>
+                    </p>
+                  </div>
+                </div>
 
-              <div className="flex justify-end">
-                <Button variant="gradient" onClick={handleSaveProfile} disabled={isLoading}>
-                  {isLoading ? <Loader2 className="animate-spin" /> : <CheckCircle2 size={18} className="mr-2" />}
-                  ذخیره تغییرات
-                </Button>
-              </div>
-            </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-foreground/80 pr-1">
+                      نام کوچک
+                    </label>
+                    <input
+                      className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:bg-background/80 hover:border-primary/30 focus:border-primary"
+                      value={formData.firstName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, firstName: e.target.value })
+                      }
+                      placeholder="نام خود را وارد کنید"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-foreground/80 pr-1">
+                      نام خانوادگی
+                    </label>
+                    <input
+                      className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:bg-background/80 hover:border-primary/30 focus:border-primary"
+                      value={formData.lastName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, lastName: e.target.value })
+                      }
+                      placeholder="نام خانوادگی"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-foreground/80 pr-1">
+                      شماره تماس
+                    </label>
+                    <input
+                      className="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:bg-background/80 hover:border-primary/30 focus:border-primary text-left"
+                      value={formData.phoneNumber}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          phoneNumber: e.target.value,
+                        })
+                      }
+                      placeholder="0912..."
+                      dir="ltr"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-foreground/80 pr-1">
+                      تاریخ تولد
+                    </label>
+                    <div className="relative">
+                      <DatePicker
+                        value={formData.birthDate}
+                        onChange={(date: any) =>
+                          setFormData({
+                            ...formData,
+                            birthDate: date ? date.toString() : "",
+                          })
+                        }
+                        calendar={persian}
+                        locale={persian_fa}
+                        calendarPosition="bottom-right"
+                        inputClass="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:bg-background/80 hover:border-primary/30 focus:border-primary"
+                        containerClassName="w-full"
+                        placeholder="تاریخ تولد خود را انتخاب کنید"
+                      />
+                    </div>
+                  </div>
+                  <div className="col-span-1 md:col-span-2 space-y-2">
+                    <label className="text-sm font-bold text-foreground/80 pr-1">
+                      درباره من
+                    </label>
+                    <textarea
+                      className="flex min-h-[120px] w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:bg-background/80 hover:border-primary/30 focus:border-primary resize-none"
+                      value={formData.bio}
+                      onChange={(e) =>
+                        setFormData({ ...formData, bio: e.target.value })
+                      }
+                      placeholder="مختصری درباره تخصص‌ها و علایق خود بنویسید..."
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end mt-8 pt-6 border-t border-border/50">
+                  <Button
+                    size="lg"
+                    className="rounded-xl px-8 shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all"
+                    onClick={handleSaveProfile}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      <CheckCircle2 size={20} className="mr-2" />
+                    )}
+                    ذخیره تغییرات
+                  </Button>
+                </div>
+              </Card>
+            </div>
           )}
 
           {/* SUBSCRIPTION TAB */}
-          {isActiveTab === 'subscription' && (
-            <div className="space-y-6">
-              <Card variant="gradient" className="text-white relative overflow-hidden">
-                <div className="relative z-10">
-                  <h3 className="text-lg font-bold opacity-90 mb-1">طرح فعلی شما</h3>
-                  <div className="text-3xl font-black mb-4">
-                    {userProfile.subscription.planId === 'free' ? 'رایگان' : 
-                     userProfile.subscription.planId === 'plus' ? 'پلاس' : 'حرفه‌ای'}
-                  </div>
-                  <div className="flex gap-4 text-sm opacity-80">
-                    <div className="flex items-center gap-1">
-                      <Clock size={16} />
-                      {userProfile.subscription.status === 'active' ? 'فعال' : 'منقضی'}
-                    </div>
-                    {userProfile.subscription.endDate && (
-                      <div className="flex items-center gap-1">
-                        <Calendar size={16} />
-                        تا {new Date(userProfile.subscription.endDate).toLocaleDateString('fa-IR')}
+          {isActiveTab === "subscription" && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Card
+                variant="gradient"
+                className="text-white relative overflow-hidden border-none shadow-2xl shadow-primary/20"
+              >
+                <div className="relative z-10 p-2">
+                  <div className="flex justify-between items-start mb-8">
+                    <div>
+                      <h3 className="text-lg font-medium opacity-80 mb-1">
+                        طرح فعال فعلی
+                      </h3>
+                      <div className="text-4xl font-black tracking-tight">
+                        {userProfile.subscription.planId === "free"
+                          ? "رایگان"
+                          : userProfile.subscription.planId === "plus"
+                            ? "پلاس"
+                            : "حرفه‌ای"}
                       </div>
-                    )}
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-md p-3 rounded-2xl">
+                      <Sparkles size={24} className="text-yellow-300" />
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col md:flex-row gap-6 md:items-end justify-between">
+                    <div className="space-y-1">
+                      <div className="text-sm opacity-70">وضعیت اشتراک</div>
+                      <div className="font-mono text-lg tracking-widest opacity-90">
+                        {userProfile.subscription.planId === "pro" ? "PLAN-PRO-ACTIVE" : "PLAN-BASIC"}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 text-sm font-medium bg-black/20 p-2 rounded-xl backdrop-blur-sm self-start md:self-auto">
+                      <div className="flex items-center gap-2 px-2">
+                        <div
+                          className={`w-2 h-2 rounded-full ${userProfile.subscription.status === "active" ? "bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]" : "bg-red-400"}`}
+                        />
+                        {userProfile.subscription.status === "active"
+                          ? "فعال"
+                          : "منقضی"}
+                      </div>
+                      {userProfile.subscription.endDate && (
+                        <div className="flex items-center gap-2 border-r border-white/20 pr-4">
+                          <Calendar size={14} className="opacity-70" />
+                          تا{" "}
+                          {new Date(
+                            userProfile.subscription.endDate,
+                          ).toLocaleDateString("fa-IR")}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-                <div className="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16" />
+
+                {/* Decorative Background Elements */}
+                <div className="absolute right-0 top-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
+                <div className="absolute left-0 bottom-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />
+                <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20 bg-center pointer-events-none" />
               </Card>
 
-              <Card variant="default">
-                <h3 className="font-bold mb-4">تاریخچه تراکنش‌ها</h3>
-                <div className="text-center py-8 text-muted-foreground">
-                  <Clock size={40} className="mx-auto mb-2 opacity-20" />
-                  <p>هیچ تراکنشی یافت نشد</p>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Button
+                  variant="outline"
+                  className="h-14 rounded-2xl text-lg hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                >
+                  <CreditCard size={20} className="mr-2" />
+                  تغییر طرح اشتراک
+                </Button>
+
+              </div>
+
+              <Card variant="default" className="overflow-hidden">
+                <div className="p-6 border-b border-border/50 flex justify-between items-center">
+                  <h3 className="font-bold text-lg flex items-center gap-2">
+                    <Clock size={20} className="text-primary" />
+                    تاریخچه تراکنش‌ها
+                  </h3>
+                  <Badge variant="outline" className="text-xs">
+                    ۳۰ روز گذشته
+                  </Badge>
+                </div>
+
+                {/* Empty State / Mock Data */}
+                <div className="p-12 text-center">
+                  <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 opacity-50">
+                    <Clock size={40} className="text-muted-foreground" />
+                  </div>
+                  <h4 className="font-bold text-foreground mb-1">
+                    هیچ تراکنشی یافت نشد
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    شما هنوز هیچ پرداخت موفقی در سیستم ثبت نکرده‌اید.
+                  </p>
                 </div>
               </Card>
             </div>
           )}
 
           {/* SECURITY TAB */}
-          {isActiveTab === 'security' && (
-            <Card variant="default" padding="lg">
-              <h3 className="font-bold mb-4 flex items-center gap-2">
-                <Shield size={20} className="text-primary" />
-                تغییر رمز عبور
-              </h3>
-              <p className="text-sm text-muted-foreground mb-6">
-                برای تغییر رمز عبور، یک ایمیل بازیابی ارسال خواهد شد.
-              </p>
-              <Button variant="outline">ارسال لینک تغییر رمز</Button>
-            </Card>
-          )}
+          {isActiveTab === "security" && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <Card variant="glass" padding="lg">
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+                    <Lock size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-foreground">
+                      تغییر رمز عبور
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1 leading-6">
+                      برای امنیت بیشتر، توصیه می‌شود رمز عبور خود را هر چند وقت
+                      یکبار تغییر دهید. یک ایمیل حاوی لینک تغییر رمز عبور برای
+                      شما ارسال خواهد شد.
+                    </p>
+                  </div>
+                </div>
 
+                <div className="bg-muted/30 rounded-xl p-4 mb-6 border border-border/50">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                    <CheckCircle2 size={16} className="text-green-500" />
+                    آخرین تغییر رمز عبور: ۲ ماه پیش
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle2 size={16} className="text-green-500" />
+                    تایید دو مرحله‌ای: غیرفعال
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    className="border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-600 text-orange-500"
+                  >
+                    ارسال لینک تغییر رمز
+                  </Button>
+                </div>
+              </Card>
+
+              <Card
+                variant="glass"
+                padding="lg"
+                className="border-red-500/20 bg-red-500/5"
+              >
+                <div className="flex items-start gap-4 mb-6">
+                  <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center shrink-0">
+                    <AlertTriangle size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-destructive">
+                      نشست‌های فعال
+                    </h3>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      دستگاه‌هایی که در حال حاضر به حساب شما دسترسی دارند.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-3 bg-background/50 rounded-xl border border-border/50">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-muted rounded-lg flex items-center justify-center">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse ring-4 ring-green-500/20" />
+                      </div>
+                      <div>
+                        <div className="font-bold text-sm">
+                          Chrome - Windows
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          دستگاه فعلی • اکنون
+                        </div>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      آنلاین
+                    </Badge>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
     </div>

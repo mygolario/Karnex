@@ -6,6 +6,7 @@
  */
 
 import { PaymentGateway, PaymentParams, PaymentSession, PaymentResult, RefundResult } from './types';
+import { ZibalGateway } from './gateways/zibal';
 
 // Inline Mock Gateway to avoid module resolution issues
 class MockGateway implements PaymentGateway {
@@ -44,6 +45,9 @@ interface GatewayConfig {
   zarinpalMerchantId?: string;
   zarinpalSandbox?: boolean;
   
+  // Zibal
+  zibalMerchant?: string;
+  
   // Stripe
   stripeSecretKey?: string;
   stripeWebhookSecret?: string;
@@ -52,8 +56,11 @@ interface GatewayConfig {
   callbackBaseUrl?: string;
 }
 
-let defaultGateway: GatewayProvider = 'mock';
-let gatewayConfig: GatewayConfig = {};
+// Auto-detect Zibal if env var is set
+let defaultGateway: GatewayProvider = process.env.ZIBAL_MERCHANT ? 'zibal' : 'mock';
+let gatewayConfig: GatewayConfig = {
+  zibalMerchant: process.env.ZIBAL_MERCHANT,
+};
 
 /**
  * Configure the payment system
@@ -88,10 +95,9 @@ export function createGateway(provider?: GatewayProvider): PaymentGateway {
       );
       
     case 'zibal':
-      throw new Error(
-        'Zibal gateway not yet implemented. ' +
-        'Please use mock gateway for testing.'
-      );
+      return new ZibalGateway({
+        merchant: gatewayConfig.zibalMerchant || process.env.ZIBAL_MERCHANT,
+      });
       
     case 'idpay':
       throw new Error(
@@ -124,6 +130,8 @@ export function isGatewayAvailable(provider: GatewayProvider): boolean {
   switch (provider) {
     case 'mock':
       return true;
+    case 'zibal':
+      return !!(gatewayConfig.zibalMerchant || process.env.ZIBAL_MERCHANT);
     case 'zarinpal':
       return !!gatewayConfig.zarinpalMerchantId;
     case 'stripe':
@@ -139,6 +147,9 @@ export function isGatewayAvailable(provider: GatewayProvider): boolean {
 export function getAvailableGateways(): GatewayProvider[] {
   const gateways: GatewayProvider[] = ['mock'];
   
+  if (gatewayConfig.zibalMerchant || process.env.ZIBAL_MERCHANT) {
+    gateways.push('zibal');
+  }
   if (gatewayConfig.zarinpalMerchantId) {
     gateways.push('zarinpal');
   }

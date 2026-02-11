@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { callOpenRouter } from '@/lib/openrouter';
+import { checkAILimit } from '@/lib/ai-limit-middleware';
 
 export const maxDuration = 30;
 export const dynamic = 'force-dynamic';
@@ -11,6 +12,10 @@ interface ChatMessage {
 
 export async function POST(req: Request) {
   try {
+    // === AI Usage Limit Check ===
+    const { errorResponse } = await checkAILimit();
+    if (errorResponse) return errorResponse;
+
     const { messages, systemPrompt } = await req.json() as {
       messages: ChatMessage[];
       systemPrompt: string;

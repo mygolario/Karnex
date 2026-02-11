@@ -8,7 +8,7 @@
 
 // === Plan & Pricing Types ===
 
-export type PlanTier = 'free' | 'pro' | 'team' | 'enterprise';
+export type PlanTier = 'free' | 'plus' | 'pro' | 'ultra';
 export type BillingCycle = 'monthly' | 'yearly';
 export type Currency = 'IRR' | 'USD' | 'EUR';
 
@@ -146,67 +146,41 @@ export interface Transaction {
 
 // === Feature Access Types ===
 
+/**
+ * Simplified feature flags — all features are unlocked for all tiers.
+ * Only project count and AI request count are limited.
+ */
 export interface FeatureFlags {
-  aiAssistant: boolean;
-  aiGenerations: number | 'unlimited';
   projectLimit: number | 'unlimited';
-  exportPdf: boolean;
-  brandKit: boolean;
-  teamMembers: number;
+  aiRequestsPerMonth: number | 'unlimited';
   prioritySupport: boolean;
-  customDomain: boolean;
-  apiAccess: boolean;
-  analytics: 'basic' | 'advanced' | 'enterprise';
+  dedicatedConsulting: boolean;
 }
 
-// Default feature flags per tier
+// Default feature flags per tier (Option A — Recommended)
 export const DEFAULT_FEATURES: Record<PlanTier, FeatureFlags> = {
   free: {
-    aiAssistant: true,
-    aiGenerations: 5,
     projectLimit: 1,
-    exportPdf: false,
-    brandKit: false,
-    teamMembers: 0,
+    aiRequestsPerMonth: 20,
     prioritySupport: false,
-    customDomain: false,
-    apiAccess: false,
-    analytics: 'basic',
+    dedicatedConsulting: false,
+  },
+  plus: {
+    projectLimit: 5,
+    aiRequestsPerMonth: 100,
+    prioritySupport: false,
+    dedicatedConsulting: false,
   },
   pro: {
-    aiAssistant: true,
-    aiGenerations: 100,
-    projectLimit: 10,
-    exportPdf: true,
-    brandKit: true,
-    teamMembers: 0,
-    prioritySupport: false,
-    customDomain: false,
-    apiAccess: false,
-    analytics: 'advanced',
-  },
-  team: {
-    aiAssistant: true,
-    aiGenerations: 'unlimited',
-    projectLimit: 'unlimited',
-    exportPdf: true,
-    brandKit: true,
-    teamMembers: 10,
+    projectLimit: 15,
+    aiRequestsPerMonth: 500,
     prioritySupport: true,
-    customDomain: false,
-    apiAccess: true,
-    analytics: 'advanced',
+    dedicatedConsulting: false,
   },
-  enterprise: {
-    aiAssistant: true,
-    aiGenerations: 'unlimited',
+  ultra: {
     projectLimit: 'unlimited',
-    exportPdf: true,
-    brandKit: true,
-    teamMembers: 100,
+    aiRequestsPerMonth: 2000,
     prioritySupport: true,
-    customDomain: true,
-    apiAccess: true,
-    analytics: 'enterprise',
+    dedicatedConsulting: true,
   },
 };

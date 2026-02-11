@@ -11,6 +11,7 @@ export interface UserProfile {
   first_name?: string;
   last_name?: string;
   phone_number?: string;
+  birth_date?: string;
   bio?: string;
   avatar_url?: string; // Changed from photoURL
   subscription: {
@@ -445,6 +446,12 @@ export interface LocationAnalysis {
         distance: string;
         strength: string;
         weakness: string;
+        scores?: {
+          product: number;
+          marketing: number;
+          price: number;
+          support: number;
+        };
     }>;
   };
 
@@ -461,6 +468,26 @@ export interface LocationAnalysis {
   };
   aiInsight: string;
   recommendations?: Array<{ title: string; desc: string }>;
+
+  // NEW: Intelligence Hub Fields
+  neighborhoodProfile?: string;
+  marketGapCards?: Array<{
+    title: string;
+    description: string;
+    potential: "High" | "Medium" | "Low";
+  }>;
+  prioritizedRecommendations?: Array<{
+    title: string;
+    desc: string;
+    urgency: "فوری" | "مهم" | "پیشنهادی";
+  }>;
+  riskBreakdown?: {
+    financial: number;
+    competition: number;
+    accessibility: number;
+    market: number;
+  };
+  peakHours?: string;
   
   createdAt: string;
 }
@@ -520,6 +547,7 @@ export interface BusinessPlan {
 
   campaigns?: Campaign[]; // NEW: Campaigns Data
   locationAnalysis?: LocationAnalysis; // NEW: Location Data
+  locationHistory?: LocationAnalysis[]; // NEW: Location Analysis History
   subTasks?: SubTask[];
   createdAt: string;
   updatedAt?: string;

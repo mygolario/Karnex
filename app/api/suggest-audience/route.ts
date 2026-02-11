@@ -1,11 +1,16 @@
 import { NextResponse } from 'next/server';
 import { callOpenRouter, parseJsonFromAI } from '@/lib/openrouter';
+import { checkAILimit } from '@/lib/ai-limit-middleware';
 
 export const maxDuration = 30;
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
+    // === AI Usage Limit Check ===
+    const { errorResponse } = await checkAILimit();
+    if (errorResponse) return errorResponse;
+
     const { productIdea } = await req.json();
 
     if (!productIdea || productIdea.trim().length < 3) {

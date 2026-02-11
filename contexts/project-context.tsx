@@ -32,7 +32,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [projects, setProjects] = useState<BusinessPlan[]>([]);
   const [activeProject, setActiveProject] = useState<BusinessPlan | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setIsLoading] = useState(true);
   const pathname = usePathname();
 
   // Load Projects on Auth — use user?.id to prevent unnecessary re-fetches
@@ -40,7 +40,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     if (!user) {
       setProjects([]);
       setActiveProject(null);
-      setLoading(false);
+      setIsLoading(false);
       return;
     }
     
@@ -49,13 +49,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
   const refreshProjects = async () => {
     if (!user) return;
-    setLoading(true);
+    setIsLoading(true);
     try {
       // Use server-side API route instead of browser Supabase client
       const res = await fetch("/api/user-data?type=projects");
       if (!res.ok) {
         console.error("Error fetching projects: HTTP", res.status);
-        setLoading(false);
+        setIsLoading(false);
         return;
       }
       const data = await res.json();
@@ -88,7 +88,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       console.error("Failed to load projects", err);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -96,10 +96,43 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error("User not found");
     
     // Only do the critical insert — dashboard will load projects on its own
-    console.log("📝 Creating project in Supabase...");
+    console.log("📝 Creating project in Supabase for user:", user.id);
     const newId = await createProject(user.id, planData);
     console.log("✅ Project created:", newId);
     
+    // FORCE REFRESH & SWITCH
+    setIsLoading(true); // Manually set loading to prevent UI flicker
+    try {
+        // Fetch fresh list
+        const res = await fetch("/api/user-data?type=projects");
+        if (!res.ok) throw new Error("Failed to refresh projects");
+        
+        const data = await res.json();
+        const allProjects: BusinessPlan[] = data.projects || [];
+        
+        setProjects(allProjects);
+        
+        // Find the specific new project
+        const newProject = allProjects.find(p => p.id === newId);
+        
+        if (newProject) {
+            console.log("🔄 Switching to new project:", newProject.projectName);
+            setActiveProject(newProject);
+            // Optional: You could allow the caller to handle routing, 
+            // but ensuring state is cohesive here is safer.
+        } else {
+            console.warn("⚠️ New project created but not found in list. Using fallback.");
+            // Fallback to what refreshProjects normally does
+            if (allProjects.length > 0) setActiveProject(allProjects[0]);
+        }
+
+    } catch (err) {
+        console.error("❌ Error switching to new project:", err);
+        // Dont throw, let the flow continue so the user at least gets redirected (even if to old project)
+    } finally {
+        setIsLoading(false);
+    }
+
     return newId;
   };
 

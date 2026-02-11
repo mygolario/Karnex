@@ -3,28 +3,42 @@
 import { useProject } from "@/contexts/project-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, Loader2, Navigation, Layers, Zap, Store } from "lucide-react";
+import {
+  MapPin, Search, Loader2, Navigation, Layers, Zap, History,
+  GitCompare, BarChart3, Users, Shield, Target, Lightbulb
+} from "lucide-react";
 import Link from "next/link";
 import { LocationProvider, useLocation } from "@/components/dashboard/location/location-context";
-import { AnalysisCharts } from "@/components/dashboard/location/analysis-charts";
-import { LocationScore } from "@/components/dashboard/location/location-score";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-// import { toast } from "sonner"; // Removed unused import
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
+
+// New Components
+import { ScoreGauge } from "@/components/dashboard/location/score-gauge";
+import { NeighborhoodCard } from "@/components/dashboard/location/neighborhood-card";
+import { MetricCards } from "@/components/dashboard/location/metric-cards";
+import { CompetitorTable } from "@/components/dashboard/location/competitor-table";
+import { DemographicsDashboard } from "@/components/dashboard/location/demographics-dashboard";
+import { SwotGrid } from "@/components/dashboard/location/swot-grid";
+import { RiskGauge } from "@/components/dashboard/location/risk-gauge";
+import { MarketGapCards } from "@/components/dashboard/location/market-gap-cards";
+import { RecommendationsList } from "@/components/dashboard/location/recommendations-list";
+import { ComparisonView } from "@/components/dashboard/location/comparison-view";
+import { HistorySidebar } from "@/components/dashboard/location/history-sidebar";
+import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
 
 export default function LocationAnalyzerPage() {
   const { activeProject: plan, loading } = useProject();
 
   if (loading || !plan) {
-      return (
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      );
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
-  // Check project type - Traditional Only
   if (plan.projectType !== "traditional") {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -44,16 +58,27 @@ export default function LocationAnalyzerPage() {
 
   return (
     <LocationProvider>
-        <LocationPageContent />
+      <LocationPageContent />
     </LocationProvider>
   );
 }
 
+// Tab Definitions
+const TABS = [
+  { id: "overview", label: "خلاصه", icon: BarChart3 },
+  { id: "competitors", label: "رقبا", icon: Shield },
+  { id: "demographics", label: "جمعیت", icon: Users },
+  { id: "swot", label: "SWOT", icon: Target },
+  { id: "recommendations", label: "پیشنهادات", icon: Lightbulb },
+];
+
 function LocationPageContent() {
   const { activeProject } = useProject();
-  const { analysis, loading, analyzeLocation } = useLocation();
+  const { analysis, loading, analyzeLocation, history, comparisonMode, toggleComparisonMode } = useLocation();
   const [city, setCity] = useState("Tehran");
   const [address, setAddress] = useState("");
+  const [activeTab, setActiveTab] = useState("overview");
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   const handleAnalyze = async () => {
     if (!address) return;
@@ -63,160 +88,242 @@ function LocationPageContent() {
   if (!activeProject) return <div className="p-10 text-center">Please select a project first.</div>;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row h-screen overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground flex h-screen overflow-hidden">
       
-      {/* LEFT PANEL - MAP & INPUT (Sticky) */}
-      <div className="w-full md:w-[40%] h-[40vh] md:h-full relative border-l border-border bg-muted/10 flex flex-col">
-          
-          {/* Map Background Layer */}
-          <div className="absolute inset-0 z-0 overflow-hidden">
-             <div className="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Tehran_location_map.svg/1024px-Tehran_location_map.svg.png')] bg-cover bg-center filter grayscale opacity-20" />
-             <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
-          </div>
+      {/* History Sidebar */}
+      <HistorySidebar isOpen={historyOpen} onClose={() => setHistoryOpen(false)} />
 
-          <div className="relative z-10 flex-1 flex flex-col p-6 md:p-8 justify-center">
-             
-             <div className="mb-8">
-                <Badge variant="outline" className="mb-4 bg-background/50 backdrop-blur border-primary/20 text-primary">
-                    <Zap size={12} className="mr-1" /> هوش مصنوعی + داده‌های ماهواره‌ای
-                </Badge>
-                <h1 className="text-3xl md:text-4xl font-black mb-2 tracking-tight">تحلیل موقعیت مکانی</h1>
-                <p className="text-muted-foreground text-lg">دستیار هوشمند انتخاب لوکیشن برای {activeProject.projectName}</p>
-             </div>
+      {/* Main Content */}
+      <div className="flex-1 h-full overflow-y-auto">
+        
+        {/* Header */}
+        <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-xl border-b border-white/5 px-6 py-4">
+          <div className="max-w-5xl mx-auto">
+            {/* Title Row */}
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-lg">
+                  <MapPin size={20} className="text-white" />
+                </div>
+                <div>
+                  <h1 data-tour-id="location-header" className="text-lg font-black tracking-tight">تحلیل هوشمند موقعیت</h1>
+                  <p className="text-xs text-muted-foreground">{activeProject.projectName}</p>
+                </div>
+              </div>
 
-             {/* Search Box */}
-             <Card className="p-2 flex items-center gap-2 bg-background/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl">
-                 <div className="relative">
-                    <select 
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        className="bg-transparent text-sm font-bold p-3 outline-none appearance-none cursor-pointer hover:bg-muted/50 rounded-xl transition-colors"
+              <div className="flex items-center gap-2">
+                <PageTourHelp tourId="location-analyzer" />
+                {history.length > 0 && (
+                  <>
+                      <Button
+                      data-tour-id="compare-btn"
+                      variant="outline"
+                      size="sm"
+                      onClick={toggleComparisonMode}
+                      className={cn(
+                        "text-xs gap-1.5 h-8",
+                        comparisonMode && "border-primary/30 text-primary bg-primary/5"
+                      )}
                     >
-                        <option value="Tehran">تهران</option>
-                        <option value="Karaj">کرج</option>
-                        <option value="Mashhad">مشهد</option>
-                        <option value="Isfahan">اصفهان</option>
-                        <option value="Tabriz">تبریز</option>
-                        <option value="Shiraz">شیراز</option>
-                    </select>
-                </div>
-                <div className="h-6 w-[1px] bg-border" />
-                <div className="flex-1 relative">
-                    <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground size-4 animate-bounce" />
-                    <input 
-                        type="text" 
-                        placeholder="نام محله یا خیابان اصلی..."
-                        className="w-full bg-transparent p-3 pr-9 outline-none text-sm placeholder:text-muted-foreground/70"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
-                    />
-                </div>
-                <Button 
-                    size="icon" 
-                    className="rounded-xl h-10 w-10 shadow-lg bg-primary hover:bg-primary/90"
-                    onClick={handleAnalyze}
-                    disabled={loading}
+                      <GitCompare size={14} />
+                      مقایسه
+                    </Button>
+                      <Button
+                      data-tour-id="history-btn"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setHistoryOpen(!historyOpen)}
+                      className={cn(
+                        "text-xs gap-1.5 h-8",
+                        historyOpen && "border-primary/30 text-primary bg-primary/5"
+                      )}
+                    >
+                      <History size={14} />
+                      سابقه ({history.length})
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Search Bar */}
+            <Card data-tour-id="location-search" className="p-1.5 flex items-center gap-2 bg-card/50 backdrop-blur-xl border border-white/5 shadow-lg rounded-xl">
+              <div className="relative">
+                <select
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="bg-transparent text-xs font-bold p-2.5 outline-none appearance-none cursor-pointer hover:bg-muted/50 rounded-lg transition-colors"
                 >
-                    {loading ? <Loader2 className="animate-spin" /> : <Search size={18} />}
-                </Button>
-             </Card>
-
-             {/* Dynamic Score Display (If Analysis Exists) */}
-             {analysis && (
-                 <motion.div 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="mt-8 p-6 bg-background/60 backdrop-blur-md rounded-3xl border border-white/5 shadow-xl text-center"
-                 >
-                    <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">امتیاز نهایی لوکیشن</span>
-                    <div className="text-7xl font-black my-4 bg-clip-text text-transparent bg-gradient-to-r from-emerald-500 to-cyan-500">
-                        {analysis.score}<span className="text-2xl text-muted-foreground/50">/10</span>
-                    </div>
-                    <Badge variant={(analysis.score >= 7) ? "success" : "danger"} className="text-sm px-4 py-1">
-                        {analysis.score >= 8 ? 'فوق‌العاده عالی' : analysis.score >= 5 ? 'متوسط / قابل قبول' : 'پر ریسک'}
-                    </Badge>
-                 </motion.div>
-             )}
+                  <option value="Tehran">تهران</option>
+                  <option value="Karaj">کرج</option>
+                  <option value="Mashhad">مشهد</option>
+                  <option value="Isfahan">اصفهان</option>
+                  <option value="Tabriz">تبریز</option>
+                  <option value="Shiraz">شیراز</option>
+                </select>
+              </div>
+              <div className="h-5 w-[1px] bg-border" />
+              <div className="flex-1 relative">
+                <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground size-3.5" />
+                <input
+                  type="text"
+                  placeholder="نام محله یا خیابان اصلی..."
+                  className="w-full bg-transparent p-2.5 pr-8 outline-none text-xs placeholder:text-muted-foreground/70"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAnalyze()}
+                />
+              </div>
+              <Button
+                size="sm"
+                className="rounded-lg h-8 px-4 shadow-md bg-primary hover:bg-primary/90 text-xs gap-1.5"
+                onClick={handleAnalyze}
+                disabled={loading || !address}
+              >
+                {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
+                تحلیل
+              </Button>
+            </Card>
           </div>
+        </div>
+
+        {/* Content Area */}
+        <div className="max-w-5xl mx-auto px-6 py-8">
+          {loading ? (
+            <LoadingState />
+          ) : !analysis ? (
+            <EmptyState />
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="space-y-8 pb-20"
+            >
+              {/* Hero: Score + Neighborhood Side by Side */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="flex flex-col items-center justify-center">
+                  <ScoreGauge score={analysis.score} />
+                  <p className="text-xs text-muted-foreground text-center mt-3 max-w-[200px] leading-relaxed">
+                    {analysis.scoreReason}
+                  </p>
+                </div>
+                <div className="lg:col-span-2">
+                  <NeighborhoodCard />
+                </div>
+              </div>
+
+              {/* Tab Bar */}
+              <div data-tour-id="location-tabs" className="flex items-center gap-1 p-1 bg-card/30 rounded-xl border border-white/5 overflow-x-auto">
+                {TABS.map(tab => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap",
+                        activeTab === tab.id
+                          ? "bg-primary text-white shadow-md"
+                          : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                      )}
+                    >
+                      <Icon size={14} />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Active Tab Content */}
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {activeTab === "overview" && (
+                    <div className="space-y-8">
+                      <MetricCards />
+                      <RiskGauge />
+                      <MarketGapCards />
+                    </div>
+                  )}
+                  {activeTab === "competitors" && <CompetitorTable />}
+                  {activeTab === "demographics" && <DemographicsDashboard />}
+                  {activeTab === "swot" && <SwotGrid />}
+                  {activeTab === "recommendations" && <RecommendationsList />}
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Comparison View */}
+              <ComparisonView />
+            </motion.div>
+          )}
+        </div>
       </div>
+    </div>
+  );
+}
 
-      {/* RIGHT PANEL - RESULTS (Scrollable) */}
-      <div className="flex-1 h-full overflow-y-auto bg-background p-6 md:p-10">
-         
-         {loading ? (
-             <div className="h-full flex flex-col items-center justify-center space-y-6 opacity-30">
-                <div className="relative">
-                    <div className="w-24 h-24 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                        <Navigation className="animate-pulse text-primary" size={32} />
-                    </div>
-                </div>
-                <p className="text-xl font-medium animate-pulse">در حال اسکن ماهواره‌ای منطقه...</p>
-                <div className="flex gap-2 text-sm text-muted-foreground">
-                    <span>تحلیل پاخور</span> • <span>بررسی رقبا</span> • <span>تخمین درآمد</span>
-                </div>
-             </div>
-         ) : !analysis ? (
-             <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
-                <Layers size={64} className="mb-4 text-muted-foreground/50" />
-                <h2 className="text-2xl font-bold mb-2">هنوز تحلیلی انجام نشده</h2>
-                <p className="max-w-md mx-auto">برای شروع، نام محله یا خیابان مورد نظر خود را در پنل سمت راست وارد کنید.</p>
-             </div>
-         ) : (
-             <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="space-y-8 max-w-4xl mx-auto pb-20"
-             >
-                {/* 1. Executive Summary */}
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold mb-2 flex items-center gap-2">
-                        <span className="w-1 h-8 bg-primary rounded-full" />
-                        گزارش مدیریتی
-                    </h2>
-                    <p className="text-lg leading-relaxed text-muted-foreground">
-                        {analysis.aiInsight}
-                    </p>
-                </div>
+function LoadingState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-32 space-y-6">
+      <div className="relative">
+        <div className="w-20 h-20 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Navigation className="animate-pulse text-primary" size={28} />
+        </div>
+      </div>
+      <div className="text-center">
+        <p className="text-lg font-bold mb-2 animate-pulse">در حال اسکن هوشمند منطقه...</p>
+        <div className="flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
+          {["تحلیل پاخور", "بررسی رقبا", "ارزیابی ریسک", "تخمین درآمد"].map((item, i) => (
+            <motion.span
+              key={i}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: i * 0.5 }}
+              className="bg-white/5 px-3 py-1 rounded-full"
+            >
+              {item}
+            </motion.span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
-                {/* 2. Key Metrics Cards */}
-                <LocationScore />
-
-                {/* 3. Deep Charts */}
-                <AnalysisCharts />
-
-                {/* 4. Competitor Table */}
-                <Card className="p-6 bg-card/40 border-white/5">
-                    <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                        <Store size={18} className="text-orange-500" />
-                        لیست رقبا (تایید شده)
-                    </h3>
-                    <div className="space-y-3">
-                         {analysis.competitorAnalysis?.directCompetitors?.map((comp, i) => (
-                             <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-lg bg-muted/30 border border-white/5">
-                                 <div className="flex items-center gap-3">
-                                     <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500 font-bold">
-                                         {i + 1}
-                                     </div>
-                                     <div>
-                                         <p className="font-bold">{comp.name}</p>
-                                         <p className="text-xs text-muted-foreground">{comp.distance} فاصله</p>
-                                     </div>
-                                 </div>
-                                 <div className="flex gap-2 mt-2 sm:mt-0">
-                                     <Badge variant="outline" className="text-xs border-green-500/30 text-green-500">{comp.strength || 'نقطه قوت'}</Badge>
-                                     <Badge variant="outline" className="text-xs border-red-500/30 text-red-500">{comp.weakness || 'نقطه ضعف'}</Badge>
-                                 </div>
-                             </div>
-                         ))}
-                         {(!analysis.competitorAnalysis?.directCompetitors || analysis.competitorAnalysis.directCompetitors.length === 0) && (
-                             <div className="p-4 text-center text-muted-foreground">هیچ رقیب مستقیمی در شعاع نزدیک یافت نشد.</div>
-                         )}
-                    </div>
-                </Card>
-             </motion.div>
-         )}
+function EmptyState() {
+  return (
+    <div className="flex flex-col items-center justify-center py-32 text-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="mb-6"
+      >
+        <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-primary/10 to-purple-500/10 flex items-center justify-center mx-auto mb-6 border border-primary/10">
+          <Layers size={48} className="text-muted-foreground/30" />
+        </div>
+      </motion.div>
+      <h2 className="text-xl font-bold mb-2">آماده تحلیل هوشمند</h2>
+      <p className="text-muted-foreground max-w-md mx-auto leading-relaxed text-sm mb-6">
+        نام محله یا خیابان مورد نظر خود را در نوار بالا وارد کنید تا تحلیل جامع موقعیت شامل 
+        بررسی رقبا، پاخور، ریسک و فرصت‌های سرمایه‌گذاری دریافت کنید.
+      </p>
+      <div className="flex flex-wrap justify-center gap-2">
+        {[
+          { icon: "📊", label: "امتیاز مکان" },
+          { icon: "🏪", label: "تحلیل رقبا" },
+          { icon: "👥", label: "بافت جمعیتی" },
+          { icon: "⚡", label: "فرصت‌ها" },
+        ].map((item, i) => (
+          <Badge key={i} variant="outline" className="text-xs gap-1.5 px-3 py-1.5 border-white/10 text-muted-foreground">
+            <span>{item.icon}</span> {item.label}
+          </Badge>
+        ))}
       </div>
     </div>
   );

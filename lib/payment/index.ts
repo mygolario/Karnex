@@ -25,3 +25,4 @@ export {
   rialsToTomans, 
   formatPricePersian 
 } from './gateways/zarinpal';
+export { ZibalGateway } from './gateways/zibal';

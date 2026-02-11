@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { callOpenRouter, parseJsonFromAI } from '@/lib/openrouter';
+import { checkAILimit } from '@/lib/ai-limit-middleware';
 
 export const maxDuration = 60;
 export const dynamic = 'force-dynamic';
@@ -25,6 +26,10 @@ const CANVAS_GENERATION_PROMPT = `ایده: {businessIdea}
 
 export async function POST(req: Request) {
   try {
+    // === AI Usage Limit Check ===
+    const { errorResponse } = await checkAILimit();
+    if (errorResponse) return errorResponse;
+
     const body = await req.json();
     const { action, prompt, systemPrompt, maxTokens = 2000, businessIdea, projectName, modelOverride, city, address, activeProject } = body;
 

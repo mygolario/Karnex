@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { TEXT_MODELS } from '@/lib/openrouter';
+import { checkAILimit } from '@/lib/ai-limit-middleware';
 
 export async function POST(req: NextRequest) {
   try {
+    // === AI Usage Limit Check ===
+    const { errorResponse } = await checkAILimit();
+    if (errorResponse) return errorResponse;
+
     const { query, industry, region } = await req.json();
 
     if (!query) {

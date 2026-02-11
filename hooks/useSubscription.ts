@@ -12,8 +12,6 @@ import {
   getUserSubscription, 
   getUserTier, 
   getUserFeatures,
-  hasFeatureAccess as checkFeatureAccess,
-  getFeatureLimit
 } from '@/lib/subscription';
 import { 
   Subscription, 
@@ -28,9 +26,10 @@ interface UseSubscriptionReturn {
   features: FeatureFlags;
   loading: boolean;
   error: Error | null;
+  isPlus: boolean;
   isPro: boolean;
-  isTeam: boolean;
-  isEnterprise: boolean;
+  isUltra: boolean;
+  isPaid: boolean;
   hasFeature: (feature: keyof FeatureFlags) => boolean;
   getLimit: (feature: keyof FeatureFlags) => number | 'unlimited';
   refresh: () => Promise<void>;
@@ -103,9 +102,10 @@ export function useSubscription(): UseSubscriptionReturn {
     features,
     loading: loading || authLoading,
     error,
-    isPro: tier === 'pro' || tier === 'team' || tier === 'enterprise',
-    isTeam: tier === 'team' || tier === 'enterprise',
-    isEnterprise: tier === 'enterprise',
+    isPlus: tier === 'plus' || tier === 'pro' || tier === 'ultra',
+    isPro: tier === 'pro' || tier === 'ultra',
+    isUltra: tier === 'ultra',
+    isPaid: tier !== 'free',
     hasFeature,
     getLimit,
     refresh: fetchSubscription,
@@ -130,14 +130,14 @@ export function useFeatureGate(feature: keyof FeatureFlags) {
 /**
  * useUpgradePrompt Hook
  * 
- * Hook for showing upgrade prompts when features are locked.
+ * Hook for showing upgrade prompts when limits are reached.
  */
 export function useUpgradePrompt() {
-  const { tier, isPro } = useSubscription();
+  const { tier, isPaid } = useSubscription();
   const [showPrompt, setShowPrompt] = useState(false);
-  const [requiredTier, setRequiredTier] = useState<PlanTier>('pro');
+  const [requiredTier, setRequiredTier] = useState<PlanTier>('plus');
   
-  const promptUpgrade = useCallback((minTier: PlanTier = 'pro') => {
+  const promptUpgrade = useCallback((minTier: PlanTier = 'plus') => {
     setRequiredTier(minTier);
     setShowPrompt(true);
   }, []);
@@ -152,6 +152,6 @@ export function useUpgradePrompt() {
     currentTier: tier,
     promptUpgrade,
     dismissPrompt,
-    needsUpgrade: !isPro,
+    needsUpgrade: !isPaid,
   };
 }

@@ -23,7 +23,18 @@ export function QuickAccessGrid({ projectType }: QuickAccessGridProps) {
     ...(projectType === 'creator' ? [
        { href: "/dashboard/content-calendar", icon: Calendar, label: "تقویم محتوا", color: "from-purple-500 to-violet-500", desc: "برنامه‌ریزی" },
        { href: "/dashboard/scripts", icon: Video, label: "اسکریپت‌نویسی", color: "from-emerald-500 to-green-500", desc: "مدیریت ویدیو" },
-    ] : [])
+    ] : []),
+
+    // Traditional Specific
+    ...(projectType === 'traditional' ? [
+        { href: "/dashboard/location", icon: Map, label: "تحلیل مکان", color: "from-emerald-500 to-teal-500", desc: "انتخاب لوکیشن" },
+        // Add more traditional items if they exist, e.g. Inventory? (Removed in previous cleanup)
+     ] : []),
+ 
+     // Startup Specific
+     ...(projectType === 'startup' ? [
+        { href: "/dashboard/pitch-deck", icon: Share2, label: "پیچ دک", color: "from-blue-500 to-indigo-500", desc: "ارائه سرمایه‌گذار" },
+     ] : [])
   ];
 
   return (

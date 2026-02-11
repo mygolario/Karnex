@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { callOpenRouter } from '@/lib/openrouter';
+import { checkAILimit } from '@/lib/ai-limit-middleware';
 
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
   try {
+    // === AI Usage Limit Check ===
+    const { errorResponse } = await checkAILimit();
+    if (errorResponse) return errorResponse;
+
     const { message, planContext, generateFollowUps } = await req.json();
 
     // Contextual System Prompt

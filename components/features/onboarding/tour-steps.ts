@@ -196,30 +196,37 @@ export const TOUR_STEPS: Record<string, TourStep[]> = {
     {
       id: "location-welcome",
       targetId: "location-header",
-      title: "تحلیلگر منطقه هوشمند",
-      description: "با استفاده از هوش مصنوعی، بهترین مکان را برای کسب‌وکار خود پیدا کنید.",
+      title: "هاب هوشمند موقعیت",
+      description: "به نسخه جدید خوش آمدید! اینجا می‌توانید تحلیل‌های عمیق و حرفه‌ای از هر موقعیت مکانی داشته باشید.",
       position: "bottom"
     },
     {
-      id: "location-inputs",
-      targetId: "location-inputs",
-      title: "انتخاب منطقه",
-      description: "شهر و محله مورد نظر خود را وارد کنید تا اطلاعات دقیقی درباره آن دریافت کنید.",
+      id: "location-search",
+      targetId: "location-search",
+      title: "جستجوی دقیق",
+      description: "شهر و آدرس دقیق ملک را وارد کنید. هوش مصنوعی ما با بررسی داده‌های لحظه‌ای، آنالیز را شروع می‌کند.",
+      position: "bottom"
+    },
+    {
+      id: "location-tabs",
+      targetId: "location-tabs",
+      title: "ابعاد مختلف تحلیل",
+      description: "نتایج در ۵ بخش مجزا شامل رقبا، جمعیت‌شناسی، SWOT و پیشنهادات عملیاتی دسته‌بندی شده‌اند.",
       position: "top"
     },
     {
-      id: "analyze-btn",
-      targetId: "analyze-btn",
-      title: "شروع تحلیل",
-      description: "با کلیک بر روی این دکمه، آنالیز جمعیت‌شناسی، رقبا و پتاسیل منطقه انجام می‌شود.",
-      position: "left"
+      id: "location-history",
+      targetId: "history-btn",
+      title: "تاریخچه تحلیل‌ها",
+      description: "تمام تحلیل‌های قبلی شما اینجا ذخیره می‌شوند و می‌توانید دوباره به آن‌ها دسترسی داشته باشید.",
+      position: "bottom"
     },
     {
-      id: "results-area",
-      targetId: "results-placeholder",
-      title: "نمایش نتایج",
-      description: "نتایج تحلیل شامل امتیاز منطقه، رقبا و پیشنهادهای هوشمند در اینجا نمایش داده خواهد شد.",
-      position: "top"
+      id: "location-compare",
+      targetId: "compare-btn",
+      title: "مقایسه پیشرفته",
+      description: "می‌توانید تا ۳ موقعیت مختلف را برای مقایسه دقیق کنار هم قرار دهید.",
+      position: "bottom"
     }
   ]
 };
