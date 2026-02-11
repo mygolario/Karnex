@@ -13,6 +13,9 @@ interface RoadmapStep {
   priority: 'high' | 'medium' | 'low';
   category: string;
   resources?: string[];
+  status?: 'todo' | 'in-progress' | 'done';
+  checklist?: string[];
+  tips?: string[];
 }
 
 interface RoadmapPhase {
@@ -91,9 +94,21 @@ export async function POST(req: Request) {
            ]
          },
          "roadmap": [
-            { "phase": "Week 1: Validation", "steps": ["Step 1", "Step 2"] },
-            { "phase": "Week 2: MVP", "steps": ["Step 1", "Step 2"] },
-            { "phase": "Week ...: ...", "steps": ["..."] }
+            { 
+              "phase": "Week 1: Validation", 
+              "steps": [
+                {
+                   "title": "Step Title",
+                   "description": "Actionable description",
+                   "estimatedHours": 5,
+                   "priority": "high",
+                   "category": "legal",
+                   "status": "todo",
+                   "checklist": ["Subtask 1", "Subtask 2"],
+                   "tips": ["Tip 1", "Tip 2"]
+                }
+              ] 
+            }
          ],
          "marketingStrategy": [
             "Specific tactic 1",
@@ -122,13 +137,14 @@ export async function POST(req: Request) {
 
     console.log("DEBUG: Calling OpenRouter...");
     
+    // Increase tokens for richer response
     const result = await callOpenRouter(
-      `طرح کسب‌وکار ۸ هفته‌ای JSON فارسی برای: ${idea}`,
+      `طرح کسب‌وکار جامع و دقیق JSON فارسی برای: ${idea}`,
       {
         systemPrompt,
-        maxTokens: 4000,
-        temperature: 0.5,
-        timeoutMs: 55000,
+        maxTokens: 5500,
+        temperature: 0.6,
+        timeoutMs: 80000,
       }
     );
 

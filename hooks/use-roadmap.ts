@@ -12,6 +12,11 @@ export interface RoadmapStepObject {
   estimatedHours?: number | string;
   priority?: "high" | "medium" | "low" | string;
   category?: string;
+  status?: "todo" | "in-progress" | "done";
+  checklist?: string[];
+  tips?: string[];
+  resources?: string[];
+  dueDate?: string; // ISO date string
 }
 
 export type RoadmapPhase = {
@@ -26,7 +31,7 @@ export interface UseRoadmapReturn {
   plan: any;
   loading: boolean;
   roadmap: RoadmapPhase[];
-  completedSteps: string[];
+  completedSteps: string[]; // Legacy support
   
   // Computed
   progressPercent: number;
@@ -35,8 +40,10 @@ export interface UseRoadmapReturn {
   
   // Actions
   toggleStep: (step: string | RoadmapStepObject) => Promise<void>;
+  updateStepStatus: (step: string | RoadmapStepObject, status: "todo" | "in-progress" | "done") => Promise<void>;
   isCompleted: (step: string | RoadmapStepObject) => boolean;
   getStepTitle: (step: string | RoadmapStepObject) => string;
+  getStepStatus: (step: string | RoadmapStepObject) => "todo" | "in-progress" | "done";
 }
 
 export function useRoadmap(): UseRoadmapReturn {
@@ -72,11 +79,19 @@ export function useRoadmap(): UseRoadmapReturn {
     return completedSteps.includes(getStepTitle(step));
   };
 
-  const toggleStep = async (step: string | RoadmapStepObject) => {
-    if (!user || !plan) return;
+  const getStepStatus = (step: string | RoadmapStepObject): "todo" | "in-progress" | "done" => {
+    if (typeof step !== 'string' && step.status) return step.status;
+    return isCompleted(step) ? "done" : "todo";
+  };
+
+  const updateStepStatus = async (step: string | RoadmapStepObject, status: "todo" | "in-progress" | "done") => {
+     if (!user || !plan) return;
 
     const stepName = getStepTitle(step);
-    const isNowCompleted = !completedSteps.includes(stepName);
+    // Logic for legacy array: if status is 'done', add to list. If not, remove.
+    // Ideally we should update the actual step object in the roadmap array too, 
+    // but for now we sync with the `completedSteps` array for backward compatibility
+    const isNowCompleted = status === 'done';
     
     // Optimistic update
     const newCompletedSteps = isNowCompleted 
@@ -84,6 +99,12 @@ export function useRoadmap(): UseRoadmapReturn {
       : completedSteps.filter(s => s !== stepName);
     
     setCompletedSteps(newCompletedSteps);
+    
+    // Also update the local plan object to reflect status change in UI immediately if using object properties
+    // This is complex because we need to find the step in the nested array. 
+    // For this MVP, we rely on `completedSteps` array for "done" status,
+    // and we might need a local state for "in-progress" if we want to track it without DB changes yet.
+    
     updateActiveProject({ completedSteps: newCompletedSteps });
 
     try {
@@ -94,6 +115,13 @@ export function useRoadmap(): UseRoadmapReturn {
       setCompletedSteps(completedSteps);
       updateActiveProject({ completedSteps: completedSteps });
     }
+  };
+
+  // Legacy toggle wrapper
+  const toggleStep = async (step: string | RoadmapStepObject) => {
+    const current = getStepStatus(step);
+    const newStatus = current === 'done' ? 'todo' : 'done';
+    await updateStepStatus(step, newStatus);
   };
 
   const roadmap = (plan?.roadmap || []) as RoadmapPhase[];
@@ -116,7 +144,9 @@ export function useRoadmap(): UseRoadmapReturn {
     totalSteps,
     activeWeek,
     toggleStep,
+    updateStepStatus,
     isCompleted,
     getStepTitle,
+    getStepStatus,
   };
 }
