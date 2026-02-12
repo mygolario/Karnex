@@ -55,12 +55,7 @@ export default function RoadmapPage() {
       {/* 1. Mission Control Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
         <div className="space-y-2">
-           <div className="flex items-center gap-2 mb-1">
-             <Badge variant="outline" className="text-primary border-primary/30 bg-primary/5 px-3 py-1 text-xs">
-                roadmap v2.0
-             </Badge>
-             <span className="text-muted-foreground text-xs">طرح هوشمند اجرایی</span>
-           </div>
+
            <h1 className="text-4xl font-black tracking-tight text-foreground flex items-center gap-3">
              مسیر رشد و عملیات
            </h1>
