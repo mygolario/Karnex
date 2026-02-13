@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils";
 interface RoadmapStep {
     title: string;
     description?: string;
-    estimatedHours?: number;
-    priority?: 'high' | 'medium' | 'low';
+    estimatedHours?: number | string;
+    priority?: 'high' | 'medium' | 'low' | string;
     category?: string;
     resources?: string[];
 }
@@ -79,17 +79,18 @@ export function StepDetailModal({
     const handleGetTip = async () => {
         setLoadingTip(true);
         try {
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    message: `برای انجام این کار راهنمایی کن: "${step.title}"`,
-                    planContext: { projectName, overview: step.description },
-                    generateFollowUps: false
-                })
-            });
-            const data = await res.json();
-            setAiTip(data.reply || 'نکته‌ای یافت نشد.');
+            const { chatAction } = await import("@/lib/chat-actions");
+            const result = await chatAction(
+                `برای انجام این کار راهنمایی کن: "${step.title}"`,
+                { projectName, overview: step.description, projectType: "startup" }, // Defaulting projectType, ideally should be passed prop
+                false
+            );
+
+            if (result.success) {
+                setAiTip(result.reply || 'نکته‌ای یافت نشد.');
+            } else {
+                 setAiTip('خطا در دریافت راهنمایی');
+            }
         } catch (error) {
             setAiTip('خطا در دریافت راهنمایی');
         } finally {

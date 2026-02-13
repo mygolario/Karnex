@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { createClient } from '@/lib/supabase';
 
 // Simple toast fallback
 const toast = {
@@ -9,28 +8,20 @@ const toast = {
 
 export function useAccountUpgrade() {
   const [loading, setLoading] = useState(false);
-  const supabase = createClient();
 
   const upgradeToEmail = async (email: string, pass: string) => {
     setLoading(true);
     try {
-      const { data: { user }, error } = await supabase.auth.updateUser({
-        email: email,
-        password: pass
-      });
-
-      if (error) throw error;
-      
-      toast.success("حساب کاربری شما با موفقیت ذخیره شد!");
-      return user;
+      console.warn("Account upgrade not implemented in NextAuth migration yet.");
+      toast.error("این قابلیت در حال حاضر غیرفعال است.");
+      return null;
     } catch (error: any) {
       console.error("Upgrade logic error:", error.message);
-      toast.error("خطایی رخ داد. لطفاً دوباره تلاش کنید: " + error.message);
       return null;
     } finally {
       setLoading(false);
     }
   };
 
-  return { upgradeToEmail, loading, isAnonymous: false }; // Supabase handles anonymous users differently, assuming false for now or check is_anonymous
+  return { upgradeToEmail, loading, isAnonymous: false };
 }

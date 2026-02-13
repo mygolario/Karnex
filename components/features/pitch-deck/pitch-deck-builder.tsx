@@ -59,7 +59,7 @@ export function PitchDeckBuilder() {
     if (!user || !activeProject?.id) return;
     setLoading(true);
     try {
-      await savePitchDeck(user.id, updatedSlides, activeProject.id);
+      await savePitchDeck(user.id!, updatedSlides, activeProject.id);
       updateActiveProject({ pitchDeck: updatedSlides });
       // toast.success("ذخیره شد"); // Optional to avoid spamming
     } catch (err) {

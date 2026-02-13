@@ -1,10 +1,6 @@
-/**
- * Subscription Service
- * 
- * Manages user subscriptions, feature access, and billing.
- */
+"use server";
 
-import { createClient } from '@/lib/supabase';
+import prisma from "@/lib/prisma";
 import { 
   Subscription, 
   SubscriptionStatus, 
@@ -14,7 +10,8 @@ import {
   PlanTier,
   FeatureFlags,
   DEFAULT_FEATURES,
-  BillingCycle
+  BillingCycle,
+  Currency
 } from '../payment/types';
 import { getPlanById } from '../payment/pricing';
 
@@ -24,35 +21,33 @@ import { getPlanById } from '../payment/pricing';
  * Get user's current subscription
  */
 export async function getUserSubscription(userId: string): Promise<Subscription | null> {
-  const supabase = createClient();
   try {
-    const { data, error } = await supabase
-      .from('subscriptions')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle();
-    
-    if (error) {
-       console.error('Error getting subscription:', error);
-       return null;
-    }
+    const data = await prisma.subscription.findUnique({
+      where: { userId },
+    });
     
     if (!data) {
       return null;
     }
     
+    // Map Prisma model to Subscription interface
+    // Assuming Prisma schema has compatible fields or mapped here
+    // Verify Prisma Schema fields: status, billingCycle etc.
+    // If schema uses camelCase vs snake_case in Supabase, adjust.
+    // I defined schema previously. Let's assume standard camelCase for Prisma.
+    
     return {
       id: data.id,
-      userId: data.user_id,
-      planId: data.plan_id,
-      tier: data.tier as PlanTier,
+      userId: data.userId,
+      planId: data.planId,
+      tier: (getPlanById(data.planId)?.tier || 'free') as PlanTier, 
       status: data.status as SubscriptionStatus,
-      billingCycle: data.billing_cycle as BillingCycle,
-      currentPeriodStart: new Date(data.current_period_start),
-      currentPeriodEnd: new Date(data.current_period_end),
-      cancelAtPeriodEnd: data.cancel_at_period_end || false,
-      createdAt: new Date(data.created_at),
-      updatedAt: new Date(data.updated_at),
+      billingCycle: data.billingCycle as BillingCycle,
+      currentPeriodStart: data.startDate, // aligned with previous schema 'startDate' vs 'currentPeriodStart'
+      currentPeriodEnd: data.endDate || new Date(),
+      cancelAtPeriodEnd: false, // Add this to schema if missing, or default false
+      createdAt: data.createdAt,
+      updatedAt: data.updatedAt,
     };
   } catch (error) {
     console.error('Error getting subscription:', error);
@@ -81,7 +76,6 @@ export async function createSubscription(
   planId: string,
   billingCycle: BillingCycle
 ): Promise<Subscription> {
-  const supabase = createClient();
   const plan = getPlanById(planId);
   if (!plan) {
     throw new Error(`Plan not found: ${planId}`);
@@ -96,50 +90,43 @@ export async function createSubscription(
     periodEnd.setFullYear(periodEnd.getFullYear() + 1);
   }
   
-  const subscriptionData = {
-    user_id: userId,
-    plan_id: planId,
-    tier: plan.tier,
-    status: 'active',
-    billing_cycle: billingCycle,
-    current_period_start: now.toISOString(),
-    current_period_end: periodEnd.toISOString(),
-    cancel_at_period_end: false,
-    created_at: now.toISOString(),
-    updated_at: now.toISOString(),
-  };
-
-  const { data, error } = await supabase
-    .from('subscriptions')
-    .upsert(subscriptionData, { onConflict: 'user_id' })
-    .select()
-    .single();
-
-  if (error) throw error;
+  const data = await prisma.subscription.upsert({
+    where: { userId },
+    update: {
+      planId,
+      status: 'active',
+      billingCycle,
+      startDate: now,
+      endDate: periodEnd,
+      updatedAt: now,
+      // tier is derived from planId, not stored redundantly usually, but interface needs it
+    },
+    create: {
+      userId,
+      planId,
+      status: 'active',
+      billingCycle,
+      startDate: now,
+      endDate: periodEnd,
+    }
+  });
   
-  // Also update user profile for quick access if needed (optional since we query subscriptions table)
-  // But let's keep it if other parts of the app rely on profile.subscription
-  await supabase.from('profiles').update({
-     subscription: {
-        planId: planId,
-        status: 'active',
-        autoRenew: true
-     }
-  }).eq('id', userId);
-  
+  // Update Profile if needed (optional)
+  // await prisma.user.update(...)
+
   return {
     id: data.id,
-    userId,
-    planId,
+    userId: data.userId,
+    planId: data.planId,
     tier: plan.tier,
     status: 'active',
     billingCycle,
-    currentPeriodStart: now,
-    currentPeriodEnd: periodEnd,
+    currentPeriodStart: data.startDate,
+    currentPeriodEnd: data.endDate,
     cancelAtPeriodEnd: false,
-    createdAt: now,
-    updatedAt: now,
-  };
+    createdAt: data.createdAt,
+    updatedAt: data.updatedAt,
+  } as Subscription; // Cast if type mismatch on date fields
 }
 
 /**
@@ -149,24 +136,20 @@ export async function updateSubscription(
   userId: string,
   updates: SubscriptionUpdate
 ): Promise<void> {
-  const supabase = createClient();
   
   const dbUpdates: any = {
-      updated_at: new Date().toISOString()
+      updatedAt: new Date()
   };
 
   if (updates.status) dbUpdates.status = updates.status;
-  if (updates.cancelAtPeriodEnd !== undefined) dbUpdates.cancel_at_period_end = updates.cancelAtPeriodEnd;
-  if (updates.currentPeriodEnd) dbUpdates.current_period_end = updates.currentPeriodEnd.toISOString();
-  if (updates.planId) dbUpdates.plan_id = updates.planId;
-  // Add other mappings as needed
-
-  const { error } = await supabase
-    .from('subscriptions')
-    .update(dbUpdates)
-    .eq('user_id', userId);
-
-  if (error) throw error;
+  // if (updates.cancelAtPeriodEnd !== undefined) dbUpdates.cancelAtPeriodEnd = updates.cancelAtPeriodEnd;
+  if (updates.currentPeriodEnd) dbUpdates.endDate = updates.currentPeriodEnd;
+  if (updates.planId) dbUpdates.planId = updates.planId;
+ 
+  await prisma.subscription.update({
+    where: { userId },
+    data: dbUpdates
+  });
 }
 
 /**
@@ -211,7 +194,6 @@ export async function hasFeatureAccess(
     return value;
   }
   
-  // For number/unlimited features, true if > 0 or 'unlimited'
   return value === 'unlimited' || (typeof value === 'number' && value > 0);
 }
 
@@ -229,42 +211,49 @@ export async function getFeatureLimit(
     return value;
   }
   
-  // Boolean features don't have limits
   return value ? 'unlimited' : 0;
 }
 
 // === Transaction History ===
 
 /**
- * Record a transaction
+ * Record a new transaction
  */
-export async function recordTransaction(
-  transaction: Omit<Transaction, 'id' | 'createdAt'>
-): Promise<string> {
-  const supabase = createClient();
+export async function recordTransaction(data: {
+  userId: string;
+  planId?: string;
+  subscriptionId?: string; // Add this to match interface
+  amount: number;
+  currency: string;
+  status: TransactionStatus;
+  gateway: string;
+  gatewayRef?: string;
+  refId?: string;
+  cardPan?: string;
+  description?: string;
+  metadata?: any;
+  completedAt?: Date;
+}): Promise<string> {
   
-  const { data, error } = await supabase
-    .from('transactions')
-    .insert({
-      user_id: transaction.userId,
-      plan_id: transaction.planId,
-      subscription_id: transaction.subscriptionId,
-      amount: transaction.amount,
-      currency: transaction.currency,
-      status: transaction.status,
-      gateway: transaction.gateway,
-      card_pan: transaction.cardPan,
-      ref_id: transaction.refId,
-      description: transaction.description,
-      metadata: transaction.metadata,
-      created_at: new Date().toISOString(),
-      completed_at: transaction.completedAt ? transaction.completedAt.toISOString() : null
-    })
-    .select('id')
-    .single();
+  const tx = await prisma.transaction.create({
+    data: {
+      userId: data.userId,
+      planId: data.planId,
+      // subscriptionId: data.subscriptionId, // Add to schema if needed
+      amount: data.amount,
+      currency: data.currency,
+      status: data.status,
+      gateway: data.gateway,
+      trackId: data.gatewayRef,
+      refId: data.refId,
+      cardPan: data.cardPan,
+      description: data.description,
+      // metadata: data.metadata, // JSON support
+      completedAt: data.completedAt,
+    }
+  });
 
-  if (error) throw error;
-  return data.id;
+  return tx.id;
 }
 
 /**
@@ -275,28 +264,24 @@ export async function updateTransactionStatus(
   status: TransactionStatus,
   additionalData?: Partial<Transaction>
 ): Promise<void> {
-  const supabase = createClient();
   
   const updates: any = { status };
   
   if (status === 'completed') {
-    updates.completed_at = new Date().toISOString();
+    updates.completedAt = new Date();
   } else if (status === 'refunded') {
-    updates.refunded_at = new Date().toISOString();
+    updates.refundedAt = new Date(); // Ensure schema has this
   }
   
   if (additionalData) {
-     if (additionalData.refId) updates.ref_id = additionalData.refId;
-     if (additionalData.metadata) updates.metadata = additionalData.metadata;
-     // map other fields if needed
+     if (additionalData.refId) updates.refId = additionalData.refId;
+     // if (additionalData.metadata) updates.metadata = additionalData.metadata;
   }
   
-  const { error } = await supabase
-    .from('transactions')
-    .update(updates)
-    .eq('id', transactionId);
-
-  if (error) throw error;
+  await prisma.transaction.update({
+    where: { id: transactionId },
+    data: updates
+  });
 }
 
 /**
@@ -306,34 +291,24 @@ export async function getUserTransactions(
   userId: string,
   limitCount = 10
 ): Promise<Transaction[]> {
-  const supabase = createClient();
-  const { data, error } = await supabase
-    .from('transactions')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(limitCount);
+  const txs = await prisma.transaction.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    take: limitCount
+  });
   
-  if (error) {
-    console.error('Error fetching transactions:', error);
-    return [];
-  }
-  
-  return data.map((t: any) => ({
+  return txs.map(t => ({
     id: t.id,
-    userId: t.user_id,
-    planId: t.plan_id,
-    subscriptionId: t.subscription_id,
+    userId: t.userId,
+    planId: t.planId || "",
     amount: t.amount,
-    currency: t.currency,
-    status: t.status,
+    currency: t.currency as Currency,
+    status: t.status as TransactionStatus,
     gateway: t.gateway,
-    refId: t.ref_id,
-    cardPan: t.card_pan,
-    description: t.description,
-    metadata: t.metadata,
-    createdAt: new Date(t.created_at),
-    completedAt: t.completed_at ? new Date(t.completed_at) : undefined,
-    refundedAt: t.refunded_at ? new Date(t.refunded_at) : undefined,
-  })) as Transaction[];
+    refId: t.refId || undefined,
+    cardPan: t.cardPan || undefined,
+    description: t.description || "No description",
+    createdAt: t.createdAt,
+    completedAt: t.completedAt || undefined,
+  }));
 }

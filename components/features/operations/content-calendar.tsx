@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ContentPost, saveOperations } from "@/lib/db";
+import { ContentPost } from "@/lib/db";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { Card } from "@/components/ui/card";

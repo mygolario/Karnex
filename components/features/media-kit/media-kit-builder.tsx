@@ -94,7 +94,7 @@ export function MediaKitBuilder() {
     if (!user || !activeProject?.id) return;
     setLoading(true);
     try {
-      await saveMediaKit(user.id, data, activeProject.id);
+      await saveMediaKit(user.id!, data, activeProject.id);
       updateActiveProject({ mediaKit: data });
       toast.success("مدیا کیت ذخیره شد");
     } catch (err) {

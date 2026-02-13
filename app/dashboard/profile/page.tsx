@@ -58,7 +58,7 @@ export default function ProfilePage() {
   }, [userProfile]);
 
   const handleSaveProfile = async () => {
-    if (!user) return;
+    if (!user?.id) return;
     setIsLoading(true);
     try {
       await updateUserProfile(user.id, {
@@ -209,7 +209,7 @@ export default function ProfilePage() {
                       <Shield size={14} className="text-primary" />
                       شناسه کاربر:{" "}
                       <span className="font-mono bg-muted px-2 py-0.5 rounded text-xs">
-                        {user?.id.slice(0, 12)}...
+                        {user?.id?.slice(0, 12)}...
                       </span>
                     </p>
                   </div>

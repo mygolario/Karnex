@@ -52,7 +52,7 @@ export default function ProjectsPage() {
     
     setDeleting(true);
     try {
-      await deleteProject(user.id, projectToDelete.id);
+      await deleteProject(user.id!, projectToDelete.id);
       
       // If we deleted the active project, clear it
       if (activeProject?.id === projectToDelete.id) {

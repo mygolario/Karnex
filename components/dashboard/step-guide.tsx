@@ -32,27 +32,19 @@ export function StepGuide({ stepName, stepPhase, projectName }: StepGuideProps) 
     setIsOpen(true);
 
     try {
-      const prompt = `
-        کاربر می‌خواهد مرحله زیر را در پروژه استارتاپی خود انجام دهد:
-        "${stepName}"
-        (فاز: ${stepPhase})
-        
-        پروژه: ${projectName || "استارتاپ"}
+      // Use server action
+      const { chatAction } = await import("@/lib/chat-actions");
+      const result = await chatAction(
+          ` لطفا یک راهنمای بسیار خلاصه و کاربردی (شامل ۳ تا ۵ قدم اجرایی) برای انجام این مرحله بنویس: "${stepName}" (فاز: ${stepPhase})`,
+          { projectName, overview: "generated guide request", projectType: "startup" },
+          false
+      );
 
-        لطفاً یک راهنمای بسیار خلاصه و کاربردی (شامل ۳ تا ۵ قدم اجرایی) برای انجام این مرحله بنویس.
-        لحن: دوستانه و مربی‌گونه.
-        فرمت: markdown ساده (بدون هدرهای بزرگ).
-      `;
-
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: prompt })
-      });
-
-      if (!res.ok) throw new Error("Failed");
-      const data = await res.json();
-      setGuide(data.reply);
+      if (result.success) {
+        setGuide(result.reply || "");
+      } else {
+        throw new Error(result.error || "Failed");
+      }
       
     } catch (err) {
       console.error(err);

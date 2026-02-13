@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { callOpenRouter, parseJsonFromAI } from '@/lib/openrouter';
 import { checkAILimit } from '@/lib/ai-limit-middleware';
 
-export const maxDuration = 60;
+export const maxDuration = 60; // Allow 60 seconds for AI generation
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 // Canvas generation prompt template - explicit Persian

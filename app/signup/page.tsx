@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -86,39 +87,38 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const { createClient } = await import("@/lib/supabase");
-      const supabase = createClient();
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      // Import the server action dynamically or ensure it's imported at top
+      const { signupUser } = await import("@/lib/auth-actions");
+      
+      const result = await signupUser({
+        fullName: name,
         email,
         password,
-        options: {
-          data: {
-            full_name: name,
-          },
-        },
       });
 
-      if (signUpError) throw signUpError;
+      if (result.error) {
+        throw new Error(result.error);
+      }
 
-      // Supabase might require email confirmation. 
-      // If auto-confirm is enabled, session exists.
-      // If not, we should show a message "Check your email".
-      // For now, assuming behavior similar to Firebase or auto-login for migration ease, 
-      // but usually Supabase requires confirmation or disabled confirm for dev.
-      // We'll proceed.
+      // Automatically sign in after signup
+      const loginResult = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
 
-      router.push("/new-project");
+      if (loginResult?.error) {
+         router.push("/login");
+      } else {
+         router.push("/new-project");
+      }
+
     } catch (err: any) {
       console.error("Signup Error:", err);
-      if (err.message?.includes("already registered") || err.code === "user_already_exists") {
+      if (err.message?.includes("User already exists") || err.message === "User already exists") {
         setError("این ایمیل قبلاً ثبت شده است. لطفاً وارد شوید");
-      } else if (err.message?.includes("invalid email")) {
-        setError("فرمت ایمیل نامعتبر است");
-      } else if (err.message?.includes("password")) {
-        setError("رمز عبور باید قوی‌تر باشد");
       } else {
-        setError("خطا در ثبت‌نام. لطفاً دوباره تلاش کنید: " + err.message);
+        setError("خطا در ثبت‌نام: " + err.message);
       }
     } finally {
       setLoading(false);
@@ -128,26 +128,7 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     setError("");
     setLoading(true);
-    
-    try {
-      const { createClient } = await import("@/lib/supabase");
-      const supabase = createClient();
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) throw error;
-      // Redirect handled by Supabase
-    } catch (err: any) {
-      console.error("Google Signup Error:", err);
-      setError("خطا در ثبت‌نام با گوگل");
-    } finally {
-      setLoading(false);
-    }
+    await signIn("google", { callbackUrl: "/new-project" });
   };
 
   return (

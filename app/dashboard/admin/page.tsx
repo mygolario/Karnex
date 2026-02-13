@@ -1,9 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/contexts/auth-context";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase";
 import { UserProfile } from "@/lib/db";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -14,55 +13,46 @@ import {
 } from "lucide-react";
 
 export default function AdminPage() {
-  const { user, userProfile, loading } = useAuth();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
-    if (!loading) {
-      if (!user || userProfile?.role !== 'admin') {
-        // router.push('/dashboard'); 
-        // For development, I'm allowing access but showing warning. 
-        // In prod, uncomment redirect.
-        // console.warn("Access Denied: Not an admin");
-      }
-      
-      const fetchData = async () => {
-        try {
-          const supabase = createClient();
-          const { data, error } = await supabase
-            .from('profiles')
-            .select('*');
-            
-          if (error) throw error;
-          
-          const usersList = data.map((d: any) => ({
-            id: d.id,
-            email: d.email,
-            full_name: d.full_name,
-            avatar_url: d.avatar_url,
-            role: d.role,
-            subscription: d.subscription || { planId: 'free', status: 'active' },
-            credits: d.credits || { aiTokens: 0, projectsUsed: 0 },
-            settings: d.settings || {},
-            created_at: d.created_at,
-            updated_at: d.updated_at
-          })) as UserProfile[];
-          
-          setUsers(usersList);
-        } catch (error) {
-          console.error("Admin Fetch Error:", error);
-        } finally {
-          setIsLoadingData(false);
-        }
-      };
-      
-      fetchData();
-    }
-  }, [user, userProfile, loading]);
+    if (status === "loading") return;
 
-  if (loading || isLoadingData) return <div className="p-12 text-center">Loading Admin Panel...</div>;
+    if (!session?.user) {
+        // router.push("/login");
+        return;
+    }
+
+    // Role check logic if user role is in session
+    // if (session.user.role !== 'admin') ...
+
+    const fetchData = async () => {
+      try {
+        // Dynamic import to avoid build issues with server actions in client components if any
+        const { getAdminUsers } = await import("@/lib/admin-actions");
+        const res = await getAdminUsers();
+        
+        if (res.error) {
+           console.error("Admin Fetch Error:", res.error);
+           // Handle error UI?
+        } else if (res.users) {
+            // Cast to compatible type if needed, or rely on shape matching
+            setUsers(res.users as any);
+        }
+      } catch (error) {
+        console.error("Admin Fetch Error:", error);
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+    
+    fetchData();
+  }, [session, status, router]);
+
+  if (status === "loading" || isLoadingData) return <div className="p-12 text-center">Loading Admin Panel...</div>;
 
   const totalRevenue = users.reduce((acc, u) => {
     // Mock calculation based on plan

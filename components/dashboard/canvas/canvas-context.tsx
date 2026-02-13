@@ -94,7 +94,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
           // We'll update the plan document.
           // Note: `savePlanToCloud` merges at top level. We need to construct the full update object.
           
-          await savePlanToCloud(user.id, { [fieldName]: updateData }, true, plan.id!);
+          await savePlanToCloud(user.id!, { [fieldName]: updateData }, true, plan.id!);
           
       } catch (e) {
           console.error("Save failed", e);

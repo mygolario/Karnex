@@ -72,7 +72,7 @@ export function DocumentGenerator() {
           documentType: docType,
           projectData: {
             projectName: plan?.projectName,
-            founderName: userProfile?.full_name || user?.user_metadata?.full_name || "User",
+            founderName: userProfile?.full_name || user?.name || "User",
             overview: plan?.overview,
             audience: plan?.audience,
             revenueModel: (plan as any)?.leanCanvas?.revenueStreams

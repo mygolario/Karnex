@@ -3,6 +3,7 @@ import { callOpenRouter } from '@/lib/openrouter';
 import { checkAILimit } from '@/lib/ai-limit-middleware';
 
 export const maxDuration = 60;
+export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
   try {

@@ -46,7 +46,7 @@ export function BreakEvenCalculator() {
     if (!user || !plan) return;
     try {
         const dataToSave = { ...input, lastUpdated: new Date().toISOString() };
-        await saveFinancials(user.id, 'breakEven', dataToSave, plan.id || 'current');
+        await saveFinancials(user.id!, 'breakEven', dataToSave, plan.id || 'current');
         updateActiveProject({ financials: { ...plan.financials, breakEven: dataToSave } });
         toast.success("محاسبات ذخیره شد");
     } catch (err) {

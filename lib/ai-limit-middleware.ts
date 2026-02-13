@@ -6,8 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { auth } from '@/auth';
 import { checkAIRequestLimit, incrementAIUsage } from '@/lib/usage-tracker';
 
 export interface AILimitCheckResult {
@@ -28,24 +27,19 @@ export interface AILimitCheckResult {
  */
 export async function checkAILimit(): Promise<AILimitCheckResult> {
   try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { getAll() { return cookieStore.getAll(); } } }
-    );
-
-    const { data: { user } } = await supabase.auth.getUser();
+    const session = await auth();
+    const user = session?.user;
     
-    if (!user) {
-      // Allow unauthenticated requests (they won't be tracked)
+    if (!user || !user.id) {
+      // Allow unauthenticated requests? Usually no for AI.
+      // But preserving original logic: "Allow unauthenticated requests (they won't be tracked)"
       return { user: null, errorResponse: null };
     }
 
     const usageCheck = await checkAIRequestLimit(user.id);
     if (!usageCheck.allowed) {
       return {
-        user,
+        user: { id: user.id, email: user.email || undefined },
         errorResponse: NextResponse.json({
           error: 'محدودیت درخواست AI',
           message: `شما به سقف ${usageCheck.limit} درخواست AI در ماه رسیده‌اید. برای ادامه، پلن خود را ارتقا دهید.`,
@@ -59,7 +53,7 @@ export async function checkAILimit(): Promise<AILimitCheckResult> {
     // Increment usage counter
     await incrementAIUsage(user.id);
 
-    return { user, errorResponse: null };
+    return { user: { id: user.id, email: user.email || undefined }, errorResponse: null };
   } catch (error) {
     console.error('AI limit check error:', error);
     // On error, allow the request (fail open)

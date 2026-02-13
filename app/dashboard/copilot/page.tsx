@@ -253,19 +253,10 @@ export default function CopilotPage() {
 
       const conversationHistory = messages.slice(-8).map(m => ({ role: m.role, content: m.content }));
 
-      const res = await fetch('/api/advisor-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: messageToSend,
-          projectContext,
-          conversationHistory,
-          requestActions: false, 
-          systemPromptOverride: activePersona.systemPrompt
-        })
-      });
-
-      const data = await res.json();
+      // Use server action
+      const { advisorChatAction } = await import("@/lib/chat-actions");
+      // @ts-ignore
+      const data = await advisorChatAction(messageToSend, projectContext, conversationHistory);
 
       if (data.reply) {
         const assistantMessage: ChatMessage = {

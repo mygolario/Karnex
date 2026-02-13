@@ -2,7 +2,6 @@
 
 import { useState, useEffect, createContext, useContext } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { createClient } from "@/lib/supabase";
 
 export interface ChatMessage {
   id?: string;
@@ -24,7 +23,7 @@ interface ChatHistoryContextType {
   currentSession: ChatSession | null;
   loading: boolean;
   createSession: (title?: string) => void;
-  addMessage: (role: "user" | "assistant", content: string) => void;
+  addMessage: (role: "user" | "assistant", content: string) => Promise<void>;
   loadSession: (sessionId: string) => void;
   deleteSession: (sessionId: string) => Promise<void>;
   refreshSessions: () => Promise<void>;
@@ -42,116 +41,54 @@ export function ChatHistoryProvider({ children }: { children: React.ReactNode })
   const { user } = useAuth();
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
-  const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const [loading, setLoading] = useState(false); // Default to false as we are not fetching
 
-  // Load sessions on mount
+  // Load sessions on mount (Mock)
   useEffect(() => {
     if (user) {
-      refreshSessions();
+      // In a real app, we might load from localStorage or an API here
+      setSessions([]); 
     } else {
       setSessions([]);
       setCurrentSession(null);
-      setLoading(false);
     }
   }, [user]);
 
   const refreshSessions = async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('chat_sessions')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('updated_at', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      
-      const loadedSessions = data.map((d: any) => ({
-        id: d.id,
-        title: d.title,
-        messages: d.messages || [],
-        createdAt: d.created_at,
-        updatedAt: d.updated_at
-      })) as ChatSession[];
-      
-      setSessions(loadedSessions);
-    } catch (error) {
-      console.error("Error loading chat history:", error);
-    } finally {
-      setLoading(false);
-    }
+    // Stub
   };
 
   const createSession = (title?: string) => {
     const newSession: ChatSession = {
-      title: title || `گفتگو ${sessions.length + 1}`,
-      messages: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+        id: crypto.randomUUID(),
+        title: title || `گفتگو ${sessions.length + 1}`,
+        messages: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
     };
     setCurrentSession(newSession);
+    setSessions(prev => [newSession, ...prev]);
   };
 
   const addMessage = async (role: "user" | "assistant", content: string) => {
-    if (!user) return;
+    if (!user || !currentSession) return;
 
     const message: ChatMessage = {
+      id: crypto.randomUUID(),
       role,
       content,
       timestamp: new Date().toISOString()
     };
 
-    if (currentSession) {
-      const updatedMessages = [...currentSession.messages, message];
-      const updatedSession = {
+    const updatedMessages = [...currentSession.messages, message];
+    const updatedSession = {
         ...currentSession,
         messages: updatedMessages,
         updatedAt: new Date().toISOString()
-      };
-      
-      setCurrentSession(updatedSession);
-
-      // Save to Supabase
-      try {
-        if (currentSession.id) {
-          // Update existing
-           await supabase
-            .from('chat_sessions')
-            .update({
-              messages: updatedMessages,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', currentSession.id);
-            
-            // Update local sessions list to reflect change
-            setSessions(prev => prev.map(s => s.id === currentSession.id ? updatedSession : s));
-        } else {
-          // Create new
-          const { data, error } = await supabase
-            .from('chat_sessions')
-            .insert({
-              user_id: user.id,
-              title: updatedSession.title,
-              messages: updatedMessages,
-              created_at: updatedSession.createdAt,
-              updated_at: updatedSession.updatedAt
-            })
-            .select('id')
-            .single();
-            
-          if (error) throw error;
-          
-          const newSessionWithId = { ...updatedSession, id: data.id };
-          setCurrentSession(newSessionWithId);
-          setSessions(prev => [newSessionWithId, ...prev]);
-        }
-      } catch (error) {
-        console.error("Error saving chat:", error);
-      }
-    }
+    };
+    
+    setCurrentSession(updatedSession);
+    setSessions(prev => prev.map(s => s.id === currentSession.id ? updatedSession : s));
   };
 
   const loadSession = (sessionId: string) => {
@@ -162,23 +99,10 @@ export function ChatHistoryProvider({ children }: { children: React.ReactNode })
   };
 
   const deleteSession = async (sessionId: string) => {
-    if (!user) return;
-    try {
-      const { error } = await supabase
-        .from('chat_sessions')
-        .delete()
-        .eq('id', sessionId)
-        .eq('user_id', user.id); // Ensure ownership
-
-      if (error) throw error;
-
       setSessions(prev => prev.filter(s => s.id !== sessionId));
       if (currentSession?.id === sessionId) {
         setCurrentSession(null);
       }
-    } catch (error) {
-      console.error("Error deleting session:", error);
-    }
   };
 
   return (

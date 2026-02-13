@@ -1,18 +1,19 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User, Session } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase";
+import { User } from "next-auth"; // Use NextAuth User type
+import { useSession, signOut as nextAuthSignOut, signIn as nextAuthSignIn } from "next-auth/react";
 import { UserProfile } from "@/lib/db";
 
 // Define the Context Shape
 interface AuthContextType {
   user: User | null;
-  session: Session | null;
+  session: any | null; // Typed loosely for now, or import Session from next-auth
   userProfile: UserProfile | null;
   loading: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
+  signIn: (provider?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({ 
@@ -21,20 +22,26 @@ const AuthContext = createContext<AuthContextType>({
   userProfile: null, 
   loading: true,
   refreshProfile: async () => {},
-  signOut: async () => {}
+  signOut: async () => {},
+  signIn: async () => {}
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const { data: session, status, update } = useSession();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const [loadingProfile, setLoadingProfile] = useState(false);
 
-  const fetchProfile = async (uid: string, email?: string) => {
+  // Loading state differs from NextAuth status
+  // We want 'loading' to be true if authentication is loading OR profile is fetching
+  const loading = status === "loading" || loadingProfile;
+
+  const fetchProfile = async (uid?: string) => {
+    if (!uid) return;
     try {
+      setLoadingProfile(true);
+      // Calls our refactored API which uses auth() to identify user
       const res = await fetch("/api/user-data?type=profile");
       if (!res.ok) {
         console.error("Error fetching profile: HTTP", res.status);
@@ -46,69 +53,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
+    } finally {
+        setLoadingProfile(false);
     }
   };
 
   useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id, session.user.email);
-      }
-      setLoading(false);
-    });
-
-    // Listen for changes — only re-fetch on meaningful events
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // Always update session
-      setSession(session);
-      
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
+    if (session?.user?.id) {
+        // Fetch profile when session is available and user changes
+        fetchProfile(session.user.id);
+    } else if (status === 'unauthenticated') {
         setUserProfile(null);
-        setLoading(false);
-        return;
-      }
-      
-      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id, session.user.email);
-        }
-        setLoading(false);
-        return;
-      }
-      
-      // For TOKEN_REFRESHED and other events, just update user reference quietly
-      // Do NOT re-fetch profile/projects — this prevents the blank flash on tab switch
-      if (session?.user) {
-        setUser(prev => prev?.id === session.user.id ? prev : session.user);
-      }
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+    }
+  }, [session?.user?.id, status]);
 
   const refreshProfile = async () => {
-    if (user) {
-      await fetchProfile(user.id, user.email);
+    if (session?.user?.id) {
+      await fetchProfile(session.user.id);
     }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setUser(null);
-    setSession(null);
+    await nextAuthSignOut({ callbackUrl: "/" });
     setUserProfile(null);
   };
+  
+  const signIn = async (provider?: string) => {
+      await nextAuthSignIn(provider);
+  }
 
   return (
-    <AuthContext.Provider value={{ user, session, userProfile, loading, refreshProfile, signOut }}>
+    <AuthContext.Provider value={{ 
+        user: session?.user as User || null, 
+        session, 
+        userProfile, 
+        loading, 
+        refreshProfile, 
+        signOut,
+        signIn
+    }}>
       {children}
     </AuthContext.Provider>
   );

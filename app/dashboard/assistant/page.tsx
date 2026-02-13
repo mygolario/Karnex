@@ -230,18 +230,10 @@ export default function AssistantPage() {
 
       const conversationHistory = messages.slice(-8).map(m => ({ role: m.role, content: m.content }));
 
-      const res = await fetch('/api/advisor-chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: messageToSend,
-          projectContext,
-          conversationHistory,
-          requestActions: true
-        })
-      });
-
-      const data = await res.json();
+      // Use server action
+      const { advisorChatAction } = await import("@/lib/chat-actions");
+      // @ts-ignore
+      const data = await advisorChatAction(messageToSend, projectContext, conversationHistory);
 
       if (data.reply) {
         const assistantMessage: ChatMessage = {
@@ -260,8 +252,8 @@ export default function AssistantPage() {
         // Save Assistant Message
         updateAssistantData({ messages: updatedMessages });
 
-        if (data.followUps?.length > 0) setShowFollowUps(data.followUps);
-        if (data.actions?.length > 0) setPendingActions(data.actions);
+        if (data.followUps && data.followUps.length > 0) setShowFollowUps(data.followUps);
+        if (data.actions && data.actions.length > 0) setPendingActions(data.actions);
         if (data.xpReward) awardXp(data.xpReward);
       }
     } catch (error) {

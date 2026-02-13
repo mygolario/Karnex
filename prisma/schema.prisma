@@ -1,0 +1,162 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
+  engineType    = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url is configured in prisma.config.ts for Prisma 7
+}
+
+// --- NextAuth Models ---
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          String?   @default("user") // "user" | "admin"
+  password      String? // For credentials provider
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Profile fields (mapped from existing UserProfile)
+  firstName   String?
+  lastName    String?
+  phoneNumber String?
+  birthDate   DateTime?
+  bio         String?
+
+  // Settings & Credits (stored as JSON to avoid too many columns)
+  credits  Json? @default("{\"aiTokens\": 10, \"projectsUsed\": 0}")
+  settings Json? @default("{\"emailNotifications\": true, \"theme\": \"system\", \"language\": \"fa\"}")
+
+  // Relations
+  accounts      Account[]
+  sessions      Session[]
+  projects      Project[]
+  mediaItems    MediaItem[]
+  subscriptions Subscription[]
+  transactions  Transaction[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- Application Models ---
+
+model Project {
+  id          String  @id @default(cuid())
+  userId      String
+  projectName String
+  tagline     String?
+  description String? @db.Text
+
+  // The entire Business Plan structure is stored here as JSONB
+  // This preserves the flexibility of the existing NoSQL-like structure
+  data Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Subscription {
+  id           String    @id @default(cuid())
+  userId       String    @unique // One active subscription per user usually, or remove unique if key-based
+  planId       String // "free", "plus", "pro"
+  status       String // "active", "expired", "canceled"
+  billingCycle String? // "monthly", "yearly"
+  startDate    DateTime  @default(now())
+  endDate      DateTime?
+  autoRenew    Boolean   @default(false)
+  provider     String? // "zibal", "manual"
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Transaction {
+  id          String  @id @default(cuid())
+  userId      String
+  planId      String?
+  amount      Float
+  currency    String  @default("IRR")
+  status      String // "pending", "completed", "failed"
+  gateway     String // "zibal"
+  trackId     String? // Gateway tracking ID (authority)
+  refId       String? // Reference ID after success
+  cardPan     String?
+  description String?
+  metadata    Json?
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+  refundedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MediaItem {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String?
+  url         String
+  category    String // "logo", "pattern", etc.
+  subcategory String?
+  prompt      String?  @db.Text
+  model       String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  type      String // "auth", "project", "error"
+  action    String
+  details   String?  @db.Text
+  userId    String?
+  userEmail String?
+  ip        String?
+  timestamp DateTime @default(now())
+}

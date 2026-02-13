@@ -49,3 +49,5 @@ verify-*.js
 
 # logs
 *.log
+
+/lib/generated/prisma

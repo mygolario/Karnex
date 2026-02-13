@@ -21,15 +21,12 @@ export function ProjectNameSelector({ idea, selectedName, onNameChange }: Projec
     
     setIsLoading(true);
     try {
-      const res = await fetch("/api/suggest-project-name", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idea })
-      });
+      // Use server action
+      const { suggestProjectNameAction } = await import("@/lib/ai-actions");
+      const result = await suggestProjectNameAction(idea);
       
-      if (res.ok) {
-        const data = await res.json();
-        setSuggestions(data.names || []);
+      if (result.success && result.data) {
+        setSuggestions(result.data.names || []);
         setHasLoaded(true);
       }
     } catch (error) {

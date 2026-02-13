@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase";
+import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
@@ -32,8 +32,6 @@ export default function LoginPage() {
   const [resetEmail, setResetEmail] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
 
-  const supabase = createClient();
-
   // Clear error when input changes
   useEffect(() => {
     if (error) setError("");
@@ -45,25 +43,25 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const result = await signIn("credentials", {
+        redirect: false,
         email,
         password,
       });
 
-      if (error) {
-        throw error;
+      if (result?.error) {
+        throw new Error(result.error);
       }
 
       router.push("/dashboard/overview");
-      router.refresh(); // Refresh to update server components/middleware
+      router.refresh(); 
     } catch (err: any) {
       console.error("Login Error:", err);
-      if (err.message === "Invalid login credentials") {
-        setError("اطلاعات ورود اشتباه است");
-      } else if (err.message.includes("Email not confirmed")) {
-        setError("لطفاً ایمیل خود را تأیید کنید");
+      // NextAuth returns "CredentialsSignin" or custom error string
+      if (err.message === "CredentialsSignin" || err.message.includes("credentials")) {
+         setError("اطلاعات ورود اشتباه است");
       } else {
-        setError("خطا در ورود. لطفاً دوباره تلاش کنید");
+         setError("خطا در ورود. لطفاً دوباره تلاش کنید");
       }
     } finally {
       setLoading(false);
@@ -73,22 +71,8 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setError("");
     setLoading(true);
-    
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-
-      if (error) throw error;
-      // Redirect happens automatically
-    } catch (err: any) {
-      console.error("Google Login Error:", err);
-      setError("خطا در ورود با گوگل. لطفاً دوباره تلاش کنید");
-      setLoading(false);
-    }
+    // NextAuth Google Sign In
+    await signIn("google", { callbackUrl: "/dashboard/overview" });
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -98,18 +82,17 @@ export default function LoginPage() {
     setSuccess("");
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-
-      if (error) throw error;
-
-      setSuccess("لینک بازیابی به ایمیل شما ارسال شد");
+      // TODO: Implement Forgot Password API for Prisma/NextAuth
+      // SupersededSupabase logic
+      // await axios.post('/api/auth/forgot-password', { email: resetEmail })
+      
+      // For now, mock success or show maintenance
+      setSuccess("لینک بازیابی به ایمیل شما ارسال شد (نمایشی)");
       setTimeout(() => setShowForgotPassword(false), 3000);
       setResetEmail("");
     } catch (err: any) {
       console.error("Forgot Password Error:", err);
-      setError("خطا در ارسال ایمیل. لطفاً دوباره تلاش کنید");
+      setError("خطا در ارسال ایمیل.");
     } finally {
       setResetLoading(false);
     }

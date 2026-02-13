@@ -51,15 +51,17 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     setIsLoading(true);
     try {
-      // Use server-side API route instead of browser Supabase client
-      const res = await fetch("/api/user-data?type=projects");
-      if (!res.ok) {
-        console.error("Error fetching projects: HTTP", res.status);
+      // Use server action
+      const { getUserProjectsAction } = await import("@/lib/project-actions");
+      const res = await getUserProjectsAction();
+      
+      if (res.error) {
+        console.error("Error fetching projects:", res.error);
         setIsLoading(false);
         return;
       }
-      const data = await res.json();
-      const allProjects: BusinessPlan[] = data.projects || [];
+      
+      const allProjects: BusinessPlan[] = (res.projects as BusinessPlan[]) || [];
       setProjects(allProjects);
 
       // determine active project
@@ -96,19 +98,28 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error("User not found");
     
     // Only do the critical insert — dashboard will load projects on its own
-    console.log("📝 Creating project in Supabase for user:", user.id);
-    const newId = await createProject(user.id, planData);
+    console.log("📝 Creating project via Server Action for user:", user.id);
+    
+    const { createProjectAction } = await import("@/lib/project-actions");
+    const res = await createProjectAction(planData);
+
+    if (res.error || !res.success || !res.id) {
+        throw new Error(res.error || "Failed to create project");
+    }
+
+    const newId = res.id;
     console.log("✅ Project created:", newId);
     
     // FORCE REFRESH & SWITCH
     setIsLoading(true); // Manually set loading to prevent UI flicker
     try {
         // Fetch fresh list
-        const res = await fetch("/api/user-data?type=projects");
-        if (!res.ok) throw new Error("Failed to refresh projects");
+        const { getUserProjectsAction } = await import("@/lib/project-actions");
+        const fetchRes = await getUserProjectsAction();
         
-        const data = await res.json();
-        const allProjects: BusinessPlan[] = data.projects || [];
+        if (fetchRes.error) throw new Error("Failed to refresh projects");
+        
+        const allProjects: BusinessPlan[] = (fetchRes.projects as BusinessPlan[]) || [];
         
         setProjects(allProjects);
         
@@ -118,17 +129,13 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         if (newProject) {
             console.log("🔄 Switching to new project:", newProject.projectName);
             setActiveProject(newProject);
-            // Optional: You could allow the caller to handle routing, 
-            // but ensuring state is cohesive here is safer.
         } else {
             console.warn("⚠️ New project created but not found in list. Using fallback.");
-            // Fallback to what refreshProjects normally does
             if (allProjects.length > 0) setActiveProject(allProjects[0]);
         }
 
     } catch (err) {
         console.error("❌ Error switching to new project:", err);
-        // Dont throw, let the flow continue so the user at least gets redirected (even if to old project)
     } finally {
         setIsLoading(false);
     }
@@ -159,7 +166,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
 
     // Save to Cloud (Fire and forget or await if needed, but for context we usually just trigger it)
     try {
-        await savePlanToCloud(user.id, updates as any, true, activeProject.id);
+        await savePlanToCloud(user.id!, updates as any, true, activeProject.id!);
     } catch (err) {
         console.error("Failed to save project updates", err);
         // revert if needed? For now we assume eventual consistency or user retry

@@ -29,7 +29,7 @@ export default function SettingsPage() {
     
     setIsDeleting(true);
     try {
-      await deleteProject(user.id, activeProject.id);
+      await deleteProject(user!.id!, activeProject.id!);
       if (refreshProjects) await refreshProjects();
       router.push('/projects');
     } catch (error) {

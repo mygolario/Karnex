@@ -8,11 +8,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { 
-  getUserSubscription, 
-  getUserTier, 
-  getUserFeatures,
-} from '@/lib/subscription';
+// Imports removed to prevent server code leaking to client
+// import { 
+//   getUserSubscription, 
+//   getUserTier, 
+//   getUserFeatures,
+// } from '@/lib/subscription';
 import { 
   Subscription, 
   PlanTier, 
@@ -57,15 +58,14 @@ export function useSubscription(): UseSubscriptionReturn {
       setLoading(true);
       setError(null);
       
-      const [sub, userTier, userFeatures] = await Promise.all([
-        getUserSubscription(user.id),
-        getUserTier(user.id),
-        getUserFeatures(user.id),
-      ]);
+      const res = await fetch('/api/user-data?type=subscription');
+      if (!res.ok) throw new Error('Failed to fetch subscription');
       
-      setSubscription(sub);
-      setTier(userTier);
-      setFeatures(userFeatures);
+      const data = await res.json();
+      
+      setSubscription(data.subscription || null);
+      setTier(data.tier || 'free');
+      setFeatures(data.features || DEFAULT_FEATURES.free);
     } catch (err) {
       console.error('Error fetching subscription:', err);
       setError(err instanceof Error ? err : new Error('Failed to fetch subscription'));

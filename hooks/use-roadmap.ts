@@ -108,7 +108,7 @@ export function useRoadmap(): UseRoadmapReturn {
     updateActiveProject({ completedSteps: newCompletedSteps });
 
     try {
-      await toggleStepCompletion(user.id, stepName, isNowCompleted, plan.id || 'current');
+      await toggleStepCompletion(user.id!, stepName, isNowCompleted, plan.id || 'current');
     } catch (error) {
       console.error("Sync failed", error);
       // Revert on failure

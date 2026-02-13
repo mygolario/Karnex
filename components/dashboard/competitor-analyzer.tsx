@@ -82,17 +82,19 @@ export function CompetitorAnalyzer() {
 
     setAnalyzing(true);
     try {
-      const res = await fetch('/api/analyze-competitors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          projectName: plan.projectName,
-          projectIdea: plan.overview,
-          audience: plan.audience
-        })
+      // Use server action
+      const { analyzeCompetitorsAction } = await import("@/lib/ai-actions");
+      const result = await analyzeCompetitorsAction({
+        projectName: plan.projectName,
+        projectIdea: plan.overview,
+        audience: plan.audience
       });
 
-      const data = await res.json();
+      if (!result.success || !result.data) {
+        throw new Error(result.error || "Analysis failed");
+      }
+
+      const data = result.data;
       // Add scores to competitors
       setResult({
         ...data,

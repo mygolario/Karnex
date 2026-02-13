@@ -1,53 +1,26 @@
-import { createServerClient } from '@supabase/ssr'
+import NextAuth from "next-auth"
+import { authConfig } from "./auth.config"
 import { NextResponse, type NextRequest } from 'next/server'
 
+const { auth } = NextAuth(authConfig)
+
 // Simple in-memory store for rate limiting (per instance)
-// Note: In serverless, this memory is not shared, but it helps against single-instance floods.
 const rateLimit = new Map();
 
-export async function proxy(request: NextRequest) {
+export const proxy = auth(async function proxy(req) {
+  const request = req as NextRequest; // Cast to NextRequest for consistency
   const path = request.nextUrl.pathname;
   const ip = request.headers.get('x-forwarded-for') || 'unknown';
+  
+  // Note: 'auth' wrapper handles the 'authorized' callback logic in auth.config.ts
+  // automatically. If the user is not authorized for a protected route, 
+  // they are redirected/rejected before reaching here (or we can check req.auth).
 
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
-
-  // --- 1. Supabase Auth & Session Refresh ---
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  
-  let user = null;
-  
-  if (supabaseUrl && supabaseKey) {
-    const supabase = createServerClient(
-      supabaseUrl,
-      supabaseKey,
-      {
-        cookies: {
-          getAll() {
-            return request.cookies.getAll()
-          },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
-            response = NextResponse.next({
-              request: {
-                headers: request.headers,
-              },
-            })
-            cookiesToSet.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options)
-            )
-          },
-        },
-      }
-    )
-
-    const { data } = await supabase.auth.getUser()
-    user = data?.user ?? null
-  }
 
   // --- 2. Rate Limiting for AI Chat endpoints ---
   if (path.startsWith('/api/chat')) {
@@ -71,41 +44,13 @@ export async function proxy(request: NextRequest) {
     rateLimit.set(ip, recentRequests);
   }
 
-  // --- 3. Route Protection (Dashboards) ---
-  if (path.startsWith('/dashboard')) {
-    if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url));
-    }
-  }
-
-  // --- 4. Auth Routes (Redirect to dashboard if already logged in) ---
-  if (path === '/login' || path === '/signup' || path === '/reset-password') {
-    if (user) {
-      // Allow reset-password to be viewed if user is logged in? 
-      // Usually reset password is for unauthenticated users, 
-      // but 'update password' is for authenticated. 
-      // Use case: User clicks "forgot password", gets email, clicks link.
-      // Link logs them in automatically via Supabase magic? 
-      // If code exchange happens, they stay on /reset-password? 
-      // Let's keep /login and /signup redirect, but maybe check reset-password.
-      // Actually, if they are logged in, they shouldn't be on /login or /signup.
-      // But /reset-password might be used for 'change password'? 
-      // If it is the same page, we should allow it.
-      // The current reset-password page handles the "sessionCheck" logic itself.
-      // Let's safe-guard /login and /signup only.
-      if (path !== '/reset-password') {
-          return NextResponse.redirect(new URL('/dashboard/overview', request.url));
-      }
-    }
-  }
-
   // --- 5. Strict Headers (Additional Security) ---
   response.headers.set('X-Frame-Options', 'DENY');
   response.headers.set('X-Content-Type-Options', 'nosniff');
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
   return response
-}
+})
 
 export const config = {
   matcher: [

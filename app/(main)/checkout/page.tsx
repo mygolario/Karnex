@@ -2,19 +2,17 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { getPlanById } from "@/lib/payment/pricing";
 import { formatPricePersian } from "@/lib/payment/gateways/zarinpal";
-import { User } from "@supabase/supabase-js";
 
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const { data: session, status } = useSession();
   
   const planId = searchParams.get("plan");
   const cycle = searchParams.get("cycle") || "monthly";
@@ -25,26 +23,6 @@ function CheckoutContent() {
   const plan = planId ? getPlanById(planId) : null;
   const isAnnual = cycle === "yearly";
 
-  // Check auth
-  useEffect(() => {
-    const supabase = createClient();
-    
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      setAuthLoading(false);
-    };
-    
-    checkUser();
-    
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setAuthLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
   // Redirect if no plan selected
   useEffect(() => {
     if (!planId || !plan) {
@@ -54,11 +32,13 @@ function CheckoutContent() {
 
   // Redirect if not logged in
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (status === "loading") return;
+    
+    if (status === "unauthenticated" || !session?.user) {
       const returnUrl = encodeURIComponent(`/checkout?plan=${planId}&cycle=${cycle}`);
-      router.push(`/auth?redirectTo=${returnUrl}`);
+      router.push(`/login?callbackUrl=${returnUrl}`); // Changed to /login standard NextAuth
     }
-  }, [authLoading, user, planId, cycle, router]);
+  }, [status, session, planId, cycle, router]);
 
   const handlePayment = async () => {
     setLoading(true);
@@ -93,7 +73,7 @@ function CheckoutContent() {
     }
   };
 
-  if (authLoading || !plan) {
+  if (status === "loading" || !plan) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

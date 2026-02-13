@@ -8,6 +8,8 @@ import { JsonLd } from '@/components/shared/json-ld';
 import { NetworkStatus } from '@/components/shared/network-status';
 import { CookieBanner } from '@/components/shared/cookie-banner'; 
 import { GoogleAnalytics } from '@/components/shared/analytics';
+import { SessionProvider } from "next-auth/react";
+import { ToastProvider } from '@/components/ui/toast';
 
 const vazir = Vazirmatn({ subsets: ['arabic', 'latin'] });
 
@@ -17,8 +19,6 @@ export const metadata: Metadata = {
     template: '%s | کارنکس',
   },
   description: 'با دستیار کارنکس، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
-  // icons are automatically handled by app/icon.png
-  // openGraph images are automatically handled by app/opengraph-image.png
   keywords: [
     'کارآفرینی',
     'استارتاپ',
@@ -84,14 +84,18 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          <AuthProvider>
-             <GoogleAnalytics />
-            <ProjectProvider>
-              <NetworkStatus />
-              {children}
-              <CookieBanner />
-            </ProjectProvider>
-          </AuthProvider>
+          <SessionProvider>
+            <AuthProvider>
+              <ToastProvider>
+                <GoogleAnalytics />
+                <ProjectProvider>
+                  <NetworkStatus />
+                  {children}
+                  <CookieBanner />
+                </ProjectProvider>
+              </ToastProvider>
+            </AuthProvider>
+          </SessionProvider>
         </ThemeProvider>
         
         {/* JSON-LD for Google Knowledge Graph */}

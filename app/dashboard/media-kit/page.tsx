@@ -100,8 +100,8 @@ export default function MediaKitPage() {
       
       // Explicitly save to ensure specific collection update if needed (context does plan update, this is specific field)
       // Actually context is enough if it saves the whole plan, but for safety with sub-collections:
-      if (plan.id && user) {
-        await saveMediaKit(user.id, data, plan.id);
+      if (plan.id && user?.id) {
+        await saveMediaKit(user.id!, data, plan.id!);
       }
       
       toast.success("مدیاکیت ذخیره شد");

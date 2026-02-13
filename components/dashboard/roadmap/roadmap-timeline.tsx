@@ -12,6 +12,7 @@ interface RoadmapTimelineProps {
   completedSteps: string[];
   activeWeek: number;
   onToggleStep: (step: string | RoadmapStepObject) => void;
+  onOpenStepDetail?: (step: string | RoadmapStepObject, phase?: RoadmapPhase) => void;
   getStepTitle: (step: string | RoadmapStepObject) => string;
 }
 
@@ -20,6 +21,7 @@ export function RoadmapTimeline({
   completedSteps,
   activeWeek,
   onToggleStep,
+  onOpenStepDetail,
   getStepTitle,
 }: RoadmapTimelineProps) {
   
@@ -104,10 +106,17 @@ export function RoadmapTimeline({
                         {phase.steps.map((step, sIdx) => {
                           const title = getStepTitle(step);
                           const isDone = completedSteps.includes(title);
+                          const handleClick = () => {
+                            if (onOpenStepDetail) {
+                              onOpenStepDetail(step, phase);
+                            } else {
+                              onToggleStep(step);
+                            }
+                          };
                           return (
                             <div 
                               key={sIdx}
-                              onClick={() => onToggleStep(step)}
+                              onClick={handleClick}
                               className={cn(
                                 "flex items-center gap-3 p-3 rounded-xl transition-colors cursor-pointer border border-transparent",
                                 isDone 

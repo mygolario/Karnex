@@ -11,6 +11,7 @@ interface RoadmapKanbanProps {
   roadmap: RoadmapPhase[];
   completedSteps: string[];
   onToggleStep: (step: string | RoadmapStepObject) => void;
+  onOpenStepDetail?: (step: string | RoadmapStepObject, phase?: RoadmapPhase) => void;
   getStepTitle: (step: string | RoadmapStepObject) => string;
   filterPriority: string;
 }
@@ -19,6 +20,7 @@ export function RoadmapKanban({
   roadmap,
   completedSteps,
   onToggleStep,
+  onOpenStepDetail,
   getStepTitle,
   filterPriority
 }: RoadmapKanbanProps) {
@@ -75,7 +77,10 @@ export function RoadmapKanban({
                  key={getStepTitle(step) + idx} 
                  step={step} 
                  status="todo"
+                 phase={roadmap.find((p) => p.steps.some((s) => getStepTitle(s) === getStepTitle(step)))}
                  onAction={() => onToggleStep(step)}
+                 onOpenDetail={onOpenStepDetail}
+                 getStepTitle={getStepTitle}
                />
             ))}
             {todoSteps.length === 0 && <EmptyState />}
@@ -96,7 +101,10 @@ export function RoadmapKanban({
                  key={getStepTitle(step) + idx} 
                  step={step} 
                  status="in-progress"
+                 phase={roadmap.find((p) => p.steps.some((s) => getStepTitle(s) === getStepTitle(step)))}
                  onAction={() => onToggleStep(step)}
+                 onOpenDetail={onOpenStepDetail}
+                 getStepTitle={getStepTitle}
                />
             ))}
              {inProgressSteps.length === 0 && <EmptyState text="تسکی در جریان نیست" />}
@@ -116,7 +124,10 @@ export function RoadmapKanban({
                  key={getStepTitle(step) + idx} 
                  step={step} 
                  status="done"
+                 phase={roadmap.find((p) => p.steps.some((s) => getStepTitle(s) === getStepTitle(step)))}
                  onAction={() => onToggleStep(step)}
+                 onOpenDetail={onOpenStepDetail}
+                 getStepTitle={getStepTitle}
                />
             ))}
             {doneSteps.length === 0 && <EmptyState text="هنوز موردی تکمیل نشده" />}
@@ -152,18 +163,37 @@ function KanbanColumn({ title, count, icon, children, colorClass, isMain }: any)
   );
 }
 
-function KanbanCard({ step, status, onAction }: { step: any, status: 'todo'|'in-progress'|'done', onAction: () => void }) {
+function KanbanCard({ 
+  step, 
+  status, 
+  phase,
+  onAction, 
+  onOpenDetail, 
+  getStepTitle 
+}: { 
+  step: any; 
+  status: 'todo'|'in-progress'|'done'; 
+  phase?: RoadmapPhase;
+  onAction: () => void;
+  onOpenDetail?: (step: string | RoadmapStepObject, phase?: RoadmapPhase) => void;
+  getStepTitle: (step: string | RoadmapStepObject) => string;
+}) {
    const isString = typeof step === 'string';
    const title = isString ? step : step.title;
    const desc = !isString ? step.description : null;
    const priority = !isString ? step.priority : null;
-   const phase = step.phaseName;
+   const phaseName = step.phaseName ?? phase?.phase;
 
    const priorityColor = {
      high: "text-red-600 bg-red-50 border-red-100",
      medium: "text-amber-600 bg-amber-50 border-amber-100",
      low: "text-slate-600 bg-slate-50 border-slate-100"
    }[priority as string] || "text-slate-600 bg-slate-50 border-slate-100";
+
+   const handleOpenDetail = (e: React.MouseEvent) => {
+     e.stopPropagation();
+     onOpenDetail?.(step, phase);
+   };
 
    return (
      <motion.div 
@@ -183,9 +213,9 @@ function KanbanCard({ step, status, onAction }: { step: any, status: 'todo'|'in-
 
        <div className="space-y-2 pl-4">
           <div className="flex flex-wrap gap-1 mb-1">
-             {phase && (
+             {phaseName && (
                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-medium truncate max-w-[100px]">
-                 {phase}
+                 {phaseName}
                </span>
              )}
              {priority && (
@@ -195,12 +225,25 @@ function KanbanCard({ step, status, onAction }: { step: any, status: 'todo'|'in-
              )}
           </div>
 
-          <h4 className={cn("font-bold text-sm leading-snug", status === 'done' && "line-through text-muted-foreground")}>
+          <h4 
+            className={cn(
+              "font-bold text-sm leading-snug", 
+              status === 'done' && "line-through text-muted-foreground",
+              onOpenDetail && "cursor-pointer hover:text-primary transition-colors"
+            )}
+            onClick={onOpenDetail ? handleOpenDetail : undefined}
+          >
             {title}
           </h4>
           
           {desc && (
-            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+            <p 
+              className={cn(
+                "text-xs text-muted-foreground line-clamp-2 leading-relaxed",
+                onOpenDetail && "cursor-pointer hover:text-foreground/80"
+              )}
+              onClick={onOpenDetail ? handleOpenDetail : undefined}
+            >
               {desc}
             </p>
           )}
@@ -211,17 +254,29 @@ function KanbanCard({ step, status, onAction }: { step: any, status: 'todo'|'in-
                 <span>برنامه‌ریزی شده</span>
              </div>
              
-             <Button 
-               size="sm" 
-               variant={status === 'done' ? "ghost" : "ghost"}
-               onClick={onAction}
-               className={cn(
-                 "h-6 px-2 text-[10px] gap-1 hover:bg-primary/10 hover:text-primary",
-                 status === 'done' ? "text-emerald-600 hover:text-red-500" : "text-muted-foreground"
+             <div className="flex gap-1">
+               {onOpenDetail && (
+                 <Button 
+                   size="sm" 
+                   variant="ghost"
+                   onClick={handleOpenDetail}
+                   className="h-6 px-2 text-[10px] gap-1 hover:bg-primary/10 hover:text-primary text-muted-foreground"
+                 >
+                   جزئیات
+                 </Button>
                )}
-             >
-                {status === 'done' ? "بازگردانی" : (status === 'in-progress' ? "تکمیل" : "شروع")}
-             </Button>
+               <Button 
+                 size="sm" 
+                 variant="ghost"
+                 onClick={(e) => { e.stopPropagation(); onAction(); }}
+                 className={cn(
+                   "h-6 px-2 text-[10px] gap-1 hover:bg-primary/10 hover:text-primary",
+                   status === 'done' ? "text-emerald-600 hover:text-red-500" : "text-muted-foreground"
+                 )}
+               >
+                  {status === 'done' ? "بازگردانی" : (status === 'in-progress' ? "تکمیل" : "شروع")}
+               </Button>
+             </div>
           </div>
        </div>
      </motion.div>

@@ -74,33 +74,23 @@ export default function NewProjectPage() {
     setIsGenerating(true);
     setError("");
     
-    // Create AbortController for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
-
     try {
-        const res = await fetch("/api/generate-plan", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                projectType: selectedPillarId,
-                idea: projectVision,
-                projectName: projectName,
-                genesisAnswers: answers,
-                audience: "General", 
-                budget: "Not specified" 
-            }),
-            signal: controller.signal
+        const { generatePlanAction } = await import("@/lib/project-actions");
+        
+        const result = await generatePlanAction({
+            projectType: selectedPillarId,
+            idea: projectVision,
+            projectName: projectName,
+            genesisAnswers: answers,
+            audience: "General", 
+            budget: "Not specified" 
         });
 
-        clearTimeout(timeoutId);
-
-        if (!res.ok) {
-            const errorData = await res.json().catch(() => ({}));
-            throw new Error(errorData.error || "Failed to generate plan");
+        if (result.error) {
+            throw new Error(result.error);
         }
 
-        const data = await res.json();
+        const data = result.plan;
         console.log("✅ AI plan received, preparing to save...");
         
         // Use generated plan
@@ -129,10 +119,10 @@ export default function NewProjectPage() {
 
     } catch (err: any) {
         console.error("❌ Failed to generate/create project:", err);
-        if (err.name === 'AbortError') {
-            setError("زمان انتظار به پایان رسید. لطفاً دوباره تلاش کنید.");
+        if (err.message?.includes("Limit reached")) {
+             setError("محدودیت درخواست هوش مصنوعی به پایان رسیده است.");
         } else {
-            setError(err.message || "خطا در تولید استراتژی. لطفاً دوباره تلاش کنید.");
+             setError(err.message || "خطا در تولید استراتژی. لطفاً دوباره تلاش کنید.");
         }
         setIsGenerating(false);
         setIsCreatingProject(false); 

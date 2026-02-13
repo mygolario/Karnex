@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRoadmap } from "@/hooks/use-roadmap";
+import { useProject } from "@/contexts/project-context";
 import { RoadmapKanban } from "@/components/dashboard/roadmap/roadmap-kanban";
 import { RoadmapTimeline } from "@/components/dashboard/roadmap/roadmap-timeline";
+import { StepDetailModal } from "@/components/dashboard/step-detail-modal";
+import { breakTaskAction } from "@/lib/ai-actions";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -11,6 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Layers, KanbanSquare, CalendarDays, Loader2, Sparkles, Trophy, GanttChartSquare, ListTree, Activity, Search, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import type { RoadmapPhase, RoadmapStepObject } from "@/hooks/use-roadmap";
+import type { SubTask } from "@/lib/db";
 
 import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
 
@@ -26,6 +31,69 @@ export default function RoadmapPage() {
     getStepTitle,
     totalSteps
   } = useRoadmap();
+  const { activeProject, updateActiveProject } = useProject();
+
+  // StepDetailModal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedStep, setSelectedStep] = useState<RoadmapStepObject | null>(null);
+  const [selectedPhase, setSelectedPhase] = useState<RoadmapPhase | null>(null);
+  const [isBreakingTask, setIsBreakingTask] = useState(false);
+
+  const handleOpenStepDetail = useCallback((step: string | RoadmapStepObject, phase?: RoadmapPhase) => {
+    const stepObj = typeof step === "string" ? { title: step, priority: "low" as const } : step;
+    const phaseData = phase ?? roadmap.find((p) => p.steps.some((s) => getStepTitle(s) === stepObj.title)) ?? null;
+    setSelectedStep(stepObj);
+    setSelectedPhase(phaseData ?? null);
+    setModalOpen(true);
+  }, [roadmap, getStepTitle]);
+
+  const handleCloseModal = useCallback(() => {
+    setModalOpen(false);
+    setSelectedStep(null);
+    setSelectedPhase(null);
+  }, []);
+
+  const handleBreakTask = useCallback(async () => {
+    if (!selectedStep || !activeProject?.id) return;
+    setIsBreakingTask(true);
+    try {
+      const result = await breakTaskAction(selectedStep.title);
+      if (result.success && result.data?.subTasks?.length) {
+        const existingSubTasks = (activeProject.subTasks || []) as SubTask[];
+        const newSubTasks: SubTask[] = result.data.subTasks.map((text, order) => ({
+          parentStep: selectedStep.title,
+          text,
+          isCompleted: false,
+          order,
+        }));
+        const merged = [...existingSubTasks.filter((s) => s.parentStep !== selectedStep.title), ...newSubTasks];
+        await updateActiveProject({ subTasks: merged });
+      }
+    } catch (err) {
+      console.error("Break task failed:", err);
+    } finally {
+      setIsBreakingTask(false);
+    }
+  }, [selectedStep, activeProject, updateActiveProject]);
+
+  const handleSubTaskToggle = useCallback((subTask: SubTask) => {
+    if (!activeProject?.subTasks) return;
+    const list = activeProject.subTasks as SubTask[];
+    const updated = list.map((s) =>
+      s.parentStep === subTask.parentStep && s.text === subTask.text
+        ? { ...s, isCompleted: !s.isCompleted }
+        : s
+    );
+    updateActiveProject({ subTasks: updated });
+  }, [activeProject, updateActiveProject]);
+
+  const handleToggleComplete = useCallback(() => {
+    if (selectedStep) toggleStep(selectedStep);
+  }, [selectedStep, toggleStep]);
+
+  const stepSubTasks = (plan?.subTasks as SubTask[] | undefined)?.filter(
+    (s) => s.parentStep === selectedStep?.title
+  ) ?? [];
 
   const [viewMode, setViewMode] = useState<"kanban" | "timeline" | "gantt">("kanban");
   const [filterPriority, setFilterPriority] = useState<string>("all");
@@ -175,6 +243,7 @@ export default function RoadmapPage() {
                roadmap={roadmap} 
                completedSteps={completedSteps}
                onToggleStep={toggleStep}
+               onOpenStepDetail={handleOpenStepDetail}
                getStepTitle={getStepTitle}
                filterPriority={filterPriority}
              />
@@ -185,6 +254,7 @@ export default function RoadmapPage() {
                completedSteps={completedSteps}
                activeWeek={activeWeek}
                onToggleStep={toggleStep}
+               onOpenStepDetail={handleOpenStepDetail}
                getStepTitle={getStepTitle}
              />
            )}
@@ -198,6 +268,23 @@ export default function RoadmapPage() {
         </motion.div>
       </AnimatePresence>
 
+      {/* Step Detail Modal */}
+      {selectedStep && (
+        <StepDetailModal
+          step={selectedStep}
+          phaseName={selectedPhase?.phase ?? ""}
+          weekNumber={selectedPhase?.weekNumber}
+          isOpen={modalOpen}
+          onClose={handleCloseModal}
+          isCompleted={completedSteps.includes(selectedStep.title)}
+          onToggleComplete={handleToggleComplete}
+          subTasks={stepSubTasks}
+          onSubTaskToggle={handleSubTaskToggle}
+          onBreakTask={handleBreakTask}
+          isBreakingTask={isBreakingTask}
+          projectName={plan?.projectName}
+        />
+      )}
     </div>
   );
 }

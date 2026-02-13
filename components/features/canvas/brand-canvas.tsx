@@ -29,7 +29,7 @@ export function PersonalBrandCanvas() {
     updateActiveProject({ brandCanvas: newData });
 
     try {
-        await saveBrandCanvas(user.id, newData, plan.id || 'current');
+        await saveBrandCanvas(user.id!, newData, plan.id || 'current');
         toast.success("بوم برند شخصی ذخیره شد");
     } catch (err) {
         toast.error("خطا در ذخیره سازی");
