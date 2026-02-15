@@ -51,3 +51,9 @@ verify-*.js
 *.log
 
 /lib/generated/prisma
+
+# Deployment scripts
+set_envs.ps1
+
+# Build artifacts
+/public/sw.js

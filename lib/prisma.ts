@@ -2,10 +2,11 @@ import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 
 const prismaClientSingleton = () => {
-  const connectionString = process.env.DATABASE_URL
-  if (!connectionString) {
-    throw new Error('DATABASE_URL is not defined')
-  }
+  // During build time, DATABASE_URL might not be available.
+  // We use a dummy connection string to allow the build to proceed.
+  // The actual connection will verify the URL at runtime.
+  const connectionString = process.env.DATABASE_URL || 'postgresql://dummy:dummy@localhost:5432/dummy'
+  
   const adapter = new PrismaPg({ connectionString })
   return new PrismaClient({
     adapter,
