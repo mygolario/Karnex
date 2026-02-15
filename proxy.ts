@@ -2,7 +2,10 @@ import NextAuth from "next-auth"
 import { authConfig } from "./auth.config"
 import { NextResponse, type NextRequest } from 'next/server'
 
-const { auth } = NextAuth(authConfig)
+const { auth } = NextAuth({
+  ...authConfig,
+  trustHost: true,
+})
 
 // Simple in-memory store for rate limiting (per instance)
 const rateLimit = new Map();
