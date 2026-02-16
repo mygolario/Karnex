@@ -37,8 +37,8 @@ export async function POST(req: Request) {
 
     let finalAmountTomans: number;
     if (isAnnual) {
-      // Yearly price = discounted monthly × 12
-      finalAmountTomans = plan.price.yearly * 12;
+      // Yearly price is already total for 12 months in the plan config
+      finalAmountTomans = plan.price.yearly;
     } else {
       finalAmountTomans = monthlyPrice;
     }

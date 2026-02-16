@@ -65,7 +65,11 @@ export function CanvasBoard({ highlightedSectionId }: CanvasBoardProps) {
   const [activeCard, setActiveCard] = useState<ICanvasCard | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -118,7 +122,7 @@ export function CanvasBoard({ highlightedSectionId }: CanvasBoardProps) {
       {/* Complex Grid for BMC */}
           <div 
             dir="ltr" 
-            className="grid gap-4 min-h-[800px]"
+            className="grid gap-4 min-h-[800px] min-w-[1000px]"
             style={{
               gridTemplateColumns: 'repeat(5, 1fr)',
               gridTemplateRows: 'repeat(2, 400px) 200px', // Fixed heights for stability or min-content

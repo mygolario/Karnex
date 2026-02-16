@@ -104,8 +104,7 @@ export default function PricingPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planId: plan.id,
-          amount: plan.monthlyPrice, // Backend handles discount logic if isAnnual is true
-          isAnnual
+          billingCycle: isAnnual ? 'yearly' : 'monthly'
         }),
       });
 

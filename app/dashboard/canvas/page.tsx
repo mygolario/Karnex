@@ -108,7 +108,7 @@ function CanvasPageContent({ plan }: { plan: any }) {
         <div className="max-w-7xl mx-auto space-y-6 pb-12">
             <CanvasHeader plan={plan} onOpenWizard={wizard.openWizard} />
             
-            <div id="bmc-canvas" className="bg-card border border-border rounded-3xl p-4 md:p-6 overflow-hidden min-h-[800px]" data-tour-id="canvas-board">
+            <div id="bmc-canvas" className="bg-card border border-border rounded-3xl p-4 md:p-6 overflow-x-auto min-h-[800px]" data-tour-id="canvas-board">
                 <CanvasBoard highlightedSectionId={activeSectionId} />
             </div>
 

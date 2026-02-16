@@ -58,7 +58,7 @@ export const CTASection = () => {
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight"
+              className="text-3xl md:text-6xl lg:text-7xl font-black text-white mb-6 leading-tight"
             >
               آماده‌ای مسیرت رو
               <br />
