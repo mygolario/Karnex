@@ -43,6 +43,7 @@ model User {
   mediaItems    MediaItem[]
   subscriptions Subscription[]
   transactions  Transaction[]
+  feedbacks     Feedback[]
 }
 
 model Account {
@@ -159,4 +160,13 @@ model SystemLog {
   userEmail String?
   ip        String?
   timestamp DateTime @default(now())
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String?
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
 }

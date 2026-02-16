@@ -4,15 +4,19 @@ import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/shared/navbar";
 import { Footer } from "@/components/shared/footer";
-import { Mail, MessageSquare, FileText, Send, Loader2, CheckCircle2 } from "lucide-react";
+import { submitFeedback } from "@/app/actions/feedback";
+import { X, CheckCircle2, MessageSquare, FileText, Send, Mail, Loader2, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function ContactPage() {
   const { user } = useAuth();
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [loading, setLoading] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +39,24 @@ export default function ContactPage() {
       toast.error(error.message || "خطا در برقراری ارتباط با سرور");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackMessage.trim()) return toast.error("لطفا متن بازخورد را بنویسید");
+    
+    setFeedbackLoading(true);
+    try {
+      const result = await submitFeedback(feedbackMessage, user?.id);
+      if (result.error) throw new Error(result.error);
+      
+      toast.success("بازخورد شما با موفقیت ثبت شد");
+      setFeedbackMessage("");
+      setShowFeedbackModal(false);
+    } catch (error) {
+      toast.error("خطا در ثبت بازخورد");
+    } finally {
+      setFeedbackLoading(false);
     }
   };
 
@@ -189,6 +211,7 @@ export default function ContactPage() {
                     </h4>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                         مشاهده آموزش‌های ویدیویی و متنی پلتفرم.
+                        <span className="block mt-2 text-xs font-bold text-primary bg-primary/10 w-fit px-2 py-1 rounded-full">به زودی</span>
                     </p>
                 </div>
               </div>
@@ -203,7 +226,11 @@ export default function ContactPage() {
                     <p className="text-slate-400 mb-6 text-sm leading-relaxed">
                         نظرات شما مسیر توسعه کارنکس را می‌سازد. ایده‌های خود را با ما در میان بگذارید.
                     </p>
-                    <Button variant="secondary" className="w-full font-bold hover:bg-white/90 transition-colors">
+                    <Button 
+                      variant="secondary" 
+                      className="w-full font-bold hover:bg-white/90 transition-colors"
+                      onClick={() => setShowFeedbackModal(true)}
+                    >
                         ثبت بازخورد
                     </Button>
                 </div>
@@ -215,6 +242,65 @@ export default function ContactPage() {
       </main>
 
       <Footer />
+
+      {/* Feedback Modal */}
+      <AnimatePresence>
+        {showFeedbackModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-card w-full max-w-lg rounded-3xl p-6 md:p-8 shadow-2xl border relative"
+            >
+              <button 
+                onClick={() => setShowFeedbackModal(false)}
+                className="absolute top-4 left-4 p-2 hover:bg-muted rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+              
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 bg-purple-500/10 rounded-xl text-purple-600">
+                  <Sparkles size={24} />
+                </div>
+                <h3 className="text-2xl font-bold">ثبت بازخورد</h3>
+              </div>
+              
+              <p className="text-muted-foreground mb-6">
+                از اینکه وقت می‌گذارید تا نظرات ارزشمند خود را با ما در میان بگذارید سپاسگزاریم.
+              </p>
+
+              <div className="space-y-4">
+                <textarea
+                  value={feedbackMessage}
+                  onChange={(e) => setFeedbackMessage(e.target.value)}
+                  placeholder="پیشنهاد، انتقاد یا ایده خود را اینجا بنویسید..."
+                  className="w-full h-32 p-4 rounded-xl border bg-background/50 focus:bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
+                  autoFocus
+                />
+                
+                <div className="flex gap-3 justify-end">
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => setShowFeedbackModal(false)}
+                    className="rounded-xl"
+                  >
+                    انصراف
+                  </Button>
+                  <Button 
+                    onClick={handleFeedbackSubmit} 
+                    className="rounded-xl px-8"
+                    disabled={feedbackLoading}
+                  >
+                    {feedbackLoading ? <Loader2 className="animate-spin" /> : "ارسال بازخورد"}
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
