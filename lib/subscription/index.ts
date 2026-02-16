@@ -85,7 +85,8 @@ export async function createSubscription(
   const periodEnd = new Date(now);
   
   if (billingCycle === 'monthly') {
-    periodEnd.setMonth(periodEnd.getMonth() + 1);
+    // Fixed 30 days for monthly per user request
+    periodEnd.setDate(periodEnd.getDate() + 30);
   } else {
     periodEnd.setFullYear(periodEnd.getFullYear() + 1);
   }

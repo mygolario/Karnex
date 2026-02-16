@@ -13,9 +13,13 @@ interface ReceiptPageProps {
   };
 }
 
+import { PaymentSuccessHandler } from "@/components/payment/payment-success-handler";
+
 export default async function ReceiptPage({ params }: ReceiptPageProps) {
+  const { id } = await params;
+
   const transaction = await prisma.transaction.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!transaction) {
@@ -37,6 +41,7 @@ export default async function ReceiptPage({ params }: ReceiptPageProps) {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4" dir="rtl">
+      <PaymentSuccessHandler />
       <div className="max-w-md w-full space-y-6 animate-in fade-in zoom-in duration-500">
         
         <div className="text-center space-y-4">
