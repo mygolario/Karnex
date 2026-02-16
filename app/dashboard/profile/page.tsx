@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { updateUserProfile } from "@/lib/db";
+import { getUserTransactions } from "@/lib/payment-actions";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,7 @@ import { toast } from "sonner";
 import DatePicker from "react-multi-date-picker";
 import persian from "react-date-object/calendars/persian";
 import persian_fa from "react-date-object/locales/persian_fa";
+import Link from "next/link";
 
 export default function ProfilePage() {
   const { user, userProfile, refreshProfile } = useAuth();
@@ -44,6 +46,21 @@ export default function ProfilePage() {
     birthDate: "",
     bio: "",
   });
+  
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
+
+  useEffect(() => {
+    if (user?.id) {
+        setLoadingTransactions(true);
+        getUserTransactions(user.id)
+            .then(data => setTransactions(data))
+            .catch(err => console.error("Failed to load transactions", err))
+            .finally(() => setLoadingTransactions(false));
+    }
+  }, [user?.id]);
+  
+
 
   useEffect(() => {
     if (userProfile) {
@@ -122,7 +139,11 @@ export default function ProfilePage() {
             <Sparkles size={18} className="text-yellow-300 animate-pulse" />
             <span className="font-bold text-sm">
               عضویت{" "}
-              {userProfile.subscription.planId === "pro" ? "ویژه" : "پایه"}
+              {userProfile.subscription.planId === "pro" 
+                ? "ویژه" 
+                : userProfile.subscription.planId === "plus" 
+                    ? "پلاس" 
+                    : "پایه"}
             </span>
           </div>
         </div>
@@ -194,15 +215,17 @@ export default function ProfilePage() {
                       </h2>
                       <Badge
                         variant={
-                          userProfile.subscription.planId === "pro"
+                          userProfile.subscription.planId === "pro" || userProfile.subscription.planId === "plus"
                             ? "default"
                             : "secondary"
                         }
                         className="px-2 py-0.5"
                       >
-                        {userProfile.subscription.planId === "free"
+                         {userProfile.subscription.planId === "free"
                           ? "اشتراک پایه"
-                          : "کاربر ویژه"}
+                          : userProfile.subscription.planId === "plus"
+                            ? "کاربر پلاس"
+                            : "کاربر ویژه"}
                       </Badge>
                     </div>
                     <p className="text-muted-foreground flex items-center justify-center md:justify-start gap-2 text-sm">
@@ -345,7 +368,11 @@ export default function ProfilePage() {
                     <div className="space-y-1">
                       <div className="text-sm opacity-70">وضعیت اشتراک</div>
                       <div className="font-mono text-lg tracking-widest opacity-90">
-                        {userProfile.subscription.planId === "pro" ? "PLAN-PRO-ACTIVE" : "PLAN-BASIC"}
+                         {userProfile.subscription.planId === "pro" 
+                            ? "PLAN-PRO-ACTIVE" 
+                            : userProfile.subscription.planId === "plus"
+                                ? "PLAN-PLUS-ACTIVE"
+                                : "PLAN-BASIC"}
                       </div>
                     </div>
 
@@ -378,13 +405,15 @@ export default function ProfilePage() {
               </Card>
 
               <div className="grid md:grid-cols-2 gap-4">
-                <Button
-                  variant="outline"
-                  className="h-14 rounded-2xl text-lg hover:border-primary/50 hover:bg-primary/5 transition-colors"
-                >
-                  <CreditCard size={20} className="mr-2" />
-                  تغییر طرح اشتراک
-                </Button>
+                <Link href="/pricing" className="block w-full">
+                    <Button
+                    variant="outline"
+                    className="h-14 w-full rounded-2xl text-lg hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                    >
+                    <CreditCard size={20} className="mr-2" />
+                    تغییر طرح اشتراک
+                    </Button>
+                </Link>
 
               </div>
 
@@ -399,17 +428,66 @@ export default function ProfilePage() {
                   </Badge>
                 </div>
 
-                {/* Empty State / Mock Data */}
-                <div className="p-12 text-center">
-                  <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 opacity-50">
-                    <Clock size={40} className="text-muted-foreground" />
-                  </div>
-                  <h4 className="font-bold text-foreground mb-1">
-                    هیچ تراکنشی یافت نشد
-                  </h4>
-                  <p className="text-sm text-muted-foreground">
-                    شما هنوز هیچ پرداخت موفقی در سیستم ثبت نکرده‌اید.
-                  </p>
+                {/* Transactions List */}
+                <div className="bg-white dark:bg-slate-950">
+                    {loadingTransactions ? (
+                        <div className="p-12 text-center">
+                            <Loader2 className="w-8 h-8 animate-spin mx-auto text-muted-foreground" />
+                        </div>
+                    ) : transactions.length > 0 ? (
+                        <div className="divide-y divide-border/50">
+                            {transactions.map((tx) => (
+                                <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-muted/30 transition-colors">
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                            tx.status === 'completed' ? 'bg-green-100 text-green-600' : 
+                                            tx.status === 'pending' ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600'
+                                        }`}>
+                                            {tx.status === 'completed' ? <CheckCircle2 size={18} /> : 
+                                             tx.status === 'pending' ? <Clock size={18} /> : 
+                                             <AlertTriangle size={18} />}
+                                        </div>
+                                        <div>
+                                            <div className="font-bold text-sm">
+                                                {tx.description || "پرداخت اشتراک"}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground font-mono mt-0.5">
+                                                {new Date(tx.createdAt).toLocaleDateString("fa-IR")}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <div className="font-bold text-sm">
+                                            {new Intl.NumberFormat("fa-IR").format(tx.amount / 10)} تومان
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {tx.refId || "-"}
+                                        </div>
+                                    </div>
+                                    <div className="mr-4">
+                                         {/* Only show receipt link for completed transactions */}
+                                         {tx.status === 'completed' && (
+                                            <a href={`/payment/receipt/${tx.id}`} className="text-xs bg-muted hover:bg-muted/80 px-3 py-1.5 rounded-lg transition-colors">
+                                                مشاهده رسید
+                                            </a>
+                                         )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="p-12 text-center">
+                            <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4 opacity-50">
+                                <Clock size={40} className="text-muted-foreground" />
+                            </div>
+                            <h4 className="font-bold text-foreground mb-1">
+                                هیچ تراکنشی یافت نشد
+                            </h4>
+                            <p className="text-sm text-muted-foreground">
+                                شما هنوز هیچ پرداخت موفقی در سیستم ثبت نکرده‌اید.
+                            </p>
+                        </div>
+                    )}
                 </div>
               </Card>
             </div>
@@ -500,6 +578,89 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
-    </div>
+        {/* Developer Tools - Only Visible in Development */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="mt-12 border-t-2 border-dashed border-yellow-500/30 pt-8">
+          <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-2xl p-6">
+            <h3 className="font-bold text-lg text-yellow-600 mb-4 flex items-center gap-2">
+              <AlertTriangle size={20} />
+              Developer Tools (Simulation)
+            </h3>
+            <p className="text-sm text-yellow-600/80 mb-6">
+              These buttons are only visible in development mode. They allow you to
+              simulate successful payments without using a real gateway.
+            </p>
+            <div className="flex flex-wrap gap-4">
+              <Button
+                variant="outline"
+                className="border-yellow-600/30 text-yellow-700 hover:bg-yellow-600/10"
+                onClick={async () => {
+                   if(!user?.id) return;
+                   const loadingToast = toast.loading("Simulating Plus Plan...");
+                   try {
+                     await fetch("/api/test/simulate-payment", {
+                       method: "POST",
+                       headers: { "Content-Type": "application/json" },
+                       body: JSON.stringify({
+                         userId: user.id,
+                         planId: "plus",
+                         billingCycle: "monthly"
+                       })
+                     });
+                     toast.dismiss(loadingToast);
+                     toast.success("Simulation Complete! Refreshing...");
+                     setTimeout(() => window.location.reload(), 1000);
+                   } catch(e) {
+                      toast.error("Simulation Failed");
+                   }
+                }}
+              >
+                Simulate "Plus" Plan Payment
+              </Button>
+              <Button
+                 variant="outline"
+                className="border-yellow-600/30 text-yellow-700 hover:bg-yellow-600/10"
+                onClick={async () => {
+                   if(!user?.id) return;
+                   const loadingToast = toast.loading("Simulating Pro Plan...");
+                   try {
+                     await fetch("/api/test/simulate-payment", {
+                       method: "POST",
+                       headers: { "Content-Type": "application/json" },
+                       body: JSON.stringify({
+                         userId: user.id,
+                         planId: "pro",
+                         billingCycle: "monthly"
+                       })
+                     });
+                     toast.dismiss(loadingToast);
+                     toast.success("Simulation Complete! Refreshing...");
+                     setTimeout(() => window.location.reload(), 1000);
+                   } catch(e) {
+                      toast.error("Simulation Failed");
+                   }
+                }}
+              >
+                Simulate "Pro" Plan Payment
+              </Button>
+               <Button
+                 variant="outline"
+                className="border-red-600/30 text-red-700 hover:bg-red-600/10"
+                onClick={async () => {
+                     // We can implement a reset endpoint later if needed, 
+                     // users can just simulate a 'free' plan or use Prisma Studio for complex resets.
+                     toast.info("Use Prisma Studio to delete subscriptions manually.");
+                }}
+              >
+                Reset / Manual (Info)
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      </div>
+
+
+
   );
 }

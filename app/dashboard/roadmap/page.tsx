@@ -3,21 +3,15 @@
 import { useState, useCallback } from "react";
 import { useRoadmap } from "@/hooks/use-roadmap";
 import { useProject } from "@/contexts/project-context";
-import { RoadmapKanban } from "@/components/dashboard/roadmap/roadmap-kanban";
-import { RoadmapTimeline } from "@/components/dashboard/roadmap/roadmap-timeline";
+import { RoadmapJourney } from "@/components/dashboard/roadmap/roadmap-journey";
 import { StepDetailModal } from "@/components/dashboard/step-detail-modal";
 import { breakTaskAction } from "@/lib/ai-actions";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Layers, KanbanSquare, CalendarDays, Loader2, Sparkles, Trophy, GanttChartSquare, ListTree, Activity, Search, Filter } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { Activity, Search, Filter, Loader2, Map } from "lucide-react";
 import type { RoadmapPhase, RoadmapStepObject } from "@/hooks/use-roadmap";
 import type { SubTask } from "@/lib/db";
-
-import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 export default function RoadmapPage() {
   const { 
@@ -25,7 +19,6 @@ export default function RoadmapPage() {
     plan, 
     roadmap, 
     completedSteps, 
-    activeWeek, 
     progressPercent, 
     toggleStep, 
     getStepTitle,
@@ -38,6 +31,8 @@ export default function RoadmapPage() {
   const [selectedStep, setSelectedStep] = useState<RoadmapStepObject | null>(null);
   const [selectedPhase, setSelectedPhase] = useState<RoadmapPhase | null>(null);
   const [isBreakingTask, setIsBreakingTask] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [filterPriority, setFilterPriority] = useState<string>("all");
 
   const handleOpenStepDetail = useCallback((step: string | RoadmapStepObject, phase?: RoadmapPhase) => {
     const stepObj = typeof step === "string" ? { title: step, priority: "low" as const } : step;
@@ -68,9 +63,11 @@ export default function RoadmapPage() {
         }));
         const merged = [...existingSubTasks.filter((s) => s.parentStep !== selectedStep.title), ...newSubTasks];
         await updateActiveProject({ subTasks: merged });
+      } else if (result.error === "AI_LIMIT_REACHED") {
+          setShowLimitModal(true);
       }
-    } catch (err) {
-      console.error("Break task failed:", err);
+    } catch (error) {
+      console.error("Failed to break task:", error);
     } finally {
       setIsBreakingTask(false);
     }
@@ -94,9 +91,6 @@ export default function RoadmapPage() {
   const stepSubTasks = (plan?.subTasks as SubTask[] | undefined)?.filter(
     (s) => s.parentStep === selectedStep?.title
   ) ?? [];
-
-  const [viewMode, setViewMode] = useState<"kanban" | "timeline" | "gantt">("kanban");
-  const [filterPriority, setFilterPriority] = useState<string>("all");
 
   // If loading
   if (loading || !plan) {
@@ -122,13 +116,19 @@ export default function RoadmapPage() {
       
       {/* 1. Mission Control Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-8">
-        <div className="space-y-2">
-
-           <h1 className="text-4xl font-black tracking-tight text-foreground flex items-center gap-3">
-             مسیر رشد و عملیات
-           </h1>
-           <p className="text-muted-foreground max-w-xl text-lg">
-             نقشه راه اختصاصی برای <span className="text-foreground font-bold">{plan.projectName || "پروژه شما"}</span>
+        <div className="space-y-4">
+           <div className="flex items-center gap-3">
+              <div className="p-3 bg-primary/10 rounded-2xl text-primary">
+                <Map size={32} />
+              </div>
+              <h1 className="text-4xl font-black tracking-tight text-foreground">
+                نقشه راه
+              </h1>
+           </div>
+           
+           <p className="text-muted-foreground max-w-xl text-lg leading-relaxed">
+             نقشه راه اختصاصی برای <span className="text-foreground font-bold border-b-2 border-primary/20">{plan.projectName || "پروژه شما"}</span>. 
+             هر قدم یک فصل از داستان موفقیت شماست.
            </p>
         </div>
 
@@ -157,116 +157,16 @@ export default function RoadmapPage() {
         </div>
       </div>
 
-      {/* 2. Controls Toolbar */}
-      <div className="sticky top-4 z-40 bg-background/80 backdrop-blur-md p-2 rounded-2xl border shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center transition-all duration-200">
-        
-        {/* View Switcher */}
-        <div className="flex bg-muted/50 p-1 rounded-xl w-full md:w-auto">
-          <button
-            onClick={() => setViewMode("kanban")}
-            className={cn(
-              "flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2",
-              viewMode === "kanban" 
-                ? "bg-background shadow-sm ring-1 ring-border text-primary" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <KanbanSquare size={16} />
-            برد عملیات
-          </button>
-          <button
-            onClick={() => setViewMode("timeline")}
-            className={cn(
-              "flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2",
-              viewMode === "timeline" 
-                ? "bg-background shadow-sm ring-1 ring-border text-primary" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <ListTree size={16} />
-            مسیر خطی
-          </button>
-          <button
-            onClick={() => setViewMode("gantt")}
-            className={cn(
-              "flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-medium transition-all flex items-center justify-center gap-2",
-              viewMode === "gantt" 
-                ? "bg-background shadow-sm ring-1 ring-border text-primary" 
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <GanttChartSquare size={16} />
-            نمای گانت
-          </button>
-        </div>
 
-        {/* Filters */}
-        <div className="flex items-center gap-3 w-full md:w-auto">
-           <div className="relative flex-1 md:w-64 group">
-             <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
-             <input 
-               type="text" 
-               placeholder="جستجو در تسک‌ها..."
-               className="w-full bg-muted/30 border-transparent focus:border-primary/30 focus:bg-background rounded-xl py-2.5 pr-10 pl-4 text-sm transition-all outline-none" 
-             />
-           </div>
-           
-           <Select value={filterPriority} onValueChange={setFilterPriority}>
-              <SelectTrigger className="w-[160px] h-10 rounded-xl bg-muted/30 border-transparent hover:bg-background hover:border-border transition-all">
-                 <div className="flex items-center gap-2">
-                    <Filter size={14} className="text-muted-foreground" />
-                    <SelectValue placeholder="فیلتر اولویت" />
-                 </div>
-              </SelectTrigger>
-              <SelectContent>
-                 <SelectItem value="all">همه اولویت‌ها</SelectItem>
-                 <SelectItem value="high">فوری و مهم</SelectItem>
-                 <SelectItem value="medium">متوسط</SelectItem>
-                 <SelectItem value="low">کم اولویت</SelectItem>
-              </SelectContent>
-           </Select>
-        </div>
-      </div>
 
-      {/* 3. Main Views */}
-      <AnimatePresence mode="wait">
-        <motion.div
-           key={viewMode}
-           initial={{ opacity: 0, y: 10 }}
-           animate={{ opacity: 1, y: 0 }}
-           exit={{ opacity: 0, y: -10 }}
-           transition={{ duration: 0.2 }}
-           className="min-h-[600px]"
-        >
-           {viewMode === "kanban" && (
-             <RoadmapKanban 
-               roadmap={roadmap} 
-               completedSteps={completedSteps}
-               onToggleStep={toggleStep}
-               onOpenStepDetail={handleOpenStepDetail}
-               getStepTitle={getStepTitle}
-               filterPriority={filterPriority}
-             />
-           )}
-           {viewMode === "timeline" && (
-             <RoadmapTimeline 
-               roadmap={roadmap} 
-               completedSteps={completedSteps}
-               activeWeek={activeWeek}
-               onToggleStep={toggleStep}
-               onOpenStepDetail={handleOpenStepDetail}
-               getStepTitle={getStepTitle}
-             />
-           )}
-           {viewMode === "gantt" && (
-             <div className="flex flex-col items-center justify-center py-20 bg-muted/10 rounded-3xl border-2 border-dashed border-muted">
-                <GanttChartSquare size={48} className="text-muted-foreground/30 mb-4" />
-                <h3 className="text-lg font-medium text-muted-foreground">نمای گانت در حال توسعه است</h3>
-                <p className="text-sm text-muted-foreground/60 mt-1">به زودی در دسترس خواهد بود</p>
-             </div>
-           )}
-        </motion.div>
-      </AnimatePresence>
+      {/* 3. Journey View */}
+      <RoadmapJourney 
+        roadmap={roadmap} 
+        completedSteps={completedSteps}
+        onToggleStep={toggleStep}
+        onOpenStepDetail={handleOpenStepDetail}
+        getStepTitle={getStepTitle}
+      />
 
       {/* Step Detail Modal */}
       {selectedStep && (
@@ -285,6 +185,11 @@ export default function RoadmapPage() {
           projectName={plan?.projectName}
         />
       )}
+      
+      <LimitReachedModal 
+        isOpen={showLimitModal} 
+        onClose={() => setShowLimitModal(false)} 
+      />
     </div>
   );
 }

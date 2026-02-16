@@ -13,6 +13,7 @@ import {
   LayoutTemplate, Palette, Save, Briefcase, Plus, Trash2,
   Linkedin, Github, MonitorPlay, Users, DollarSign
 } from "lucide-react";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -72,6 +73,7 @@ export default function MediaKitPage() {
   const [activeTab, setActiveTab] = useState("editor");
   const [template, setTemplate] = useState<"modern" | "minimal" | "bold">("modern");
   const [isGeneratingBio, setIsGeneratingBio] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Load Initial Data
   useEffect(() => {
@@ -131,6 +133,12 @@ export default function MediaKitPage() {
             method: "POST",
             body: JSON.stringify({ prompt, systemPrompt: "You are an expert copywriter for influencers." })
         });
+
+        if (res.status === 429) {
+            setShowLimitModal(true);
+            return;
+        }
+
         const json = await res.json();
         if (json.success) {
             setData(prev => ({ ...prev, bio: json.content }));
@@ -220,6 +228,7 @@ export default function MediaKitPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12 print:max-w-none print:p-0 print:m-0">
+      <LimitReachedModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
       {/* Header - Hidden in Print */}
       <div className="flex flex-col lg:flex-row items-center justify-between gap-4 print:hidden">
         <div className="flex items-center gap-3">

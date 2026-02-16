@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ChatMessage, AssistantData } from "@/lib/db";
 import { DollarSign } from "lucide-react";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 // Professional Prompts - Enhanced Visuals
 const professionalPrompts = [
@@ -144,6 +145,7 @@ export default function CopilotPage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -257,6 +259,12 @@ export default function CopilotPage() {
       const { advisorChatAction } = await import("@/lib/chat-actions");
       // @ts-ignore
       const data = await advisorChatAction(messageToSend, projectContext, conversationHistory);
+
+      if (data.error === "AI_LIMIT_REACHED" || data.status === 429) {
+        setShowLimitModal(true);
+        setIsLoading(false);
+        return;
+      }
 
       if (data.reply) {
         const assistantMessage: ChatMessage = {
@@ -492,6 +500,7 @@ export default function CopilotPage() {
         </div>
 
       </div>
+      <LimitReachedModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
     </div>
   );
 }

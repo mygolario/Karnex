@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useProject } from "@/contexts/project-context";
 import { LocationAnalysis } from "@/lib/db";
 import { toast } from "sonner";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 interface LocationContextType {
   analysis: LocationAnalysis | null;
@@ -29,6 +30,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const [history, setHistory] = useState<LocationAnalysis[]>([]);
   const [comparisonItems, setComparisonItems] = useState<LocationAnalysis[]>([]);
   const [comparisonMode, setComparisonMode] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   useEffect(() => {
     if (activeProject?.locationAnalysis) {
@@ -231,6 +233,14 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         }),
       });
 
+
+
+      if (response.status === 429) {
+          setShowLimitModal(true);
+          setLoading(false);
+          return;
+      }
+
       if (!response.ok) throw new Error("Analysis failed");
 
       const data = await response.json();
@@ -276,6 +286,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       deleteFromHistory
     }}>
       {children}
+      <LimitReachedModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
     </LocationContext.Provider>
   );
 }

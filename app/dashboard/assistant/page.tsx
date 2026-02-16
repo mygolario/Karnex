@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ChatMessage, AssistantData, DailyMission } from "@/lib/db";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 // Mission Control Components
 import { DailyGreeting } from "@/components/dashboard/assistant/daily-greeting";
@@ -45,6 +46,7 @@ export default function AssistantPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [showFollowUps, setShowFollowUps] = useState<string[]>([]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Gamification state
   const [streak, setStreak] = useState(0);
@@ -234,6 +236,12 @@ export default function AssistantPage() {
       const { advisorChatAction } = await import("@/lib/chat-actions");
       // @ts-ignore
       const data = await advisorChatAction(messageToSend, projectContext, conversationHistory);
+
+      if (data.error === "AI_LIMIT_REACHED" || data.status === 429) {
+        setShowLimitModal(true);
+        setIsLoading(false);
+        return;
+      }
 
       if (data.reply) {
         const assistantMessage: ChatMessage = {
@@ -435,6 +443,7 @@ export default function AssistantPage() {
         </div>
 
       </div>
+      <LimitReachedModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
     </div>
   );
 }

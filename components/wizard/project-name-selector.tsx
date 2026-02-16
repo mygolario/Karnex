@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2, RefreshCw, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 interface ProjectNameSelectorProps {
   idea: string;
@@ -15,6 +16,7 @@ export function ProjectNameSelector({ idea, selectedName, onNameChange }: Projec
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   const fetchSuggestions = async () => {
     if (!idea || idea.length < 3) return;
@@ -25,10 +27,12 @@ export function ProjectNameSelector({ idea, selectedName, onNameChange }: Projec
       const { suggestProjectNameAction } = await import("@/lib/ai-actions");
       const result = await suggestProjectNameAction(idea);
       
-      if (result.success && result.data) {
-        setSuggestions(result.data.names || []);
-        setHasLoaded(true);
-      }
+        if (result.success && result.data) {
+          setSuggestions(result.data.names || []);
+          setHasLoaded(true);
+        } else if (result.error === "AI_LIMIT_REACHED") {
+            setShowLimitModal(true);
+        }
     } catch (error) {
       console.error("Failed to fetch name suggestions:", error);
     } finally {
@@ -128,10 +132,14 @@ export function ProjectNameSelector({ idea, selectedName, onNameChange }: Projec
         )}
       </div>
 
-      {/* Helper Text */}
       <p className="text-xs text-muted-foreground text-center">
         💡 یک نام کوتاه و به‌یادماندنی انتخاب کن که ماهیت کسب‌وکارت رو نشون بده
       </p>
+
+      <LimitReachedModal 
+        isOpen={showLimitModal} 
+        onClose={() => setShowLimitModal(false)} 
+      />
     </div>
   );
 }

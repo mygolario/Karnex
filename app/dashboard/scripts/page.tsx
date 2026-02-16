@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { 
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger 
 } from "@/components/ui/sheet";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 type SavedScript = {
   id: string;
@@ -57,6 +58,7 @@ export default function ScriptsPage() {
   const [fontSize, setFontSize] = useState(48);
   const [isMirrored, setIsMirrored] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Load history on mount
   useEffect(() => {
@@ -168,6 +170,11 @@ export default function ScriptsPage() {
                 systemPrompt: "You are a professional YouTuber scriptwriter. Output ONLY the raw script text." 
             })
         });
+
+        if (response.status === 429) {
+            setShowLimitModal(true);
+            return;
+        }
 
         const data = await response.json();
         if (data.success && data.content) {
@@ -508,6 +515,7 @@ export default function ScriptsPage() {
           </motion.div>
         )}
       </AnimatePresence>
+      <LimitReachedModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
     </div>
   );
 }

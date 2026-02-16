@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ContentPost } from "@/lib/db";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 import {
   Sheet,
   SheetContent,
@@ -107,6 +108,7 @@ export default function ContentCalendarPage() {
   const [isStrategyOpen, setIsStrategyOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<ContentPost>>({});
   const [strategyType, setStrategyType] = useState<"growth" | "sales" | "trust">("growth");
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Sync to Cloud
   const saveEvents = (newEvents: ContentPost[]) => {
@@ -221,6 +223,11 @@ export default function ContentCalendarPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt, systemPrompt: "Return ONLY valid JSON." })
       });
+
+      if (response.status === 429) {
+          setShowLimitModal(true);
+          return;
+      }
       
       const data = await response.json();
       if (data.success && data.content) {
@@ -302,6 +309,7 @@ export default function ContentCalendarPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
+      <LimitReachedModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
 
 
       {/* Header */}

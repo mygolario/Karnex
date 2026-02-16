@@ -169,3 +169,76 @@ export const getContactAdminTemplate = (data: ContactFormData) => {
     `;
     return emailLayout(content, `کارت تماس جدید: ${data.subject}`);
 };
+
+/**
+ * Template for Plan Activation (Receipt)
+ */
+export const getActivationEmailTemplate = (data: {
+    planName: string;
+    amount: number;
+    refId: string;
+    date: Date;
+    userName?: string;
+    nextBillingDate?: Date;
+    transactionId?: string;
+}) => {
+    const formattedAmount = new Intl.NumberFormat('fa-IR').format(data.amount);
+    const formattedDate = data.date.toLocaleDateString('fa-IR');
+    const formattedNextDate = data.nextBillingDate ? data.nextBillingDate.toLocaleDateString('fa-IR') : '-';
+
+    const content = `
+        <div style="text-align: center; margin-bottom: 30px;">
+            <div style="background: #dcfce7; color: #166534; display: inline-block; padding: 10px 20px; border-radius: 50px; font-weight: bold; font-size: 14px; margin-bottom: 15px;">
+                🎉 پرداخت موفق
+            </div>
+            <h1 style="color: ${TEXT_COLOR}; font-size: 24px; font-weight: 800; margin: 0;">
+                اشتراک ${data.planName} شما فعال شد!
+            </h1>
+            <p style="color: ${MUTED_COLOR}; margin-top: 10px;">
+                ${data.userName ? `${data.userName} عزیز، ` : ''}از خرید شما سپاسگزاریم.
+            </p>
+        </div>
+
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 16px; overflow: hidden; margin-bottom: 30px;">
+            <div style="background: #f9fafb; padding: 15px 20px; border-bottom: 1px solid #e5e7eb; font-weight: bold; color: ${TEXT_COLOR}; font-size: 16px;">
+                🧾 جزئیات تراکنش
+            </div>
+            <div style="padding: 20px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 10px 0; color: ${MUTED_COLOR}; font-size: 14px;">شماره پیگیری:</td>
+                        <td style="padding: 10px 0; text-align: left; font-family: monospace; font-size: 15px; color: ${TEXT_COLOR};">${data.refId}</td>
+                    </tr>
+                   <tr>
+                        <td style="padding: 10px 0; color: ${MUTED_COLOR}; font-size: 14px;">تاریخ پرداخت:</td>
+                        <td style="padding: 10px 0; text-align: left; font-weight: 500; color: ${TEXT_COLOR};">${formattedDate}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px 0; color: ${MUTED_COLOR}; font-size: 14px;">مبلغ پرداختی:</td>
+                        <td style="padding: 10px 0; text-align: left; font-weight: 800; color: ${PRIMARY_COLOR}; font-size: 18px;">${formattedAmount} <span style="font-size: 12px; color: ${MUTED_COLOR}; font-weight: normal;">تومان</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 12px; padding: 20px; margin-bottom: 30px; border: 1px solid #bae6fd;">
+            <h3 style="margin: 0 0 15px 0; color: #0369a1; font-size: 16px;">✨ دسترسی‌های جدید شما:</h3>
+            <ul style="margin: 0; padding-right: 20px; color: #0c4a6e; line-height: 1.8;">
+                <li>دسترسی کامل به ابزارهای تحلیل پیشرفته</li>
+                <li>اولویت در پردازش درخواست‌ها</li>
+                <li>پشتیبانی اختصاصی</li>
+                ${data.nextBillingDate ? `<li>تمدید بعدی: ${formattedNextDate}</li>` : ''}
+            </ul>
+        </div>
+
+        <div style="text-align: center;">
+            <a href="https://karnex.ir/dashboard" class="btn" style="padding: 14px 32px; font-size: 16px;">ورود به داشبورد</a>
+            <p style="margin-top: 20px; font-size: 12px; color: ${MUTED_COLOR};">
+                برای دریافت فاکتور رسمی می‌توانید به بخش 
+                <a href="https://karnex.ir/dashboard/profile" style="color: ${PRIMARY_COLOR}; text-decoration: none;">تاریخچه تراکنش‌ها</a>
+                مراجعه کنید.
+            </p>
+        </div>
+    `;
+    return emailLayout(content, `فعال‌سازی اشتراک ${data.planName}`);
+};

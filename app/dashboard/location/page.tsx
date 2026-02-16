@@ -66,7 +66,7 @@ export default function LocationAnalyzerPage() {
 // Tab Definitions
 const TABS = [
   { id: "overview", label: "خلاصه", icon: BarChart3 },
-  { id: "competitors", label: "رقبا", icon: Shield },
+
   { id: "demographics", label: "جمعیت", icon: Users },
   { id: "swot", label: "SWOT", icon: Target },
   { id: "recommendations", label: "پیشنهادات", icon: Lightbulb },
@@ -250,7 +250,7 @@ function LocationPageContent() {
                       <MarketGapCards />
                     </div>
                   )}
-                  {activeTab === "competitors" && <CompetitorTable />}
+
                   {activeTab === "demographics" && <DemographicsDashboard />}
                   {activeTab === "swot" && <SwotGrid />}
                   {activeTab === "recommendations" && <RecommendationsList />}
@@ -279,7 +279,7 @@ function LoadingState() {
       <div className="text-center">
         <p className="text-lg font-bold mb-2 animate-pulse">در حال اسکن هوشمند منطقه...</p>
         <div className="flex flex-wrap justify-center gap-3 text-xs text-muted-foreground">
-          {["تحلیل پاخور", "بررسی رقبا", "ارزیابی ریسک", "تخمین درآمد"].map((item, i) => (
+          {["تحلیل پاخور", "ارزیابی ریسک", "تخمین درآمد"].map((item, i) => (
             <motion.span
               key={i}
               initial={{ opacity: 0 }}
@@ -311,14 +311,11 @@ function EmptyState() {
       <h2 className="text-xl font-bold mb-2">آماده تحلیل هوشمند</h2>
       <p className="text-muted-foreground max-w-md mx-auto leading-relaxed text-sm mb-6">
         نام محله یا خیابان مورد نظر خود را در نوار بالا وارد کنید تا تحلیل جامع موقعیت شامل 
-        بررسی رقبا، پاخور، ریسک و فرصت‌های سرمایه‌گذاری دریافت کنید.
+        پاخور، ریسک و فرصت‌های سرمایه‌گذاری دریافت کنید.
       </p>
       <div className="flex flex-wrap justify-center gap-2">
         {[
           { icon: "📊", label: "امتیاز مکان" },
-          { icon: "🏪", label: "تحلیل رقبا" },
-          { icon: "👥", label: "بافت جمعیتی" },
-          { icon: "⚡", label: "فرصت‌ها" },
         ].map((item, i) => (
           <Badge key={i} variant="outline" className="text-xs gap-1.5 px-3 py-1.5 border-white/10 text-muted-foreground">
             <span>{item.icon}</span> {item.label}

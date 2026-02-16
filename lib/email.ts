@@ -7,6 +7,7 @@ export type EmailTemplate =
   | 'password_reset' 
   | 'subscription_success' 
   | 'contact'
+  | 'plan_activation'
   | 'invoice';
 
 interface SendEmailParams {

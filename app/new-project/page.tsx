@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { ProjectType } from "./genesis-constants";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -38,6 +39,7 @@ export default function NewProjectPage() {
   const [showSnapshot, setShowSnapshot] = useState(false);
   const [generatedPlan, setGeneratedPlan] = useState<any>(null);
   const [error, setError] = useState("");
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // -- Hooks --
   useEffect(() => {
@@ -119,8 +121,9 @@ export default function NewProjectPage() {
 
     } catch (err: any) {
         console.error("❌ Failed to generate/create project:", err);
-        if (err.message?.includes("Limit reached")) {
-             setError("محدودیت درخواست هوش مصنوعی به پایان رسیده است.");
+        console.log("DEBUG: Error message:", err.message); // Added debug log
+        if (err.message?.includes("AI_LIMIT_REACHED") || err.message?.includes("Limit reached")) {
+             setShowLimitModal(true);
         } else {
              setError(err.message || "خطا در تولید استراتژی. لطفاً دوباره تلاش کنید.");
         }
@@ -235,6 +238,11 @@ export default function NewProjectPage() {
             )}
 
          </AnimatePresence>
+
+         <LimitReachedModal 
+            isOpen={showLimitModal} 
+            onClose={() => setShowLimitModal(false)} 
+         />
       </main>
     </div>
   );

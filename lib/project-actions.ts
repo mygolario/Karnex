@@ -91,7 +91,7 @@ export async function generatePlanAction(data: any) {
     const usageCheck = await checkAIRequestLimit(session.user.id);
     if (!usageCheck.allowed) {
         return { 
-            error: 'AI Limit Reached', 
+            error: 'AI_LIMIT_REACHED', 
             message: `Limit reached: ${usageCheck.limit}` 
         };
     }

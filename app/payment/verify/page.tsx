@@ -46,7 +46,13 @@ function VerifyContent() {
         if (result.success) {
           setStatus("پرداخت با موفقیت انجام شد. در حال انتقال...");
           toast.success("خرید شما با موفقیت انجام شد");
-          router.push(`/dashboard/overview?payment_status=success&plan=${result.planName}`);
+          // Redirect to Receipt Page
+          if (result.transactionId) {
+             router.push(`/payment/receipt/${result.transactionId}`);
+          } else {
+             // Fallback if no transaction ID (should not happen with new logic)
+             router.push(`/dashboard/overview?payment_status=success&plan=${result.planName}`);
+          }
         } else {
           setStatus("خطا در تأیید پرداخت: " + (result.message || "Unknown error"));
           toast.error(result.message || "خطا در تأیید پرداخت");

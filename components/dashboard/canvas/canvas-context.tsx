@@ -5,6 +5,7 @@ import { useProject } from "@/contexts/project-context";
 import { useAuth } from "@/contexts/auth-context";
 import { savePlanToCloud, CanvasCard } from "@/lib/db";
 import { toast } from "sonner";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 // Define the shape of our canvas state
 export type CanvasState = Record<string, CanvasCard[]>;
@@ -41,6 +42,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
   const [canvasState, setCanvasState] = useState<CanvasState>({});
   const [isSaving, setIsSaving] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Initialize State
   useEffect(() => {
@@ -202,7 +204,13 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
              businessIdea: plan.overview || plan.description,
              projectName: plan.projectName
           }),
+
         });
+
+        if (response.status === 429) {
+            setShowLimitModal(true);
+            return;
+        }
 
         const data = await response.json();
         
@@ -240,6 +248,11 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
             method: "POST", headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ prompt, systemPrompt: "Return ONLY valid JSON." }),
           });
+
+          if (response.status === 429) {
+              setShowLimitModal(true);
+              return;
+          }
 
           const data = await response.json();
           if (data.success && data.content) {
@@ -283,6 +296,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
         isSaving
     }}>
       {children}
+      <LimitReachedModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
     </CanvasContext.Provider>
   );
 }

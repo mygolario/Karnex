@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 interface RoadmapStep {
     title: string;
@@ -57,6 +58,7 @@ export function StepDetailModal({
 }: StepDetailModalProps) {
     const [aiTip, setAiTip] = useState<string | null>(null);
     const [loadingTip, setLoadingTip] = useState(false);
+    const [showLimitModal, setShowLimitModal] = useState(false);
 
     const getPriorityColor = (priority?: string) => {
         switch (priority) {
@@ -88,6 +90,9 @@ export function StepDetailModal({
 
             if (result.success) {
                 setAiTip(result.reply || 'نکته‌ای یافت نشد.');
+            } else if (result.error === 'AI_LIMIT_REACHED') {
+                 setShowLimitModal(true);
+                 setAiTip('اعتبار هوش مصنوعی شما تمام شده است.');
             } else {
                  setAiTip('خطا در دریافت راهنمایی');
             }
@@ -322,6 +327,13 @@ export function StepDetailModal({
                         </Button>
                     </div>
                 </motion.div>
+
+                
+                <LimitReachedModal 
+                    isOpen={showLimitModal} 
+                    onClose={() => setShowLimitModal(false)}
+                    zIndex={60} // Higher z-index to show above this modal
+                />
             </motion.div>
         </AnimatePresence>
     );

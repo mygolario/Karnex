@@ -75,6 +75,7 @@ export function CompetitorAnalyzer() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [selectedCompetitor, setSelectedCompetitor] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
   const [view, setView] = useState<"grid" | "compare">("grid");
 
   const handleAnalyze = async () => {
@@ -90,7 +91,11 @@ export function CompetitorAnalyzer() {
         audience: plan.audience
       });
 
-      if (!result.success || !result.data) {
+      if (!result.success) {
+        if (result.error === "AI_LIMIT_REACHED") {
+          setShowLimitModal(true);
+          return;
+        }
         throw new Error(result.error || "Analysis failed");
       }
 

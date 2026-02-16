@@ -16,7 +16,7 @@ interface ActionResponse<T> {
 export async function suggestAudienceAction(productIdea: string): Promise<ActionResponse<{ audiences: string[], revenueModels: string[] }>> {
   try {
     const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { success: false, error: "AI limit reached", isLimitError: true };
+    if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
 
     if (!productIdea || productIdea.trim().length < 3) {
       return { success: true, data: { audiences: [], revenueModels: [] } };
@@ -72,7 +72,7 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
 export async function suggestProjectNameAction(idea: string): Promise<ActionResponse<{ names: string[] }>> {
   try {
     const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { success: false, error: "AI limit reached", isLimitError: true };
+    if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
 
     if (!idea) return { success: true, data: { names: [] } };
 
@@ -129,7 +129,7 @@ function generateFallbackNames(idea: string): string[] {
 export async function breakTaskAction(taskName: string): Promise<ActionResponse<{ subTasks: string[] }>> {
   try {
     const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { success: false, error: "AI limit reached", isLimitError: true };
+    if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
 
     if (!taskName) return { success: false, error: 'Task name required' };
 
@@ -172,7 +172,7 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
 export async function analyzeCompetitorsAction(data: { projectName: string, projectIdea: string, audience: string }): Promise<ActionResponse<any>> {
     try {
         const { errorResponse } = await checkAILimit();
-        if (errorResponse) return { success: false, error: "AI limit reached", isLimitError: true };
+        if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
 
         if (!process.env.OPENROUTER_API_KEY) {
             return { success: true, data: getMockCompetitors() };

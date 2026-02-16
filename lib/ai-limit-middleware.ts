@@ -41,7 +41,7 @@ export async function checkAILimit(): Promise<AILimitCheckResult> {
       return {
         user: { id: user.id, email: user.email || undefined },
         errorResponse: NextResponse.json({
-          error: 'محدودیت درخواست AI',
+          error: 'AI_LIMIT_REACHED',
           message: `شما به سقف ${usageCheck.limit} درخواست AI در ماه رسیده‌اید. برای ادامه، پلن خود را ارتقا دهید.`,
           limitReached: true,
           used: usageCheck.used,

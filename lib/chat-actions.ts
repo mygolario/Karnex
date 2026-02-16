@@ -7,7 +7,7 @@ export async function chatAction(message: string, planContext: any, generateFoll
   try {
     // === AI Usage Limit Check ===
     const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { error: "AI Limit Reached", status: 429 };
+    if (errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
 
     // Contextual System Prompt
     const projectType = planContext?.projectType || 'startup';
@@ -131,7 +131,7 @@ export async function advisorChatAction(message: string, projectContext: any, co
   try {
     // === AI Usage Limit Check ===
     const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { error: "AI Limit Reached", status: 429 };
+    if (errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
 
     // Calculate project progress
     const totalSteps = projectContext?.roadmap?.reduce((acc: any, p: any) => acc + p.steps.length, 0) || 0;

@@ -80,8 +80,10 @@ export function useRoadmap(): UseRoadmapReturn {
   };
 
   const getStepStatus = (step: string | RoadmapStepObject): "todo" | "in-progress" | "done" => {
+    // Priority: if it's in completedSteps, it's done.
+    if (isCompleted(step)) return "done";
     if (typeof step !== 'string' && step.status) return step.status;
-    return isCompleted(step) ? "done" : "todo";
+    return "todo";
   };
 
   const updateStepStatus = async (step: string | RoadmapStepObject, status: "todo" | "in-progress" | "done") => {
