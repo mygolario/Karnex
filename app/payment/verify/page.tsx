@@ -36,12 +36,7 @@ function VerifyContent() {
       try {
         // We need a server action to verify securely
         const { verifyPaymentAction } = await import("@/lib/payment-actions");
-        const result = await verifyPaymentAction({
-          trackId,
-          planId,
-          billingCycle: billingCycle || 'monthly',
-          userId
-        });
+        const result = await verifyPaymentAction(trackId);
 
         if (result.success) {
           setStatus("پرداخت با موفقیت انجام شد. در حال انتقال...");
