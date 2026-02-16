@@ -214,6 +214,7 @@ export default function ProfilePage() {
                                 const reader = new FileReader();
                                 reader.onloadend = async () => {
                                     const base64String = reader.result as string;
+                                    if (!user?.id) return;
                                     await updateUserProfile(user.id, {
                                         avatar_url: base64String
                                     });
