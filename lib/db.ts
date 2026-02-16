@@ -660,6 +660,7 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
     // For nested JSON updates, we might need value merging, but for now assuming direct overwrite or safe merging
     // Prisma doesn't do deep merge on JSON natively.
     if (updates.credits) prismaUpdates.credits = updates.credits;
+    if (updates.avatar_url) prismaUpdates.image = updates.avatar_url;
     
     await prisma.user.update({
         where: { id: userId },

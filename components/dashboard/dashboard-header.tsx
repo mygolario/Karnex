@@ -103,8 +103,14 @@ export function DashboardHeader() {
                 {userProfile?.full_name || user?.name || "کاربر"}
               </p>
               <div className="flex items-center gap-1">
-                <Crown size={10} className="text-yellow-500" />
-                <span className="text-[10px] text-muted-foreground">رایگان</span>
+                <Crown size={10} className={cn(
+                  "text-yellow-500",
+                  (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus") && "text-purple-500"
+                )} />
+                <span className="text-[10px] text-muted-foreground">
+                  {userProfile?.subscription?.planId === "pro" ? "حرفه‌ای" : 
+                   userProfile?.subscription?.planId === "plus" ? "پلاس" : "رایگان"}
+                </span>
               </div>
             </div>
             <ChevronDown size={16} className="text-muted-foreground group-hover:text-foreground transition-colors hidden md:block" />
@@ -137,10 +143,25 @@ export function DashboardHeader() {
                         {user?.email || "ایمیل ثبت نشده"}
                       </p>
                     </div>
-                    <div className="px-2 py-1 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+                    <div className={cn("px-2 py-1 rounded-lg border", 
+                      (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus") 
+                        ? "bg-purple-500/10 border-purple-500/20" 
+                        : "bg-yellow-500/10 border-yellow-500/20"
+                    )}>
                       <div className="flex items-center gap-1">
-                        <Crown size={12} className="text-yellow-500" />
-                        <span className="text-[10px] font-bold text-yellow-600 dark:text-yellow-400">رایگان</span>
+                        <Crown size={12} className={cn(
+                          (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus") 
+                            ? "text-purple-500" 
+                            : "text-yellow-500"
+                        )} />
+                        <span className={cn("text-[10px] font-bold",
+                          (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus")
+                            ? "text-purple-600 dark:text-purple-400"
+                            : "text-yellow-600 dark:text-yellow-400"
+                        )}>
+                          {userProfile?.subscription?.planId === "pro" ? "حرفه‌ای" : 
+                           userProfile?.subscription?.planId === "plus" ? "پلاس" : "رایگان"}
+                        </span>
                       </div>
                     </div>
                   </div>

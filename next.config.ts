@@ -18,6 +18,12 @@ const nextConfig: NextConfig = {
   // Enable compression
   compress: true,
 
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '5mb',
+    },
+  },
+
   // Headers for security and caching
   async headers() {
     return [

@@ -67,11 +67,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [session?.user?.id, status]);
 
-  const refreshProfile = async () => {
+  const refreshProfile = React.useCallback(async () => {
     if (session?.user?.id) {
       await fetchProfile(session.user.id);
     }
-  };
+  }, [session?.user?.id]);
 
   const signOut = async () => {
     await nextAuthSignOut({ callbackUrl: "/" });
