@@ -140,6 +140,7 @@ export function Navbar() {
               size="icon"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="rounded-xl"
+              aria-label={mobileMenuOpen ? "بستن منو" : "باز کردن منو"}
             >
               <AnimatePresence mode="wait">
                 {mobileMenuOpen ? (

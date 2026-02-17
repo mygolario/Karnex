@@ -144,7 +144,7 @@ export function Footer() {
               <img 
                 referrerPolicy='origin' 
                 src='https://trustseal.enamad.ir/logo.aspx?id=696845&Code=LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4' 
-                alt='' 
+                alt='نماد اعتماد الکترونیکی' 
                 style={{ cursor: 'pointer' }}
                 className="w-auto h-auto"
                 {...{ code: 'LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4' } as any}

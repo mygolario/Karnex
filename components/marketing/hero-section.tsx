@@ -1,9 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Sparkles, Rocket, Store, Video, Play } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const PillarCard = ({ 
   icon: Icon, 
@@ -34,6 +35,15 @@ const PillarCard = ({
 );
 
 export const HeroSection = () => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
       {/* === ADVANCED BACKGROUND === */}
@@ -41,44 +51,57 @@ export const HeroSection = () => {
         {/* Base gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/30" />
         
-        {/* Animated mesh gradient */}
-        <motion.div
-          animate={{
-            background: [
-              "radial-gradient(circle at 20% 50%, hsl(330 81% 60% / 0.15) 0%, transparent 50%)",
-              "radial-gradient(circle at 80% 50%, hsl(330 81% 60% / 0.15) 0%, transparent 50%)",
-              "radial-gradient(circle at 20% 50%, hsl(330 81% 60% / 0.15) 0%, transparent 50%)",
-            ],
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="absolute inset-0"
-        />
-        <motion.div
-          animate={{
-            background: [
-              "radial-gradient(circle at 80% 30%, hsl(25 95% 53% / 0.1) 0%, transparent 50%)",
-              "radial-gradient(circle at 20% 70%, hsl(25 95% 53% / 0.1) 0%, transparent 50%)",
-              "radial-gradient(circle at 80% 30%, hsl(25 95% 53% / 0.1) 0%, transparent 50%)",
-            ],
-          }}
-          transition={{ duration: 12, repeat: Infinity }}
-          className="absolute inset-0"
-        />
+        {/* Animated mesh gradient - DESKTOP ONLY */}
+        {!isMobile && (
+          <>
+            <motion.div
+              animate={{
+                background: [
+                  "radial-gradient(circle at 20% 50%, hsl(330 81% 60% / 0.15) 0%, transparent 50%)",
+                  "radial-gradient(circle at 80% 50%, hsl(330 81% 60% / 0.15) 0%, transparent 50%)",
+                  "radial-gradient(circle at 20% 50%, hsl(330 81% 60% / 0.15) 0%, transparent 50%)",
+                ],
+              }}
+              transition={{ duration: 10, repeat: Infinity }}
+              className="absolute inset-0"
+            />
+            <motion.div
+              animate={{
+                background: [
+                  "radial-gradient(circle at 80% 30%, hsl(25 95% 53% / 0.1) 0%, transparent 50%)",
+                  "radial-gradient(circle at 20% 70%, hsl(25 95% 53% / 0.1) 0%, transparent 50%)",
+                  "radial-gradient(circle at 80% 30%, hsl(25 95% 53% / 0.1) 0%, transparent 50%)",
+                ],
+              }}
+              transition={{ duration: 12, repeat: Infinity }}
+              className="absolute inset-0"
+            />
+          </>
+        )}
+
+        {/* Static gradient fallback for mobile */}
+        {isMobile && (
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(330_81%_60%_/0.1),transparent_70%)]" />
+        )}
         
         {/* Grid pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]" />
         
-        {/* Floating orbs */}
-        <motion.div
-          animate={{ y: [0, -15, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-20 right-[15%] w-72 h-72 bg-primary/20 rounded-full blur-[100px]"
-        />
-        <motion.div
-          animate={{ y: [0, -15, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute bottom-40 left-[10%] w-96 h-96 bg-secondary/15 rounded-full blur-[120px]"
-        />
+        {/* Floating orbs - Simplified/Removed on Mobile */}
+        {!isMobile && (
+          <>
+            <motion.div
+              animate={{ y: [0, -15, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute top-20 right-[15%] w-72 h-72 bg-primary/20 rounded-full blur-[100px]"
+            />
+            <motion.div
+              animate={{ y: [0, -15, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+              className="absolute bottom-40 left-[10%] w-96 h-96 bg-secondary/15 rounded-full blur-[120px]"
+            />
+          </>
+        )}
       </div>
 
       <div className="container relative z-10 px-4 md:px-6 py-20">
@@ -99,9 +122,9 @@ export const HeroSection = () => {
             </div>
           </motion.div>
 
-          {/* Main Headline */}
+          {/* Main Headline - Optimize LCP for Mobile */}
           <motion.h1
-            initial={{ opacity: 0, y: 30 }}
+            initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.1] mb-8"
@@ -135,7 +158,7 @@ export const HeroSection = () => {
 
           {/* Subheadline */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"

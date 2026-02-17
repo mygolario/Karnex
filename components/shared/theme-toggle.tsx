@@ -47,6 +47,7 @@ export function ThemeToggle({ className, showLabel }: ThemeToggleProps) {
         className
       )}
       title={theme === "dark" ? "تم روشن" : "تم تاریک"}
+      aria-label={theme === "dark" ? "تم روشن" : "تم تاریک"}
     >
       <div className="relative w-5 h-5">
         {/* Sun Icon */}
