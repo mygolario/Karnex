@@ -9,6 +9,7 @@ export type TourStep = {
   title: string;
   description: string;
   position?: "top" | "bottom" | "left" | "right";
+  offset?: number;
 };
 
 interface TourContextType {

@@ -84,6 +84,62 @@ export async function getUserProjectsAction() {
   }
 }
 
+// --- Helper: Normalize Canvas Keys ---
+function normalizeCanvasKeys(canvasData: any) {
+    if (!canvasData || typeof canvasData !== 'object') return {};
+    
+    const normalized: any = {};
+    const keyMap: Record<string, string> = {
+        'keypartners': 'keyPartners',
+        'keypartnerships': 'keyPartners',
+        'partners': 'keyPartners',
+        'keyactivities': 'keyActivities',
+        'activities': 'keyActivities',
+        'keyresources': 'keyResources',
+        'resources': 'keyResources',
+        'uniquevalue': 'uniqueValue',
+        'uniquevalueproposition': 'uniqueValue',
+        'valueproposition': 'uniqueValue',
+        'customerrelations': 'customerRelations',
+        'customerrelationships': 'customerRelations',
+        'relationships': 'customerRelations',
+        'channels': 'channels',
+        'customersegments': 'customerSegments',
+        'segments': 'customerSegments',
+        'customers': 'customerSegments',
+        'coststructure': 'costStructure',
+        'costs': 'costStructure',
+        'revenuestream': 'revenueStream',
+        'revenuestreams': 'revenueStream',
+        'revenue': 'revenueStream',
+        // Identity
+        'identity': 'identity',
+        'brandidentity': 'identity',
+        'promise': 'promise',
+        'brandpromise': 'promise',
+        'audience': 'audience',
+        'targetaudience': 'audience',
+        'contentstrategy': 'contentStrategy',
+        'content': 'contentStrategy',
+        'monetization': 'monetization',
+        'collaborators': 'collaborators',
+        'investment': 'investment'
+    };
+
+    Object.keys(canvasData).forEach(key => {
+        const lower = key.toLowerCase().replace(/[^a-z]/g, '');
+        const target = keyMap[lower];
+        if (target) {
+            normalized[target] = canvasData[key];
+        } else {
+            // Keep original if no match, maybe it's already correct or unknown
+            normalized[key] = canvasData[key];
+        }
+    });
+
+    return normalized;
+}
+
 // --- Generate Plan ---
 
 export async function generatePlanAction(data: any) {
@@ -142,16 +198,16 @@ export async function generatePlanAction(data: any) {
         "projectName": "Name (Creative & Persian)",
         "tagline": "Slogan (Catchy & Persian)",
         "overview": "A compelling 2-3 sentence executive summary of the business strategy.",
-        "leanCanvas": { 
-            "keyPartners": "Who are 3-5 key partners specific to this idea?", 
-            "keyActivities": "What are the 3-5 critical daily activities?", 
-            "keyResources": "What physical/digital resources are needed?", 
-            "uniqueValue": "Why is this different from existing Iranian competitors?", 
-            "customerRelations": "How will you support customers?", 
-            "channels": "Where will you sell/market?", 
-            "customerSegments": "Detailed persona definition", 
-            "costStructure": "Main cost centers", 
-            "revenueStream": "How exactly does it make money?" 
+        "businessModelCanvas": { 
+            "keyPartners": "Exactly 3 key partners (e.g., Suppliers, Distributors, Alliances)", 
+            "keyActivities": "Exactly 3 critical daily activities (e.g., Development, Marketing, Sales)", 
+            "keyResources": "Exactly 3 key resources (e.g., Intellectual Property, Capital, Human)", 
+            "uniqueValue": "Exactly 3 distinct value propositions (Why you?)", 
+            "customerRelations": "Exactly 3 ways you interact with customers (e.g., Automated, Personal)", 
+            "channels": "Exactly 3 distribution channels (e.g., Website, App, Retail)", 
+            "customerSegments": "Exactly 3 distinct customer segments (be specific)", 
+            "costStructure": "Exactly 3 main cost drivers (e.g., Salaries, Server costs, Marketing)", 
+            "revenueStream": "Exactly 3 revenue sources (e.g., Subscription, Ads, One-time sales)" 
         },
         "brandKit": { 
             "primaryColorHex": "#HEX", 
@@ -202,6 +258,14 @@ export async function generatePlanAction(data: any) {
 
     try {
       const structuredPlan = parseJsonFromAI(result.content!);
+
+      // Compatibility & Normalization
+      if (structuredPlan.businessModelCanvas) {
+          structuredPlan.leanCanvas = normalizeCanvasKeys(structuredPlan.businessModelCanvas);
+          delete structuredPlan.businessModelCanvas;
+      } else if (structuredPlan.leanCanvas) {
+          structuredPlan.leanCanvas = normalizeCanvasKeys(structuredPlan.leanCanvas);
+      }
       
       // Increment usage
       await incrementAIUsage(session.user.id);

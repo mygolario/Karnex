@@ -79,8 +79,8 @@ export const TOUR_STEPS: Record<string, TourStep[]> = {
     {
       id: "canvas-ai",
       targetId: "ai-auto-fill",
-      title: "تکمیل خودکار",
-      description: "از هوش مصنوعی بخواهید بوم شما را بر اساس ایده اولیه پر کند.",
+      title: "راهنمای هوشمند",
+      description: "با پاسخ به چند سوال ساده، دستیار کارنکس تمام بخش‌های بوم شما را به صورت حرفه‌ای تکمیل می‌کند.",
       position: "bottom"
     }
   ],
@@ -88,23 +88,33 @@ export const TOUR_STEPS: Record<string, TourStep[]> = {
     {
       id: "copilot-welcome",
       targetId: "copilot-header",
-      title: "دستیار هوشمند (کوپایلت)",
-      description: "مشاور ۲۴ ساعته شما. هر سوالی دارید بپرسید.",
+      title: "دستیار هوشمند کارنکس",
+      description: "مشاور ۲۴ ساعته اختصاصی شما. این هوش مصنوعی تمام جزئیات پروژه شما را می‌داند.",
       position: "bottom"
-    },
-    {
-      id: "copilot-chat",
-      targetId: "chat-input",
-      title: "چت با هوش مصنوعی",
-      description: "سوال خود را بنویسید یا از دکمه ضبط صدا استفاده کنید.",
-      position: "top"
     },
     {
       id: "copilot-templates",
       targetId: "prompt-templates",
-      title: "دستورات آماده",
-      description: "برای شروع سریع، از این پیشنهادها استفاده کنید.",
-      position: "top"
+      title: "شروع سریع",
+      description: "برای شروع، می‌توانید از این دستورات آماده که مخصوص پروژه شما ساخته شده‌اند استفاده کنید.",
+      position: "top",
+      offset: 160
+    },
+    {
+      id: "copilot-input",
+      targetId: "chat-input-container",
+      title: "چت با دستیار",
+      description: "هر سوالی دارید بپرسید. دستیار کارنکس همیشه آماده پاسخگویی است.",
+      position: "top",
+      offset: 160
+    },
+    {
+      id: "copilot-mentions",
+      targetId: "chat-input-container",
+      title: "منوی اشاره (Feature ویژه)",
+      description: "با تایپ کردن کاراکتر @، منوی «اشاره» باز می‌شود. می‌توانید بخش‌های خاصی از پروژه (مثل یک تسک خاص، یا یک بلوک از بوم) را به دستیار بدهید تا دقیقاً روی همان بخش تمرکز کند.",
+      position: "top",
+      offset: 160
     }
   ],
   calendar: [
@@ -142,7 +152,7 @@ export const TOUR_STEPS: Record<string, TourStep[]> = {
       id: "new-script",
       targetId: "new-script-btn",
       title: "نوشتن اسکریپت جدید",
-      description: "با کمک قالب‌های آماده یا هوش مصنوعی، متن‌های حرفه‌ای بنویسید.",
+      description: "با کمک قالب‌های آماده یا دستیار کارنکس، متن‌های حرفه‌ای بنویسید.",
       position: "left"
     }
   ],
@@ -204,7 +214,7 @@ export const TOUR_STEPS: Record<string, TourStep[]> = {
       id: "location-search",
       targetId: "location-search",
       title: "جستجوی دقیق",
-      description: "شهر و آدرس دقیق ملک را وارد کنید. هوش مصنوعی ما با بررسی داده‌های لحظه‌ای، آنالیز را شروع می‌کند.",
+      description: "شهر و آدرس دقیق ملک را وارد کنید. دستیار کارنکس با بررسی داده‌های لحظه‌ای، آنالیز را شروع می‌کند.",
       position: "bottom"
     },
     {

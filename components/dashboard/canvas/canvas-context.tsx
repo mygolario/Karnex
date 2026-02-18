@@ -73,9 +73,18 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
         // Safe access
         const content = sourceData ? (sourceData as any)[key] : undefined;
 
-        if (Array.isArray(content)) {
-            initialState[key] = content;
-        } else if (typeof content === 'string' && content) {
+            if (Array.isArray(content)) {
+                // Check if it's an array of strings (AI output) or existing Card objects
+                if (content.length > 0 && typeof content[0] === 'string') {
+                    initialState[key] = content.map((text: string) => ({
+                        id: generateId(),
+                        content: text,
+                        color: 'blue'
+                    }));
+                } else {
+                    initialState[key] = content;
+                }
+            } else if (typeof content === 'string' && content) {
             // Legacy migration
             initialState[key] = [{ 
                 id: generateId(), 

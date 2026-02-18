@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface CanvasSectionProps {
+interface CanvasSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
   title: string;
   icon?: any;
@@ -17,7 +17,6 @@ interface CanvasSectionProps {
   onAddCard: () => void;
   onUpdateCard: (id: string, content: string) => void;
   onDeleteCard: (id: string) => void;
-  className?: string; // For Grid Area
 }
 
 export function CanvasSection({
@@ -29,7 +28,8 @@ export function CanvasSection({
   onAddCard,
   onUpdateCard,
   onDeleteCard,
-  className
+  className,
+  ...props
 }: CanvasSectionProps) {
   const { setNodeRef, isOver } = useDroppable({
     id: id,
@@ -74,6 +74,7 @@ export function CanvasSection({
   return (
     <div
       ref={setNodeRef}
+      {...props}
       className={cn(
         "flex flex-col rounded-2xl border bg-gradient-to-b shadow-sm transition-all duration-300 h-full min-h-[240px] overflow-hidden group hover:shadow-md canvas-section",
         variants[color] || variants.blue,

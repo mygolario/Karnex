@@ -65,6 +65,7 @@ function CanvasHeader({ plan, onOpenWizard }: { plan: any, onOpenWizard: () => v
         
         <div className="flex items-center gap-2">
             <Button 
+                id="ai-auto-fill"
                 variant="default" // Primary action
                 size="sm" 
                 onClick={onOpenWizard}

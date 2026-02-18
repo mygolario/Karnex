@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import {
   Bot, Send, Loader2, Trash2, Copy, RefreshCw,
   Briefcase, Target, Users, TrendingUp, Sparkles,
-  MessageSquare, Mic, ArrowUp, Search, Presentation
+  MessageSquare, Mic, ArrowUp, Search, Presentation, HelpCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { ChatMessage, AssistantData } from "@/lib/db";
 import { DollarSign } from "lucide-react";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
+import { useTour } from "@/components/features/onboarding/tour-context";
 
 // Professional Prompts - Enhanced Visuals
 const professionalPrompts = [
@@ -134,6 +135,7 @@ const PERSONAS = {
 export default function CopilotPage() {
   const { user } = useAuth();
   const { activeProject: plan, updateActiveProject, refreshProjects } = useProject();
+  const { startTour } = useTour();
   
   // Determine Persona
   let activePersona = PERSONAS.default;
@@ -569,7 +571,9 @@ export default function CopilotPage() {
     <div className="h-[calc(100vh-6rem)] relative flex flex-col items-center bg-gradient-to-b from-background to-muted/10 font-sans">
       
       {/* Header - Floating Glass */}
+      {/* Header - Floating Glass */}
       <motion.header 
+        data-tour-id="copilot-header"
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         className="w-full max-w-4xl mx-auto mt-4 shrink-0 h-16 rounded-2xl border border-white/10 bg-white/40 dark:bg-black/20 backdrop-blur-xl shadow-sm flex items-center justify-between px-6 z-20"
@@ -597,6 +601,18 @@ export default function CopilotPage() {
                     </motion.div>
                 )}
             </AnimatePresence>
+
+            {/* Limit Indicator Removed */}
+
+            <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => startTour('copilot')} 
+                className="h-9 w-9 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                title="راهنمای صفحه"
+            >
+                <HelpCircle size={18} />
+            </Button>
             {messages.length > 0 && (
               <Button variant="ghost" size="icon" onClick={clearHistory} className="h-9 w-9 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
                 <Trash2 size={16} />
@@ -631,7 +647,7 @@ export default function CopilotPage() {
                          {activePersona.description}
                      </p>
                      
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
+                     <div data-tour-id="prompt-templates" className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                         {activePersona.prompts.map((t, i) => (
                             <motion.button 
                                 key={i}
@@ -729,7 +745,7 @@ export default function CopilotPage() {
         </div>
 
         {/* Input - Floating Bar */}
-        <div className="absolute bottom-6 left-0 right-0 px-4 md:px-0 z-30">
+        <div className="absolute bottom-6 left-0 right-0 px-4 md:px-0 z-30" data-tour-id="chat-input-container">
             <div className="max-w-3xl mx-auto relative group">
                 
                 {/* Mention Menu */}

@@ -119,23 +119,38 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
         
         if (fetchRes.error) throw new Error("Failed to refresh projects");
         
-        const allProjects: BusinessPlan[] = (fetchRes.projects as BusinessPlan[]) || [];
-        
-        setProjects(allProjects);
+        let allProjects: BusinessPlan[] = (fetchRes.projects as BusinessPlan[]) || [];
         
         // Find the specific new project
-        const newProject = allProjects.find(p => p.id === newId);
+        let newProject = allProjects.find(p => p.id === newId);
         
-        if (newProject) {
-            console.log("🔄 Switching to new project:", newProject.projectName);
-            setActiveProject(newProject);
-        } else {
-            console.warn("⚠️ New project created but not found in list. Using fallback.");
-            if (allProjects.length > 0) setActiveProject(allProjects[0]);
+        if (!newProject) {
+            console.warn("⚠️ New project created but not found in fetch. constructing optimistic project.");
+            // Construct optimistic project to ensure UI updates
+            newProject = {
+                id: newId,
+                userId: user.id,
+                projectName: planData.projectName,
+                tagline: planData.tagline,
+                description: planData.description || "",
+                data: planData,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                // Add any other required fields from BusinessPlan interface
+                ...planData 
+            } as BusinessPlan;
+            
+            allProjects = [newProject, ...allProjects];
         }
+        
+        setProjects(allProjects);
+        console.log("🔄 Switching to new project:", newProject.projectName);
+        setActiveProject(newProject);
 
     } catch (err) {
         console.error("❌ Error switching to new project:", err);
+        // Even if fetch fails entirely, try to set optimistic state if we have the ID? 
+        // For now, let's rely on the try block flow above.
     } finally {
         setIsLoading(false);
     }

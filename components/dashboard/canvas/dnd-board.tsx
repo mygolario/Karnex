@@ -121,7 +121,6 @@ export function CanvasBoard({ highlightedSectionId }: CanvasBoardProps) {
       {/* Layout Render */}
       {/* Complex Grid for BMC */}
           <div 
-            dir="ltr" 
             className="grid gap-4 min-h-[800px] min-w-[1000px] canvas-grid"
             style={{
               gridTemplateColumns: 'repeat(5, 1fr)',

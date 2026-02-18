@@ -2,13 +2,22 @@
 
 import { useTour } from "./tour-context";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, X, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function TourOverlay() {
-  const { isOpen, currentStep, nextStep, prevStep, skipTour, currentStepIndex, totalSteps } = useTour();
+  const { 
+    isOpen, 
+    currentStep, 
+    nextStep, 
+    prevStep, 
+    skipTour, 
+    currentStepIndex, 
+    totalSteps
+  } = useTour();
+  
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   
   // Track window resize to update rect
@@ -16,9 +25,15 @@ export function TourOverlay() {
     if (!isOpen) return;
 
     const updateRect = () => {
+      if (!currentStep) return;
       const element = document.querySelector(`[data-tour-id="${currentStep.targetId}"]`);
       if (element) {
-        setTargetRect(element.getBoundingClientRect());
+        // Check if element is actually visible
+        const rect = element.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) {
+            console.warn("Target has 0 dimensions:", currentStep.targetId);
+        }
+        setTargetRect(rect);
       } else {
         // Fallback for centered steps (like welcome/finish) if no target found
         // or if targetId is explicitly 'dashboard-root'
@@ -76,7 +91,7 @@ export function TourOverlay() {
 
     const CARD_WIDTH = 350;
     const CARD_EST_HEIGHT = 220; // Slightly taller estimate for safety
-    const GAP = 24;
+    const GAP = 24 + (currentStep.offset || 0);
     const SCREEN_PAD = 20;
 
     // Determine base position from preference
@@ -219,7 +234,7 @@ export function TourOverlay() {
       {/* Tooltip Card */}
       <AnimatePresence mode="wait">
         <motion.div
-            key={currentStep.id}
+            key={currentStep.id + (isOpen ? 'open' : 'closed')}
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}

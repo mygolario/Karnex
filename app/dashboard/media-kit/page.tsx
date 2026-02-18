@@ -268,7 +268,7 @@ export default function MediaKitPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label>نام نمایشی (Display Name)</Label>
-                            <Input value={data.displayName} onChange={e => setData({...data, displayName: e.target.value})} placeholder="مثلاً: آریو" />
+                            <Input value={data.displayName} onChange={e => setData({...data, displayName: e.target.value})} placeholder="مثلاً: نام شما" />
                         </div>
                         <div className="space-y-2">
                             <Label>حوزه فعالیت (Niche)</Label>
