@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { useCanvas } from "@/components/dashboard/canvas/canvas-context";
+
 import { useProject } from "@/contexts/project-context";
 
 // Define the steps for the Business Model Canvas (BMC)
@@ -82,11 +82,11 @@ export const BMC_STEPS = [
   },
 ];
 
-export function useCanvasWizard() {
-  const { addCard } = useCanvas();
+export function useCanvasWizard({ onComplete }: { onComplete: (answers: Record<string, string>) => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [currentInput, setCurrentInput] = useState("");
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const currentStep = useMemo(() => BMC_STEPS[currentStepIndex], [currentStepIndex]);
 
@@ -96,6 +96,7 @@ export function useCanvasWizard() {
     setIsOpen(true);
     setCurrentStepIndex(0);
     setCurrentInput("");
+    setAnswers({});
   };
 
   const closeWizard = () => {
@@ -103,14 +104,19 @@ export function useCanvasWizard() {
   };
 
   const nextStep = () => {
+    // Save current answer
+    const newAnswers = { ...answers };
     if (currentInput.trim()) {
-      addCard(currentStep.id, currentInput.trim(), currentStep.color);
+      newAnswers[currentStep.id] = currentInput.trim();
     }
+    setAnswers(newAnswers);
     
     if (currentStepIndex < BMC_STEPS.length - 1) {
       setCurrentStepIndex((prev) => prev + 1);
       setCurrentInput("");
     } else {
+      // Final step
+      onComplete(newAnswers);
       closeWizard();
     }
   };
@@ -120,6 +126,7 @@ export function useCanvasWizard() {
       setCurrentStepIndex((prev) => prev + 1);
       setCurrentInput("");
     } else {
+      onComplete(answers); // Pass what we have so far
       closeWizard();
     }
   };
@@ -127,7 +134,10 @@ export function useCanvasWizard() {
   const prevStep = () => {
     if (currentStepIndex > 0) {
       setCurrentStepIndex((prev) => prev - 1);
-      setCurrentInput(""); // Note: In a real app we might want to recover the previous answer if it wasn't saved.
+      // Optional: restore previous answer if it exists
+      // const prevId = BMC_STEPS[currentStepIndex - 1].id;
+      // setCurrentInput(answers[prevId] || "");
+      setCurrentInput(""); 
     }
   };
 

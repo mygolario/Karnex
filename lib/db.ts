@@ -367,6 +367,11 @@ export interface ChatMessage {
   followUps?: string[];
   xpReward?: number;
   actions?: ActionCard[]; 
+  tool_call?: {
+    name: string;
+    status: 'success' | 'error';
+    result: any;
+  };
 }
 
 export type ActionType =

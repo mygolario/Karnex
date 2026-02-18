@@ -61,7 +61,7 @@ export default function LoginPage() {
       if (err.message === "CredentialsSignin" || err.message.includes("credentials")) {
          setError("اطلاعات ورود اشتباه است");
       } else {
-         setError("خطا در ورود. لطفاً دوباره تلاش کنید");
+         setError(`خطا در ورود: ${err.message || "خطای ناشناخته"}`);
       }
     } finally {
       setLoading(false);

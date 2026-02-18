@@ -16,8 +16,8 @@ interface QuickAccessGridProps {
 export function QuickAccessGrid({ projectType }: QuickAccessGridProps) {
   const items = [
     { href: "/dashboard/roadmap", icon: Map, label: "نقشه راه", color: "from-blue-500 to-cyan-500", desc: "مسیر پیشرفت" },
-    { href: "/dashboard/canvas", icon: LayoutGrid, label: "بوم کسب‌وکار", color: "from-amber-500 to-orange-500", desc: "مدل بیزینس" },
-    { href: "/dashboard/copilot", icon: Bot, label: "دستیار هوشمند", color: "from-rose-500 to-pink-500", desc: "مشاوره AI", badge: "AI" },
+    { href: "/dashboard/canvas", icon: Target, label: "تحلیل کسب و کار", color: "from-amber-500 to-orange-500", desc: "مدل بیزینس" },
+    { href: "/dashboard/copilot", icon: Bot, label: "دستیار کارنکس", color: "from-rose-500 to-pink-500", desc: "مشاوره AI", badge: "AI" },
     
     // Creator Specific
     ...(projectType === 'creator' ? [

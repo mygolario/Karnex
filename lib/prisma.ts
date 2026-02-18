@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
+import { Pool } from 'pg'
 
 const prismaClientSingleton = () => {
   // During build time, DATABASE_URL might not be available.
@@ -7,7 +8,22 @@ const prismaClientSingleton = () => {
   // The actual connection will verify the URL at runtime.
   const connectionString = process.env.DATABASE_URL || 'postgresql://dummy:dummy@localhost:5432/dummy'
   
-  const adapter = new PrismaPg({ connectionString })
+  // Determine if we need SSL (usually for remote DBs)
+  // Liara might not support SSL on the public port, so we disable it for now or strictly follow the connection string.
+  // If the server rejects SSL, we must set ssl: false.
+  
+  const pool = new Pool({ 
+    connectionString,
+    ssl: false, // Explicitly disable SSL as the server rejects it
+  })
+  
+  // Log connection errors
+  pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err)
+    process.exit(-1)
+  })
+
+  const adapter = new PrismaPg(pool)
   return new PrismaClient({
     adapter,
     log: ['warn', 'error'],

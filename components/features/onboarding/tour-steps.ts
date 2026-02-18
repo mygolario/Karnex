@@ -167,14 +167,14 @@ export const TOUR_STEPS: Record<string, TourStep[]> = {
       id: "deck-welcome",
       targetId: "deck-header",
       title: "داستان استارتاپ شما",
-      description: "پیچ‌دک شما آماده است! اینجا می‌توانید تمام اسلایدها را یکجا ببینید.",
+      description: "پیچ‌دک شما با کمک دستیار کارنکس آماده شده است! اینجا می‌توانید داستان خود را مرور و ویرایش کنید.",
       position: "bottom"
     },
     {
       id: "deck-grid",
       targetId: "deck-grid",
-      title: "ویرایش اسلایدها",
-      description: "برای ویرایش محتوا یا تغییر عکس هر اسلاید، کافیست روی آن کلیک کنید.",
+      title: "ویرایش و شخصی‌سازی",
+      description: "روی هر اسلاید کلیک کنید تا محتوا را ویرایش کنید. دستیار کارنکس ساختار استاندارد جذب سرمایه را برای شما چیده است.",
       position: "top"
     },
     {
@@ -187,8 +187,8 @@ export const TOUR_STEPS: Record<string, TourStep[]> = {
     {
       id: "deck-actions",
       targetId: "deck-actions",
-      title: "خروجی و تنظیمات",
-      description: "پیچ‌دک خود را به صورت PDF دانلود کنید یا در صورت نیاز همه چیز را از اول بسازید.",
+      title: "دستیار هوشمند و خروجی",
+      description: "با دکمه «کمک گرفتن از دستیار کارنکس» دک را با دستیار کارنکس بازنویسی کنید، یا فایل پاورپوینت (PPTX) قابل ویرایش بگیرید.",
       position: "bottom"
     }
   ],

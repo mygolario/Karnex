@@ -6,16 +6,36 @@ import { PitchDeckSlide } from "@/lib/db";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit3, Download, RefreshCw, LayoutTemplate } from "lucide-react";
+import { Edit3, Download, RefreshCw, LayoutTemplate, Trash2, Presentation, Sparkles } from "lucide-react";
 
 interface DeckPreviewProps {
   slides: PitchDeckSlide[];
   onEditSlide: (index: number) => void;
+  onDeleteSlide: (index: number) => void;
   onRegenerate: () => void;
   onDownload: () => void;
 }
 
-export function DeckPreview({ slides, onEditSlide, onRegenerate, onDownload }: DeckPreviewProps) {
+export function DeckPreview({ slides, onEditSlide, onDeleteSlide, onRegenerate, onDownload }: DeckPreviewProps) {
+  const getSlideLabel = (type: string) => {
+      const map: Record<string, string> = {
+          'title': 'عنوان',
+          'problem': 'مشکل',
+          'solution': 'راهکار',
+          'market': 'اندازه بازار',
+          'market_size': 'اندازه بازار',
+          'business_model': 'مدل درآمدی',
+          'traction': 'دستاوردها',
+          'team': 'تیم',
+          'ask': 'سرمایه',
+          'generic': 'توضیحات',
+          'why_now': 'چرا الان؟',
+          'product': 'محصول',
+          'competition': 'رقبا'
+      };
+      return map[type] || type;
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       
@@ -29,13 +49,13 @@ export function DeckPreview({ slides, onEditSlide, onRegenerate, onDownload }: D
             </div>
          </div>
          <div className="flex gap-3" data-tour-id="deck-actions">
-             <Button variant="outline" onClick={onRegenerate} className="h-12 px-6 rounded-xl border-dashed">
-                <RefreshCw size={16} className="ml-2" />
-                شروع مجدد
+             <Button variant="outline" onClick={onRegenerate} className="h-12 px-6 rounded-xl border-dashed border-primary/30 hover:bg-primary/5 hover:text-primary">
+                <Sparkles size={16} className="ml-2" />
+                کمک گرفتن از دستیار کارنکس
              </Button>
              <Button onClick={onDownload} className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
-                <Download size={16} className="ml-2" />
-                دانلود PDF
+                <Presentation size={16} className="ml-2" />
+                دانلود پاورپوینت
              </Button>
          </div>
       </div>
@@ -49,12 +69,12 @@ export function DeckPreview({ slides, onEditSlide, onRegenerate, onDownload }: D
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
             onClick={() => onEditSlide(index)}
-            className="group relative aspect-[1.414] bg-white text-slate-900 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer ring-1 ring-border/10 hover:ring-primary/50"
+            className="group relative aspect-[1.414] bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer ring-1 ring-border/10 hover:ring-primary/50"
           >
             {/* Thumbnail Content */}
             <div className="w-full h-full p-6 flex flex-col pointer-events-none select-none transform scale-[1] origin-top-left">
                 <div className="flex justify-between items-center mb-4 opacity-30">
-                    <span className="text-[10px] font-black tracking-widest uppercase">{slide.type}</span>
+                    <span className="text-[10px] font-black tracking-widest uppercase">{getSlideLabel(slide.type)}</span>
                     <span className="text-[10px] font-mono">{index + 1}</span>
                 </div>
                 
@@ -78,11 +98,32 @@ export function DeckPreview({ slides, onEditSlide, onRegenerate, onDownload }: D
             </div>
 
             {/* Hover Overlay */}
-            <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur text-foreground px-4 py-2 rounded-full font-bold text-sm shadow-xl flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform">
-                    <Edit3 size={14} />
-                    ویرایش اسلاید
-                </div>
+            <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="shadow-xl"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onEditSlide(index);
+                    }}
+                >
+                    <Edit3 size={14} className="mr-2" />
+                    ویرایش
+                </Button>
+                <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    className="shadow-xl"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore
+                        onDeleteSlide(index);
+                    }}
+                >
+                    <Trash2 size={14} />
+                </Button>
             </div>
 
           </motion.div>

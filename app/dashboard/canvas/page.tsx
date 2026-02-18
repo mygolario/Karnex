@@ -9,7 +9,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { toPng } from 'html-to-image';
 // We need to keep some AI logic or move it to context. For now, let's keep it minimal and assume futurerefactor moves it.
 // Actually, the AI logic (autoFillCanvas etc) depends on state which is now in Context.
 // So we should ideally move that logic to the Context or a hook.
@@ -43,8 +44,8 @@ import { CanvasWizard } from "@/components/dashboard/canvas/canvas-wizard";
 import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
 
 function CanvasHeader({ plan, onOpenWizard }: { plan: any, onOpenWizard: () => void }) {
-    const { autoFillCanvas, isSaving } = useCanvas();
-
+    const { isSaving } = useCanvas();
+    
     return (
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4" data-tour-id="canvas-header">
         <div className="flex items-center gap-4">
@@ -72,25 +73,16 @@ function CanvasHeader({ plan, onOpenWizard }: { plan: any, onOpenWizard: () => v
                 <Sparkles size={16} className="ml-2" />
                 راهنمای هوشمند
             </Button>
-            
-            <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={autoFillCanvas} 
-                disabled={isSaving}
-                className="text-muted-foreground"
-                data-tour-id="ai-auto-fill"
-            >
-                {isSaving ? <Loader2 size={16} className="ml-2 animate-spin" /> : <Eye size={16} className="ml-2" />}
-                نمونه خودکار
-            </Button>
         </div>
       </div>
     );
 }
 
 function CanvasPageContent({ plan }: { plan: any }) {
-    const wizard = useCanvasWizard();
+    const { handleSmartWizardComplete } = useCanvas();
+    const wizard = useCanvasWizard({
+        onComplete: handleSmartWizardComplete
+    });
 
     // Mapping for Focus Mode:
     // The wizard steps rely on IDs like "customer_segments"

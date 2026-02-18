@@ -1,9 +1,6 @@
-"use client";
-
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import pptxgen from "pptxgenjs"; // Import pptxgenjs
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { PitchDeckSlide, savePitchDeck } from "@/lib/db";
@@ -11,9 +8,10 @@ import { StoryWizard } from "./story-wizard";
 import { DeckPreview } from "./deck-preview";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Save, Plus, Trash2, Maximize2, Minimize2, ChevronLeft, ChevronRight, Palette, Download, LayoutTemplate } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Maximize2, Minimize2, ChevronLeft, ChevronRight, Palette, Download, LayoutTemplate, Sparkles, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Textarea } from "@/components/ui/textarea";
+import { generatePitchDeckAction } from "@/lib/ai-actions";
 
 // Constants
 const A4_WIDTH_PX = 1000;
@@ -32,27 +30,57 @@ export function PitchDeckBuilder() {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false); // New state for AI generation
   const [theme, setTheme] = useState<'modern'|'minimal'|'bold'|'tech'>('modern');
 
-  // Hidden ref for PDF
-  const printRef = useRef<HTMLDivElement>(null);
-
   // Initialize
+  const initialized = useRef(false);
+
   useEffect(() => {
-    if (activeProject?.pitchDeck && activeProject.pitchDeck.length > 0) {
+    if (!activeProject || initialized.current) return;
+
+    if (activeProject.pitchDeck && activeProject.pitchDeck.length > 0) {
       setSlides(activeProject.pitchDeck);
       setMode('preview');
     } else {
-      setMode('wizard');
+      // Auto-generate on first load if empty
+      handleGenerateAI({ idea: activeProject.description || activeProject.projectName || "Startup Idea" });
     }
+    initialized.current = true;
   }, [activeProject]);
 
   // Handlers
-  const handleWizardComplete = (newSlides: PitchDeckSlide[]) => {
-      setSlides(newSlides);
-      handleSave(newSlides);
+  const handleWizardComplete = async (answers: any) => {
+      // The wizard now returns answers, not slides. We generate slides from answers.
+      await handleGenerateAI({ idea: answers.tagline, wizardAnswers: answers });
       setMode('preview');
-      toast.success("داستان شما آماده است! 🚀");
+  };
+
+  const handleGenerateAI = async (data: { idea: string, wizardAnswers?: any }) => {
+      setIsGenerating(true);
+      if(mode !== 'wizard') toast.info("دستیار کارنکس در حال نوشتن پیچ‌دک شماست...");
+      
+      try {
+          const res = await generatePitchDeckAction(data);
+          if (res.success && res.data?.slides) {
+              const newSlides = res.data.slides;
+              setSlides(newSlides);
+              handleSave(newSlides);
+              toast.success("پیچ‌دک هوشمند شما آماده شد! 🚀");
+          } else {
+              toast.error(res.error || "خطا در تولید محتوا");
+              // Fallback to basic if AI fails/limits
+              if(slides.length === 0) {
+                 const fallback: PitchDeckSlide[] = [{ id: '1', type: 'title', title: activeProject?.projectName || 'عنوان', bullets: ['توضیحات خود را بنویسید'], isHidden: false }];
+                 setSlides(fallback);
+              }
+          }
+      } catch (err) {
+          console.error(err);
+          toast.error("خطا در ارتباط با هوش مصنوعی");
+      } finally {
+          setIsGenerating(false);
+      }
   };
 
   const handleSave = async (updatedSlides: PitchDeckSlide[] = slides) => {
@@ -95,31 +123,93 @@ export function PitchDeckBuilder() {
     setSlides(updated);
   };
 
-  const handleExportPDF = async () => {
-    if (!printRef.current) return;
+  const handleDeleteSlide = (index: number) => {
+    const newSlides = slides.filter((_, i) => i !== index);
+    setSlides(newSlides);
+    handleSave(newSlides);
+    toast.success("اسلاید حذف شد");
+  };
+
+  const handleExportPPTX = async () => {
     setDownloading(true);
     try {
-      const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
-      const slidesElements = printRef.current.children;
+      const pres = new pptxgen();
+      pres.layout = 'LAYOUT_16x9';
+      pres.rtlMode = true; // Enable RTL mode globally if possible, or per element
       
-      for (let i = 0; i < slidesElements.length; i++) {
-        const slideEl = slidesElements[i] as HTMLElement;
-        const canvas = await html2canvas(slideEl, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
-        const imgData = canvas.toDataURL("image/png");
-        pdf.addImage(imgData, "PNG", 0, 0, 297, 210); // A4 dims
-        if (i < slidesElements.length - 1) pdf.addPage();
-      }
-      pdf.save(`${activeProject?.projectName || 'PitchDeck'}.pdf`);
-      toast.success("دانلود PDF کامل شد");
+      // Add Title Slide or Master info
+      pres.author = 'Karnex';
+      pres.company = activeProject?.projectName || 'Startup';
+      pres.subject = 'Pitch Deck';
+      pres.title = activeProject?.projectName || 'Pitch Deck';
+
+      // Define a Master Slide with Slide Number
+      pres.defineSlideMaster({
+        title: "MASTER",
+        background: { color: "FFFFFF" },
+        slideNumber: { x: '95%', y: '92%', fontSize: 10, color: '999999' }
+      });
+
+      slides.forEach((slide) => {
+          if (slide.isHidden) return;
+          const pptxSlide = pres.addSlide({ masterName: "MASTER" });
+          
+          // Title
+          pptxSlide.addText(slide.title, {
+              x: 0.5, y: 0.5, w: '90%', h: 1,
+              fontSize: 32,
+              bold: true,
+              color: '000000',
+              rtlMode: true,
+              align: 'right',
+              fontFace: 'Arial' // Use a standard font for max compatibility
+          });
+
+          // Bullets
+          const bulletText = slide.bullets.map(b => ({ 
+              text: b, 
+              options: { 
+                  rtlMode: true, 
+                  fontSize: 18, 
+                  color: '333333',
+                  breakLine: true,
+                  bullet: true
+              } 
+          }));
+
+          pptxSlide.addText(bulletText, {
+              x: 0.5, y: 1.8, w: '90%', h: 4,
+              align: 'right',
+              fontFace: 'Arial'
+          });
+      });
+
+      await pres.writeFile({ fileName: `${activeProject?.projectName || 'PitchDeck'}.pptx` });
+      toast.success("دانلود پاورپوینت کامل شد");
     } catch (err) {
       console.error(err);
-      toast.error("خطا در ساخت PDF");
+      toast.error("خطا در ساخت پاورپوینت");
     } finally {
       setDownloading(false);
     }
   };
 
   // --- Views ---
+
+  if (isGenerating && mode !== 'wizard') {
+       return (
+           <div className="flex flex-col items-center justify-center h-[60vh] space-y-6">
+               <div className="relative">
+                    <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full animate-pulse" />
+                    <Loader2 className="w-16 h-16 text-primary animate-spin relative z-10" />
+               </div>
+               <div className="text-center space-y-2 relative z-10">
+                   <h3 className="text-2xl font-bold">دستیار هوشمند در حال نوشتن پیچ‌دک است...</h3>
+                   <p className="text-muted-foreground">در حال تحلیل ایده، طراحی اسلایدها و نوشتن محتوای حرفه‌ای</p>
+               </div>
+           </div>
+       );
+  }
 
   if (mode === 'wizard') {
       return (
@@ -133,6 +223,7 @@ export function PitchDeckBuilder() {
                     router.push('/dashboard/overview');
                 }
             }} 
+            isGenerating={isGenerating}
           />
       );
   }
@@ -140,12 +231,12 @@ export function PitchDeckBuilder() {
   if (mode === 'preview') {
       return (
           <>
-            <PDFHiddenRenderer slides={slides} theme={theme} printRef={printRef} projectName={activeProject?.projectName || ''} />
             <DeckPreview 
                 slides={slides} 
                 onEditSlide={handleEditSlide} 
+                onDeleteSlide={handleDeleteSlide}
                 onRegenerate={() => setMode('wizard')} 
-                onDownload={handleExportPDF}
+                onDownload={handleExportPPTX}
             />
           </>
       );
@@ -156,8 +247,7 @@ export function PitchDeckBuilder() {
 
   return (
     <div className="h-full flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-       <PDFHiddenRenderer slides={slides} theme={theme} printRef={printRef} projectName={activeProject?.projectName || ''} />
-
+       
        {/* Toolbar */}
        <div className="flex items-center justify-between">
             <Button variant="ghost" onClick={() => setMode('preview')} className="text-muted-foreground hover:text-foreground">
@@ -179,7 +269,7 @@ export function PitchDeckBuilder() {
                     <Textarea 
                          value={currentSlide?.title || ''}
                          onChange={e => updateCurrentSlide('title', e.target.value)}
-                         className="text-3xl font-black resize-none min-h-[100px] leading-tight bg-transparent border-none p-0 focus:ring-0 shadow-none"
+                         className="text-3xl font-black resize-none min-h-[100px] leading-tight bg-transparent border-none p-0 focus:ring-0 shadow-none dark:text-white"
                          placeholder="عنوان را اینجا بنویسید..."
                          dir="auto"
                      />
@@ -199,7 +289,7 @@ export function PitchDeckBuilder() {
                                     newBullets[i] = e.target.value;
                                     updateCurrentSlide('bullets', newBullets);
                                 }}
-                                className="flex-1 min-h-[60px] resize-none text-lg bg-transparent border-0 border-b border-border/50 rounded-none focus:border-primary px-0 shadow-none focus-visible:ring-0"
+                                className="flex-1 min-h-[60px] resize-none text-lg bg-transparent border-0 border-b border-border/50 rounded-none focus:border-primary px-0 shadow-none focus-visible:ring-0 dark:text-slate-200"
                                 dir="auto"
                             />
                             <button 
@@ -227,7 +317,7 @@ export function PitchDeckBuilder() {
            <div className="sticky top-4">
                 <div className="bg-muted/10 rounded-3xl p-8 border border-border/50 flex flex-col items-center justify-center relative overflow-hidden group">
                      {/* Slide Visual */}
-                     <div className="w-full aspect-[1.414] bg-white shadow-2xl rounded-lg overflow-hidden relative transform transition-transform group-hover:scale-[1.02] duration-500">
+                     <div className="w-full aspect-[1.414] bg-white dark:bg-slate-950 shadow-2xl rounded-lg overflow-hidden relative transform transition-transform group-hover:scale-[1.02] duration-500">
                          {/* Render a single visual slide here for immediate feedback */}
                          <SlideVisual slide={currentSlide} index={currentSlideIndex} total={slides.length} theme={theme} projectName={activeProject?.projectName || ''} />
                      </div>
@@ -253,23 +343,23 @@ export function PitchDeckBuilder() {
 
 // --- Visual Components below ---
 
-const SlideVisual = ({ slide, index, total, theme, projectName }: { slide: PitchDeckSlide, index: number, total: number, theme: string, projectName: string }) => {
+const SlideVisual = ({ slide, index, total, theme, projectName, isExport = false }: { slide: PitchDeckSlide, index: number, total: number, theme: string, projectName: string, isExport?: boolean }) => {
     if(!slide) return null;
     return (
-        <div className="w-full h-full p-12 flex flex-col relative bg-white text-slate-900">
+        <div className={`w-full h-full p-12 flex flex-col relative ${isExport ? 'bg-white text-slate-900' : 'bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100'} transition-colors`}>
             {/* Decorations */}
              <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-blue-500/5 rounded-bl-full blur-3xl pointer-events-none" />
              <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-purple-500/5 rounded-tr-full blur-3xl pointer-events-none" />
             
             {/* Header */}
-            <div className="flex justify-between items-center mb-10 pb-4 border-b border-black/5 relative z-10">
+            <div className={`flex justify-between items-center mb-10 pb-4 ${isExport ? 'border-black/5' : 'border-black/5 dark:border-white/5'} border-b relative z-10`}>
                 <span className="text-xs font-black tracking-[0.2em] opacity-30 uppercase">{projectName || 'PROJECT'}</span>
                 <span className="text-xs font-mono opacity-30">{index + 1} / {total}</span>
             </div>
 
             {/* Content */}
-            <h1 className="text-4xl font-black mb-8 leading-tight relative z-10">{slide.title}</h1>
-            <div className="space-y-6 flex-1 relative z-10">
+            <h1 className="text-4xl font-black mb-8 leading-tight relative z-10 dir-rtl" dir="rtl">{slide.title}</h1>
+            <div className="space-y-6 flex-1 relative z-10" dir="rtl">
                 {slide.bullets.map((b, i) => (
                     <div key={i} className="flex gap-4 items-start">
                         <div className="w-2 h-2 rounded-full bg-blue-600 mt-3 shrink-0" />
@@ -281,20 +371,4 @@ const SlideVisual = ({ slide, index, total, theme, projectName }: { slide: Pitch
             <div className="absolute bottom-4 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-20" />
         </div>
     );
-}
-
-const PDFHiddenRenderer = ({ slides, theme, printRef, projectName }: { slides: PitchDeckSlide[], theme: string, printRef: any, projectName: string }) => {
-    return (
-        <div style={{ position: 'fixed', top: 0, left: -99999, zIndex: -1 }} ref={printRef}>
-             {slides.map((slide, i) => (
-                 !slide.isHidden && (
-                     <div key={i} style={{ width: A4_WIDTH_PX, height: A4_HEIGHT_PX, fontSize: '24px' }} className="relative bg-white p-[60px] flex flex-col overflow-hidden">
-                         <SlideVisual slide={slide} index={i} total={slides.length} theme={theme} projectName={projectName} />
-                         {/* Override styles for PDF high-res */}
-                         <style>{`.pdf-text { font-size: 2em; }`}</style>
-                     </div>
-                 )
-             ))}
-        </div>
-    )
 }

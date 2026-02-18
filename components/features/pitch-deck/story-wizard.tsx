@@ -10,10 +10,12 @@ import { PitchDeckSlide } from "@/lib/db";
 import { useProject } from "@/contexts/project-context";
 
 interface StoryWizardProps {
-  onComplete: (slides: PitchDeckSlide[]) => void;
+  onComplete: (answers: any) => void;
   onCancel: () => void;
+  isGenerating?: boolean;
 }
 
+// ... STEPS constant remains same ...
 const STEPS = [
   {
     id: "hook",
@@ -71,7 +73,7 @@ const STEPS = [
   }
 ];
 
-export function StoryWizard({ onComplete, onCancel }: StoryWizardProps) {
+export function StoryWizard({ onComplete, onCancel, isGenerating = false }: StoryWizardProps) {
   const { activeProject } = useProject();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({
@@ -92,7 +94,7 @@ export function StoryWizard({ onComplete, onCancel }: StoryWizardProps) {
     if (currentStep < STEPS.length - 1) {
       setCurrentStep(prev => prev + 1);
     } else {
-      generateDeck();
+      onComplete(answers);
     }
   };
 
@@ -104,69 +106,7 @@ export function StoryWizard({ onComplete, onCancel }: StoryWizardProps) {
     }
   };
 
-  const generateDeck = () => {
-    // Convert answers to Slides
-    const newSlides: PitchDeckSlide[] = [
-      {
-        id: 'title',
-        type: 'title',
-        title: activeProject?.projectName || 'استارتاپ من',
-        bullets: [answers.tagline, 'ارائه سرمایه‌گذاری'],
-        isHidden: false
-      },
-      {
-        id: 'problem',
-        type: 'problem',
-        title: 'مشکل چیست؟',
-        bullets: splitToBullets(answers.problem),
-        isHidden: false
-      },
-      {
-        id: 'solution',
-        type: 'solution',
-        title: 'راهکار ما',
-        bullets: splitToBullets(answers.solution),
-        isHidden: false
-      },
-      {
-        id: 'market',
-        type: 'market',
-        title: 'بازار هدف',
-        bullets: splitToBullets(answers.market),
-        isHidden: false
-      },
-      {
-        id: 'business_model',
-        type: 'business_model',
-        title: 'مدل درآمدی',
-        bullets: splitToBullets(answers.revenue),
-        isHidden: false
-      },
-      {
-        id: 'team',
-        type: 'team',
-        title: 'تیم ما',
-        bullets: splitToBullets(answers.team),
-        isHidden: false
-      },
-      {
-        id: 'ask',
-        type: 'ask',
-        title: 'درخواست ما',
-        bullets: ['سرمایه مورد نیاز: ...', 'برای ۱۸ ماه آینده'],
-        isHidden: false
-      }
-    ];
-    onComplete(newSlides);
-  };
-
-  const splitToBullets = (text: string): string[] => {
-    if (!text) return ['...'];
-    // Split by newlines or periods if long
-    if (text.includes('\n')) return text.split('\n').filter(Boolean);
-    if (text.length > 50 && text.includes('،')) return text.split('،').filter(Boolean);
-    return [text];
-  };
+  // Removed generateDeck - moved to AI action in parent
 
   const stepData = STEPS[currentStep];
 
@@ -226,7 +166,7 @@ export function StoryWizard({ onComplete, onCancel }: StoryWizardProps) {
               )}
 
               <div className="flex items-center justify-between pt-4">
-                <Button variant="ghost" size="lg" onClick={handlePrev} className="text-muted-foreground">
+                <Button variant="ghost" size="lg" onClick={handlePrev} className="text-muted-foreground" disabled={isGenerating}>
                   <ArrowRight className="mr-2" size={20} />
                   {currentStep === 0 ? "انصراف" : "قبلی"}
                 </Button>
@@ -234,12 +174,18 @@ export function StoryWizard({ onComplete, onCancel }: StoryWizardProps) {
                 <Button 
                     size="lg" 
                     onClick={handleNext}
+                    disabled={isGenerating}
                     className={`h-14 px-8 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 bg-gradient-to-r ${stepData.bgGradient} hover:brightness-110 transition-all`}
                 >
-                  {currentStep === STEPS.length - 1 ? (
+                  {isGenerating ? (
+                      <>
+                        <Sparkles className="ml-2 animate-spin" size={20} />
+                        در حال نوشتن...
+                      </>
+                  ) : currentStep === STEPS.length - 1 ? (
                     <>
                       <Sparkles className="ml-2 animate-pulse" size={20} />
-                      ساخت ارائه
+                      ساخت ارائه هوشمند
                     </>
                   ) : (
                     <>

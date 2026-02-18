@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Bot, Send, Loader2, Trash2, Copy, RefreshCw,
   Briefcase, Target, Users, TrendingUp, Sparkles,
-  MessageSquare, Mic, ArrowUp
+  MessageSquare, Mic, ArrowUp, Search, Presentation
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -29,7 +29,6 @@ const professionalPrompts = [
     title: "برنامه رشد", 
     prompt: "یک برنامه عملیاتی ۳ ماهه برای افزایش جذب کاربر تدوین کن.",
     color: "from-emerald-500/20 to-emerald-600/20 text-emerald-600"
-
   },
   { 
     icon: Users, 
@@ -101,19 +100,19 @@ const traditionalPrompts = [
 
 const PERSONAS = {
   default: {
-    title: "مشاور ارشد استراتژیک",
-    description: "من آماده‌ام تا به عنوان یک شریک هوشمند، در تحلیل بازار، تدوین استراتژی و رشد کسب‌وکارتان به شما کمک کنم.",
-    systemPrompt: "You are Karnex Assistant, a high-level strategic business consultant. Your tone is professional, concise, and analytical. Focus on actionable insights, financial viability, and market strategy. Do not use emojis excessively. Format your response with clear Markdown headers, bullet points, and bold text for key metrics. Output language: Persian.",
+    title: "مدیر پروژه هوشمند",
+    description: "من اینجا هستم تا در ساخت و تکمیل پروژه‌تان به شما کمک کنم. می‌توانم بیزنس پلن را پر کنم، اسلاید بسازم و تسک‌های رودمپ را اضافه کنم.",
+    systemPrompt: "You are Karnex Project Manager. Proactive, helpful, and capable of executing tasks.",
     prompts: professionalPrompts,
     icon: Briefcase,
     gradient: "from-primary/10 to-blue-500/10",
-    badge: "Professional Mode",
+    badge: "Project Manager",
     badgeColor: "bg-emerald-500"
   },
   traditional: {
     title: "مشاور کسب‌وکار",
     description: "همراه شما در مدیریت بهینه، افزایش فروش و توسعه بازار. بیایید کسب‌وکارتان را رونق دهیم.",
-    systemPrompt: "You are Karnex Assistant, a dedicated Business Consultant for traditional businesses (retail, service, manufacturing). Your tone is respectful, experienced, and practical. Focus on operational efficiency, sales techniques, cost reduction, and tangible market expansion. Avoid overly abstract startup jargon. Output language: Persian.",
+    systemPrompt: "...",
     prompts: traditionalPrompts,
     icon: Briefcase,
     gradient: "from-amber-500/10 to-orange-500/10",
@@ -123,7 +122,7 @@ const PERSONAS = {
   creator: {
     title: "مشاور تولید محتوا",
     description: "من اینجا هستم تا در ایده‌پردازی، تقویم محتوایی و رشد برند شخصی به شما کمک کنم. بیایید با هم محتوای وایرال بسازیم!",
-    systemPrompt: "You are Karnex Assistant, a specialized Content Creator Consultant. Your tone is creative, energetic, and trend-focused. Focus on audience engagement, viral strategies, storytelling, and brand consistency. Use relevant emojis to keep the vibe high. Output language: Persian.",
+    systemPrompt: "...",
     prompts: creatorPrompts,
     icon: Mic,
     gradient: "from-purple-500/10 to-pink-500/10",
@@ -134,7 +133,7 @@ const PERSONAS = {
 
 export default function CopilotPage() {
   const { user } = useAuth();
-  const { activeProject: plan, updateActiveProject } = useProject();
+  const { activeProject: plan, updateActiveProject, refreshProjects } = useProject();
   
   // Determine Persona
   let activePersona = PERSONAS.default;
@@ -189,7 +188,8 @@ export default function CopilotPage() {
                  ...m,
                  followUps: m.followUps || [],
                  actions: m.actions || [],
-                 xpReward: m.xpReward || 0
+                 xpReward: m.xpReward || 0,
+                 tool_call: m.tool_call || undefined
              }));
           }
 
@@ -213,18 +213,203 @@ export default function CopilotPage() {
     }
   }, [plan?.id]);
 
-  // Auto-scroll
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+  const [showMentionMenu, setShowMentionMenu] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const [selectedContexts, setSelectedContexts] = useState<any[]>([]); // Stores data of mentioned items
 
+  type MentionItem = {
+    id: string;
+    type: 'roadmap' | 'canvas' | 'slide';
+    title: string;
+    subtitle: string;
+    data: any; // The actual content to send to AI
+    icon: any;
+  };
+
+  const getMentionableItems = (): MentionItem[] => {
+      // Always return at least one item for testing/help
+      const items: MentionItem[] = [
+          {
+              id: 'help_general',
+              type: 'roadmap', 
+              title: 'راهنمایی کلی',
+              subtitle: 'سوالی درباره پروژه دارید؟',
+              data: { context: 'general_help' },
+              icon: Sparkles
+          }
+      ];
+
+      if (!plan) return items;
+
+      // 1. Roadmap Tasks
+      // 1. Roadmap Tasks
+      if (plan.roadmap && Array.isArray(plan.roadmap) && plan.roadmap.length > 0) {
+          
+          // Add Full Roadmap Context
+          items.push({
+              id: 'roadmap_full',
+              type: 'roadmap',
+              title: 'کل نقشه راه',
+              subtitle: `برنامه اجرایی کامل (${plan.roadmap.length} فاز)`,
+              data: { type: 'full_roadmap', phases: plan.roadmap },
+              icon: TrendingUp
+          });
+
+          plan.roadmap.forEach((phase: any) => {
+              if (phase.steps && Array.isArray(phase.steps)) {
+                  phase.steps.forEach((step: any) => {
+                       items.push({
+                           id: step.id || step.title || Math.random().toString(),
+                           type: 'roadmap',
+                           title: (typeof step === 'string' ? step : step.title) || "تسک بدون عنوان",
+                           subtitle: `نقشه راه - فاز ${phase.phase}`,
+                           data: step,
+                           icon: TrendingUp
+                       });
+                  });
+              }
+          });
+      }
+
+      // 2. Canvas Sections (and Cards)
+      const canvasData = plan.projectType === 'creator' ? plan.brandCanvas : plan.leanCanvas;
+      const safeCanvasData = (canvasData && typeof canvasData === 'object') ? canvasData : {};
+      const canvasTitle = plan.projectType === 'creator' ? 'بوم برند شخصی' : 'بوم مدل کسب‌وکار';
+
+      if (Object.keys(safeCanvasData).length > 0) {
+           // Add Full Canvas Context
+           items.push({
+              id: 'canvas_full',
+              type: 'canvas',
+              title: `کل ${canvasTitle}`,
+              subtitle: 'تمام بخش‌های بوم برای تحلیل جامع',
+              data: { type: 'full_canvas', content: safeCanvasData },
+              icon: Target
+          });
+      }
+
+      const persianKeys: Record<string, string> = {
+          'customerSegments': 'بخش‌های مشتری',
+          'valueProposition': 'ارزش پیشنهادی',
+          'channels': 'کانال‌ها',
+          'customerRelations': 'روابط مشتری',
+          'revenueStream': 'جریان درآمد',
+          'keyResources': 'منابع کلیدی',
+          'keyActivities': 'فعالیت‌های کلیدی',
+          'keyPartners': 'شرکای کلیدی',
+          'costStructure': 'ساختار هزینه',
+          // Brand
+          'identity': 'هویت برند',
+          'audience': 'مخاطب',
+          'contentStrategy': 'استراتژی محتوا'
+      };
+
+      Object.keys(safeCanvasData).forEach((key) => {
+          const content = (safeCanvasData as any)[key];
+          const persianTitle = persianKeys[key] || key;
+
+          // Add the Section itself
+          items.push({
+              id: `section_${key}`,
+              type: 'canvas',
+              title: persianTitle, 
+              subtitle: "بخش تحلیل کسب و کار",
+              data: { section: key, content },
+              icon: Target
+          });
+          
+          // Add individual cards if array
+          if (Array.isArray(content)) {
+              content.forEach((card: any) => {
+                  if (card) {
+                    items.push({
+                        id: card.id || Math.random().toString(),
+                        type: 'canvas',
+                        title: String(card.content || "کارت خالی").substring(0, 30) + "...",
+                        subtitle: `کارت در ${persianTitle}`,
+                        data: card,
+                        icon: Target
+                    });
+                  }
+              });
+          }
+      });
+
+      // 3. Pitch Deck Slides
+      if (plan.pitchDeck && Array.isArray(plan.pitchDeck) && plan.pitchDeck.length > 0) {
+          
+          // Add Full Deck Context
+          items.push({
+              id: 'pitch_deck_full',
+              type: 'slide',
+              title: 'کل پیچ‌دک',
+              subtitle: `نسخه دستیار کارنکس (${plan.pitchDeck.length} اسلاید)`,
+              data: { type: 'full_deck', slides: plan.pitchDeck },
+              icon: Presentation
+          });
+
+          const slideTypeMap: Record<string, string> = {
+              'title': 'عنوان',
+              'problem': 'مشکل',
+              'solution': 'راهکار',
+              'market': 'اندازه بازار',
+              'market_size': 'اندازه بازار',
+              'business_model': 'مدل درآمدی',
+              'traction': 'دستاوردها',
+              'team': 'تیم',
+              'ask': 'سرمایه',
+              'generic': 'توضیحات',
+              'why_now': 'چرا الان؟',
+              'product': 'محصول',
+              'competition': 'رقبا'
+          };
+
+          plan.pitchDeck.forEach((slide: any, index: number) => {
+              const persianType = slideTypeMap[slide.type] || slide.type;
+              items.push({
+                  id: slide.id || Math.random().toString(),
+                  type: 'slide',
+                  title: slide.title || `اسلاید ${index + 1}`,
+                  subtitle: `اسلاید ${persianType}`,
+                  data: slide,
+                  icon: Presentation
+              });
+          });
+      }
+
+      return items;
+  };
+
+  const mentionableItems = getMentionableItems();
+  const filteredMentions = mentionableItems.filter(item => 
+      item.title.toLowerCase().includes(mentionQuery.toLowerCase()) || 
+      item.subtitle.toLowerCase().includes(mentionQuery.toLowerCase())
+  ).slice(0, 5); // Limit to 5
+
+  const insertMention = (item: MentionItem) => {
+      const parts = input.split('@');
+      parts.pop(); // Remove the partial query
+      const newValue = parts.join('@') + `@${item.title.replace(/\s+/g, '_')} `;
+      setInput(newValue);
+      setShowMentionMenu(false);
+      setMentionQuery("");
+      setMentionIndex(0);
+      
+      // Add to context if not already there
+      if (!selectedContexts.find(c => c.id === item.id)) {
+          setSelectedContexts([...selectedContexts, item]);
+      }
+      
+      inputRef.current?.focus();
+  };
+  
   const handleSendMessage = async (customMessage?: string) => {
     const messageToSend = customMessage || input;
     if (!messageToSend.trim() || isLoading) return;
 
     setInput("");
+    setSelectedContexts([]); // Clear context after sending
 
     const userMessage: ChatMessage = {
       id: generateId(),
@@ -243,44 +428,70 @@ export default function CopilotPage() {
     setIsLoading(true);
 
     try {
-      const projectContext = plan ? {
-        projectName: plan.projectName,
-        tagline: plan.tagline,
-        overview: plan.overview,
-        audience: plan.audience,
-        budget: plan.budget,
-        leanCanvas: plan.leanCanvas,
-        roadmap: plan.roadmap,
-      } : {};
+      const response = await fetch('/api/copilot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: plan?.id,
+          messages: newMessages.slice(-8).map(m => ({ role: m.role, content: m.content })),
+          context: selectedContexts.length > 0 ? selectedContexts.map(c => c.data) : undefined // Send selected context
+        })
+      });
 
-      const conversationHistory = messages.slice(-8).map(m => ({ role: m.role, content: m.content }));
+      const data = await response.json();
+      console.log("[Copilot] API Response:", data);
 
-      // Use server action
-      const { advisorChatAction } = await import("@/lib/chat-actions");
-      // @ts-ignore
-      const data = await advisorChatAction(messageToSend, projectContext, conversationHistory);
-
-      if (data.error === "AI_LIMIT_REACHED" || data.status === 429) {
+      if (data.error === "AI_LIMIT_REACHED" || response.status === 429) {
         setShowLimitModal(true);
         setIsLoading(false);
         return;
       }
 
-      if (data.reply) {
-        const assistantMessage: ChatMessage = {
-          id: generateId(),
-          role: 'assistant',
-          content: data.reply,
-          timestamp: Date.now(),
-          followUps: data.followUps || [],
-          actions: [],
-          xpReward: 0
-        };
+      if (data.error) throw new Error(data.error);
 
-        const updatedMessages = [...newMessages, assistantMessage];
-        setMessages(updatedMessages);
-        updateAssistantData({ messages: updatedMessages });
+      // Handle Tool Call Result
+      if (data.tool_call) {
+          console.log("[Copilot] Tool Executed:", data.tool_call);
+          const toolResult = data.tool_call.result;
+          
+          if (data.tool_call.status === 'success') {
+              try {
+                console.log("[Copilot] Refreshing Projects...");
+                await refreshProjects();
+                console.log("[Copilot] Projects Refreshed.");
+                toast.success("تغییرات اعمال شد");
+              } catch(e) { 
+                  console.error("Refresh failed", e); 
+                  toast.error("خطا در به‌روزرسانی داده‌ها");
+              }
+          } else {
+              toast.error(toolResult.error || "خطا در انجام عملیات");
+          }
+
+          const assistantMessage: ChatMessage = {
+            id: generateId(),
+            role: 'assistant',
+            content: data.content || toolResult.message || "عملیات انجام شد.",
+            timestamp: Date.now(),
+            tool_call: data.tool_call
+          };
+
+          const updatedMessages = [...newMessages, assistantMessage];
+          setMessages(updatedMessages);
+          updateAssistantData({ messages: updatedMessages });
+
+      } else if (data.content) {
+          const assistantMessage: ChatMessage = {
+            id: generateId(),
+            role: 'assistant',
+            content: data.content,
+            timestamp: Date.now()
+          };
+          const updatedMessages = [...newMessages, assistantMessage];
+          setMessages(updatedMessages);
+          updateAssistantData({ messages: updatedMessages });
       }
+
     } catch (error) {
       console.error(error);
       toast.error("خطا در ارتباط با سرور");
@@ -295,15 +506,68 @@ export default function CopilotPage() {
       toast.success("چت پاک شد");
   };
 
+   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (showMentionMenu) {
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setMentionIndex(prev => Math.max(0, prev - 1));
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setMentionIndex(prev => Math.min(filteredMentions.length - 1, prev + 1));
+        } else if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+            if (filteredMentions[mentionIndex]) {
+                insertMention(filteredMentions[mentionIndex]);
+            }
+        } else if (e.key === 'Escape') {
+            setShowMentionMenu(false);
+        }
+    } else {
+        if(e.key === 'Enter' && !e.shiftKey) { 
+            e.preventDefault(); 
+            handleSendMessage(); 
+        }
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const val = e.target.value;
+      setInput(val);
+
+      const lastAt = val.lastIndexOf('@');
+      if (lastAt !== -1) {
+          const query = val.slice(lastAt + 1);
+          console.log("[Mentions] Triggered @:", query);
+          
+          if (!query.includes(' ') || (query.split(' ').length < 3)) { 
+              console.log("[Mentions] Menu Opening. Query:", query);
+              setMentionQuery(query);
+              setShowMentionMenu(true);
+              setMentionIndex(0);
+          } else {
+              setShowMentionMenu(false);
+          }
+      } else {
+          setShowMentionMenu(false);
+      }
+  };
+
+  // Debug: Log validation
+  useEffect(() => {
+      console.log("[Mentions] Render State:", { showMentionMenu, query: mentionQuery, count: filteredMentions.length });
+  }, [showMentionMenu, mentionQuery, filteredMentions.length]);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+
+
   return (
     <div className="h-[calc(100vh-6rem)] relative flex flex-col items-center bg-gradient-to-b from-background to-muted/10 font-sans">
       
-      {/* Dynamic Background Mesh (Subtle) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
-        <div className="absolute -top-[20%] -left-[10%] w-[50%] h-[50%] rounded-full bg-primary/20 blur-[120px]" />
-        <div className="absolute top-[20%] -right-[10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[100px]" />
-      </div>
-
       {/* Header - Floating Glass */}
       <motion.header 
         initial={{ y: -20, opacity: 0 }}
@@ -407,8 +671,9 @@ export default function CopilotPage() {
                             
                             <div className={cn(
                                 "max-w-[85%] md:max-w-[75%]",
-                                msg.role === 'user' ? "text-left" : ""
-                            )}>
+                                "text-justify",
+                                msg.role === 'user' ? "text-right" : "text-right"
+                            )} dir="rtl">
                                 <div className="flex items-center gap-2 mb-1.5 px-1">
                                     <span className="text-xs font-semibold opacity-70">
                                         {msg.role === 'user' ? 'شما' : 'دستیار کارنکس'}
@@ -424,11 +689,16 @@ export default function CopilotPage() {
                                         ? "bg-white dark:bg-zinc-800/80 text-foreground border rounded-tr-sm" 
                                         : "bg-white/80 dark:bg-white/5 backdrop-blur-md border border-white/10 rounded-tl-sm ring-1 ring-white/20"
                                 )}>
-                                     {/* Markdown-like styling applied via global CSS or utility classes ideally. For now, whitespace-pre-wrap works. */}
-                                    <p className="whitespace-pre-wrap">{msg.content}</p>
+                                     {msg.tool_call && (
+                                         <div className="mb-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-medium border border-emerald-500/20">
+                                             <Sparkles size={10} />
+                                             <span>تغییر اعمال شد</span>
+                                         </div>
+                                     )}
+                                     <p className="whitespace-pre-wrap">{msg.content}</p>
                                 </div>
                                 
-                                {msg.role === 'assistant' && (
+                                {msg.role === 'assistant' && !msg.tool_call && (
                                     <div className="flex items-center gap-2 mt-2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Button 
                                             variant="ghost" 
@@ -444,13 +714,13 @@ export default function CopilotPage() {
                         </motion.div>
                     ))}
                     {isLoading && (
-                        <div className="flex gap-6">
+                        <div className="flex gap-6" dir="rtl">
                              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-blue-600 flex items-center justify-center shrink-0 text-white shadow-lg shadow-blue-500/20 mt-1">
                                 <Bot size={18} />
                              </div>
                              <div className="bg-white/50 dark:bg-white/5 border px-5 py-4 rounded-3xl rounded-tl-none flex items-center gap-3 shadow-sm backdrop-blur-sm">
                                 <Loader2 size={16} className="animate-spin text-primary" />
-                                <span className="text-xs font-medium text-foreground/70 tracking-wide animate-pulse">در حال تحلیل و نگارش...</span>
+                                <span className="text-xs font-medium text-foreground/70 tracking-wide animate-pulse">در حال انجام عملیات...</span>
                              </div>
                         </div>
                     )}
@@ -461,6 +731,64 @@ export default function CopilotPage() {
         {/* Input - Floating Bar */}
         <div className="absolute bottom-6 left-0 right-0 px-4 md:px-0 z-30">
             <div className="max-w-3xl mx-auto relative group">
+                
+                {/* Mention Menu */}
+                <AnimatePresence>
+                     {showMentionMenu && (
+                        <motion.div 
+                            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                            className="absolute bottom-full mb-2 left-0 right-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-2xl border border-white/20 shadow-2xl rounded-2xl overflow-hidden max-h-72 overflow-y-auto"
+                            dir="rtl"
+                        >
+                             <div className="p-3 text-xs font-semibold text-muted-foreground bg-muted/30 border-b flex items-center gap-2">
+                                 <Search size={12} />
+                                 برای افزودن زمینه، یک مورد را انتخاب کنید
+                             </div>
+                             {filteredMentions.length > 0 ? (
+                                 <div className="p-1.5 space-y-1">
+                                    {filteredMentions.map((item, i) => (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => insertMention(item)}
+                                            className={cn(
+                                                "w-full flex items-center gap-3 p-3 rounded-xl text-right transition-all duration-200 group relative overflow-hidden",
+                                                i === mentionIndex 
+                                                    ? "bg-primary text-primary-foreground shadow-md transform scale-[1.01]" 
+                                                    : "hover:bg-muted text-foreground hover:translate-x-1"
+                                            )}
+                                        >
+                                            <div className={cn(
+                                                "w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                                                i === mentionIndex ? "bg-white/20 text-white" : "bg-muted text-muted-foreground group-hover:bg-background"
+                                            )}>
+                                                <item.icon size={16} />
+                                            </div>
+                                            <div className="flex flex-col items-start overflow-hidden flex-1">
+                                                 <span className="text-sm font-bold truncate w-full">{item.title}</span>
+                                                 <span className={cn("text-[11px] truncate w-full", i === mentionIndex ? "text-white/80" : "text-muted-foreground")}>{item.subtitle}</span>
+                                            </div>
+                                            {i === mentionIndex && (
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 opacity-50">
+                                                    <ArrowUp size={14} className="-rotate-90" />
+                                                </div>
+                                            )}
+                                        </button>
+                                    ))}
+                                 </div>
+                             ) : (
+                                 <div className="p-8 text-center flex flex-col items-center gap-2 text-muted-foreground">
+                                     <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                                        <Search size={18} />
+                                     </div>
+                                     <span className="text-xs">موردی یافت نشد</span>
+                                 </div>
+                             )}
+                        </motion.div>
+                     )}
+                </AnimatePresence>
+
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-blue-500/20 to-primary/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700 mx-4"></div>
                 
                 <div className="relative bg-white/80 dark:bg-black/60 backdrop-blur-xl border border-white/20 md:rounded-[2rem] rounded-2xl shadow-2xl flex flex-col transition-all focus-within:ring-2 ring-primary/30 ring-offset-2 ring-offset-background">
@@ -468,15 +796,29 @@ export default function CopilotPage() {
                     <textarea
                         ref={inputRef}
                         value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
-                        placeholder="پیام یا درخواست خود را تایپ کنید..."
+                        onChange={handleInputChange}
+                        onKeyDown={handleKeyDown}
+                        placeholder="از من بخواهید بیزنس پلن را پر کنم یا برای اشاره از @ استفاده کنید..."
                         className="w-full min-h-[60px] max-h-48 resize-none bg-transparent p-5 pl-14 outline-none text-base text-foreground placeholder:text-muted-foreground/60 custom-scrollbar rounded-[2rem]"
+                        dir="rtl"
                     />
 
                     <div className="flex items-center justify-between px-3 pb-3">
                          <div className="flex items-center gap-1">
-                            {/* Voice Input Removed */}
+                             {/* Context Chips (Visual Indicator) */}
+                             <div className="flex -space-x-2 px-2 overflow-hidden max-w-[200px]" dir="rtl">
+                                {selectedContexts.map((ctx, i) => (
+                                     <div key={i} className="w-6 h-6 rounded-full bg-primary/10 border border-primary/30 text-primary flex items-center justify-center text-[10px] shadow-sm relative z-10 transition-transform hover:scale-110" title={ctx.title}>
+                                        <ctx.icon size={12} />
+                                     </div>
+                                ))}
+                             </div>
+                             {showMentionMenu && (
+                                 <span className="text-[10px] text-muted-foreground animate-pulse px-2 flex items-center gap-1 bg-muted/50 rounded-full py-0.5">
+                                     <Search size={10} />
+                                      {filteredMentions.length} مورد پیدا شد
+                                 </span>
+                             )}
                          </div>
 
                          <Button 

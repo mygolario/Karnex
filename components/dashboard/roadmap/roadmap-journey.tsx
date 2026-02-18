@@ -96,7 +96,7 @@ export function RoadmapJourney({
             className="bg-primary text-primary-foreground px-6 py-3 rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2 border-4 border-background"
          >
             <Flag size={20} className="fill-current" />
-            <span>شروع سفر</span>
+            <span>شروع نقشه راه</span>
          </motion.div>
       </div>
 
@@ -142,9 +142,7 @@ export function RoadmapJourney({
                                  onClick={() => onOpenStepDetail(step, phase)}
                               />
                            ) : (
-                               <div className="opacity-50 text-sm font-mono text-muted-foreground dir-ltr">
-                                 گام ماموریت شماره {stepIndex + 1 + (phaseIndex * 5)} 
-                               </div>
+                               <MissionBadge index={stepIndex + 1 + (phaseIndex * 5)} isLeft={false} />
                            )}
                         </div>
 
@@ -164,9 +162,7 @@ export function RoadmapJourney({
                            !isLeft && "order-1 pr-8 pl-0 text-left" // Swap for Right items
                         )}>
                            {isLeft ? (
-                              <div className="opacity-50 text-sm font-mono text-muted-foreground">
-                                 گام ماموریت شماره {stepIndex + 1 + (phaseIndex * 5)}
-                              </div>
+                              <MissionBadge index={stepIndex + 1 + (phaseIndex * 5)} isLeft={true} />
                            ) : (
                               <StepCard 
                                  step={step} 
@@ -209,12 +205,30 @@ export function RoadmapJourney({
          <h3 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-yellow-600">
             پیروزی نهایی
          </h3>
-         <p className="text-muted-foreground mt-2">مقصد نهایی سفر کارآفرینی شما</p>
+         <p className="text-muted-foreground mt-2">پایان نقشه راه</p>
       </div>
 
     </div>
   );
 }
+
+// Category Translation Map
+const CATEGORY_MAP: Record<string, string> = {
+  "product": "محصول",
+  "tech": "فنی",
+  "marketing": "بازاریابی",
+  "legal": "حقوقی",
+  "design": "طراحی",
+  "content": "محتوا",
+  "sales": "فروش",
+  "finance": "مالی",
+  "hr": "منابع انسانی",
+  "operations": "عملیات",
+  "strategy": "استراتژی",
+  "startup": "استارتاپ",
+  "growth": "رشد",
+  "launch": "راه‌اندازی",
+};
 
 function StepCard({ 
    step, 
@@ -227,7 +241,9 @@ function StepCard({
 }) {
    const title = typeof step === 'string' ? step : step.title;
    const desc = typeof step !== 'string' ? step.description : null;
-   const category = typeof step !== 'string' ? step.category : null;
+   const rawCategory = typeof step !== 'string' ? step.category : null;
+   // Translate category or fallback to original
+   const category = rawCategory ? (CATEGORY_MAP[rawCategory.toLowerCase()] || rawCategory) : null;
 
    return (
       <Card 
@@ -291,4 +307,31 @@ function StepCard({
          </div>
       </Card>
    );
+}
+
+function MissionBadge({ index, isLeft }: { index: number; isLeft: boolean }) {
+    return (
+        <div className={cn(
+            "flex items-center gap-3 opacity-60 hover:opacity-100 transition-all duration-300 group",
+            !isLeft ? "flex-row text-left dir-ltr" : "flex-row-reverse text-right"
+        )}>
+            {/* Dashed Connector */}
+            <div className={cn(
+                "h-[2px] w-8 md:w-16 bg-gradient-to-r from-border/50 to-transparent dashed-line",
+                !isLeft ? "bg-gradient-to-r" : "bg-gradient-to-l"
+            )} />
+
+            {/* Pill Badge */}
+            <div className="flex items-center gap-2.5 border border-border/60 bg-card/50 rounded-2xl px-3 py-1.5 backdrop-blur-md shadow-sm group-hover:bg-card group-hover:shadow-md group-hover:border-primary/20 transition-all">
+                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
+                    <span className="text-xs font-bold text-primary font-mono">
+                        {index}
+                    </span>
+                </div>
+                <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                    ماموریت
+                </span>
+            </div>
+        </div>
+    );
 }

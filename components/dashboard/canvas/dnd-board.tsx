@@ -122,7 +122,7 @@ export function CanvasBoard({ highlightedSectionId }: CanvasBoardProps) {
       {/* Complex Grid for BMC */}
           <div 
             dir="ltr" 
-            className="grid gap-4 min-h-[800px] min-w-[1000px]"
+            className="grid gap-4 min-h-[800px] min-w-[1000px] canvas-grid"
             style={{
               gridTemplateColumns: 'repeat(5, 1fr)',
               gridTemplateRows: 'repeat(2, 400px) 200px', // Fixed heights for stability or min-content

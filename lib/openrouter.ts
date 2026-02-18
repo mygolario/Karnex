@@ -124,16 +124,35 @@ export async function callOpenRouter(
 }
 
 /**
- * Parse JSON from AI response (handles markdown code blocks)
+ * Parse JSON from AI response (handles markdown code blocks and raw text)
  */
 export function parseJsonFromAI(content: string): any {
+    if (!content) return {};
     let jsonStr = content.trim();
 
-    // Remove markdown code blocks if present
-    const jsonMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/);
-    if (jsonMatch) {
-        jsonStr = jsonMatch[1].trim();
-    }
+    // 1. Try finding markdown code blocks
+    const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (codeBlockMatch) {
+        jsonStr = codeBlockMatch[1].trim();
+    } 
 
-    return JSON.parse(jsonStr);
+    // 2. Try parsing directly
+    try {
+        return JSON.parse(jsonStr);
+    } catch (e) {
+        // 3. Fallback: Find first '{' and last '}'
+        const firstBrace = jsonStr.indexOf('{');
+        const lastBrace = jsonStr.lastIndexOf('}');
+        
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+            const potentialJson = jsonStr.substring(firstBrace, lastBrace + 1);
+            try {
+                return JSON.parse(potentialJson);
+            } catch (innerE) {
+                // Formatting might be slightly off (e.g. standard Gemini/Flash issues)
+                throw e; // Throw original error for now
+            }
+        }
+        throw e;
+    }
 }

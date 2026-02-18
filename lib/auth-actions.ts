@@ -25,11 +25,18 @@ export async function authenticateUser(credentials: unknown) {
     const passwordsMatch = await bcrypt.compare(password, user.password || "");
     if (passwordsMatch) {
         // Return only necessary user fields to avoid serialization issues
+        // CRITICAL FIX: Ensure image isn't a massive base64 string that blows up cookies
+        let safeImage = user.image;
+        if (safeImage && safeImage.length > 500 && !safeImage.startsWith('http')) {
+            console.warn(`User ${user.id} has a large image string (${safeImage.length} chars). Truncating for session.`);
+            safeImage = null; // Or set to a default generic avatar URL if you have one
+        }
+
         return {
             id: user.id,
             name: user.name,
             email: user.email,
-            image: user.image,
+            image: safeImage,
             role: user.role
         };
     }

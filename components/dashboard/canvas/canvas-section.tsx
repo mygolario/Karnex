@@ -75,7 +75,7 @@ export function CanvasSection({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex flex-col rounded-2xl border bg-gradient-to-b shadow-sm transition-all duration-300 h-full min-h-[240px] overflow-hidden group hover:shadow-md",
+        "flex flex-col rounded-2xl border bg-gradient-to-b shadow-sm transition-all duration-300 h-full min-h-[240px] overflow-hidden group hover:shadow-md canvas-section",
         variants[color] || variants.blue,
         // Glassmorphism base
         "bg-white/60 dark:bg-black/20 backdrop-blur-sm",

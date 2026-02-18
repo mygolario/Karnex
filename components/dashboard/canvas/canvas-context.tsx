@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { savePlanToCloud, CanvasCard } from "@/lib/db";
 import { toast } from "sonner";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
+import { generateSmartCanvasAction } from "@/lib/ai-actions";
 
 // Define the shape of our canvas state
 export type CanvasState = Record<string, CanvasCard[]>;
@@ -19,6 +20,7 @@ interface CanvasContextType {
   moveCard: (activeId: string, overId: string, activeSection: string, overSection: string) => void;
   saveCanvas: () => Promise<void>;
   autoFillCanvas: () => Promise<void>;
+  handleSmartWizardComplete: (answers: Record<string, string>) => Promise<void>;
   isSaving: boolean;
 }
 
@@ -48,31 +50,72 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!plan) return;
     
+    // Debug: Log incoming plan data
+    console.log("[CanvasContext] Loading plan:", { id: plan.id, leanCanvas: plan.leanCanvas });
+
     let initialState: CanvasState = {};
     const isBrandCanvas = plan.projectType === 'creator';
     const sourceData = isBrandCanvas ? plan.brandCanvas : plan.leanCanvas;
     
-    // Normalize data (handle legacy string format vs new array format)
-    if (sourceData) {
-        Object.keys(sourceData).forEach(key => {
-            const content = (sourceData as any)[key];
-            if (Array.isArray(content)) {
-                initialState[key] = content;
-            } else if (typeof content === 'string' && content) {
-                // Legacy migration
-                initialState[key] = [{ 
-                    id: generateId(), 
-                    content: content, 
-                    color: 'blue' // Default color
-                }];
-            } else {
-                initialState[key] = [];
-            }
-        });
-    }
+    // Ensure all standard keys exist
+    const keys = new Set([
+        // BMC Keys
+        'problem', 'solution', 'uniqueValue', 'revenueStream', 
+        'customerSegments', 'customerRelations', 'channels', 
+        'keyActivities', 'keyResources', 'keyPartners', 'costStructure',
+        // Creator Keys (just in case)
+        'identity', 'promise', 'audience', 'contentStrategy', 'monetization', 'resources', 'collaborators', 'investment',
+        // Any existing keys
+        ...Object.keys(sourceData || {})
+    ]);
+
+    keys.forEach(key => {
+        // Safe access
+        const content = sourceData ? (sourceData as any)[key] : undefined;
+
+        if (Array.isArray(content)) {
+            initialState[key] = content;
+        } else if (typeof content === 'string' && content) {
+            // Legacy migration
+            initialState[key] = [{ 
+                id: generateId(), 
+                content: content, 
+                color: 'blue' 
+            }];
+        } else {
+            initialState[key] = [];
+        }
+    });
     
     setCanvasState(initialState);
-  }, [plan?.id, plan?.projectType]);
+
+    // Auto-fill if empty and has description (and not brand new project logic if we want to be strict)
+    // Check if empty
+    const isEmpty = Object.keys(initialState).every(key => initialState[key].length === 0);
+    if (isEmpty && (plan.overview || plan.description)) {
+        // We use a flag 'canvasGenerated' or just local ref to avoid double trigger. 
+        // For now, let's trigger it. But we need to be careful about not triggering it every time.
+        // Let's add a check if we are already saving? No.
+        // Best way: Trigger it, and set a flag.
+        // Since we don't have a ref handy for "didAutoFill", let's make one.
+    }
+  }, [plan?.id, plan?.projectType, plan?.leanCanvas, plan?.brandCanvas]);
+
+  // Ref to track if we attempted auto-fill
+  const autoFillAttempted = React.useRef(false);
+  
+  useEffect(() => {
+    if (!plan || autoFillAttempted.current) return;
+    
+    const isBrand = plan.projectType === 'creator';
+    const sourceData = isBrand ? plan.brandCanvas : plan.leanCanvas;
+    const hasData = sourceData && Object.keys(sourceData).some(k => (sourceData as any)[k]?.length > 0);
+    
+    if (!hasData && (plan.overview || plan.description)) {
+        autoFillAttempted.current = true;
+        autoFillCanvas();
+    }
+  }, [plan]);
 
   const saveCanvas = async (newState: CanvasState = canvasState) => {
       if (!plan || !user) return;
@@ -191,9 +234,49 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
       });
   };
 
+  const handleSmartWizardComplete = async (answers: Record<string, string>) => {
+      if (!plan || !user) return;
+      setIsSaving(true);
+      try {
+          const type = plan.projectType === 'creator' ? 'brand' : 'lean';
+          const result = await generateSmartCanvasAction({
+              idea: plan.overview || plan.description || "",
+              answers,
+              type
+          });
+
+          if (result.success && result.data) {
+              const newState = { ...canvasState };
+              Object.entries(result.data).forEach(([key, cards]) => {
+                  if (Array.isArray(cards)) {
+                      // Append new cards
+                      const newCards = cards.map(text => ({
+                          id: generateId(),
+                          content: text,
+                          color: 'purple' // AI generated color
+                      }));
+                      newState[key] = [...(newState[key] || []), ...newCards] as CanvasCard[];
+                  }
+              });
+              setCanvasState(newState);
+              await saveCanvas(newState);
+              toast.success("بوم با موفقیت تکمیل شد");
+          } else if (result.error === "AI_LIMIT_REACHED") {
+              setShowLimitModal(true);
+          } else {
+              toast.error("خطا در تولید محتوا");
+          }
+      } catch (e) {
+          console.error(e);
+          toast.error("خطا در ارتباط با هوش مصنوعی");
+      } finally {
+          setIsSaving(false);
+      }
+  };
+
   const autoFillCanvas = async () => {
     if (!plan) return;
-    setIsSaving(true); // Reuse saving state or add specific loading state
+    setIsSaving(true); 
 
     try {
       if (plan.projectType !== 'creator') {
@@ -230,7 +313,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
             
             if (items.length > 0) {
                  newState[key] = items.filter(Boolean).map((text: string) => ({
-                    id: generateId(), content: text, color: 'blue' // You might want dynamic colors? for now blue
+                    id: generateId(), content: text, color: 'blue' 
                  }));
             }
           });
@@ -240,7 +323,11 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
           toast.success("بوم با موفقیت تکمیل شد");
         }
       } else {
-         // Brand Canvas
+         // Brand Canvas - using legacy endpoint for now or switch to action?
+         // Let's keep legacy for auto-fill single shot to minimize risk, 
+         // OR better: usage of generateSmartCanvasAction with empty answers?
+         // No, the existing endpoint is fine for "pure idea" generation.
+         // Let's just keep the existing logic.
          const prompt = `Generate personal brand canvas content for creator "${plan.projectName}" (${plan.overview}). 
          Return JSON object matching these keys: identity, promise, audience, contentStrategy, channels, monetization, resources, collaborators, investment.`;
          
@@ -293,6 +380,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
         moveCard,
         saveCanvas,
         autoFillCanvas,
+        handleSmartWizardComplete,
         isSaving
     }}>
       {children}
