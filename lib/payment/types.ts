@@ -100,7 +100,7 @@ export interface Subscription {
   status: SubscriptionStatus;
   billingCycle: BillingCycle;
   currentPeriodStart: Date;
-  currentPeriodEnd: Date;
+  currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
   createdAt: Date;
   updatedAt: Date;

@@ -73,6 +73,12 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
+      {/* Sample Data Notice */}
+      <div className="flex items-center gap-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-sm">
+        <span className="font-bold text-amber-600 dark:text-amber-400 shrink-0">⚠ داده نمونه</span>
+        <span className="text-amber-600/80 dark:text-amber-400/70">آمار زیر نمونه‌ای است. برای مشاهده آمار واقعی کانال خود را متصل کنید.</span>
+      </div>
+
       {/* Overview Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {stats.overview.map((stat, i) => (
@@ -121,16 +127,17 @@ export default function AnalyticsPage() {
              
              {/* Simple Chart Placeholder */}
              <div className="h-[300px] w-full bg-muted/10 rounded-xl relative flex items-end justify-between px-2 pb-2 gap-1 overflow-hidden">
-                {Array.from({ length: 30 }).map((_, i) => {
-                  const h1 = Math.random() * 80 + 10;
-                  const h2 = Math.random() * 60 + 5;
-                  return (
-                    <div key={i} className="flex-1 flex flex-col justify-end gap-1 h-full">
-                       <div className="w-full bg-pink-500/80 rounded-sm hover:opacity-80 transition-opacity" style={{ height: `${h2}%` }} />
-                       <div className="w-full bg-primary/80 rounded-sm hover:opacity-80 transition-opacity" style={{ height: `${h1}%` }} />
-                    </div>
-                  );
-                })}
+                {[
+                  [78,45],[62,55],[70,30],[55,48],[88,60],[72,42],[65,38],
+                  [90,52],[68,35],[75,50],[60,40],[85,58],[70,44],[80,38],
+                  [66,46],[92,62],[74,40],[58,36],[82,54],[69,43],[77,50],
+                  [63,37],[88,48],[72,55],[65,42],[79,46],[84,60],[70,38],[76,50],[81,44]
+                ].map(([h1, h2], i) => (
+                  <div key={i} className="flex-1 flex flex-col justify-end gap-1 h-full">
+                     <div className="w-full bg-pink-500/80 rounded-sm hover:opacity-80 transition-opacity" style={{ height: `${h2}%` }} />
+                     <div className="w-full bg-primary/80 rounded-sm hover:opacity-80 transition-opacity" style={{ height: `${h1}%` }} />
+                  </div>
+                ))}
              </div>
            </Card>
 

@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const plan = getPlanById(planId);
     if (!plan) return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
 
-    const amount = billingCycle === 'yearly' ? plan.price.yearly * 12 * 10 : plan.price.monthly * 10;
+    const amount = billingCycle === 'yearly' ? plan.price.yearly * 10 : plan.price.monthly * 10;
 
     // Simulate sucessful payment
     await createSubscription(userId, planId, billingCycle || 'monthly');

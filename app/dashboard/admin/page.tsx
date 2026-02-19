@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useAdmin } from "@/hooks/use-admin";
 import { UserProfile } from "@/lib/db";
+import { getPlanById } from "@/lib/payment/pricing";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,32 +16,29 @@ import {
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
+  const { isAdmin, checking, protectAdminRoute } = useAdmin();
   const router = useRouter();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
 
   useEffect(() => {
-    if (status === "loading") return;
-
-    if (!session?.user) {
-        // router.push("/login");
-        return;
+    if (!checking && !isAdmin) {
+      protectAdminRoute();
+      return;
     }
+  }, [checking, isAdmin]);
 
-    // Role check logic if user role is in session
-    // if (session.user.role !== 'admin') ...
+  useEffect(() => {
+    if (checking || !isAdmin) return;
 
     const fetchData = async () => {
       try {
-        // Dynamic import to avoid build issues with server actions in client components if any
         const { getAdminUsers } = await import("@/lib/admin-actions");
         const res = await getAdminUsers();
         
         if (res.error) {
            console.error("Admin Fetch Error:", res.error);
-           // Handle error UI?
         } else if (res.users) {
-            // Cast to compatible type if needed, or rely on shape matching
             setUsers(res.users as any);
         }
       } catch (error) {
@@ -50,15 +49,14 @@ export default function AdminPage() {
     };
     
     fetchData();
-  }, [session, status, router]);
+  }, [checking, isAdmin]);
 
   if (status === "loading" || isLoadingData) return <div className="p-12 text-center">Loading Admin Panel...</div>;
 
   const totalRevenue = users.reduce((acc, u) => {
-    // Mock calculation based on plan
     const planId = u.subscription?.planId;
-    const price = planId === 'pro' ? 399000 : planId === 'plus' ? 249000 : 0;
-    return acc + price;
+    const plan = planId ? getPlanById(planId) : undefined;
+    return acc + (plan?.price.monthly || 0);
   }, 0);
 
   return (

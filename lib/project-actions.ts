@@ -192,6 +192,7 @@ export async function generatePlanAction(data: any) {
           ${JSON.stringify(businessGlossary, null, 2)}
       3.  **Phase Names:** Use descriptive Persian names for phases (e.g., "فاز ۱: تحقیقات بازار و اعتبارسنجی", "فاز ۲: ساخت نمونه اولیه").
       4.  **JSON Only:** Output raw JSON with no markdown formatting.
+      5.  **Conciseness:** Keep descriptions concise to ensure the full JSON fits within the token limit.
 
       **REQUIRED JSON STRUCTURE:**
       {
@@ -246,7 +247,7 @@ export async function generatePlanAction(data: any) {
       `طرح کسب‌وکار جامع JSON فارسی برای: ${idea}`,
       {
         systemPrompt,
-        maxTokens: 8000,
+        maxTokens: 16000,
         temperature: 0.6,
         timeoutMs: 80000,
       }

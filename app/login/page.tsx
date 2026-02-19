@@ -82,17 +82,22 @@ export default function LoginPage() {
     setSuccess("");
 
     try {
-      // TODO: Implement Forgot Password API for Prisma/NextAuth
-      // SupersededSupabase logic
-      // await axios.post('/api/auth/forgot-password', { email: resetEmail })
-      
-      // For now, mock success or show maintenance
-      setSuccess("لینک بازیابی به ایمیل شما ارسال شد (نمایشی)");
-      setTimeout(() => setShowForgotPassword(false), 3000);
-      setResetEmail("");
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "خطا در ارسال ایمیل");
+      } else {
+        setSuccess("اگر این ایمیل در سیستم ثبت شده باشد، لینک بازیابی ارسال شد.");
+        setTimeout(() => setShowForgotPassword(false), 4000);
+        setResetEmail("");
+      }
     } catch (err: any) {
       console.error("Forgot Password Error:", err);
-      setError("خطا در ارسال ایمیل.");
+      setError("خطا در ارسال ایمیل. لطفاً دوباره تلاش کنید.");
     } finally {
       setResetLoading(false);
     }
@@ -124,7 +129,7 @@ export default function LoginPage() {
             transition={{ delay: 0.2, duration: 0.5 }}
             className="w-32 h-32 mx-auto bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl flex items-center justify-center mb-8 border border-white/20"
           >
-             <Image src="/logo.png" alt="Karnex Logo" width={100} height={100} className="w-24 h-24 object-contain drop-shadow-xl" />
+                         <Image src="/logo.png" alt="لوگوی کارنکس" width={100} height={100} className="w-24 h-24 object-contain drop-shadow-xl" />
           </motion.div>
 
           <motion.h1 
@@ -160,8 +165,8 @@ export default function LoginPage() {
                 ))}
              </div>
              <div className="text-right">
-                <div className="font-bold text-xl">۸,۰۰۰+</div>
-                <div className="text-xs text-white/70">کاربر فعال</div>
+                <div className="font-bold text-xl">کارآفرینان</div>
+                <div className="text-xs text-white/70">در حال رشد با کارنکس</div>
              </div>
           </motion.div>
         </div>
@@ -179,7 +184,7 @@ export default function LoginPage() {
           {/* Mobile Header */}
           <div className="lg:hidden text-center mb-8">
              <div className="w-16 h-16 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
-                <Image src="/logo.png" alt="Karnex" width={50} height={50} className="object-contain" />
+                 <Image src="/logo.png" alt="لوگوی کارنکس" width={50} height={50} className="object-contain" />
              </div>
              <h2 className="text-2xl font-bold text-foreground">کارنکس</h2>
           </div>

@@ -6,7 +6,7 @@ export const TOUR_STEPS: Record<string, TourStep[]> = {
       id: "welcome",
       targetId: "dashboard-root",
       title: "به کارنکس خوش آمدید",
-      description: "فرماندهی کسب‌وکار شما از اینجا شروع می‌شود. بیایید یک تور سریع داشته باشیم.",
+      description: "در اینجا نمایی کلی از وضعیت پروژه، ابزارها و آمارهای کلیدی خود را مشاهده می‌کنید.",
       position: "bottom"
     },
     {
@@ -21,7 +21,7 @@ export const TOUR_STEPS: Record<string, TourStep[]> = {
       targetId: "stats-strip",
       title: "نبض کسب‌وکار",
       description: "وضعیت کلی پروژه، امتیاز فعلی و روزهای فعالیت شما در یک نگاه.",
-      position: "bottom"
+      position: "top"
     },
     {
       id: "help",
@@ -34,7 +34,7 @@ export const TOUR_STEPS: Record<string, TourStep[]> = {
       id: "finish",
       targetId: "dashboard-root",
       title: "شروع کنید!",
-      description: "همه چیز آماده است. اولین قدم را بردارید.",
+      description: "تور آموزشی به پایان رسید. حالا می‌توانید با استفاده از بخش‌های مختلف که معرفی شد، مدیریت پروژه خود را آغاز کنید.",
       position: "bottom"
     }
   ],

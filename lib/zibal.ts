@@ -34,13 +34,11 @@ const ZIBAL_ERROR_CODES: Record<number, string> = {
 const ZIBAL_API_URL = "https://gateway.zibal.ir/v1";
 
 export const zibalRequest = async (amount: number, description: string, callbackUrl: string, mobile?: string, orderId?: string): Promise<string | null> => {
-  const merchant = process.env.ZIBAL_MERCHANT || "zibal"; // 'zibal' is sandbox
-  
-  console.log("[Zibal] ====== Payment Request Started ======");
-  console.log("[Zibal] Merchant:", merchant === "zibal" ? "SANDBOX MODE" : merchant);
-  console.log("[Zibal] Amount (Rials):", amount);
-  console.log("[Zibal] Callback URL:", callbackUrl);
-  console.log("[Zibal] Description:", description);
+  const merchant = process.env.ZIBAL_MERCHANT;
+  if (!merchant) {
+    console.error("[Zibal] ❌ ZIBAL_MERCHANT env var is not set. Cannot process payment.");
+    return null;
+  }
   
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout
@@ -55,8 +53,6 @@ export const zibalRequest = async (amount: number, description: string, callback
       orderId
     };
     
-    console.log("[Zibal] Sending request to:", `${ZIBAL_API_URL}/request`);
-    
     const res = await fetch(`${ZIBAL_API_URL}/request`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -66,19 +62,12 @@ export const zibalRequest = async (amount: number, description: string, callback
     clearTimeout(timeoutId);
 
     const data: ZibalRequestResult = await res.json();
-    
-    console.log("[Zibal] Response received:");
-    console.log("[Zibal] - Result Code:", data.result);
-    console.log("[Zibal] - Message:", data.message || ZIBAL_ERROR_CODES[data.result] || "Unknown");
-    console.log("[Zibal] - Track ID:", data.trackId || "N/A");
   
     if (data.result === 100) {
       const paymentUrl = `https://gateway.zibal.ir/start/${data.trackId}`;
-      console.log("[Zibal] ✅ Success! Payment URL:", paymentUrl);
       return paymentUrl;
     } else {
-      console.error("[Zibal] ❌ Error:", ZIBAL_ERROR_CODES[data.result] || data.message);
-      console.error("[Zibal] Full response:", JSON.stringify(data));
+      console.error("[Zibal] ❌ Payment request failed:", ZIBAL_ERROR_CODES[data.result] || data.message, "| Code:", data.result);
       return null;
     }
   } catch (error) {
@@ -87,6 +76,7 @@ export const zibalRequest = async (amount: number, description: string, callback
     return null;
   }
 };
+
 
 export const zibalVerify = async (trackId: string): Promise<ZibalVerifyResult | null> => {
     const merchant = process.env.ZIBAL_MERCHANT || "zibal";

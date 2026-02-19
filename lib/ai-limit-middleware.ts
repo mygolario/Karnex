@@ -31,9 +31,10 @@ export async function checkAILimit(): Promise<AILimitCheckResult> {
     const user = session?.user;
     
     if (!user || !user.id) {
-      // Allow unauthenticated requests? Usually no for AI.
-      // But preserving original logic: "Allow unauthenticated requests (they won't be tracked)"
-      return { user: null, errorResponse: null };
+      return {
+        user: null,
+        errorResponse: NextResponse.json({ error: 'Unauthorized. Please log in to use AI features.' }, { status: 401 })
+      };
     }
 
     const usageCheck = await checkAIRequestLimit(user.id);

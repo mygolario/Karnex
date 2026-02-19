@@ -27,10 +27,6 @@ export const sendEmail = async ({ to, subject, htmlContent, name, cc }: SendEmai
     return false;
   }
 
-  // Debug Logging
-  console.log(`[Email] Key Length: ${apiKey.length}`);
-  console.log(`[Email] Key Prefix: ${apiKey.substring(0, 5)}...`);
-  console.log(`[Email] Key Suffix: ...${apiKey.substring(apiKey.length - 5)}`);  
 
 
   try {

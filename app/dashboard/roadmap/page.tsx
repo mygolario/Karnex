@@ -105,11 +105,12 @@ export default function RoadmapPage() {
     );
   }
 
-  // Stats
   const completedCount = completedSteps.length;
   const remainingCount = totalSteps - completedCount;
-  // Mock velocity for now
-  const velocity = Math.round(completedCount * 1.5); 
+  const completedPhases = plan.phases?.filter((p: { steps?: { id: string }[] }) =>
+    p.steps?.every((s: { id: string }) => completedSteps.includes(s.id))
+  ).length ?? 0;
+  const totalPhases = plan.phases?.length ?? 0;
 
   return (
     <div className="container mx-auto max-w-[1600px] p-6 space-y-8 pb-24 font-sans">
@@ -149,10 +150,8 @@ export default function RoadmapPage() {
               <div className="text-2xl font-bold text-emerald-500">{completedCount}</div>
            </Card>
            <Card className="p-4 bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card transition-colors">
-              <div className="text-xs text-muted-foreground mb-1">امتیاز سرعت</div>
-              <div className="text-2xl font-bold text-amber-500 flex items-center gap-1">
-                {velocity} <Activity size={16} />
-              </div>
+              <div className="text-xs text-muted-foreground mb-1">فازهای تکمیل‌شده</div>
+               <div className="text-2xl font-bold text-amber-500">{completedPhases}/{totalPhases}</div>
            </Card>
         </div>
       </div>

@@ -25,9 +25,16 @@ export const proxy = auth(async function proxy(req) {
     },
   })
 
-  // --- 2. Rate Limiting for AI Chat endpoints ---
-  if (path.startsWith('/api/chat')) {
-    const limit = 10; // Requests
+  // --- 2. Rate Limiting for AI endpoints ---
+  const isAIRoute = path.startsWith('/api/chat') || 
+    path.startsWith('/api/copilot') || 
+    path.startsWith('/api/ai-generate') || 
+    path.startsWith('/api/wizard-chat') || 
+    path.startsWith('/api/generate-document') ||
+    path.startsWith('/api/generate-image');
+
+  if (isAIRoute) {
+    const limit = 30; // Requests per window
     const windowMs = 60 * 1000; // 1 Minute
 
     const now = Date.now();

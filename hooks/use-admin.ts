@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-const ADMIN_EMAILS = ["kavehtkts@gmail.com"];
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim()).filter(Boolean);
 
 export function useAdmin() {
   const { user, loading: authLoading } = useAuth();

@@ -113,7 +113,7 @@ const PERSONAS = {
   traditional: {
     title: "مشاور کسب‌وکار",
     description: "همراه شما در مدیریت بهینه، افزایش فروش و توسعه بازار. بیایید کسب‌وکارتان را رونق دهیم.",
-    systemPrompt: "...",
+    systemPrompt: "You are Karnex Business Advisor, an expert consultant for traditional Iranian businesses. Help with sales growth, customer retention, cost optimization, and market expansion. Respond in Persian (Farsi). Be practical, results-focused, and use real-world examples relevant to the Iranian market.",
     prompts: traditionalPrompts,
     icon: Briefcase,
     gradient: "from-amber-500/10 to-orange-500/10",
@@ -123,7 +123,7 @@ const PERSONAS = {
   creator: {
     title: "مشاور تولید محتوا",
     description: "من اینجا هستم تا در ایده‌پردازی، تقویم محتوایی و رشد برند شخصی به شما کمک کنم. بیایید با هم محتوای وایرال بسازیم!",
-    systemPrompt: "...",
+    systemPrompt: "You are Karnex Content Creator Advisor, an expert coach for Persian-speaking content creators on Instagram, YouTube, and Twitter/X. Help with viral content ideas, content calendars, audience growth, monetization strategies, and brand partnerships. Respond in Persian (Farsi). Be energetic, creative, and use examples from successful Persian content creators.",
     prompts: creatorPrompts,
     icon: Mic,
     gradient: "from-purple-500/10 to-pink-500/10",
@@ -441,7 +441,6 @@ export default function CopilotPage() {
       });
 
       const data = await response.json();
-      console.log("[Copilot] API Response:", data);
 
       if (data.error === "AI_LIMIT_REACHED" || response.status === 429) {
         setShowLimitModal(true);
@@ -453,14 +452,11 @@ export default function CopilotPage() {
 
       // Handle Tool Call Result
       if (data.tool_call) {
-          console.log("[Copilot] Tool Executed:", data.tool_call);
           const toolResult = data.tool_call.result;
           
           if (data.tool_call.status === 'success') {
               try {
-                console.log("[Copilot] Refreshing Projects...");
                 await refreshProjects();
-                console.log("[Copilot] Projects Refreshed.");
                 toast.success("تغییرات اعمال شد");
               } catch(e) { 
                   console.error("Refresh failed", e); 
@@ -539,10 +535,8 @@ export default function CopilotPage() {
       const lastAt = val.lastIndexOf('@');
       if (lastAt !== -1) {
           const query = val.slice(lastAt + 1);
-          console.log("[Mentions] Triggered @:", query);
           
           if (!query.includes(' ') || (query.split(' ').length < 3)) { 
-              console.log("[Mentions] Menu Opening. Query:", query);
               setMentionQuery(query);
               setShowMentionMenu(true);
               setMentionIndex(0);
@@ -553,11 +547,6 @@ export default function CopilotPage() {
           setShowMentionMenu(false);
       }
   };
-
-  // Debug: Log validation
-  useEffect(() => {
-      console.log("[Mentions] Render State:", { showMentionMenu, query: mentionQuery, count: filteredMentions.length });
-  }, [showMentionMenu, mentionQuery, filteredMentions.length]);
 
   useEffect(() => {
     if (scrollRef.current) {

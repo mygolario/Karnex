@@ -6,7 +6,13 @@ import {
   BarChart3,
   Sparkles,
   ArrowLeft,
-  LayoutGrid
+  LayoutGrid,
+  Lightbulb,
+  Calendar,
+  FileText,
+  Image,
+  Bot,
+  MapPin
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -14,23 +20,68 @@ import Link from "next/link";
 const features = [
   {
     icon: Map,
-    title: "نقشه راه",
-    description: "قدم‌به‌قدم بهت میگیم چی کار کنی تا به درآمد برسی.",
+    title: "نقشه راه هوشمند",
+    description: "قدم‌به‌قدم مسیر دقیق رسیدن به درآمد رو بهت نشون میدیم.",
     color: "from-emerald-500 to-teal-600",
-  },
-  {
-    icon: LayoutGrid, // Using LayoutGrid for Business Analysis/BMC context
-    title: "تحلیل کسب و کار",
-    description: "ایده‌ت رو بررسی می‌کنیم تا ببینی چقدر پول‌ساز میشه.",
-    color: "from-blue-500 to-cyan-600",
+    badge: "همه",
   },
   {
     icon: Sparkles,
     title: "دستیار کارنکس",
     description: "مثل یه هم‌بنیان‌گذار باهوش، ۲۴ ساعته کنارتیم.",
     color: "from-pink-500 to-rose-600",
+    badge: "همه",
+  },
+  {
+    icon: LayoutGrid,
+    title: "بوم مدل کسب‌وکار",
+    description: "ایده‌ت رو در یک صفحه تجزیه‌وتحلیل کن و نقاط ضعف رو پیدا کن.",
+    color: "from-blue-500 to-cyan-600",
+    badge: "همه",
+  },
+  {
+    icon: FileText,
+    title: "پیچ‌دک استارتاپ",
+    description: "دک سرمایه‌گذاری حرفه‌ای برای جذب سرمایه بساز.",
+    color: "from-violet-500 to-purple-600",
+    badge: "استارتاپ",
+  },
+  {
+    icon: Lightbulb,
+    title: "موتور ایده‌پرداز",
+    description: "ایده‌های وایرال بر اساس ترندهای روز برای کانال‌ات پیدا کن.",
+    color: "from-yellow-500 to-orange-500",
+    badge: "کریتور",
+  },
+  {
+    icon: Calendar,
+    title: "تقویم محتوا",
+    description: "برنامه انتشار هوشمند برای اینستاگرام، یوتیوب و توییتر.",
+    color: "from-cyan-500 to-sky-600",
+    badge: "کریتور",
+  },
+  {
+    icon: Image,
+    title: "مدیاکیت حرفه‌ای",
+    description: "میدیاکیت زیبا برای جذب اسپانسر با PDF آماده ارسال.",
+    color: "from-fuchsia-500 to-pink-600",
+    badge: "کریتور",
+  },
+  {
+    icon: MapPin,
+    title: "آنالیز موقعیت",
+    description: "بهترین مکان کسب‌وکار رو با تحلیل رقبا و ترافیک پیدا کن.",
+    color: "from-amber-500 to-red-500",
+    badge: "کسب‌وکار سنتی",
   },
 ];
+
+const badgeColors: Record<string, string> = {
+  "همه": "bg-primary/10 text-primary border border-primary/20",
+  "استارتاپ": "bg-violet-500/10 text-violet-600 border border-violet-500/20",
+  "کریتور": "bg-pink-500/10 text-pink-600 border border-pink-500/20",
+  "کسب‌وکار سنتی": "bg-amber-500/10 text-amber-600 border border-amber-500/20",
+};
 
 const FeatureCard = ({ feature, index }: { feature: typeof features[0]; index: number }) => {
   return (
@@ -38,27 +89,32 @@ const FeatureCard = ({ feature, index }: { feature: typeof features[0]; index: n
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      transition={{ delay: index * 0.1, duration: 0.5 }}
-      whileHover={{ y: -8, scale: 1.02 }}
+      transition={{ delay: index * 0.07, duration: 0.5 }}
+      whileHover={{ y: -6, scale: 1.02 }}
       className="group relative h-full"
     >
       {/* Card */}
-      <div className="h-full rounded-3xl border border-border bg-card/50 backdrop-blur-sm p-8 overflow-hidden transition-all duration-500 group-hover:border-primary/30 group-hover:shadow-2xl group-hover:shadow-primary/10 flex flex-col items-center text-center">
+      <div className="h-full rounded-3xl border border-border bg-card/50 backdrop-blur-sm p-6 overflow-hidden transition-all duration-500 group-hover:border-primary/30 group-hover:shadow-2xl group-hover:shadow-primary/10 flex flex-col">
         
         {/* Gradient glow on hover */}
         <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500 rounded-3xl`} />
         
-        {/* Icon */}
-        <div className={`relative z-10 w-16 h-16 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
-          <feature.icon className="w-8 h-8 text-white" />
+        {/* Top row: icon + badge */}
+        <div className="relative z-10 flex items-start justify-between mb-4">
+          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+            <feature.icon className="w-6 h-6 text-white" />
+          </div>
+          <span className={`text-xs font-bold px-2 py-1 rounded-full ${badgeColors[feature.badge]}`}>
+            {feature.badge}
+          </span>
         </div>
         
         {/* Content */}
         <div className="relative z-10">
-          <h3 className="font-bold text-foreground mb-3 text-2xl">
+          <h3 className="font-bold text-foreground mb-2 text-lg">
             {feature.title}
           </h3>
-          <p className="text-muted-foreground leading-relaxed text-lg">
+          <p className="text-muted-foreground leading-relaxed text-sm">
             {feature.description}
           </p>
         </div>
@@ -100,12 +156,12 @@ export const FeaturesSection = () => {
           </h2>
           
           <p className="text-xl text-muted-foreground">
-            ابزارهای قدرتمند با دستیار کارنکس برای تبدیل ایده به کسب‌وکار واقعی
+            ابزارهای قدرتمند برای استارتاپ‌ها، کسب‌وکارهای سنتی و تولیدکنندگان محتوا
           </p>
         </motion.div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        {/* Grid — 4 cols on xl, 2 on md, 1 on mobile */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 max-w-7xl mx-auto">
           {features.map((feature, index) => (
             <FeatureCard key={feature.title} feature={feature} index={index} />
           ))}

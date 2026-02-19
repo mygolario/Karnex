@@ -37,10 +37,17 @@ export async function POST(req: Request) {
 
     // Handle Competitor Search (OSM Integration) - MOVED TO TOP to prevent generic handler from catching it
     if (action === 'analyze-location') {
+       console.log("📍 Analyze Location Request:", { city, address, projectType: activeProject?.projectType });
+       
+       // 1. Geocode
        // 1. Geocode
        const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address + ', ' + city + ', Iran')}&format=json&limit=1`;
        const geoRes = await fetch(geoUrl, { headers: { 'User-Agent': 'Karnex-App/1.0' } });
+       if (!geoRes.ok) {
+           console.error("❌ Nominatim Error:", geoRes.status, await geoRes.text());
+       }
        const geoData = await geoRes.json();
+       console.log("🌍 Geocoding Result:", geoData?.[0] ? "Found" : "Not Found");
        
        let osmData = "No real-time data available.";
        
@@ -111,7 +118,8 @@ export async function POST(req: Request) {
        });
        
         if (!result.success) {
-          return NextResponse.json({ error: result.error }, { status: 503 });
+           console.error("❌ AI Generation Failed:", result.error);
+           return NextResponse.json({ error: result.error }, { status: 503 });
         }
     
         try {
@@ -122,6 +130,8 @@ export async function POST(req: Request) {
             const json = JSON.parse(content);
             return NextResponse.json({ success: true, analysis: json });
         } catch (e) {
+            console.error("❌ JSON Parse Error (Location Analysis):", e);
+            console.error("Raw Content:", result.content);
             return NextResponse.json({ error: 'Failed to parse location analysis' }, { status: 500 });
         }
     }

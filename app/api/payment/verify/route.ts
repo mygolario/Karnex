@@ -9,10 +9,10 @@ export async function GET(req: NextRequest) {
     const orderId = searchParams.get("orderId"); // KCD-TRX-...
 
     // Log for debugging
-    console.log("Payment Callback:", { success, trackId, status, orderId });
 
-    if (!orderId) {
-         return NextResponse.redirect(new URL('/payment/failed?error=missing_transaction_id', req.url));
+
+    if (!trackId) {
+         return NextResponse.redirect(new URL('/payment/failed?error=missing_track_id', req.url));
     }
 
     try {

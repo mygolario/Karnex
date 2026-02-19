@@ -58,12 +58,14 @@ export const metadata: Metadata = {
     siteName: 'Karnex',
     locale: 'fa_IR',
     type: 'website',
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'کارنکس - دستیار هوشمند کارآفرینی' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'کارنکس | دستیار هوشمند کارآفرینی',
     description: 'با دستیار کارنکس، ایده خود را به یک بیزینس تبدیل کنید.',
     creator: '@karnex_ir',
+    images: ['/opengraph-image.png'],
   },
   manifest: '/manifest.json',
   category: 'technology',
@@ -97,26 +99,6 @@ export default function RootLayout({
             </AuthProvider>
           </SessionProvider>
         </ThemeProvider>
-        
-        {/* JSON-LD for Google Knowledge Graph */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "Karnex",
-              "url": "https://www.karnex.ir",
-              "logo": "https://www.karnex.ir/logo.png",
-              "sameAs": [
-                "https://twitter.com/karnex_ir",
-                "https://instagram.com/karnex.ir",
-                "https://linkedin.com/company/karnex"
-              ],
-              "description": "دستیار هوشمند کارآفرینی برای استارتاپ‌ها، کسب‌وکارهای سنتی و تولیدکنندگان محتوا."
-            })
-          }}
-        />
       </body>
     </html>
   );

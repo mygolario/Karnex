@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Sparkles, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
@@ -71,6 +71,7 @@ const plans = [
     ],
     cta: "خرید اولترا",
     popular: false,
+    contactSales: true,
   },
 ];
 
@@ -177,6 +178,8 @@ export const PricingSection = () => {
                 <Link 
                   href={plan.monthlyPrice === "۰" 
                     ? "/signup" 
+                    : plan.contactSales
+                    ? "/contact?subject=اشتراک اولترا"
                     : `/checkout?plan=${plan.name === "پلاس" ? "plus" : plan.name === "پرو" ? "pro" : "ultra"}&cycle=${isYearly ? "yearly" : "monthly"}`
                   } 
                   className="block mb-8"
@@ -189,7 +192,8 @@ export const PricingSection = () => {
                     }`}
                     variant={plan.popular ? "default" : "outline"}
                   >
-                    {plan.cta}
+                    {plan.contactSales && <Phone className="w-4 h-4 ml-2" />}
+                    {plan.contactSales ? "تماس با فروش" : plan.cta}
                   </Button>
                 </Link>
                 

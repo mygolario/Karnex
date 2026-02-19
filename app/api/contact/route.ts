@@ -15,6 +15,16 @@ export async function POST(req: Request) {
       );
     }
 
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { error: 'آدرس ایمیل وارد شده معتبر نیست.' },
+        { status: 400 }
+      );
+    }
+
+
     // Email to Support Team (Forwarding)
     const adminHtml = getContactAdminTemplate({ name, email, subject, message });
     const supportEmailSuccess = await sendEmail({
@@ -23,7 +33,7 @@ export async function POST(req: Request) {
       htmlContent: adminHtml,
       templateName: 'contact',
       name: 'Karnex Support Team',
-      cc: 'kavehtkts@gmail.com'
+      cc: process.env.ADMIN_CC_EMAIL
     });
 
     if (!supportEmailSuccess) {

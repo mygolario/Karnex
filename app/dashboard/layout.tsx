@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
+import { useRouter } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 
@@ -15,7 +17,19 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login");
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
+    return null; // Middleware handles redirect; this is a fallback
+  }
+
 
   return (
     <MentorProvider>

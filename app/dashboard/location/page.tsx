@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 // New Components
 import { ScoreGauge } from "@/components/dashboard/location/score-gauge";
@@ -149,18 +150,12 @@ function LocationPageContent() {
             {/* Search Bar */}
             <Card data-tour-id="location-search" className="p-1.5 flex items-center gap-2 bg-card/50 backdrop-blur-xl border border-white/5 shadow-lg rounded-xl">
               <div className="relative">
-                <select
+                <Input
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="bg-transparent text-xs font-bold p-2.5 outline-none appearance-none cursor-pointer hover:bg-muted/50 rounded-lg transition-colors"
-                >
-                  <option value="Tehran">تهران</option>
-                  <option value="Karaj">کرج</option>
-                  <option value="Mashhad">مشهد</option>
-                  <option value="Isfahan">اصفهان</option>
-                  <option value="Tabriz">تبریز</option>
-                  <option value="Shiraz">شیراز</option>
-                </select>
+                  placeholder="نام شهر..."
+                  className="w-[140px] bg-transparent text-xs font-bold border-none shadow-none focus-visible:ring-0 px-2 placeholder:font-normal"
+                />
               </div>
               <div className="h-5 w-[1px] bg-border" />
               <div className="flex-1 relative">

@@ -122,7 +122,7 @@ export function BillingSection() {
                   <span className="text-sm text-muted-foreground">تاریخ تمدید</span>
                 </div>
                 <div className="text-sm font-medium text-foreground">
-                  {new Date(subscription.currentPeriodEnd).toLocaleDateString("fa-IR")}
+                  {subscription.currentPeriodEnd ? new Date(subscription.currentPeriodEnd).toLocaleDateString("fa-IR") : "—"}
                 </div>
               </div>
             )}
@@ -135,7 +135,7 @@ export function BillingSection() {
                   <strong>اشتراک شما لغو شده است.</strong>
                   <br />
                   تا تاریخ{" "}
-                  {new Date(subscription.currentPeriodEnd).toLocaleDateString("fa-IR")}
+                  {subscription.currentPeriodEnd ? new Date(subscription.currentPeriodEnd).toLocaleDateString("fa-IR") : "—"}
                   {" "}به ویژگی‌های پلن دسترسی خواهید داشت.
                 </div>
               </div>

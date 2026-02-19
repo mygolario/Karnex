@@ -2,9 +2,8 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Sparkles, Rocket, Store, Video, Play } from "lucide-react";
+import { ArrowLeft, Sparkles, Rocket, Store, Video } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 const PillarCard = ({ 
   icon: Icon, 
@@ -35,14 +34,7 @@ const PillarCard = ({
 );
 
 export const HeroSection = () => {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const prefersReducedMotion = useReducedMotion();
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
@@ -52,7 +44,7 @@ export const HeroSection = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/30" />
         
         {/* Animated mesh gradient - DESKTOP ONLY */}
-        {!isMobile && (
+        {!prefersReducedMotion && (
           <>
             <motion.div
               animate={{
@@ -79,16 +71,16 @@ export const HeroSection = () => {
           </>
         )}
 
-        {/* Static gradient fallback for mobile */}
-        {isMobile && (
+        {/* Static gradient fallback for reduced motion */}
+        {prefersReducedMotion && (
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(330_81%_60%_/0.1),transparent_70%)]" />
         )}
         
         {/* Grid pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]" />
         
-        {/* Floating orbs - Simplified/Removed on Mobile */}
-        {!isMobile && (
+        {/* Floating orbs - Disabled for reduced motion */}
+        {!prefersReducedMotion && (
           <>
             <motion.div
               animate={{ y: [0, -15, 0] }}
@@ -124,7 +116,7 @@ export const HeroSection = () => {
 
           {/* Main Headline - Optimize LCP for Mobile */}
           <motion.h1
-            initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+            initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.1] mb-8"
@@ -158,7 +150,7 @@ export const HeroSection = () => {
 
           {/* Subheadline */}
           <motion.p
-            initial={isMobile ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+            initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
             className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"

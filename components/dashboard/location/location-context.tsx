@@ -241,7 +241,11 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
           return;
       }
 
-      if (!response.ok) throw new Error("Analysis failed");
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Location Analysis Failed:", response.status, errorText);
+        throw new Error(`Analysis failed: ${response.status} ${errorText}`);
+      }
 
       const data = await response.json();
       

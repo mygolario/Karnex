@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+import { LimitReachedModal } from "@/components/dashboard/limit-reached-modal";
 
 interface Idea {
   id: string;
@@ -30,6 +31,7 @@ export default function IdeasPage() {
   const [topic, setTopic] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [showLimitModal, setShowLimitModal] = useState(false);
 
   // Check project type
   if (plan?.projectType !== "creator") {
@@ -49,47 +51,55 @@ export default function IdeasPage() {
     );
   }
 
-  const handleGenerateIdeas = () => {
+  const handleGenerateIdeas = async () => {
     if (!topic) {
       toast.error("لطفاً یک موضوع وارد کنید");
       return;
     }
 
     setIsGenerating(true);
-    setTimeout(() => {
-      // Mock Data
-      const newIdeas: Idea[] = [
+    try {
+      const prompt = `Generate 3 creative content ideas about the topic: "${topic}" for Persian-speaking social media creators.
+      Return ONLY valid JSON array:
+      [
         {
-          id: `idea-${Date.now()}-1`,
-          title: "۵ اشتباه رایج در " + topic,
-          description: "ویدیو آموزشی کوتاه که اشتباهات متداول این حوزه رو بررسی می‌کنه و راه حل میده.",
-          score: 95,
-          tags: ["آموزشی", "تست", "وایرال"],
-          platform: "instagram",
-          isTrending: true
-        },
-        {
-          id: `idea-${Date.now()}-2`,
-          title: "چطور " + topic + " رو شروع کنیم؟",
-          description: "راهنمای قدم به قدم برای مبتدی‌ها. این نوع محتوا همیشه جستجوی بالایی داره.",
-          score: 88,
-          tags: ["راهنما", "مبتدی", "جستجو"],
-          platform: "youtube"
-        },
-        {
-          id: `idea-${Date.now()}-3`,
-          title: "حقایق ناگفته درباره " + topic,
-          description: "افشاگری یا بیان نکات کمتر شنیده شده که باعث تعامل بالا در کامنت‌ها میشه.",
-          score: 92,
-          tags: ["عجیب", "تعاملی"],
-          platform: "twitter",
-          isTrending: true
+          "title": "Catchy idea title in Persian",
+          "description": "Brief explanation in Persian of why this idea works and how to execute it",
+          "score": number between 75-98 representing viral potential,
+          "tags": ["tag1", "tag2", "tag3"] in Persian,
+          "platform": "instagram" | "youtube" | "twitter",
+          "isTrending": boolean
         }
-      ];
-      setIdeas(newIdeas);
+      ]`;
+
+      const res = await fetch("/api/ai-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, systemPrompt: "You are a viral content strategist for Persian social media. Return ONLY valid JSON." })
+      });
+
+      if (res.status === 429) {
+        setShowLimitModal(true);
+        return;
+      }
+
+      const data = await res.json();
+      if (data.success && data.content) {
+        const cleaned = data.content.replace(/```json|```/g, "").trim();
+        const parsed: Omit<Idea, 'id'>[] = JSON.parse(cleaned);
+        const newIdeas: Idea[] = parsed.map((idea, i) => ({
+          ...idea,
+          id: `idea-${Date.now()}-${i}`,
+        }));
+        setIdeas(newIdeas);
+        toast.success("ایده‌های جدید پیدا شد!");
+      }
+    } catch (e) {
+      console.error("Failed to generate ideas:", e);
+      toast.error("خطا در ارتباط با دستیار کارنکس");
+    } finally {
       setIsGenerating(false);
-      toast.success("ایده‌های جدید پیدا شد!");
-    }, 2000);
+    }
   };
 
   return (
@@ -196,7 +206,15 @@ export default function IdeasPage() {
                         <span className="text-xs font-bold text-emerald-600">{idea.score}%</span>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" className="gap-1 text-primary hover:text-primary">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1 text-primary hover:text-primary"
+                      onClick={() => {
+                        navigator.clipboard.writeText(idea.title);
+                        toast.success("ایده کپی شد — در کوپایلت یا تقویم استفاده کن!");
+                      }}
+                    >
                       استفاده
                       <ArrowRight size={16} />
                     </Button>
@@ -215,6 +233,15 @@ export default function IdeasPage() {
           <p className="text-lg font-medium">منتظر چی هستی؟ یه موضوع بنویس تا منفجرش کنیم! 🚀</p>
         </div>
       )}
+
+      <LimitReachedModal
+        isOpen={showLimitModal}
+        onClose={() => setShowLimitModal(false)}
+        type="ai"
+        used={0}
+        limit={10}
+        tier="free"
+      />
     </div>
   );
 }

@@ -34,6 +34,7 @@ export default function SignupPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [touched, setTouched] = useState({ name: false, email: false, password: false, confirm: false });
+  const [signedUp, setSignedUp] = useState(false);
 
   // Clear error when inputs change
   useEffect(() => {
@@ -110,7 +111,9 @@ export default function SignupPage() {
       if (loginResult?.error) {
          router.push("/login");
       } else {
-         router.push("/new-project");
+         setSignedUp(true);
+         // Redirect after a short delay so user sees the success message
+         setTimeout(() => router.push("/new-project"), 2500);
       }
 
     } catch (err: any) {
@@ -130,6 +133,26 @@ export default function SignupPage() {
     setLoading(true);
     await signIn("google", { callbackUrl: "/new-project" });
   };
+
+  if (signedUp) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background" dir="rtl">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center p-8"
+        >
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 rounded-full bg-emerald-500/10 flex items-center justify-center">
+              <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+            </div>
+          </div>
+          <h2 className="text-3xl font-black mb-3">خوش آمدید به کارنکس!</h2>
+          <p className="text-muted-foreground">در حال انتقال به داشبورد...</p>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex w-full bg-background overflow-hidden" dir="rtl">

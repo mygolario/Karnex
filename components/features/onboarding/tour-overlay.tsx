@@ -214,7 +214,7 @@ export function TourOverlay() {
           width: targetRect.width + 20,
           height: targetRect.height + 20,
           // The "Spotlight": A massive shadow that covers the screen
-          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.85)", 
+          boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.6)", 
         }}
         transition={{
           type: "spring",

@@ -6,17 +6,28 @@ import { Navbar } from "@/components/shared/navbar";
 import { Footer } from "@/components/shared/footer";
 import { submitFeedback } from "@/app/actions/feedback";
 import { X, CheckCircle2, MessageSquare, FileText, Send, Mail, Loader2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function ContactPage() {
+// Inner component that uses useSearchParams (must be wrapped in Suspense)
+function ContactPageInner() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
   const [loading, setLoading] = useState(false);
   const [showFeedbackModal, setShowFeedbackModal] = useState(false);
   const [feedbackMessage, setFeedbackMessage] = useState("");
   const [feedbackLoading, setFeedbackLoading] = useState(false);
+
+  // Pre-fill subject from URL query param (e.g. from Ultra plan CTA)
+  useEffect(() => {
+    const subject = searchParams.get("subject");
+    if (subject) {
+      setFormData(prev => ({ ...prev, subject }));
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -302,5 +313,13 @@ export default function ContactPage() {
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+export default function ContactPage() {
+  return (
+    <Suspense>
+      <ContactPageInner />
+    </Suspense>
   );
 }

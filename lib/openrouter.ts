@@ -7,9 +7,9 @@
 // Ordered by preference: Paid Fast -> Free High Quality -> Free Fast
 // Google Gemini Models (Preferred Priority)
 export const TEXT_MODELS = [
-    "google/gemini-2.5-flash-lite",  // Priority 1
+    "google/gemini-2.0-flash-exp", // Priority 1 (Better for long JSON)
     "google/gemini-2.5-flash",       // Priority 2
-    "google/gemini-3-flash-preview"  // Priority 3
+    "google/gemini-flash-1.5"        // Priority 3 (valid stable fallback)
 ];
 
 export interface OpenRouterResponse {
@@ -53,7 +53,6 @@ export async function callOpenRouter(
     const modelsToTry = modelOverride ? [modelOverride] : TEXT_MODELS;
 
     for (const model of modelsToTry) {
-        console.log(`🤖 Trying model: ${model}`);
 
         try {
             const controller = new AbortController();
@@ -102,10 +101,8 @@ export async function callOpenRouter(
             const content = data.choices?.[0]?.message?.content;
 
             if (content) {
-                console.log(`✅ Success with model: ${model}`);
                 return { success: true, content, model };
             } else {
-                console.warn(`⚠️ Model ${model} returned empty content`);
                 lastError = `${model}: Empty response`;
                 continue;
             }

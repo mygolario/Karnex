@@ -13,6 +13,7 @@ import {
 import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 export default function SettingsPage() {
@@ -34,7 +35,7 @@ export default function SettingsPage() {
       router.push('/projects');
     } catch (error) {
       console.error(error);
-      alert("خطا در حذف پروژه");
+      toast.error("خطا در حذف پروژه");
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);

@@ -8,8 +8,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function POST(req: Request) {
-  console.log("[Payment API] ====== New Payment Request ======");
-  
+
   try {
     const session = await auth();
     const user = session?.user;
@@ -46,10 +45,6 @@ export async function POST(req: Request) {
     // Convert to Rials (Zibal expects Rials)
     const amountInRials = finalAmountTomans * 10;
 
-    console.log("[Payment API] Plan:", plan.name, `(${planId})`);
-    console.log("[Payment API] Billing:", billingCycle);
-    console.log("[Payment API] Amount (Tomans):", finalAmountTomans);
-    console.log("[Payment API] Amount (Rials):", amountInRials);
 
     // Build callback URL with metadata for the verify page
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://karnex.ir';
@@ -71,11 +66,10 @@ export async function POST(req: Request) {
             status: 'pending',
             gateway: 'zibal',
             description: description,
-            // metadata: { billingCycle, orderId } // if metadata field exists
+            metadata: { billingCycle, orderId } // Save billing cycle for subscription activation
         }
     });
 
-    console.log("[Payment API] Transaction Created:", transaction.id);
 
     // Initiate Zibal payment
     const paymentUrl = await zibalRequest(
@@ -87,8 +81,6 @@ export async function POST(req: Request) {
     );
 
     if (paymentUrl) {
-      console.log("[Payment API] ✅ Success! Payment URL:", paymentUrl);
-
       // Extract trackId and update the transaction record
       const trackId = paymentUrl.split('/start/')[1];
       if (trackId) {

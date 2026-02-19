@@ -44,7 +44,7 @@ export async function getUserSubscription(userId: string): Promise<Subscription 
       status: data.status as SubscriptionStatus,
       billingCycle: data.billingCycle as BillingCycle,
       currentPeriodStart: data.startDate, // aligned with previous schema 'startDate' vs 'currentPeriodStart'
-      currentPeriodEnd: data.endDate || new Date(),
+      currentPeriodEnd: data.endDate ?? null,
       cancelAtPeriodEnd: false, // Add this to schema if missing, or default false
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
@@ -62,6 +62,13 @@ export async function getUserTier(userId: string): Promise<PlanTier> {
   const subscription = await getUserSubscription(userId);
   
   if (!subscription || subscription.status !== 'active') {
+    return 'free';
+  }
+  
+  // Enforce subscription expiry — downgrade to free if period has ended
+  if (subscription.currentPeriodEnd && subscription.currentPeriodEnd < new Date()) {
+    // Lazily mark as expired in DB (fire-and-forget)
+    updateSubscription(userId, { status: 'expired' }).catch(console.error);
     return 'free';
   }
   
@@ -249,7 +256,7 @@ export async function recordTransaction(data: {
       refId: data.refId,
       cardPan: data.cardPan,
       description: data.description,
-      // metadata: data.metadata, // JSON support
+      metadata: data.metadata ? data.metadata : undefined,
       completedAt: data.completedAt,
     }
   });

@@ -17,10 +17,9 @@ const prismaClientSingleton = () => {
     ssl: false, // Explicitly disable SSL as the server rejects it
   })
   
-  // Log connection errors
+  // Log connection errors but don't crash the server — the pool will reconnect automatically
   pool.on('error', (err) => {
     console.error('Unexpected error on idle client', err)
-    process.exit(-1)
   })
 
   const adapter = new PrismaPg(pool)
