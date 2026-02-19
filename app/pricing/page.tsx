@@ -240,19 +240,30 @@ export default function PricingPage() {
                             </div>
 
                             <div className="mb-6">
-                                <Button 
-                                    onClick={() => handlePurchase(plan)}
-                                    disabled={loading === plan.id}
-                                    variant={plan.popular ? "default" : "outline"} 
-                                    className={cn(
-                                        "w-full h-12 rounded-xl text-sm font-bold transition-all shadow-sm", 
-                                        plan.popular 
-                                            ? "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-primary/25" 
-                                            : "border-border hover:bg-muted hover:border-primary/50"
-                                    )}
-                                >
-                                    {loading === plan.id ? "در حال پردازش..." : plan.cta}
-                                </Button>
+                                {plan.id === "ultra" ? (
+                                    <a href="/contact" className="block">
+                                        <Button
+                                            variant="outline"
+                                            className="w-full h-12 rounded-xl text-sm font-bold transition-all shadow-sm border-border hover:bg-muted hover:border-primary/50"
+                                        >
+                                            تماس با ما
+                                        </Button>
+                                    </a>
+                                ) : (
+                                    <Button 
+                                        onClick={() => handlePurchase(plan)}
+                                        disabled={loading === plan.id}
+                                        variant={plan.popular ? "default" : "outline"} 
+                                        className={cn(
+                                            "w-full h-12 rounded-xl text-sm font-bold transition-all shadow-sm", 
+                                            plan.popular 
+                                                ? "bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-primary/25" 
+                                                : "border-border hover:bg-muted hover:border-primary/50"
+                                        )}
+                                    >
+                                        {loading === plan.id ? "در حال پردازش..." : plan.cta}
+                                    </Button>
+                                )}
                             </div>
 
                             <div className="flex-1">
