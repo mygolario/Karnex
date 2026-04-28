@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build && npm run serwist:build",
+    "build": "npx cross-env PRISMA_ENGINES_MIRROR=https://npmmirror.com/mirrors/prisma/ prisma generate && next build && npm run serwist:build",
     "serwist:build": "serwist build",
     "start": "next start",
     "lint": "eslint",
     "deploy": "echo 'Use liara-cli to deploy'",
-    "postinstall": "prisma generate"
+    "postinstall": "npx cross-env PRISMA_ENGINES_MIRROR=https://npmmirror.com/mirrors/prisma/ prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
