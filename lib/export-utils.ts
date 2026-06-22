@@ -115,3 +115,17 @@ export function exportMarketingAsMarkdown(plan: BusinessPlan): string {
   
   return md;
 }
+
+/**
+ * Reshape Arabic/Persian text for PDF drawing compatibility (letter-joining and RTL)
+ */
+export function reshapePersian(text: string): string {
+  if (!text) return "";
+  try {
+    const { reshape } = require("arabic-persian-reshaper");
+    return reshape(text);
+  } catch (e) {
+    console.error("Persian Reshaper Error:", e);
+    return text;
+  }
+}

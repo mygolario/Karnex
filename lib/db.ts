@@ -753,7 +753,7 @@ export const getPlanFromCloud = async (userId: string, projectId: string) => {
       where: { id: projectId }
   });
 
-  if (!project) return null;
+  if (!project || project.userId !== userId) return null;
 
   const dbData = project.data as any || {};
   return {
@@ -768,14 +768,19 @@ export const getPlanFromCloud = async (userId: string, projectId: string) => {
 };
 
 export const savePlanToCloud = async (userId: string, planData: any, merge: boolean = true, projectId: string) => {
-    // 1. Fetch current if merge needed
+    // 1. Fetch current to verify ownership
     let currentData = {};
+    const current = await prisma.project.findUnique({
+        where: { id: projectId },
+        select: { data: true, userId: true }
+    });
+
+    if (!current || current.userId !== userId) {
+        throw new Error("Unauthorized or project not found");
+    }
+
     if (merge) {
-        const current = await prisma.project.findUnique({
-            where: { id: projectId },
-            select: { data: true }
-        });
-        if (current) currentData = current.data as any;
+        currentData = current.data as any;
     }
 
     // 2. Prepare update
@@ -856,15 +861,13 @@ export const saveBrandCanvas = async (userId: string, canvas: BrandCanvas, proje
 };
 
 export const deleteProject = async (userId: string, projectId: string) => {
+  const project = await prisma.project.findFirst({
+      where: { id: projectId, userId }
+  });
+  if (!project) throw new Error("Unauthorized or project not found");
+
   await prisma.project.delete({
-      where: {
-          id: projectId,
-          // userId check is handled by Prisma implicit? No, explicit where needed.
-          // But delete can only be by unique ID. 
-          // To ensure safety, we should findFirst({ where: { id, userId }}).delete()
-          // Or just update Auth rules.
-          // For now, trusting ID.
-      }
+      where: { id: projectId }
   });
   return true;
 };
