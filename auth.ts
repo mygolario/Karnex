@@ -12,7 +12,7 @@ import { authenticateUser } from "@/lib/auth-actions"
 export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
   trustHost: true,
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma as any),
   session: { strategy: "jwt" },
   providers: [
     Google({

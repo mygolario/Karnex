@@ -79,7 +79,11 @@ export const zibalRequest = async (amount: number, description: string, callback
 
 
 export const zibalVerify = async (trackId: string): Promise<ZibalVerifyResult | null> => {
-    const merchant = process.env.ZIBAL_MERCHANT || "zibal";
+    const merchant = process.env.ZIBAL_MERCHANT;
+    if (!merchant) {
+      console.error("[Zibal] ❌ ZIBAL_MERCHANT env var is not set. Cannot verify payment.");
+      return null;
+    }
     
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);

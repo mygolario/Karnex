@@ -7,9 +7,9 @@
 // Ordered by preference: Paid Fast -> Free High Quality -> Free Fast
 // Google Gemini Models (Preferred Priority)
 export const TEXT_MODELS = [
-    "google/gemini-2.0-flash-exp", // Priority 1 (Better for long JSON)
-    "google/gemini-2.5-flash",       // Priority 2
-    "google/gemini-flash-1.5"        // Priority 3 (valid stable fallback)
+    "google/gemini-2.5-flash",       // Priority 1 (Stable, fast, low cost)
+    "google/gemini-2.5-pro",         // Priority 2 (High reasoning fallback)
+    "google/gemini-flash-1.5"        // Priority 3 (Highly reliable legacy fallback)
 ];
 
 export interface OpenRouterResponse {
@@ -30,6 +30,7 @@ export async function callOpenRouter(
         temperature?: number;
         timeoutMs?: number;
         modelOverride?: string;
+        responseFormat?: { type: 'json_object' };
     }
 ): Promise<OpenRouterResponse> {
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -44,7 +45,8 @@ export async function callOpenRouter(
         maxTokens = 2000,
         temperature = 0.7,
         timeoutMs = 25000,
-        modelOverride
+        modelOverride,
+        responseFormat
     } = options || {};
 
     let lastError: string | null = null;
@@ -77,6 +79,7 @@ export async function callOpenRouter(
                     messages,
                     max_tokens: maxTokens,
                     temperature,
+                    response_format: responseFormat,
                 }),
                 signal: controller.signal,
             });

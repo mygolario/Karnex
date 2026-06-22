@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+build
+.git
+.firebase
+*.log
+.env.local
+.env.development
+.env.test
+.github
+tests
+scripts
+temp-*

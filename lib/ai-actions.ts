@@ -30,7 +30,7 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
 
     const result = await callOpenRouter(
       `ایده: ${productIdea}`,
-      { systemPrompt, maxTokens: 200, temperature: 0.5, timeoutMs: 15000 }
+      { systemPrompt, maxTokens: 200, temperature: 0.5, timeoutMs: 15000, responseFormat: { type: "json_object" } }
     );
 
     if (!result.success) {
@@ -84,7 +84,7 @@ export async function suggestProjectNameAction(idea: string): Promise<ActionResp
 
     const result = await callOpenRouter(
       `ایده: ${idea}`,
-      { systemPrompt, maxTokens: 200, temperature: 0.7, timeoutMs: 15000 }
+      { systemPrompt, maxTokens: 200, temperature: 0.7, timeoutMs: 15000, responseFormat: { type: "json_object" } }
     );
 
     if (!result.success) {
@@ -141,7 +141,7 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
 
     const result = await callOpenRouter(
       `کار: "${taskName}" - به ۳ گام فارسی تقسیم کن`,
-      { systemPrompt, maxTokens: 200, temperature: 0.5, timeoutMs: 20000 }
+      { systemPrompt, maxTokens: 200, temperature: 0.5, timeoutMs: 20000, responseFormat: { type: "json_object" } }
     );
 
     const fallback = [
@@ -334,7 +334,7 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
 
         const result = await callOpenRouter(
             `ایده: ${idea}`,
-            { systemPrompt, maxTokens: 2000, temperature: 0.7, timeoutMs: 40000 }
+            { systemPrompt, maxTokens: 2000, temperature: 0.7, timeoutMs: 40000, responseFormat: { type: "json_object" } }
         );
 
         if (!result.success) {
@@ -408,7 +408,7 @@ export async function generateSmartCanvasAction(data: { idea: string, answers: R
 
         const result = await callOpenRouter(
             `ایده اصلی: ${idea}\nلطفاً بوم را تکمیل کن.`,
-            { systemPrompt, maxTokens: 2500, temperature: 0.7, timeoutMs: 45000 }
+            { systemPrompt, maxTokens: 2500, temperature: 0.7, timeoutMs: 45000, responseFormat: { type: "json_object" } }
         );
 
         if (!result.success) {

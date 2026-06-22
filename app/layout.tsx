@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Vazirmatn } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ProjectProvider } from '@/contexts/project-context';
@@ -10,8 +10,6 @@ import { CookieBanner } from '@/components/shared/cookie-banner';
 import { GoogleAnalytics } from '@/components/shared/analytics';
 import { SessionProvider } from "next-auth/react";
 import { ToastProvider } from '@/components/ui/toast';
-
-const vazir = Vazirmatn({ subsets: ['arabic', 'latin'] });
 
 export const metadata: Metadata = {
   title: {
@@ -71,6 +69,11 @@ export const metadata: Metadata = {
   category: 'technology',
 };
 
+const vazirmatn = localFont({
+  src: '../public/fonts/Vazirmatn-Regular.woff2',
+  display: 'swap',
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -78,7 +81,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
-      <body className={`${vazir.className} theme-transition`}>
+      <head />
+      <body className={`${vazirmatn.className} theme-transition`}>
         <JsonLd />
         <ThemeProvider
           attribute="class"
