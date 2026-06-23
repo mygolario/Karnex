@@ -43,7 +43,7 @@ export function CanvasWizard({
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 100 }}
-        className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6"
+        className="fixed bottom-0 start-0 end-0 z-50 p-4 md:p-6"
       >
         <div className="max-w-3xl mx-auto bg-card border border-border shadow-2xl rounded-2xl overflow-hidden flex flex-col md:flex-row shadow-primary/10 ring-1 ring-primary/20">
           
@@ -104,7 +104,7 @@ export function CanvasWizard({
                     disabled={currentStepIndex === 0}
                     className="text-muted-foreground"
                  >
-                    <ChevronRight className="ml-1" size={16} />
+                    <ChevronRight className="ms-1" size={16} />
                     قبلی
                  </Button>
               </div>

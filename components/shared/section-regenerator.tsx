@@ -82,7 +82,7 @@ export function SectionRegenerator({
   };
 
   return (
-    <div className="relative inline-block font-sans text-right" dir="rtl">
+    <div className="relative inline-block font-sans text-end" dir="rtl">
         {/* Trigger */}
         <Button 
             variant="ghost" 
@@ -98,7 +98,7 @@ export function SectionRegenerator({
         {isOpen && (
             <>
                 <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)}></div>
-                <div className="absolute left-0 z-20 mt-2 w-64 origin-top-left rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none animate-in fade-in zoom-in duration-200 border border-indigo-100 overflow-hidden">
+                <div className="absolute start-0 z-20 mt-2 w-64 origin-top-left rounded-xl bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none animate-in fade-in zoom-in duration-200 border border-indigo-100 overflow-hidden">
                     <div className="p-1 grid gap-1 relative">
                         {/* Header */}
                         <div className="flex justify-between items-center px-3 py-2 bg-indigo-50/50 border-b border-indigo-100 mb-1">
@@ -114,11 +114,11 @@ export function SectionRegenerator({
                         {/* Actions */}
                         <div className="p-2 space-y-1">
                             <button 
-                                className="flex w-full items-center rounded-lg px-2 py-2.5 text-xs font-medium text-gray-700 hover:bg-amber-50 hover:text-amber-700 transition-colors disabled:opacity-50 text-right group"
+                                className="flex w-full items-center rounded-lg px-2 py-2.5 text-xs font-medium text-gray-700 hover:bg-amber-50 hover:text-amber-700 transition-colors disabled:opacity-50 text-end group"
                                 onClick={() => handleRegenerate("professional")} 
                                 disabled={loading}
                             >
-                                <div className="p-1.5 bg-amber-100 text-amber-600 rounded-md ml-3 group-hover:bg-amber-200 transition-colors">
+                                <div className="p-1.5 bg-amber-100 text-amber-600 rounded-md ms-3 group-hover:bg-amber-200 transition-colors">
                                     <Zap className="h-3.5 w-3.5" />
                                 </div>
                                 <div className="flex flex-col">
@@ -128,11 +128,11 @@ export function SectionRegenerator({
                             </button>
                             
                             <button 
-                                className="flex w-full items-center rounded-lg px-2 py-2.5 text-xs font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors disabled:opacity-50 text-right group"
+                                className="flex w-full items-center rounded-lg px-2 py-2.5 text-xs font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors disabled:opacity-50 text-end group"
                                 onClick={() => handleRegenerate("simplify")} 
                                 disabled={loading}
                             >
-                                <div className="p-1.5 bg-blue-100 text-blue-600 rounded-md ml-3 group-hover:bg-blue-200 transition-colors">
+                                <div className="p-1.5 bg-blue-100 text-blue-600 rounded-md ms-3 group-hover:bg-blue-200 transition-colors">
                                     <AlignLeft className="h-3.5 w-3.5" />
                                 </div>
                                 <div className="flex flex-col">
@@ -142,11 +142,11 @@ export function SectionRegenerator({
                             </button>
                             
                             <button 
-                                className="flex w-full items-center rounded-lg px-2 py-2.5 text-xs font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors disabled:opacity-50 text-right group"
+                                className="flex w-full items-center rounded-lg px-2 py-2.5 text-xs font-medium text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors disabled:opacity-50 text-end group"
                                 onClick={() => handleRegenerate("expand")} 
                                 disabled={loading}
                             >
-                                <div className="p-1.5 bg-green-100 text-green-600 rounded-md ml-3 group-hover:bg-green-200 transition-colors">
+                                <div className="p-1.5 bg-green-100 text-green-600 rounded-md ms-3 group-hover:bg-green-200 transition-colors">
                                     <RefreshCw className="h-3.5 w-3.5" />
                                 </div>
                                 <div className="flex flex-col">

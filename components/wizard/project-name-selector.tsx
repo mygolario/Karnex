@@ -96,7 +96,7 @@ export function ProjectNameSelector({ idea, selectedName, onNameChange }: Projec
                   transition={{ delay: index * 0.1 }}
                   onClick={() => onNameChange(name)}
                   className={cn(
-                    "relative p-4 rounded-xl border-2 text-right transition-all group",
+                    "relative p-4 rounded-xl border-2 text-end transition-all group",
                     selectedName === name
                       ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
                       : "border-border hover:border-primary/30 hover:bg-muted/50"
@@ -112,7 +112,7 @@ export function ProjectNameSelector({ idea, selectedName, onNameChange }: Projec
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      className="absolute top-2 left-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center"
+                      className="absolute top-2 start-2 w-5 h-5 bg-primary rounded-full flex items-center justify-center"
                     >
                       <Check size={12} className="text-white" />
                     </motion.div>

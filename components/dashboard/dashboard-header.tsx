@@ -89,7 +89,7 @@ export function DashboardHeader() {
         <div className="relative" ref={userMenuRef}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2 p-1.5 pr-3 rounded-xl hover:bg-muted/80 transition-all duration-200 group"
+            className="flex items-center gap-2 p-1.5 pe-3 rounded-xl hover:bg-muted/80 transition-all duration-200 group"
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-primary/20">
               {(userProfile?.avatar_url || user?.image) ? (
@@ -98,7 +98,7 @@ export function DashboardHeader() {
                 (userProfile?.full_name?.[0] || user?.name?.[0] || "U")
               )}
             </div>
-            <div className="hidden md:block text-right">
+            <div className="hidden md:block text-end">
               <p className="text-sm font-semibold text-foreground leading-tight">
                 {userProfile?.full_name || user?.name || "کاربر"}
               </p>
@@ -123,7 +123,7 @@ export function DashboardHeader() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute left-0 top-full mt-2 w-72 bg-card border border-border rounded-2xl shadow-2xl shadow-black/10 overflow-hidden"
+                className="absolute start-0 top-full mt-2 w-72 bg-card border border-border rounded-2xl shadow-2xl shadow-black/10 overflow-hidden"
               >
                 {/* User Info Header */}
                 <div className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 border-b border-border">

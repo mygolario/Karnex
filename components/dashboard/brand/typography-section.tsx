@@ -68,7 +68,7 @@ export function TypographySection({
 
         {/* Right: AI Specimen Poster */}
         <Card className="overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm p-0 flex flex-col h-full relative group">
-          <div className="absolute top-4 right-4 z-20">
+          <div className="absolute top-4 end-4 z-20">
              <Badge variant="secondary" className="backdrop-blur-md bg-black/30 text-white border-0">
                AI Creative Poster
              </Badge>

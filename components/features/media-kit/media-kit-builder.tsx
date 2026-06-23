@@ -148,7 +148,7 @@ export function MediaKitBuilder() {
   return (
     <div className="grid lg:grid-cols-2 gap-8 h-full">
       {/* LEFT: Editor */}
-      <div className="space-y-6 overflow-y-auto pr-2">
+      <div className="space-y-6 overflow-y-auto pe-2">
         <Card padding="lg" className="space-y-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
@@ -280,7 +280,7 @@ export function MediaKitBuilder() {
                                 newServices[i].price = e.target.value;
                                 setData({...data, services: newServices});
                             }}
-                            className="w-32 text-left"
+                            className="w-32 text-start"
                             dir="ltr"
                         />
                     </div>
@@ -313,7 +313,7 @@ export function MediaKitBuilder() {
 
   
                     <Button variant="outline" size="sm" onClick={handleDownload} disabled={downloading}>
-                        <Download size={16} className="mr-2" />
+                        <Download size={16} className="me-2" />
                         {downloading ? 'در حال ساخت...' : 'دانلود PDF'}
                     </Button>
                     
@@ -324,7 +324,7 @@ export function MediaKitBuilder() {
             {/* The Media Kit Card */}
             <div ref={contentRef} className="bg-white text-slate-900 rounded-[2rem] shadow-2xl overflow-hidden aspect-[9/16] md:aspect-[3/4] p-8 flex flex-col relative">
                 {/* Decoration */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-bl from-rose-500/20 to-purple-500/20 rounded-bl-full -mr-10 -mt-10" />
+                <div className="absolute top-0 end-0 w-64 h-64 bg-gradient-to-bl from-rose-500/20 to-purple-500/20 rounded-bl-full -me-10 -mt-10" />
                 
                 {/* Header */}
                 <div className="relative z-10 text-center mb-8">

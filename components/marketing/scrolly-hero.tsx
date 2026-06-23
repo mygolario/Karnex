@@ -60,7 +60,7 @@ export function ScrollyHero() {
             className="flex justify-center mb-8"
           >
             <Badge variant="outline" className="px-4 py-1.5 text-sm border-primary/20 bg-primary/5 backdrop-blur-md">
-              <span className="w-2 h-2 rounded-full bg-primary mr-2 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-primary me-2 animate-pulse" />
               نسخه ۲.۰: دستیار کارنکس
             </Badge>
           </motion.div>
@@ -105,7 +105,7 @@ export function ScrollyHero() {
                       rounded="full"
                       className="bg-foreground text-background hover:bg-foreground/90 h-14 px-8 text-lg shadow-2xl shadow-primary/20"
                     >
-                      <Rocket size={20} className="mr-2" />
+                      <Rocket size={20} className="me-2" />
                       شروع رایگان
                     </Button>
                   </Link>
@@ -124,7 +124,7 @@ export function ScrollyHero() {
           </motion.div>
 
           {/* Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 text-right">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 text-end">
                {[
                   { icon: Rocket, title: "استارتاپ", color: "bg-blue-500" },
                   { icon: Store, title: "کسب‌وکار سنتی", color: "bg-emerald-500" },

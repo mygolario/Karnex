@@ -126,7 +126,7 @@ export function DocumentGenerator() {
           <h3 className="font-bold text-foreground">اسناد حقوقی خودکار</h3>
           <p className="text-xs text-muted-foreground">تولید پیش‌نویس اسناد با اطلاعات پروژه شما</p>
         </div>
-        <Badge variant="gradient" size="sm" className="mr-auto">
+        <Badge variant="gradient" size="sm" className="me-auto">
           <Sparkles size={10} />
           جدید
         </Badge>

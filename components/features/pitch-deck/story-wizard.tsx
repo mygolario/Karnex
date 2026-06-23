@@ -115,7 +115,7 @@ export function StoryWizard({ onComplete, onCancel, isGenerating = false }: Stor
       <div className="w-full max-w-2xl p-6 relative">
         
         {/* Progress Bar */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-muted">
+        <div className="absolute top-0 start-0 w-full h-1 bg-muted">
           <motion.div 
             className={`h-full bg-gradient-to-r ${stepData.bgGradient}`}
             initial={{ width: "0%" }}
@@ -167,7 +167,7 @@ export function StoryWizard({ onComplete, onCancel, isGenerating = false }: Stor
 
               <div className="flex items-center justify-between pt-4">
                 <Button variant="ghost" size="lg" onClick={handlePrev} className="text-muted-foreground" disabled={isGenerating}>
-                  <ArrowRight className="mr-2" size={20} />
+                  <ArrowRight className="me-2" size={20} />
                   {currentStep === 0 ? "انصراف" : "قبلی"}
                 </Button>
                 
@@ -179,18 +179,18 @@ export function StoryWizard({ onComplete, onCancel, isGenerating = false }: Stor
                 >
                   {isGenerating ? (
                       <>
-                        <Sparkles className="ml-2 animate-spin" size={20} />
+                        <Sparkles className="ms-2 animate-spin" size={20} />
                         در حال نوشتن...
                       </>
                   ) : currentStep === STEPS.length - 1 ? (
                     <>
-                      <Sparkles className="ml-2 animate-pulse" size={20} />
+                      <Sparkles className="ms-2 animate-pulse" size={20} />
                       ساخت ارائه هوشمند
                     </>
                   ) : (
                     <>
                       بعدی
-                      <ArrowLeft className="mr-2" size={20} />
+                      <ArrowLeft className="me-2" size={20} />
                     </>
                   )}
                 </Button>

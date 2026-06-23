@@ -64,13 +64,13 @@ export function BrandVisualizer({ colors, projectName, fontName }: BrandVisualiz
               </div>
               
               {/* Decorative circles */}
-              <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-black/10 rounded-full blur-2xl" />
+              <div className="absolute -top-10 -end-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+              <div className="absolute -bottom-10 -start-10 w-32 h-32 bg-black/10 rounded-full blur-2xl" />
             </div>
             
             {/* Back (Stacked behind or simplify to just show front nicely) */}
             <div 
-              className="absolute top-4 left-4 -z-10 w-[340px] h-[200px] rounded-2xl shadow-lg bg-white overflow-hidden transform rotate-3 opacity-90"
+              className="absolute top-4 start-4 -z-10 w-[340px] h-[200px] rounded-2xl shadow-lg bg-white overflow-hidden transform rotate-3 opacity-90"
             >
                <div className="p-8 flex flex-col justify-end h-full">
                  <div className="h-2 w-1/3 rounded-full mb-3" style={{ background: primaryColor }} />
@@ -125,7 +125,7 @@ export function BrandVisualizer({ colors, projectName, fontName }: BrandVisualiz
               <div className="flex gap-3 text-gray-800">
                 <div className="w-6 h-6" /> {/* Heart */}
                 <div className="w-6 h-6" /> {/* Comment */}
-                <div className="w-6 h-6 ml-auto" /> {/* Save */}
+                <div className="w-6 h-6 ms-auto" /> {/* Save */}
               </div>
               <div className="h-2 w-32 bg-gray-100 rounded-full" />
               <div className="h-2 w-48 bg-gray-100 rounded-full" />

@@ -74,7 +74,7 @@ export function BreakEvenCalculator() {
                         type="number" 
                         value={input.fixedCosts}
                         onChange={(e) => setInput({...input, fixedCosts: parseInt(e.target.value) || 0})}
-                        className="text-left font-mono"
+                        className="text-start font-mono"
                     />
                 </div>
                 <div className="space-y-2">
@@ -83,7 +83,7 @@ export function BreakEvenCalculator() {
                         type="number" 
                         value={input.variableCostPerUnit}
                         onChange={(e) => setInput({...input, variableCostPerUnit: parseInt(e.target.value) || 0})}
-                        className="text-left font-mono"
+                        className="text-start font-mono"
                     />
                 </div>
                 <div className="space-y-2">
@@ -92,7 +92,7 @@ export function BreakEvenCalculator() {
                         type="number" 
                         value={input.pricePerUnit}
                         onChange={(e) => setInput({...input, pricePerUnit: parseInt(e.target.value) || 0})}
-                        className="text-left font-mono"
+                        className="text-start font-mono"
                     />
                 </div>
                 <Button onClick={handleSave} className="w-full">

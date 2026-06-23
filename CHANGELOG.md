@@ -2,6 +2,27 @@
 
 All notable changes to the Karnex platform will be documented in this file.
 
+## [v2.0.0-sprint4] - 2026-06-23
+
+This release completes Sprint 4 (Feature Expansion) of the Karnex v2.0 upgrade program. It implements RTL logical layout migration, Zod validation for LLM responses, auto-drafting for the project wizard, onboarding entity extraction, sidebar credit usage metering, local compliance roadmaps, and multi-user project sharing/invitation controls.
+
+### Added
+- **Multi-User Collaboration Card & Invitation Form**: Added a premium collaborators card inside the project settings page [app/dashboard/settings/page.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/app/dashboard/settings/page.tsx) with a role select option and invitation dispatching.
+- **Project Collaboration DB Schema**: Introduced the `ProjectMember` model in [prisma/schema.prisma](file:///c:/Ario%20Vibe%20Coding/Karnex/prisma/schema.prisma) supporting `userId`, `projectId`, and `role` specifications.
+- **Invitation Server Actions**: Implemented `inviteMemberAction` and `getProjectMembersAction` in [lib/project-actions.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/project-actions.ts) with Brevo notification email support.
+- **Usage Meter Sidebar Component**: Added a visual usage progress meter at the bottom of the dashboard sidebar [components/dashboard/sidebar.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/dashboard/sidebar.tsx) with warn/depleted overlays linked to `getMyUsageSummaryAction` in [lib/usage-tracker.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/usage-tracker.ts).
+- **Zod AI Schemas & Validation**: Added structured data validations in [lib/ai-validation.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/ai-validation.ts) and integrated validation checks in [lib/ai-actions.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/ai-actions.ts) using the self-healing retry helper `callAIWithValidation`.
+
+### Changed
+- **Tailwind Logical Properties Migration**: Converted physical Tailwind classes (such as `ml-*`, `pr-*`, `left-*`, `text-right`) to logical classes (`ms-*`, `pe-*`, `start-*`, `text-end`) across components and styles.
+- **RTL Logical Rules Enforcement**: Configured a custom ESLint plugin rule in [eslint.config.mjs](file:///c:/Ario%20Vibe%20Coding/Karnex/eslint.config.mjs) to prevent physical Tailwind property regressions.
+- **Onboarding Entity Extraction**: Upgraded the wizard chat route [app/api/wizard-chat/route.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/app/api/wizard-chat/route.ts) to instruct `google/gemini-2.5-flash` for JSON entity extraction and validate outputs with Zod.
+- **Genesis Wizard UI & Auto-Drafting**: Refactored the project creation details form in [components/features/new-project/project-details-form.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/features/new-project/project-details-form.tsx) into slide steps with progress indicators and local storage auto-save.
+- **Iranian Local Compliance Roadmaps**: Prepended Trade license, Tax, Social security, and Municipality steps on Traditional Business project roadmaps, integrated within [hooks/use-roadmap.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/hooks/use-roadmap.ts) and [components/dashboard/step-detail-modal.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/dashboard/step-detail-modal.tsx).
+
+### Fixed
+- **Multi-Tenant Collaboration Security**: Restructured project search, update, and delete queries in [lib/db.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/db.ts) and Copilot reasoning checks in [app/api/copilot/route.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/app/api/copilot/route.ts) and [lib/ai/copilot-tools.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/ai/copilot-tools.ts) to verify editor/admin member project permissions, preventing cross-tenant leakage.
+
 ## [v2.0.0-sprint3] - 2026-06-23
 
 This release completes Sprint 3 (Design System Overhaul) of the Karnex v2.0 upgrade program. It implements a fully custom Jalali date picker, resolves offline Vazirmatn typography issues for PWAs, localizes Latin digits to Farsi digits across all overview dashboards/roadmaps, and defines a centralized premium design token system.

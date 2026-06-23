@@ -112,7 +112,7 @@ export function StrategySnapshot({ plan, onContinue }: StrategySnapshotProps) {
               className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white h-20 rounded-2xl text-2xl font-bold shadow-[0_0_50px_rgba(236,72,153,0.4)] animate-pulse-glow transition-all hover:scale-[1.02]"
             >
                 بریم داشبورد!
-                <ArrowLeft className="w-6 h-6 mr-2" />
+                <ArrowLeft className="w-6 h-6 me-2" />
             </Button>
 
             <button

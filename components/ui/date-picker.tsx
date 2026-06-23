@@ -140,7 +140,7 @@ export const JalaliDatePicker = React.forwardRef<HTMLButtonElement, JalaliDatePi
             ref={ref}
             disabled={disabled}
             className={cn(
-              "flex h-12 w-full items-center justify-between rounded-input border border-border bg-background/50 px-4 py-3 text-sm transition-all duration-200 hover:bg-background/80 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 disabled:cursor-not-allowed disabled:opacity-50 text-right font-sans",
+              "flex h-12 w-full items-center justify-between rounded-input border border-border bg-background/50 px-4 py-3 text-sm transition-all duration-200 hover:bg-background/80 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 disabled:cursor-not-allowed disabled:opacity-50 text-end font-sans",
               error && "border-destructive focus:border-destructive focus:ring-destructive/20",
               !selectedDate && "text-muted-foreground",
               className
@@ -151,7 +151,7 @@ export const JalaliDatePicker = React.forwardRef<HTMLButtonElement, JalaliDatePi
                 ? toPersianDigits(selectedDateString)
                 : placeholder}
             </span>
-            <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0 ml-1" />
+            <CalendarIcon className="h-4 w-4 text-muted-foreground shrink-0 ms-1" />
           </button>
         </PopoverPrimitive.Trigger>
 

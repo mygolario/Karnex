@@ -93,9 +93,9 @@ export const CTASection = () => {
                   size="lg" 
                   className="h-16 px-12 text-lg rounded-2xl bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white font-bold shadow-2xl shadow-primary/30 hover:scale-105 transition-all"
                 >
-                  <Sparkles className="ml-2 h-5 w-5" />
+                  <Sparkles className="ms-2 h-5 w-5" />
                   شروع رایگان
-                  <ArrowLeft className="mr-2 h-5 w-5" />
+                  <ArrowLeft className="me-2 h-5 w-5" />
                 </Button>
               </Link>
 

@@ -133,7 +133,7 @@ export function DemographicsDashboard() {
                 verticalAlign="bottom"
                 height={36}
                 iconType="circle"
-                formatter={(value: string) => <span className="text-xs text-muted-foreground mr-2">{value}</span>}
+                formatter={(value: string) => <span className="text-xs text-muted-foreground me-2">{value}</span>}
               />
             </PieChart>
           </ResponsiveContainer>

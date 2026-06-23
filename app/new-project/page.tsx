@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { ProjectType } from "./genesis-constants";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { History } from "lucide-react";
 
 export default function NewProjectPage() {
   const router = useRouter();
@@ -41,6 +43,11 @@ export default function NewProjectPage() {
   const [error, setError] = useState("");
   const [showLimitModal, setShowLimitModal] = useState(false);
 
+  // -- Draft Recovery State --
+  const [draftChecked, setDraftChecked] = useState(false);
+  const [showResumeModal, setShowResumeModal] = useState(false);
+  const [draftData, setDraftData] = useState<any>(null);
+
   // -- Hooks --
   useEffect(() => {
     if (!authLoading && !user) {
@@ -48,7 +55,62 @@ export default function NewProjectPage() {
     }
   }, [user, authLoading, router]);
 
+  // Load draft on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("karnex_project_draft");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.selectedPillarId || parsed.projectName || parsed.projectVision || Object.keys(parsed.answers || {}).length > 0) {
+          setDraftData(parsed);
+          setShowResumeModal(true);
+        } else {
+          setDraftChecked(true);
+        }
+      } catch (e) {
+        console.error("Failed to parse saved draft", e);
+        setDraftChecked(true);
+      }
+    } else {
+      setDraftChecked(true);
+    }
+  }, []);
+
+  // Save draft on changes
+  useEffect(() => {
+    if (!draftChecked) return;
+    const draft = {
+      selectedPillarId,
+      projectName,
+      projectVision,
+      answers,
+      step
+    };
+    if (selectedPillarId || projectName || projectVision || Object.keys(answers).length > 0 || step > 0) {
+      localStorage.setItem("karnex_project_draft", JSON.stringify(draft));
+    } else {
+      localStorage.removeItem("karnex_project_draft");
+    }
+  }, [selectedPillarId, projectName, projectVision, answers, step, draftChecked]);
+
   // -- Handlers --
+  const handleRestoreDraft = () => {
+    if (draftData) {
+      setSelectedPillarId(draftData.selectedPillarId);
+      setProjectName(draftData.projectName || "");
+      setProjectVision(draftData.projectVision || "");
+      setAnswers(draftData.answers || {});
+      setStep(draftData.step || 0);
+    }
+    setShowResumeModal(false);
+    setDraftChecked(true);
+  };
+
+  const handleDiscardDraft = () => {
+    localStorage.removeItem("karnex_project_draft");
+    setShowResumeModal(false);
+    setDraftChecked(true);
+  };
 
   const handlePillarSelect = (id: ProjectType) => {
     setSelectedPillarId(id);
@@ -117,6 +179,7 @@ export default function NewProjectPage() {
         
         await Promise.race([createPromise, timeoutPromise]);
         console.log("✅ Project created, redirecting to dashboard");
+        localStorage.removeItem("karnex_project_draft");
         router.push("/dashboard");
 
     } catch (err: any) {
@@ -243,6 +306,34 @@ export default function NewProjectPage() {
             isOpen={showLimitModal} 
             onClose={() => setShowLimitModal(false)} 
          />
+
+         <Dialog open={showResumeModal} onOpenChange={(open) => { if (!open) handleDiscardDraft(); }}>
+            <DialogContent className="sm:max-w-md bg-card border-border shadow-2xl" dir="rtl">
+              <DialogHeader className="flex flex-col items-center gap-4 text-center">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+                  <History className="w-8 h-8 text-primary" />
+                </div>
+                <DialogTitle className="text-xl font-bold text-foreground">
+                  بازیابی پیش‌نویس قبلی
+                </DialogTitle>
+                <DialogDescription className="text-center text-muted-foreground leading-relaxed">
+                  پیش‌نویس تکمیل‌نشده‌ای از مراحل ثبت پروژه قبلی شما پیدا شد. آیا مایلید آن را بازیابی کنید؟
+                </DialogDescription>
+              </DialogHeader>
+
+              <DialogFooter className="flex flex-col sm:flex-row gap-3 mt-6 w-full">
+                <Button 
+                  onClick={handleRestoreDraft}
+                  className="w-full sm:w-auto flex-1 gap-2 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white shadow-lg shadow-primary/20"
+                >
+                  بله، بازیابی کن
+                </Button>
+                <Button variant="outline" onClick={handleDiscardDraft} className="w-full sm:w-auto">
+                  خیر، شروع مجدد
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+         </Dialog>
       </main>
     </div>
   );

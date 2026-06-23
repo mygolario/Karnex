@@ -6,6 +6,7 @@ import { checkProjectLimit, checkAIRequestLimit, incrementAIUsage } from "@/lib/
 import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { getPrompt } from "@/lib/prompts/registry";
+import { callAIWithValidation, BusinessPlanSchema } from "@/lib/ai-validation";
 import fs from 'fs';
 import path from 'path';
 
@@ -62,9 +63,18 @@ export async function getUserProjectsAction() {
     const session = await auth();
     if (!session?.user?.id) return { error: "Unauthorized" };
 
-    // RLS: Enforce project ownership check (project.userId === session.user.id)
+    // RLS: Enforce project ownership check OR membership
     const projects = await prisma.project.findMany({
-      where: { userId: session.user.id },
+      where: {
+        OR: [
+          { userId: session.user.id },
+          {
+            members: {
+              some: { userId: session.user.id }
+            }
+          }
+        ]
+      },
       orderBy: { updatedAt: 'desc' }
     });
 
@@ -285,46 +295,188 @@ export async function generatePlanAction(data: any) {
       businessGlossary: JSON.stringify(businessGlossary, null, 2)
     });
 
-    const result = await callOpenRouter(
-      user,
-      {
-        systemPrompt: system,
-        maxTokens: 16000,
-        temperature: 0.6,
-        timeoutMs: 80000,
-        modelOverride: "google/gemini-2.5-pro",
-      }
-    );
-
-    if (!result.success) {
-      await rollback();
-      return { error: 'AI generation failed' };
-    }
-
     try {
-      const structuredPlan = parseJsonFromAI(result.content!);
+      const structuredPlan = await callAIWithValidation(
+        user,
+        {
+          systemPrompt: system,
+          maxTokens: 16000,
+          temperature: 0.6,
+          timeoutMs: 80000,
+          modelOverride: "google/gemini-2.5-pro",
+        },
+        BusinessPlanSchema,
+        1
+      );
+
       if (structuredPlan && typeof structuredPlan === 'object') {
-        delete structuredPlan.reasoning;
+        delete (structuredPlan as any).reasoning;
       }
 
       // Normalize full plan structure
       const normalized = normalizeProjectPlan(structuredPlan);
       
       return { success: true, plan: normalized };
-    } catch (parseError) {
-      console.error("JSON Parse Error:", parseError);
-      console.error("Raw AI Content:", result.content);
-      
+    } catch (parseError: any) {
+      console.error("AI Validation / Parse Error:", parseError);
       await rollback();
-
-      // Write to debug file
-      try {
-        const debugPath = path.join(process.cwd(), 'ai-debug.log');
-        fs.writeFileSync(debugPath, result.content || "Empty content");
-      } catch (err) {
-        console.error("Failed to write debug log:", err);
-      }
-
-      return { error: 'Failed to parse AI response. Check console logs for details.' };
+      return { error: 'Failed to generate structured plan. Check console logs for details.' };
     }
+}
+
+export async function getProjectMembersAction(projectId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Unauthorized" };
+    const currentUserId = session.user.id;
+
+    // Fetch project and its members to check ownership/membership
+    const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        select: { 
+            userId: true,
+            user: {
+                select: {
+                    name: true,
+                    email: true
+                }
+            },
+            members: {
+                include: {
+                    user: {
+                        select: {
+                            name: true,
+                            email: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!project) return { error: "Project not found" };
+
+    const isOwner = project.userId === currentUserId;
+    const isMember = project.members.some(m => m.userId === currentUserId);
+    if (!isOwner && !isMember) return { error: "Unauthorized" };
+
+    // Format list of members including the owner
+    const formattedMembers = [
+        {
+            id: 'owner',
+            userId: project.userId,
+            email: project.user?.email || '',
+            name: project.user?.name || 'سازنده پروژه',
+            role: 'owner',
+            createdAt: new Date().toISOString()
+        },
+        ...project.members.map(m => ({
+            id: m.id,
+            userId: m.userId,
+            email: m.user?.email || '',
+            name: m.user?.name || '',
+            role: m.role,
+            createdAt: m.createdAt.toISOString()
+        }))
+    ];
+
+    return { success: true, members: formattedMembers };
+  } catch (error) {
+    console.error("Get Project Members Error:", error);
+    return { error: "Failed to fetch members" };
+  }
+}
+
+export async function inviteMemberAction(projectId: string, email: string, role: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Unauthorized" };
+    const currentUserId = session.user.id;
+
+    // Verify current user has admin rights (is owner or admin member)
+    const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        select: { 
+            userId: true,
+            projectName: true,
+            members: {
+                where: { userId: currentUserId }
+            }
+        }
+    });
+
+    if (!project) return { error: "Project not found" };
+
+    const isOwner = project.userId === currentUserId;
+    const membership = project.members?.[0];
+    const isAdmin = isOwner || (membership && membership.role === 'admin');
+
+    if (!isAdmin) {
+        return { error: "فقط سازنده پروژه یا مدیران می‌توانند همکار جدید دعوت کنند." };
+    }
+
+    // Find the target user by email
+    const targetUser = await prisma.user.findUnique({
+        where: { email }
+    });
+
+    if (!targetUser) {
+        return { error: "کاربری با این ایمیل در سامانه پیدا نشد. ابتدا باید ثبت‌نام کرده باشد." };
+    }
+
+    if (targetUser.id === project.userId) {
+        return { error: "این کاربر سازنده اصلی پروژه است." };
+    }
+
+    // Check if already a member
+    const existingMember = await prisma.projectMember.findUnique({
+        where: {
+            userId_projectId: {
+                userId: targetUser.id,
+                projectId
+            }
+        }
+    });
+
+    if (existingMember) {
+        return { error: "این کاربر قبلاً به پروژه اضافه شده است." };
+    }
+
+    // Create membership
+    await prisma.projectMember.create({
+        data: {
+            userId: targetUser.id,
+            projectId,
+            role
+        }
+    });
+
+    // Send email notification using Brevo
+    try {
+        const { sendEmail } = await import("@/lib/email");
+        const roleLabel = role === 'admin' ? 'مدیر' : role === 'editor' ? 'ویرایش‌گر' : 'بیننده';
+        await sendEmail({
+            to: email,
+            subject: `دعوت به همکاری در پروژه ${project.projectName} - کارنکس`,
+            templateName: 'invitation',
+            htmlContent: `
+                <div dir="rtl" style="font-family: Tahoma, sans-serif; padding: 20px; line-height: 1.8;">
+                    <h2>همکاری در کارنکس</h2>
+                    <p>سلام،</p>
+                    <p>کاربر <strong>${session?.user?.name || session?.user?.email || "کاربر کارنکس"}</strong> شما را به عنوان <strong>${roleLabel}</strong> به پروژه <strong>${project.projectName}</strong> دعوت کرده است.</p>
+                    <p>برای مشاهده و همکاری در پروژه، لطفا به پنل کاربری خود در کارنکس مراجعه کنید.</p>
+                    <hr />
+                    <a href="https://karnex.ir/dashboard" style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">ورود به پیشخوان کارنکس</a>
+                </div>
+            `
+        });
+    } catch (emailErr) {
+        console.error("Failed to send email invite notification:", emailErr);
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Invite Member Error:", error);
+    return { error: "Failed to invite member" };
+  }
 }

@@ -52,17 +52,17 @@ export function CompetitorTable() {
       <div className="flex flex-wrap items-center gap-3">
         {badge && (
           <Badge variant="outline" className={cn("px-3 py-1.5 text-xs font-bold", badge.color)}>
-            <Target size={12} className="ml-1" /> {badge.label}
+            <Target size={12} className="ms-1" /> {badge.label}
           </Badge>
         )}
         {competitorCount !== undefined && (
           <Badge variant="outline" className="px-3 py-1.5 text-xs border-border text-muted-foreground">
-            <Store size={12} className="ml-1" /> {competitorCount} رقیب شناسایی شده
+            <Store size={12} className="ms-1" /> {competitorCount} رقیب شناسایی شده
           </Badge>
         )}
         {marketGap && (
           <Badge variant="outline" className="px-3 py-1.5 text-xs border-emerald-500/20 text-emerald-500 bg-emerald-500/5">
-            <Zap size={12} className="ml-1" /> خلاء: {marketGap}
+            <Zap size={12} className="ms-1" /> خلاء: {marketGap}
           </Badge>
         )}
       </div>

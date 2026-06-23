@@ -71,7 +71,7 @@ export function StepGuide({ stepName, stepPhase, projectName }: StepGuideProps) 
             onClick={fetchGuide}
             className="text-xs text-primary hover:text-primary/80 hover:bg-primary/5 h-7 px-2"
           >
-            <HelpCircle size={12} className="mr-1.5" />
+            <HelpCircle size={12} className="me-1.5" />
             چطور انجام بدم؟
           </Button>
           
@@ -82,7 +82,7 @@ export function StepGuide({ stepName, stepPhase, projectName }: StepGuideProps) 
             onClick={askAiMentor}
             className="text-xs text-purple-600 hover:text-purple-700 hover:bg-purple-50 h-7 px-2"
           >
-            <MessageCircle size={12} className="mr-1.5" />
+            <MessageCircle size={12} className="me-1.5" />
             کمک از دستیار کارنکس
           </Button>
         </div>
@@ -90,7 +90,7 @@ export function StepGuide({ stepName, stepPhase, projectName }: StepGuideProps) 
         <Card variant="muted" className="mt-2 relative animate-in slide-in-from-top-2 fade-in duration-300 border-primary/20 bg-primary/5">
           <div className="flex justify-between items-start mb-3">
             <Badge variant="gradient" className="text-[10px] px-2 h-5">
-              <Lightbulb size={10} className="mr-1" />
+              <Lightbulb size={10} className="me-1" />
               راهنمای هوشمند
             </Badge>
             <button 

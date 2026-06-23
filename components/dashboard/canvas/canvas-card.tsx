@@ -79,7 +79,7 @@ export function CanvasCard({ card, sectionId, sectionColor, onUpdate, onDelete, 
       )}
     >
       {/* Drag Handle & Delete overlay */}
-      <div className="flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute top-0.5 right-0.5 left-0.5">
+      <div className="flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-200 absolute top-0.5 end-0.5 start-0.5">
         <div {...attributes} {...listeners} className="cursor-grab p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded active:cursor-grabbing">
              <GripVertical size={13} className="text-black/30 dark:text-white/30" />
         </div>

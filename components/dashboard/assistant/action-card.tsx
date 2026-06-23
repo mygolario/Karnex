@@ -222,7 +222,7 @@ export function SmartActionCard({ action, onApply, onDismiss }: ActionCardProps)
             </div>
 
             {/* Decorative background */}
-            <div className={`absolute -bottom-10 -right-10 w-32 h-32 bg-gradient-to-br ${gradient} opacity-5 rounded-full blur-2xl pointer-events-none`} />
+            <div className={`absolute -bottom-10 -end-10 w-32 h-32 bg-gradient-to-br ${gradient} opacity-5 rounded-full blur-2xl pointer-events-none`} />
         </motion.div>
     );
 }
@@ -239,7 +239,7 @@ export function CompactActionCard({ action, onApply }: { action: ActionCard; onA
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={onApply}
-            className="w-full text-right bg-card hover:bg-muted/50 border border-border/50 hover:border-primary/30 rounded-xl p-3 transition-all group"
+            className="w-full text-end bg-card hover:bg-muted/50 border border-border/50 hover:border-primary/30 rounded-xl p-3 transition-all group"
         >
             <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center text-white shrink-0 group-hover:scale-110 transition-transform`}>

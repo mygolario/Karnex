@@ -709,11 +709,11 @@
 
   /* RTL icon positioning */
   [dir="rtl"] .icon-start {
-    @apply mr-0 ml-2;
+    @apply me-0 ms-2;
   }
 
   [dir="rtl"] .icon-end {
-    @apply ml-0 mr-2;
+    @apply ms-0 me-2;
   }
 }
 

@@ -40,11 +40,11 @@ export function InstallPwa() {
       <div className="bg-white/20 p-2 rounded-lg group-hover:bg-white/30 transition-colors">
         <Smartphone size={20} />
       </div>
-      <div className="text-right">
+      <div className="text-end">
         <div className="text-xs text-blue-100">نسخه موبایل</div>
         <div className="font-bold text-sm">نصب اپلیکیشن</div>
       </div>
-      <Download size={16} className="mr-auto opacity-80" />
+      <Download size={16} className="me-auto opacity-80" />
     </button>
   );
 }

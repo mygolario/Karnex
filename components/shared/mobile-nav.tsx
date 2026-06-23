@@ -37,7 +37,7 @@ export function MobileBottomNav() {
   return (
     <nav 
       className={cn(
-        "fixed bottom-0 left-0 right-0 z-40",
+        "fixed bottom-0 start-0 end-0 z-40",
         "border-t border-border bg-card/95 backdrop-blur-lg",
         "md:hidden", // Only show on mobile
         "safe-bottom" // iOS safe area
@@ -164,7 +164,7 @@ export function FloatingActionButton({
 }: FABProps) {
   const content = (
     <div className={cn(
-      "fixed bottom-20 left-4 z-30", // Above bottom nav
+      "fixed bottom-20 start-4 z-30", // Above bottom nav
       "w-14 h-14 rounded-full",
       "bg-primary text-white shadow-lg shadow-primary/30",
       "flex items-center justify-center",

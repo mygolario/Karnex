@@ -53,23 +53,115 @@ export function useRoadmap(): UseRoadmapReturn {
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [activeWeek, setActiveWeek] = useState(1);
 
-  // Sync state from plan
+  // Compute roadmap dynamically
+  const roadmap = useMemo(() => {
+    const baseRoadmap = (plan?.roadmap || []) as RoadmapPhase[];
+    if (plan?.projectType === 'traditional') {
+      const compliancePhase: RoadmapPhase = {
+        phase: "الزامات قانونی و مجوزهای کسب‌وکار در ایران",
+        weekNumber: 0,
+        theme: "قوانین و مجوزها",
+        steps: [
+          {
+            title: "دریافت جواز کسب",
+            description: "مجوز رسمی برای فعالیت صنفی در مکان تجاری. از درگاه ملی مجوزها اقدام کنید.",
+            estimatedHours: 40,
+            priority: "high",
+            category: "legal",
+            status: "todo",
+            checklist: [
+              "ثبت درخواست در درگاه ملی مجوزها (mojavez.ir)",
+              "ثبت‌نام در سامانه نوین اصناف",
+              "ارسال مدارک هویتی و عکس پرسنلی",
+              "ارائه سند مالکیت یا اجاره‌نامه با کاربری تجاری/اداری",
+              "پرداخت هزینه‌های صنف و صدور جواز"
+            ],
+            tips: [
+              "اجاره‌نامه حتماً کد رهگیری رسمی داشته باشد",
+              "از درگاه ملی مجوزها شروع کنید تا فرآیند کوتاه‌تر شود"
+            ]
+          },
+          {
+            title: "ثبت‌نام پرونده مالیاتی و کد اقتصادی",
+            description: "هر کسب‌وکار فعال موظف به ثبت پرونده مالیاتی در سازمان امور مالیاتی است.",
+            estimatedHours: 10,
+            priority: "medium",
+            category: "legal",
+            status: "todo",
+            checklist: [
+              "ورود به درگاه ملی خدمات الکترونیک مالیاتی (my.tax.gov.ir)",
+              "ثبت‌نام اولیه و ایجاد حساب کاربری",
+              "تکمیل اطلاعات کسب‌وکار و مکان فعالیت",
+              "تایید پرونده و صدور کد اقتصادی",
+              "ارائه اظهارنامه مالیاتی سالانه طبق زمان مقرر"
+            ],
+            tips: [
+              "حتی در صورت عدم تراکنش، اظهارنامه ندادن جریمه دارد",
+              "از معافیت‌های مالیاتی مربوط به صنف خود آگاه شوید"
+            ]
+          },
+          {
+            title: "دریافت کد کارگاهی تأمین اجتماعی",
+            description: "برای بیمه کردن کارکنان، باید برای کارگاه یا مغازه کد بیمه تأمین اجتماعی بگیرید.",
+            estimatedHours: 20,
+            priority: "high",
+            category: "legal",
+            status: "todo",
+            checklist: [
+              "مراجعه به سامانه خدمات غیرحضوری تأمین اجتماعی (eservices.tamin.ir)",
+              "ارائه جواز کسب و سند مالکیت/اجاره‌نامه",
+              "ارسال مدارک هویتی کارفرما",
+              "بازرسی محل توسط مامور سازمان تأمین اجتماعی",
+              "تخصیص کد کارگاهی و امکان ارسال لیست بیمه ماهانه"
+            ],
+            tips: [
+              "لیست بیمه هر ماه باید تا پایان ماه بعد ارسال و پرداخت شود",
+              "بازرسی معمولاً در ساعت کاری انجام می‌شود؛ در محل حضور داشته باشید"
+            ]
+          },
+          {
+            title: "دریافت مجوز تابلوی شهرداری و پروانه‌های محلی",
+            description: "برای نصب تابلو در فضای عمومی یا تغییرات محلی نیاز به پروانه شهرداری منطقه خود دارید.",
+            estimatedHours: 15,
+            priority: "medium",
+            category: "legal",
+            status: "todo",
+            checklist: [
+              "مراجعه به شهرداری منطقه یا سامانه تهران من (یا شهرداری شهر خود)",
+              "ثبت درخواست مجوز نصب تابلو",
+              "ارائه طرح و ابعاد تابلو",
+              "پرداخت عوارض سالانه تابلوی کسب‌وکار",
+              "دریافت برچسب یا تاییدیه رسمی شهرداری"
+            ],
+            tips: [
+              "نصب بدون مجوز تابلو جریمه و احتمال جمع‌آوری توسط شهرداری دارد",
+              "ابعاد تابلو نباید از استانداردهای عرض معبر بیشتر باشد"
+            ]
+          }
+        ]
+      };
+      return [compliancePhase, ...baseRoadmap];
+    }
+    return baseRoadmap;
+  }, [plan?.roadmap, plan?.projectType]);
+
+  // Sync state from plan and computed roadmap
   useEffect(() => {
     if (plan) {
       setCompletedSteps(plan.completedSteps || []);
       
       // Auto-detect active week based on first incomplete step
-      if (plan.roadmap) {
-        const currentWeekIdx = plan.roadmap.findIndex((phase: any) =>
+      if (roadmap && roadmap.length > 0) {
+        const currentWeekIdx = roadmap.findIndex((phase: any) =>
           phase.steps.some((s: any) => !plan.completedSteps?.includes(typeof s === 'string' ? s : s.title))
         );
         if (currentWeekIdx >= 0) {
-          const phase = plan.roadmap[currentWeekIdx] as RoadmapPhase;
-          setActiveWeek(phase.weekNumber || currentWeekIdx + 1);
+          const phase = roadmap[currentWeekIdx] as RoadmapPhase;
+          setActiveWeek(phase.weekNumber !== undefined ? phase.weekNumber : currentWeekIdx + 1);
         }
       }
     }
-  }, [plan]);
+  }, [plan, roadmap]);
 
   const getStepTitle = (step: string | RoadmapStepObject): string => {
     return typeof step === 'string' ? step : step.title;
@@ -125,8 +217,6 @@ export function useRoadmap(): UseRoadmapReturn {
     const newStatus = current === 'done' ? 'todo' : 'done';
     await updateStepStatus(step, newStatus);
   };
-
-  const roadmap = (plan?.roadmap || []) as RoadmapPhase[];
   
   const totalSteps = useMemo(() => {
     return roadmap.reduce((acc: number, phase: RoadmapPhase) => acc + (phase.steps?.length || 0), 0);

@@ -44,9 +44,19 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Project ID required" }, { status: 400 });
     }
 
-    // Fetch Full Project Context (RLS check: project must belong to session user)
+    // Fetch Full Project Context (RLS check: project must belong to session user OR user must be a member)
     const project = await prisma.project.findFirst({
-        where: { id: projectId, userId },
+        where: { 
+            id: projectId,
+            OR: [
+                { userId },
+                {
+                    members: {
+                        some: { userId }
+                    }
+                }
+            ]
+        },
         select: { 
             projectName: true,
             description: true,

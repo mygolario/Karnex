@@ -110,11 +110,31 @@ export const COPILOT_TOOLS = [
 
 // === Tool Executors ===
 
+async function checkProjectWriteAccess(projectId: string, userId?: string): Promise<boolean> {
+    if (!userId) return true;
+    const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        select: { 
+            userId: true,
+            members: {
+                where: { userId }
+            }
+        }
+    });
+    if (!project) return false;
+    if (project.userId === userId) return true;
+    const membership = project.members?.[0];
+    return !!(membership && (membership.role === 'admin' || membership.role === 'editor'));
+}
+
 export async function executeUpdateBusinessPlan(projectId: string, args: any, userId?: string) {
     if (!projectId) throw new Error("Project ID required");
 
+    const hasAccess = await checkProjectWriteAccess(projectId, userId);
+    if (!hasAccess) throw new Error("Unauthorized access to project");
+
     const project = await prisma.project.findFirst({
-        where: { id: projectId, ...(userId && { userId }) },
+        where: { id: projectId },
         select: { data: true }
     });
 
@@ -141,11 +161,6 @@ export async function executeUpdateBusinessPlan(projectId: string, args: any, us
         } 
         // If it's a string (Legacy or empty), append or set
         else if (typeof existing === 'string') {
-             // If it looks like it was empty, just set it. If it has content, maybe append? 
-             // Actually, robust approach: Convert to Card on first AI edit? 
-             // For now, let's just append text if it's a string to be safe, 
-             // OR if it's empty, initialize as an array with one card to upgrade it?
-             // Let's stick to: if string, keep string for now to avoid breaking UI that expects string.
              newCanvas[key] = content;
         } else {
              // If undefined/null, initialize as Array of Cards (Upgrade default)
@@ -161,14 +176,13 @@ export async function executeUpdateBusinessPlan(projectId: string, args: any, us
 
     if (args.problem) updateSection('problem', args.problem);
     if (args.solution) updateSection('solution', args.solution);
-    if (args.value_proposition) updateSection('uniqueValue', args.value_proposition); // Fixed key name match
+    if (args.value_proposition) updateSection('uniqueValue', args.value_proposition);
     if (args.unfair_advantage) updateSection('unfairAdvantage', args.unfair_advantage);
     if (args.customer_segments) updateSection('customerSegments', args.customer_segments);
     if (args.channels) updateSection('channels', args.channels);
     if (args.revenue_streams) updateSection('revenueStream', args.revenue_streams);
     if (args.cost_structure) updateSection('costStructure', args.cost_structure);
     if (args.key_metrics) updateSection('keyMetrics', args.key_metrics);
-    // Added Customer Relations mapping
     if (args.customer_relations || args.customerRelations) updateSection('customerRelations', args.customer_relations || args.customerRelations);
 
     const newData = {
@@ -187,8 +201,11 @@ export async function executeUpdateBusinessPlan(projectId: string, args: any, us
 export async function executeCreatePitchDeckSlide(projectId: string, args: any, userId?: string) {
      if (!projectId) throw new Error("Project ID required");
 
+     const hasAccess = await checkProjectWriteAccess(projectId, userId);
+     if (!hasAccess) throw new Error("Unauthorized access to project");
+
      const project = await prisma.project.findFirst({
-        where: { id: projectId, ...(userId && { userId }) },
+        where: { id: projectId },
         select: { data: true }
     });
 
@@ -222,8 +239,11 @@ export async function executeUpdatePitchDeckSlide(projectId: string, args: any, 
     if (!projectId) throw new Error("Project ID required");
     if (!args.slideId) throw new Error("Slide ID required");
 
+    const hasAccess = await checkProjectWriteAccess(projectId, userId);
+    if (!hasAccess) throw new Error("Unauthorized access to project");
+
     const project = await prisma.project.findFirst({
-       where: { id: projectId, ...(userId && { userId }) },
+       where: { id: projectId },
        select: { data: true }
    });
 
@@ -280,8 +300,11 @@ export async function executeSearchCompetitors(projectId: string, args: any, use
 export async function executeUpdateSwotAnalysis(projectId: string, args: any, userId?: string) {
     if (!projectId) throw new Error("Project ID required");
 
+    const hasAccess = await checkProjectWriteAccess(projectId, userId);
+    if (!hasAccess) throw new Error("Unauthorized access to project");
+
     const project = await prisma.project.findFirst({
-        where: { id: projectId, ...(userId && { userId }) },
+        where: { id: projectId },
         select: { data: true }
     });
 

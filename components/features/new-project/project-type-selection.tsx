@@ -43,7 +43,7 @@ export function ProjectTypeSelection({ selectedId, onSelect }: ProjectTypeSelect
               transition={{ delay: index * 0.1 + 0.2 }}
               onClick={() => onSelect(pillar.id as ProjectType)}
               className={cn(
-                "group relative h-[450px] rounded-3xl overflow-hidden text-right transition-all duration-500",
+                "group relative h-[450px] rounded-3xl overflow-hidden text-end transition-all duration-500",
                 "border border-border/50 hover:border-primary/50",
                 isSelected ? "ring-4 ring-primary/20 scale-[1.02]" : "hover:scale-[1.02]"
               )}
@@ -59,7 +59,7 @@ export function ProjectTypeSelection({ selectedId, onSelect }: ProjectTypeSelect
               
               {/* Selection Indicator */}
               <div className={cn(
-                "absolute top-6 left-6 z-30 transition-all duration-300",
+                "absolute top-6 start-6 z-30 transition-all duration-300",
                 isSelected ? "opacity-100 scale-100" : "opacity-0 scale-50"
               )}>
                 <div className="bg-primary text-primary-foreground rounded-full p-2 shadow-lg shadow-primary/30">
@@ -93,7 +93,7 @@ export function ProjectTypeSelection({ selectedId, onSelect }: ProjectTypeSelect
                      isSelected ? "translate-x-0 opacity-100" : "translate-x-4 opacity-0"
                    )}>
                       <span>انتخاب این مسیر</span>
-                      <ArrowRight className="mr-2 w-5 h-5 rtl:rotate-180" />
+                      <ArrowRight className="me-2 w-5 h-5 rtl:rotate-180" />
                    </div>
                 </div>
               </div>

@@ -47,7 +47,7 @@ export function NeighborhoodCard() {
 
         {/* Neighborhood Profile */}
         {analysis.neighborhoodProfile && (
-          <p className="text-sm leading-relaxed text-muted-foreground mb-5 text-justify border-r-2 border-primary/30 pr-3">
+          <p className="text-sm leading-relaxed text-muted-foreground mb-5 text-justify border-r-2 border-primary/30 pe-3">
             {analysis.neighborhoodProfile}
           </p>
         )}

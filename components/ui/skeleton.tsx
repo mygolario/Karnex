@@ -69,7 +69,7 @@ export function SkeletonStats() {
 // Timeline skeleton for roadmap
 export function SkeletonTimeline() {
   return (
-    <div className="space-y-6 border-r-2 border-muted mr-4 pr-8">
+    <div className="space-y-6 border-r-2 border-muted me-4 pe-8">
       {Array.from({ length: 3 }).map((_, i) => (
         <div key={i} className="relative">
           <Skeleton className="absolute -right-[9px] top-0 w-4 h-4 rounded-full" />

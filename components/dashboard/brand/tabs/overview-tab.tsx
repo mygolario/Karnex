@@ -46,8 +46,8 @@ export function OverviewTab({ brandKit, projectName, ideaInput, onNavigate }: Ov
       >
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-primary rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary rounded-full blur-3xl" />
+          <div className="absolute top-0 end-0 w-96 h-96 bg-primary rounded-full blur-3xl" />
+          <div className="absolute bottom-0 start-0 w-96 h-96 bg-secondary rounded-full blur-3xl" />
         </div>
         
         <div className="relative flex flex-col md:flex-row gap-8 items-start">
@@ -176,19 +176,19 @@ export function OverviewTab({ brandKit, projectName, ideaInput, onNavigate }: Ov
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <span className="text-muted-foreground">صنعت:</span>
-              <span className="mr-2 font-medium">{brandKit.wizardData.industry}</span>
+              <span className="me-2 font-medium">{brandKit.wizardData.industry}</span>
             </div>
             <div>
               <span className="text-muted-foreground">سبک لوگو:</span>
-              <span className="mr-2 font-medium">{brandKit.wizardData.logoStyle}</span>
+              <span className="me-2 font-medium">{brandKit.wizardData.logoStyle}</span>
             </div>
             <div>
               <span className="text-muted-foreground">احساس:</span>
-              <span className="mr-2 font-medium">{brandKit.wizardData.desiredFeeling}</span>
+              <span className="me-2 font-medium">{brandKit.wizardData.desiredFeeling}</span>
             </div>
             <div>
               <span className="text-muted-foreground">شخصیت:</span>
-              <span className="mr-2 font-medium">{brandKit.wizardData.brandPersonality?.join("، ")}</span>
+              <span className="me-2 font-medium">{brandKit.wizardData.brandPersonality?.join("، ")}</span>
             </div>
           </div>
         </div>

@@ -196,7 +196,7 @@ export function KarnexScore({ className, compact = false }: KarnexScoreProps) {
           </div>
 
           {/* Info */}
-          <div className="flex-1 text-center md:text-right">
+          <div className="flex-1 text-center md:text-end">
             <h3 className="text-2xl font-black mb-2">امتیاز کارنکس</h3>
             <p className="text-white/80 mb-4 text-sm">
               نمایانگر آمادگی پروژه شما برای اجرا و سرمایه‌گذاری
@@ -206,7 +206,7 @@ export function KarnexScore({ className, compact = false }: KarnexScoreProps) {
               {/* Investment Readiness */}
               <div className="bg-white/15 backdrop-blur-sm rounded-xl p-3 inline-flex items-center gap-3">
                 <Shield size={20} className="text-emerald-300" />
-                <div className="text-right">
+                <div className="text-end">
                   <div className="text-xs opacity-80">آمادگی</div>
                   <div className="font-bold text-lg">{investmentReadiness}%</div>
                 </div>
@@ -218,7 +218,7 @@ export function KarnexScore({ className, compact = false }: KarnexScoreProps) {
                   <div className="w-8 h-8 rounded-full bg-amber-500 flex items-center justify-center font-black text-slate-900 border-2 border-white">
                     {profile.level}
                   </div>
-                  <div className="text-right">
+                  <div className="text-end">
                     <div className="text-xs opacity-80 text-amber-200">سطح بنیان‌گذار</div>
                     <div className="font-bold text-lg text-amber-100">{profile.totalXp} XP</div>
                   </div>
@@ -297,7 +297,7 @@ export function KarnexScore({ className, compact = false }: KarnexScoreProps) {
               )}
 
               {achievement.unlocked && (
-                <div className="absolute top-2 left-2">
+                <div className="absolute top-2 start-2">
                   <CheckCircle2 size={14} className="text-emerald-500" />
                 </div>
               )}

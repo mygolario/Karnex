@@ -83,10 +83,10 @@ export function RoadmapJourney({
   return (
     <div className="relative w-full max-w-4xl mx-auto py-12 px-4">
       {/* Central Path Line (The "Journey") */}
-      <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/20 via-primary/50 to-primary/20 -translate-x-1/2 hidden md:block" />
+      <div className="absolute start-4 md:start-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/20 via-primary/50 to-primary/20 -translate-x-1/2 hidden md:block" />
       
       {/* Mobile Path Line */}
-      <div className="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/20 via-primary/50 to-primary/20 md:hidden" />
+      <div className="absolute start-8 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/20 via-primary/50 to-primary/20 md:hidden" />
 
       {/* Start Point */}
       <div className="relative z-10 flex justify-center mb-16 md:mb-24">
@@ -126,14 +126,14 @@ export function RoadmapJourney({
                         className={cn(
                            "relative flex items-center md:gap-12",
                            // Mobile: always left aligned content (timeline on left)
-                           "md:flex-row flex-col-reverse items-start md:items-center pl-16 md:pl-0"
+                           "md:flex-row flex-col-reverse items-start md:items-center ps-16 md:ps-0"
                         )}
                      >
                         {/* Desktop: Alternating Layout */}
                         {/* Left Side Content (for Left items) */}
                         <div className={cn(
-                           "hidden md:block flex-1 text-left pr-8",
-                           !isLeft && "order-3 pl-8 text-right pr-0" // Swap for Right items
+                           "hidden md:block flex-1 text-start pe-8",
+                           !isLeft && "order-3 ps-8 text-end pe-0" // Swap for Right items
                         )}>
                            {isLeft ? (
                               <StepCard 
@@ -148,18 +148,18 @@ export function RoadmapJourney({
 
                         {/* Center Node (The Milestone) */}
                         <div className={cn(
-                           "absolute md:static left-5 md:left-auto md:order-2 flex-shrink-0 z-10 w-6 h-6 rounded-full border-4 border-background shadow-sm transition-all duration-500",
+                           "absolute md:static start-5 md:start-auto md:order-2 flex-shrink-0 z-10 w-6 h-6 rounded-full border-4 border-background shadow-sm transition-all duration-500",
                            state === "completed" ? "bg-emerald-500 scale-125 shadow-emerald-500/30" :
                            state === "current" ? "bg-blue-500 scale-150 animate-pulse shadow-blue-500/30" :
                            "bg-muted-foreground/30 scale-100"
                         )}>
-                           {state === "completed" && <CheckCircle2 size={14} className="text-white absolute -top-5 left-1/2 -translate-x-1/2 opacity-0 animate-in fade-in slide-in-from-bottom-2" />}
+                           {state === "completed" && <CheckCircle2 size={14} className="text-white absolute -top-5 start-1/2 -translate-x-1/2 opacity-0 animate-in fade-in slide-in-from-bottom-2" />}
                         </div>
 
                         {/* Right Side Content (for Left items, empty/meta) */}
                          <div className={cn(
-                           "hidden md:block flex-1 pl-8",
-                           !isLeft && "order-1 pr-8 pl-0 text-left" // Swap for Right items
+                           "hidden md:block flex-1 ps-8",
+                           !isLeft && "order-1 pe-8 ps-0 text-start" // Swap for Right items
                         )}>
                            {isLeft ? (
                               <MissionBadge index={stepIndex + 1 + (phaseIndex * 5)} isLeft={true} />
@@ -249,15 +249,15 @@ function StepCard({
       <Card 
          onClick={onClick}
          className={cn(
-            "p-5 cursor-pointer transition-all duration-300 group border-l-4 overflow-hidden relative",
-            state === "locked" && "opacity-60 bg-muted/50 border-l-muted hover:opacity-80",
-            state === "current" && "bg-gradient-to-br from-card to-blue-500/5 border-l-blue-500 shadow-lg shadow-blue-500/5 hover:-translate-y-1 hover:shadow-xl",
-            state === "completed" && "bg-gradient-to-br from-emerald-50 to-emerald-100/20 border-l-emerald-500 grayscale-[0.3] hover:grayscale-0 dark:from-emerald-950/20 dark:to-emerald-900/10"
+            "p-5 cursor-pointer transition-all duration-300 group border-s-4 overflow-hidden relative",
+            state === "locked" && "opacity-60 bg-muted/50 border-s-muted hover:opacity-80",
+            state === "current" && "bg-gradient-to-br from-card to-blue-500/5 border-s-blue-500 shadow-lg shadow-blue-500/5 hover:-translate-y-1 hover:shadow-xl",
+            state === "completed" && "bg-gradient-to-br from-emerald-50 to-emerald-100/20 border-s-emerald-500 grayscale-[0.3] hover:grayscale-0 dark:from-emerald-950/20 dark:to-emerald-900/10"
          )}
       >
          {/* Background Decoration */}
          {state === "current" && (
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all" />
+            <div className="absolute -end-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all" />
          )}
 
          <div className="flex justify-between items-start gap-3 relative z-10">
@@ -313,7 +313,7 @@ function MissionBadge({ index, isLeft }: { index: number; isLeft: boolean }) {
     return (
         <div className={cn(
             "flex items-center gap-3 opacity-60 hover:opacity-100 transition-all duration-300 group",
-            !isLeft ? "flex-row text-left dir-ltr" : "flex-row-reverse text-right"
+            !isLeft ? "flex-row text-start dir-ltr" : "flex-row-reverse text-end"
         )}>
             {/* Dashed Connector */}
             <div className={cn(

@@ -332,7 +332,7 @@ export function ContentGeneratorButton({ strategy, projectName, audience }: Cont
                           </div>
                         ) : (
                           <>
-                            <Sparkles size={16} className="ml-2" />
+                            <Sparkles size={16} className="ms-2" />
                             تولید ۳ نسخه
                           </>
                         )}
@@ -407,7 +407,7 @@ export function ContentGeneratorButton({ strategy, projectName, audience }: Cont
                       <Button
                         size="sm"
                         variant="secondary"
-                        className="absolute top-3 left-3 gap-1 h-8"
+                        className="absolute top-3 start-3 gap-1 h-8"
                         onClick={() => copyToClipboard()}
                       >
                         {copied ? <Check size={12} /> : <Copy size={12} />}

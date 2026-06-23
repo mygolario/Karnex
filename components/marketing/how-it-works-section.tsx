@@ -68,7 +68,7 @@ export const HowItWorksSection = () => {
             >
               {/* Connector line */}
               {index < steps.length - 1 && (
-                <div className="absolute top-20 right-8 w-0.5 h-full bg-gradient-to-b from-border to-transparent" />
+                <div className="absolute top-20 end-8 w-0.5 h-full bg-gradient-to-b from-border to-transparent" />
               )}
               
               {/* Number */}

@@ -31,7 +31,7 @@ export const StripeFeatures = () => {
           <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight text-foreground">
             همه ابزارها در یک <span className="text-primary relative inline-block">
               جعبه‌ابزار جادویی
-              <span className="absolute bottom-0 left-0 w-full h-2 bg-primary/20 -z-10 rounded-full" />
+              <span className="absolute bottom-0 start-0 w-full h-2 bg-primary/20 -z-10 rounded-full" />
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -44,9 +44,9 @@ export const StripeFeatures = () => {
             
             {/* Big Card 1 */}
             <div className="md:col-span-2 p-8 md:p-12 rounded-[2.5rem] bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-full h-full bg-[url('/noise.svg')] opacity-20 mix-blend-overlay" />
+                <div className="absolute top-0 end-0 w-full h-full bg-[url('/noise.svg')] opacity-20 mix-blend-overlay" />
                 <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
-                    <div className="flex-1 text-right">
+                    <div className="flex-1 text-end">
                         <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-6">
                             <Brain className="w-8 h-8 text-white" />
                         </div>
@@ -68,8 +68,8 @@ export const StripeFeatures = () => {
                     
                     {/* Visual Element */}
                     <div className="flex-1 relative w-full h-full min-h-[250px]">
-                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-white/10 rounded-full blur-[80px]" />
-                         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 absolute top-0 left-0 w-full transform rotate-6 group-hover:rotate-3 transition-transform duration-500">
+                         <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-white/10 rounded-full blur-[80px]" />
+                         <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 absolute top-0 start-0 w-full transform rotate-6 group-hover:rotate-3 transition-transform duration-500">
                             <div className="h-2 w-20 bg-white/30 rounded-full mb-3" />
                             <div className="space-y-2">
                                 <div className="h-2 w-full bg-white/10 rounded-full" />
@@ -83,7 +83,7 @@ export const StripeFeatures = () => {
 
             {/* Tall Card */}
             <div className="md:row-span-2 p-8 rounded-[2.5rem] bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-xl flex flex-col items-center text-center relative overflow-hidden">
-                 <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 to-rose-500" />
+                 <div className="absolute top-0 start-0 w-full h-2 bg-gradient-to-r from-pink-500 to-rose-500" />
                  <div className="w-20 h-20 rounded-full bg-pink-50 dark:bg-pink-900/20 text-pink-500 flex items-center justify-center mb-6 mt-8">
                     <Rocket size={40} />
                  </div>
@@ -93,7 +93,7 @@ export const StripeFeatures = () => {
                  </p>
                  <div className="mt-auto w-full space-y-4">
                      {[1,2,3].map(i => (
-                         <div key={i} className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-right">
+                         <div key={i} className="flex items-center gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-end">
                              <div className="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-sm">
                                  {i}
                              </div>

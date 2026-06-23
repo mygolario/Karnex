@@ -29,10 +29,10 @@ export function Footer() {
   return (
     <footer className="relative bg-black text-white overflow-hidden">
       {/* Gradient top border */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+      <div className="absolute top-0 start-0 end-0 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
       
       {/* Background glow */}
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/10 rounded-full blur-[150px]" />
+      <div className="absolute bottom-0 start-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/10 rounded-full blur-[150px]" />
       
       <div className="container px-4 md:px-6 py-20 relative z-10">
         {/* Top section - CTA */}
@@ -52,7 +52,7 @@ export function Footer() {
           <Link href="/signup">
             <Button className="h-14 px-8 rounded-xl bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white font-bold shadow-lg shadow-primary/25">
               شروع رایگان
-              <ArrowLeft className="mr-2 h-5 w-5" />
+              <ArrowLeft className="me-2 h-5 w-5" />
             </Button>
           </Link>
         </motion.div>

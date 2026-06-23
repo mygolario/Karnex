@@ -74,7 +74,7 @@ export const Testimonials = () => {
             >
               <div className="relative bg-card border border-border rounded-3xl p-8 h-full transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-2">
                 {/* Quote Icon */}
-                <div className={`absolute -top-4 right-6 w-10 h-10 rounded-xl bg-gradient-to-br ${pillarColors[testimonial.pillar as keyof typeof pillarColors]} flex items-center justify-center shadow-lg`}>
+                <div className={`absolute -top-4 end-6 w-10 h-10 rounded-xl bg-gradient-to-br ${pillarColors[testimonial.pillar as keyof typeof pillarColors]} flex items-center justify-center shadow-lg`}>
                   <Quote className="w-5 h-5 text-white" />
                 </div>
 

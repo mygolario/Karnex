@@ -86,7 +86,7 @@ export function MetricCards() {
                 <motion.div
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="absolute bottom-0 left-0 right-0 p-3 bg-background/95 backdrop-blur-sm border-t border-border text-xs text-muted-foreground flex items-start gap-2"
+                  className="absolute bottom-0 start-0 end-0 p-3 bg-background/95 backdrop-blur-sm border-t border-border text-xs text-muted-foreground flex items-start gap-2"
                 >
                   <Info size={14} className="shrink-0 mt-0.5 text-primary" />
                   {metric.tooltip}

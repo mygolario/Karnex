@@ -8,7 +8,8 @@ export type EmailTemplate =
   | 'subscription_success' 
   | 'contact'
   | 'plan_activation'
-  | 'invoice';
+  | 'invoice'
+  | 'invitation';
 
 interface SendEmailParams {
   to: string;

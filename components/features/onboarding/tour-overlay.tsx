@@ -277,12 +277,12 @@ export function TourOverlay() {
                              {currentStepIndex === totalSteps - 1 ? (
                                 <>
                                     پایان
-                                    <Check className="mr-2 w-4 h-4" />
+                                    <Check className="me-2 w-4 h-4" />
                                 </>
                              ) : (
                                 <>
                                     بعدی
-                                    <ArrowLeft className="mr-2 w-4 h-4" />
+                                    <ArrowLeft className="me-2 w-4 h-4" />
                                 </>
                              )}
                         </Button>

@@ -331,7 +331,7 @@ export function BrandWizard({ projectName, ideaInput, onComplete, onSkip }: Bran
                   value={targetAudience}
                   onChange={(e) => setTargetAudience(e.target.value)}
                   placeholder="مثال: جوانان ۱۸ تا ۳۵ ساله، خانواده‌های شهری، کسب‌وکارهای کوچک..."
-                  className="w-full p-4 rounded-2xl border-2 border-border focus:border-primary outline-none resize-none h-32 text-right"
+                  className="w-full p-4 rounded-2xl border-2 border-border focus:border-primary outline-none resize-none h-32 text-end"
                 />
                 <p className="text-sm text-muted-foreground mt-2 text-center">
                   هرچه دقیق‌تر توضیح دهید، نتیجه بهتری می‌گیرید
@@ -431,7 +431,7 @@ export function BrandWizard({ projectName, ideaInput, onComplete, onSkip }: Bran
                   value={competitors.join("\n")}
                   onChange={(e) => setCompetitors(e.target.value.split("\n").filter(c => c.trim()))}
                   placeholder="هر رقیب در یک خط&#10;مثال:&#10;دیجی‌کالا&#10;باسلام&#10;ترب"
-                  className="w-full p-4 rounded-2xl border-2 border-border focus:border-primary outline-none resize-none h-32 text-right"
+                  className="w-full p-4 rounded-2xl border-2 border-border focus:border-primary outline-none resize-none h-32 text-end"
                 />
               </div>
             )}
@@ -443,7 +443,7 @@ export function BrandWizard({ projectName, ideaInput, onComplete, onSkip }: Bran
       <div className="flex gap-4">
         {step > 1 && (
           <Button variant="outline" size="lg" onClick={handleBack} className="flex-1">
-            <ArrowRight className="ml-2" size={18} />
+            <ArrowRight className="ms-2" size={18} />
             قبلی
           </Button>
         )}
@@ -456,13 +456,13 @@ export function BrandWizard({ projectName, ideaInput, onComplete, onSkip }: Bran
         >
           {step === totalSteps ? (
             <>
-              <Sparkles className="ml-2" size={18} />
+              <Sparkles className="ms-2" size={18} />
               ساخت هویت بصری
             </>
           ) : (
             <>
               بعدی
-              <ArrowLeft className="mr-2" size={18} />
+              <ArrowLeft className="me-2" size={18} />
             </>
           )}
         </Button>

@@ -74,7 +74,7 @@ export function RunwayCalculator() {
                         type="number" 
                         value={input.currentCash}
                         onChange={(e) => setInput({...input, currentCash: parseInt(e.target.value) || 0})}
-                        className="text-left font-mono"
+                        className="text-start font-mono"
                     />
                 </div>
                 <div className="space-y-2">
@@ -83,7 +83,7 @@ export function RunwayCalculator() {
                         type="number" 
                         value={input.monthlyBurn}
                         onChange={(e) => setInput({...input, monthlyBurn: parseInt(e.target.value) || 0})}
-                        className="text-left font-mono"
+                        className="text-start font-mono"
                     />
                 </div>
                 <div className="space-y-2">
@@ -92,7 +92,7 @@ export function RunwayCalculator() {
                         type="number" 
                         value={input.monthlyRevenue}
                         onChange={(e) => setInput({...input, monthlyRevenue: parseInt(e.target.value) || 0})}
-                        className="text-left font-mono"
+                        className="text-start font-mono"
                     />
                 </div>
                 <Button onClick={handleSave} className="w-full">
@@ -113,7 +113,7 @@ export function RunwayCalculator() {
                              <h3 className={`text-6xl font-black ${statusColor}`}>
                                 {input.runwayMonths}
                             </h3>
-                            <span className="text-xl text-muted-foreground absolute -right-8 top-0">ماه</span>
+                            <span className="text-xl text-muted-foreground absolute -end-8 top-0">ماه</span>
                         </div>
                         <p className="text-lg font-medium">زمان باقی‌مانده</p>
                         

@@ -63,7 +63,7 @@ export function StatsCard({
       </div>
 
       {/* Decorative background element */}
-      <Icon className="absolute -bottom-4 -right-4 w-24 h-24 opacity-[0.03] text-foreground rotate-12" />
+      <Icon className="absolute -bottom-4 -end-4 w-24 h-24 opacity-[0.03] text-foreground rotate-12" />
     </Card>
   );
 }

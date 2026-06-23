@@ -210,7 +210,7 @@ function TourOverlay({ step, stepNumber, totalSteps }: { step: TourStep; stepNum
     return (
       <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
         <Card variant="default" className="max-w-md w-full relative animate-in zoom-in-95 p-8">
-          <button onClick={endTour} className="absolute left-4 top-4 text-muted-foreground hover:text-foreground">
+          <button onClick={endTour} className="absolute start-4 top-4 text-muted-foreground hover:text-foreground">
             <X size={20} />
           </button>
           <div className="text-center mb-6">
@@ -285,7 +285,7 @@ function TourOverlay({ step, stepNumber, totalSteps }: { step: TourStep; stepNum
         {/* Close button */}
         <button
           onClick={endTour}
-          className="absolute left-3 top-3 text-muted-foreground hover:text-foreground z-10"
+          className="absolute start-3 top-3 text-muted-foreground hover:text-foreground z-10"
         >
           <X size={16} />
         </button>

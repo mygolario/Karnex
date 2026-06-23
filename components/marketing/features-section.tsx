@@ -131,8 +131,8 @@ export const FeaturesSection = () => {
       <div className="absolute inset-0 bg-gradient-to-b from-muted/30 via-background to-muted/30" />
       
       {/* Decorative elements */}
-      <div className="absolute top-40 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px]" />
-      <div className="absolute bottom-40 left-0 w-96 h-96 bg-secondary/5 rounded-full blur-[100px]" />
+      <div className="absolute top-40 end-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px]" />
+      <div className="absolute bottom-40 start-0 w-96 h-96 bg-secondary/5 rounded-full blur-[100px]" />
       
       <div className="container relative z-10 px-4 md:px-6">
         {/* Header */}
@@ -177,7 +177,7 @@ export const FeaturesSection = () => {
           <Link href="/signup">
             <Button size="lg" className="h-14 px-8 rounded-2xl bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white font-bold shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:scale-105 transition-all">
               شروع رایگان با دستیار کارنکس
-              <ArrowLeft className="mr-2 h-5 w-5" />
+              <ArrowLeft className="me-2 h-5 w-5" />
             </Button>
           </Link>
         </motion.div>

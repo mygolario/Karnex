@@ -240,6 +240,15 @@ exports.Prisma.FeedbackScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ProjectMemberScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  projectId: 'projectId',
+  role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -281,7 +290,8 @@ exports.Prisma.ModelName = {
   Transaction: 'Transaction',
   MediaItem: 'MediaItem',
   SystemLog: 'SystemLog',
-  Feedback: 'Feedback'
+  Feedback: 'Feedback',
+  ProjectMember: 'ProjectMember'
 };
 
 /**

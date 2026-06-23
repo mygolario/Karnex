@@ -118,7 +118,7 @@ export function CampaignBuilder({ onComplete }: CampaignBuilderProps) {
 
     return (
         <Card variant="default" className="relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+            <div className="absolute top-0 start-0 w-40 h-40 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-3xl -translate-y-1/2 -translate-x-1/2 pointer-events-none" />
 
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
@@ -166,7 +166,7 @@ export function CampaignBuilder({ onComplete }: CampaignBuilderProps) {
                                     key={goal.id}
                                     onClick={() => setSelectedGoal(goal.id)}
                                     className={cn(
-                                        "w-full flex items-center gap-4 p-4 rounded-xl border transition-all text-right",
+                                        "w-full flex items-center gap-4 p-4 rounded-xl border transition-all text-end",
                                         selectedGoal === goal.id
                                             ? "border-primary bg-primary/5 shadow-sm"
                                             : "border-border/50 hover:border-border bg-muted/30"
@@ -195,7 +195,7 @@ export function CampaignBuilder({ onComplete }: CampaignBuilderProps) {
                             onClick={() => setStep(1)}
                         >
                             مرحله بعد
-                            <ArrowLeft size={16} className="mr-2" />
+                            <ArrowLeft size={16} className="me-2" />
                         </Button>
                     </motion.div>
                 )}
@@ -243,7 +243,7 @@ export function CampaignBuilder({ onComplete }: CampaignBuilderProps) {
 
                         <div className="flex gap-3 mt-4">
                             <Button variant="outline" onClick={() => setStep(0)}>
-                                <ArrowRight size={16} className="ml-2" />
+                                <ArrowRight size={16} className="ms-2" />
                                 قبلی
                             </Button>
                             <Button
@@ -253,12 +253,12 @@ export function CampaignBuilder({ onComplete }: CampaignBuilderProps) {
                             >
                                 {generating ? (
                                     <>
-                                        <Loader2 size={16} className="animate-spin ml-2" />
+                                        <Loader2 size={16} className="animate-spin ms-2" />
                                         در حال ایده‌پردازی...
                                     </>
                                 ) : (
                                     <>
-                                        <Sparkles size={16} className="ml-2" />
+                                        <Sparkles size={16} className="ms-2" />
                                         ایده بگیر
                                     </>
                                 )}
@@ -292,7 +292,7 @@ export function CampaignBuilder({ onComplete }: CampaignBuilderProps) {
                                 ایده دیگر
                             </Button>
                             <Button className="flex-1" onClick={handleComplete}>
-                                <Check size={16} className="ml-2" />
+                                <Check size={16} className="ms-2" />
                                 شروع کمپین
                             </Button>
                         </div>

@@ -61,14 +61,14 @@ export function CommandMenu() {
         open={open}
         onOpenChange={setOpen}
         label="Global Command Menu"
-        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-popover/95 backdrop-blur-xl border border-border shadow-2xl rounded-xl overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-100"
+        className="fixed top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-popover/95 backdrop-blur-xl border border-border shadow-2xl rounded-xl overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-100"
       >
         <DialogPrimitive.Title className="sr-only">Command Menu</DialogPrimitive.Title>
         <div className="flex items-center border-b border-border/50 px-3" cmdk-input-wrapper="">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+          <Search className="me-2 h-4 w-4 shrink-0 opacity-50" />
           <Command.Input 
              placeholder="چه کاری می‌خواهید انجام دهید؟"
-             className="flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 text-right dir-rtl"
+             className="flex h-12 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 text-end dir-rtl"
           />
         </div>
         
@@ -82,28 +82,28 @@ export function CommandMenu() {
                 onSelect={() => runCommand(() => router.push('/new-project'))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
-              <Plus className="ml-2 h-4 w-4" />
+              <Plus className="ms-2 h-4 w-4" />
               <span>پروژه جدید</span>
             </Command.Item>
             <Command.Item 
                 onSelect={() => runCommand(() => router.push('/dashboard/overview'))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
-              <LayoutDashboard className="ml-2 h-4 w-4" />
+              <LayoutDashboard className="ms-2 h-4 w-4" />
               <span>داشبورد</span>
             </Command.Item>
              <Command.Item 
                 onSelect={() => runCommand(() => router.push('/dashboard/roadmap'))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
-              <Map className="ml-2 h-4 w-4" />
+              <Map className="ms-2 h-4 w-4" />
               <span>نقشه راه</span>
             </Command.Item>
              <Command.Item 
                 onSelect={() => runCommand(() => router.push('/dashboard/brand'))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
-              <ImageIcon className="ml-2 h-4 w-4" />
+              <ImageIcon className="ms-2 h-4 w-4" />
               <span>هویت بصری</span>
             </Command.Item>
           </Command.Group>
@@ -113,21 +113,21 @@ export function CommandMenu() {
                 onSelect={() => runCommand(() => router.push('/dashboard/profile'))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
-              <User className="ml-2 h-4 w-4" />
+              <User className="ms-2 h-4 w-4" />
               <span>پروفایل من</span>
             </Command.Item>
             <Command.Item 
                 onSelect={() => runCommand(() => router.push('/dashboard/settings'))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
-              <Settings className="ml-2 h-4 w-4" />
+              <Settings className="ms-2 h-4 w-4" />
               <span>تنظیمات</span>
             </Command.Item>
             <Command.Item 
                 onSelect={() => runCommand(() => signOut().then(() => router.push('/')))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-destructive/10 aria-selected:text-destructive data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive"
             >
-              <LogOut className="ml-2 h-4 w-4" />
+              <LogOut className="ms-2 h-4 w-4" />
               <span>خروج</span>
             </Command.Item>
           </Command.Group>

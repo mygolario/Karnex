@@ -21,13 +21,13 @@ export function FocusHero({ nextStepName }: FocusHeroProps) {
       className="relative w-full overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-primary via-primary/80 to-violet-600 shadow-2xl shadow-primary/20"
     >
       {/* Abstract Background Shapes */}
-      <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 mix-blend-overlay" />
-      <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-black/10 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/4 mix-blend-overlay" />
+      <div className="absolute top-0 end-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 mix-blend-overlay" />
+      <div className="absolute bottom-0 start-0 w-[300px] h-[300px] bg-black/10 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/4 mix-blend-overlay" />
        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-soft-light" />
 
 
       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-8">
-        <div className="flex-1 text-center md:text-right space-y-6">
+        <div className="flex-1 text-center md:text-end space-y-6">
           <div className="inline-flex items-center gap-3 px-4 py-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-md shadow-sm">
             <span className="relative flex h-2.5 w-2.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>

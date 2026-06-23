@@ -81,7 +81,7 @@ export function AnalyzerButton({ plan }: AnalyzerButtonProps) {
           <Card variant="default" className="max-w-xl w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95" padding="xl">
             <button 
               onClick={() => setIsOpen(false)}
-              className="absolute left-4 top-4 text-muted-foreground hover:text-foreground"
+              className="absolute start-4 top-4 text-muted-foreground hover:text-foreground"
             >
               <X size={20} />
             </button>

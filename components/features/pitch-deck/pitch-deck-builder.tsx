@@ -251,11 +251,11 @@ export function PitchDeckBuilder() {
        {/* Toolbar */}
        <div className="flex items-center justify-between">
             <Button variant="ghost" onClick={() => setMode('preview')} className="text-muted-foreground hover:text-foreground">
-                <ArrowLeft size={16} className="mr-2" /> بازگشت به نمای کلی
+                <ArrowLeft size={16} className="me-2" /> بازگشت به نمای کلی
             </Button>
             <div className="flex items-center gap-2">
                  <Button variant="default" onClick={() => handleSave()} disabled={loading}>
-                     <Save size={16} className="mr-2" /> ذخیره تغییرات
+                     <Save size={16} className="me-2" /> ذخیره تغییرات
                  </Button>
             </div>
        </div>
@@ -308,7 +308,7 @@ export function PitchDeckBuilder() {
                         onClick={() => updateCurrentSlide('bullets', [...currentSlide.bullets, ""])} 
                         className="w-full h-12 border-2 border-dashed border-border/50 rounded-xl hover:bg-muted/30 text-muted-foreground hover:text-primary"
                     >
-                        <Plus size={16} className="mr-2" /> افزودن نکته جدید
+                        <Plus size={16} className="me-2" /> افزودن نکته جدید
                     </Button>
                 </div>
            </Card>
@@ -348,8 +348,8 @@ const SlideVisual = ({ slide, index, total, theme, projectName, isExport = false
     return (
         <div className={`w-full h-full p-12 flex flex-col relative ${isExport ? 'bg-white text-slate-900' : 'bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100'} transition-colors`}>
             {/* Decorations */}
-             <div className="absolute top-0 right-0 w-[50%] h-[50%] bg-blue-500/5 rounded-bl-full blur-3xl pointer-events-none" />
-             <div className="absolute bottom-0 left-0 w-[40%] h-[40%] bg-purple-500/5 rounded-tr-full blur-3xl pointer-events-none" />
+             <div className="absolute top-0 end-0 w-[50%] h-[50%] bg-blue-500/5 rounded-bl-full blur-3xl pointer-events-none" />
+             <div className="absolute bottom-0 start-0 w-[40%] h-[40%] bg-purple-500/5 rounded-tr-full blur-3xl pointer-events-none" />
             
             {/* Header */}
             <div className={`flex justify-between items-center mb-10 pb-4 ${isExport ? 'border-black/5' : 'border-black/5 dark:border-white/5'} border-b relative z-10`}>
@@ -368,7 +368,7 @@ const SlideVisual = ({ slide, index, total, theme, projectName, isExport = false
                 ))}
             </div>
             
-            <div className="absolute bottom-4 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-20" />
+            <div className="absolute bottom-4 start-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 opacity-20" />
         </div>
     );
 }

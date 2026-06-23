@@ -4,7 +4,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { deleteProject } from "@/lib/db";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
 import { 
   User, Shield, Moon, Bell, Trash2, LogOut, Settings, Crown, 
   Mail, Key, Globe, Smartphone, Download, RefreshCw, AlertTriangle, 
@@ -24,6 +25,57 @@ export default function SettingsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Collaborator States
+  const [members, setMembers] = useState<any[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("editor");
+  const [inviting, setInviting] = useState(false);
+
+  const fetchMembers = async () => {
+    if (!activeProject?.id) return;
+    setLoadingMembers(true);
+    try {
+      const { getProjectMembersAction } = await import("@/lib/project-actions");
+      const res = await getProjectMembersAction(activeProject.id);
+      if (res.success && res.members) {
+        setMembers(res.members);
+      }
+    } catch (e) {
+      console.error("Failed to load members:", e);
+    } finally {
+      setLoadingMembers(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeProject?.id && activeTab === 'project') {
+      fetchMembers();
+    }
+  }, [activeProject?.id, activeTab]);
+
+  const handleInviteMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteEmail || !activeProject?.id) return;
+    setInviting(true);
+    try {
+      const { inviteMemberAction } = await import("@/lib/project-actions");
+      const res = await inviteMemberAction(activeProject.id, inviteEmail, inviteRole);
+      if (res.success) {
+        toast.success("دعوت‌نامه با موفقیت ارسال شد");
+        setInviteEmail("");
+        fetchMembers(); // Refresh list
+      } else {
+        toast.error(res.error || "خطا در ارسال دعوت‌نامه");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("خطا در برقراری ارتباط با سرور");
+    } finally {
+      setInviting(false);
+    }
+  };
 
   const handleDeleteCurrentProject = async () => {
     if (!user || !activeProject?.id) return;
@@ -125,7 +177,100 @@ export default function SettingsPage() {
                     </div>
                   </Card>
 
+                  {/* COLLABORATORS SECTION */}
+                  <Card variant="glass" className="p-8 border-l-4 border-l-blue-500 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-transparent opacity-50" />
+                    
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 border-b border-border/50 pb-6">
+                      <div className="text-right">
+                        <h3 className="text-xl font-bold text-foreground mb-1">همکاران پروژه</h3>
+                        <p className="text-muted-foreground text-sm">
+                          مدیریت دسترسی‌ها و افراد همکار در این پروژه
+                        </p>
+                      </div>
+                      
+                      <form onSubmit={handleInviteMember} className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-end sm:items-center">
+                        <div className="relative w-full sm:w-64">
+                          <Mail size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                          <input 
+                            type="email"
+                            placeholder="ایمیل همکار جدید..."
+                            value={inviteEmail}
+                            onChange={(e) => setInviteEmail(e.target.value)}
+                            required
+                            className="w-full h-10 pr-10 pl-3 bg-background/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-right text-foreground"
+                          />
+                        </div>
+                        
+                        <div className="w-full sm:w-36">
+                          <select
+                            value={inviteRole}
+                            onChange={(e) => setInviteRole(e.target.value)}
+                            className="w-full h-10 px-3 bg-background/50 border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-right appearance-none text-foreground"
+                          >
+                            <option value="editor">ویرایش‌گر</option>
+                            <option value="viewer">بیننده</option>
+                            <option value="admin">مدیر</option>
+                          </select>
+                        </div>
+                        
+                        <Button 
+                          type="submit" 
+                          disabled={inviting || !inviteEmail} 
+                          className="h-10 px-5 rounded-xl text-sm font-bold shadow-lg shadow-primary/10 whitespace-nowrap"
+                        >
+                          {inviting ? "⏳ ..." : "دعوت همکار"}
+                        </Button>
+                      </form>
+                    </div>
 
+                    {loadingMembers ? (
+                      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                        <RefreshCw size={24} className="animate-spin mb-2" />
+                        <span className="text-sm">در حال بارگذاری لیست همکاران...</span>
+                      </div>
+                    ) : members.length === 0 ? (
+                      <div className="text-center py-10 text-muted-foreground text-sm">
+                        هیچ همکاری برای این پروژه تعریف نشده است.
+                      </div>
+                    ) : (
+                      <div className="overflow-hidden border border-border/50 rounded-2xl bg-background/20 backdrop-blur-sm divide-y divide-border/50">
+                        {members.map((m) => {
+                          const getRoleBadge = (role: string) => {
+                            switch (role) {
+                              case 'owner':
+                                return <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-xs font-bold px-2.5 py-1 rounded-lg">مالک پروژه</Badge>;
+                              case 'admin':
+                                return <Badge className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-bold px-2.5 py-1 rounded-lg">مدیر</Badge>;
+                              case 'editor':
+                                return <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold px-2.5 py-1 rounded-lg">ویرایش‌گر</Badge>;
+                              case 'viewer':
+                                return <Badge className="bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-500/20 text-xs font-bold px-2.5 py-1 rounded-lg">بیننده</Badge>;
+                              default:
+                                return <Badge className="bg-muted text-muted-foreground text-xs px-2.5 py-1 rounded-lg">{role}</Badge>;
+                            }
+                          };
+
+                          return (
+                            <div key={m.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-background/40 transition-colors">
+                              <div className="flex items-center gap-4 text-right">
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-black shadow-inner">
+                                  {m.name ? m.name.charAt(0) : (m.email ? m.email.charAt(0).toUpperCase() : 'U')}
+                                </div>
+                                <div>
+                                  <span className="font-bold text-foreground block text-sm">{m.name || 'کاربر کارنکس'}</span>
+                                  <span className="text-xs text-muted-foreground block font-mono">{m.email}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-3 justify-end">
+                                {getRoleBadge(m.role)}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </Card>
 
                   <div className="rounded-[2rem] border border-destructive/30 bg-destructive/5 p-8 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-full h-1 bg-gradient-to-r from-transparent via-destructive/50 to-transparent opacity-50" />

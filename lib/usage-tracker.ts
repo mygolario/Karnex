@@ -9,6 +9,7 @@
 
 import prisma from '@/lib/prisma';
 import { DEFAULT_FEATURES, PlanTier } from '@/lib/payment/types';
+import { auth } from '@/auth';
 
 export interface UsageCheckResult {
   allowed: boolean;
@@ -179,4 +180,18 @@ export async function getUsageSummary(userId: string): Promise<UsageSummary> {
   ]);
   
   return { ai, projects, tier };
+}
+
+export async function getMyUsageSummaryAction(): Promise<{ success: boolean; summary?: UsageSummary; error?: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const summary = await getUsageSummary(session.user.id);
+    return { success: true, summary };
+  } catch (error) {
+    console.error("Failed to get usage summary:", error);
+    return { success: false, error: 'Failed to fetch usage summary' };
+  }
 }

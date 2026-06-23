@@ -3,6 +3,15 @@
 import { callOpenRouter, parseJsonFromAI, TEXT_MODELS } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { getPrompt } from "@/lib/prompts/registry";
+import {
+  callAIWithValidation,
+  SuggestAudienceSchema,
+  SuggestNameSchema,
+  BreakTaskSchema,
+  SwotCompetitorsSchema,
+  PitchDeckSchema,
+  SmartCanvasSchema
+} from "@/lib/ai-validation";
 
 // === Shared Types ===
 interface ActionResponse<T> {
@@ -27,35 +36,22 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
 
     const { system, user } = getPrompt("suggestAudience", { productIdea });
 
-    const result = await callOpenRouter(
-      user,
-      { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 25000, responseFormat: { type: "json_object" } }
-    );
-
-    if (!result.success) {
+    try {
+      const parsed = await callAIWithValidation(
+        user,
+        { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 25000 },
+        SuggestAudienceSchema,
+        1
+      );
+      return {
+        success: true,
+        data: parsed
+      };
+    } catch (err) {
+      console.warn("AI Validation failed for suggestAudienceAction, using fallback:", err);
       await rollback();
       return { 
         success: true, // Return fallback as success
-        data: {
-            audiences: ["جوانان", "خانواده‌ها", "متخصصان", "کسب‌وکارها"],
-            revenueModels: ["فروش مستقیم", "اشتراکی", "فریمیوم"]
-        }
-      };
-    }
-
-    try {
-      const parsed = parseJsonFromAI(result.content!);
-      return {
-        success: true,
-        data: {
-            audiences: parsed.audiences || [],
-            revenueModels: parsed.revenueModels || []
-        }
-      };
-    } catch {
-       await rollback();
-       return { 
-        success: true, 
         data: {
             audiences: ["جوانان", "خانواده‌ها", "متخصصان", "کسب‌وکارها"],
             revenueModels: ["فروش مستقیم", "اشتراکی", "فریمیوم"]
@@ -82,35 +78,22 @@ export async function suggestProjectNameAction(idea: string): Promise<ActionResp
 
     const { system, user } = getPrompt("suggestName", { idea });
 
-    const result = await callOpenRouter(
-      user,
-      { systemPrompt: system, maxTokens: 800, temperature: 0.7, timeoutMs: 20000, responseFormat: { type: "json_object" } }
-    );
-
-    if (!result.success) {
-       await rollback();
-       return { success: true, data: { names: generateFallbackNames(idea) } };
-    }
-
     try {
-      let content = result.content!;
-      content = content.replace(/```json/g, "").replace(/```/g, "").trim();
-      const parsed = JSON.parse(content);
-      const names = Array.isArray(parsed) ? parsed : (parsed?.names || []);
-
-      if (Array.isArray(names) && names.length > 0) {
-        return { success: true, data: { names: names.slice(0, 6) } };
-      }
-    } catch {
-       const matches = result.content!.match(/["']([^"']+)["']/g);
-       if (matches && matches.length > 0) {
-         const names = matches.map((m: string) => m.replace(/["']/g, "")).slice(0, 6);
-         return { success: true, data: { names } };
-       }
+      const parsed = await callAIWithValidation(
+        user,
+        { systemPrompt: system, maxTokens: 800, temperature: 0.7, timeoutMs: 20000 },
+        SuggestNameSchema,
+        1
+      );
+      return {
+        success: true,
+        data: { names: (parsed.names || []).slice(0, 6) }
+      };
+    } catch (err) {
+      console.warn("AI Validation failed for suggestProjectNameAction, using fallback:", err);
+      await rollback();
+      return { success: true, data: { names: generateFallbackNames(idea) } };
     }
-    
-    await rollback();
-    return { success: true, data: { names: generateFallbackNames(idea) } };
 
   } catch (error) {
     console.error("suggestProjectNameAction error:", error);
@@ -141,26 +124,22 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
 
     const { system, user } = getPrompt("breakTask", { taskName });
 
-    const result = await callOpenRouter(
-      user,
-      { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 20000, responseFormat: { type: "json_object" } }
-    );
-
     const fallback = [
         `تحقیق درباره ${taskName}`,
         `شروع اجرای ${taskName}`,
         `بررسی نتیجه`
     ];
 
-    if (!result.success) {
-      await rollback();
-      return { success: true, data: { subTasks: fallback } };
-    }
-
     try {
-      const parsed = parseJsonFromAI(result.content!);
-      return { success: true, data: { subTasks: parsed.subTasks || [] } };
-    } catch {
+      const parsed = await callAIWithValidation(
+        user,
+        { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 20000 },
+        BreakTaskSchema,
+        1
+      );
+      return { success: true, data: parsed };
+    } catch (err) {
+      console.warn("AI Validation failed for breakTaskAction, using fallback:", err);
       await rollback();
       return { success: true, data: { subTasks: fallback } };
     }
@@ -192,28 +171,25 @@ export async function analyzeCompetitorsAction(data: { projectName: string, proj
             audience: data.audience
         });
 
-        const result = await callOpenRouter(user, {
-            systemPrompt: system,
-            maxTokens: 2500,
-            temperature: 0.7,
-            timeoutMs: 45000,
-            modelOverride: "google/gemini-2.5-pro",
-            responseFormat: { type: "json_object" }
-        });
-
-        if (!result.success) {
-            await rollback();
-            return { success: true, data: getMockCompetitors() };
-        }
-
         try {
-            const parsed = parseJsonFromAI(result.content!);
-            // Clean up reasoning field if present before sending to UI (optional, but clean)
+            const parsed = await callAIWithValidation(
+                user,
+                {
+                    systemPrompt: system,
+                    maxTokens: 2500,
+                    temperature: 0.7,
+                    timeoutMs: 45000,
+                    modelOverride: "google/gemini-2.5-pro",
+                },
+                SwotCompetitorsSchema,
+                1
+            );
             if (parsed && typeof parsed === 'object') {
-                delete parsed.reasoning;
+                delete (parsed as any).reasoning;
             }
             return { success: true, data: parsed };
-        } catch {
+        } catch (err) {
+            console.warn("AI Validation failed for analyzeCompetitorsAction, using mock:", err);
             await rollback();
             return { success: true, data: getMockCompetitors() };
         }
@@ -262,41 +238,27 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
 
         const { system, user } = getPrompt("generatePitchDeck", { idea, wizardAnswersBlock });
 
-        const result = await callOpenRouter(
-            user,
-            { systemPrompt: system, maxTokens: 4000, temperature: 0.7, timeoutMs: 50000, responseFormat: { type: "json_object" } }
-        );
-
-        if (!result.success) {
-             await rollback();
-             return { success: false, error: "Failed to generate deck" };
-        }
-
         try {
-            const content = result.content!.replace(/```json/g, "").replace(/```/g, "").trim();
-            let slides = JSON.parse(content);
+            const parsed = await callAIWithValidation(
+                user,
+                { systemPrompt: system, maxTokens: 4000, temperature: 0.7, timeoutMs: 50000 },
+                PitchDeckSchema,
+                1
+            );
             
-            // Ensure structure
-            if (!Array.isArray(slides)) {
-                // Try to find array in object
-                 const values = Object.values(slides);
-                 const foundArray = values.find(v => Array.isArray(v));
-                 if(foundArray) slides = foundArray;
-            }
-
+            let slides = parsed.slides || [];
             // Post-process to ensure IDs and types
             slides = slides.map((s: any, i: number) => ({
                 id: s.id || `slide-${Date.now()}-${i}`,
                 type: s.type || 'generic',
                 title: s.title || 'بدون عنوان',
-                bullets: Array.isArray(s.bullets) ? s.bullets : [s.content || ''],
-                isHidden: false
+                bullets: Array.isArray(s.bullets) ? s.bullets : [],
+                isHidden: s.isHidden || false
             }));
 
             return { success: true, data: { slides } };
-
-        } catch (e) {
-            console.error("JSON Parse Error:", e);
+        } catch (err) {
+            console.error("AI Validation failed for generatePitchDeckAction:", err);
             await rollback();
             return { success: false, error: "Invalid AI response format" };
         }
@@ -322,25 +284,19 @@ export async function generateSmartCanvasAction(data: { idea: string, answers: R
 
         const { system, user } = getPrompt("generateSmartCanvas", { idea, type, answersBlock });
 
-        const result = await callOpenRouter(
-            user,
-            { systemPrompt: system, maxTokens: 3500, temperature: 0.7, timeoutMs: 45000, responseFormat: { type: "json_object" } }
-        );
-
-        if (!result.success) {
-             await rollback();
-             return { success: false, error: "Failed to generate canvas" };
-        }
-
         try {
-            const content = result.content!.replace(/```json/g, "").replace(/```/g, "").trim();
-            const parsed = JSON.parse(content);
+            const parsed = await callAIWithValidation(
+                user,
+                { systemPrompt: system, maxTokens: 3500, temperature: 0.7, timeoutMs: 45000 },
+                SmartCanvasSchema,
+                1
+            );
             if (parsed && typeof parsed === 'object') {
-                delete parsed.reasoning;
+                delete (parsed as any).reasoning;
             }
-            return { success: true, data: parsed };
-        } catch (e) {
-            console.error("JSON Parse Error:", e);
+            return { success: true, data: parsed as any };
+        } catch (err) {
+            console.error("AI Validation failed for generateSmartCanvasAction:", err);
             await rollback();
             return { success: false, error: "Invalid AI response format" };
         }

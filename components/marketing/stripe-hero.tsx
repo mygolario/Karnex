@@ -19,14 +19,14 @@ export const StripeHero = () => {
          <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
          
          {/* Slatned Stripe Divider */}
-         <div className="absolute bottom-0 left-0 w-full h-[150px] bg-background origin-bottom-right -skew-y-3 translate-y-1/2 scale-110" />
+         <div className="absolute bottom-0 start-0 w-full h-[150px] bg-background origin-bottom-right -skew-y-3 translate-y-1/2 scale-110" />
       </div>
 
       <div className="container relative z-10 px-4 md:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           
           {/* === Text Content === */}
-          <div className="flex flex-col gap-8 text-center lg:text-right">
+          <div className="flex flex-col gap-8 text-center lg:text-end">
             
             {/* Badge */}
             <motion.div 
@@ -76,12 +76,12 @@ export const StripeHero = () => {
               <Link href="/signup">
                 <Button size="lg" className="h-14 px-8 text-lg rounded-full shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all hover:scale-105 bg-foreground text-background hover:bg-foreground/90 w-full sm:w-auto">
                   شروع رایگان
-                  <ArrowLeft className="mr-2 h-5 w-5" />
+                  <ArrowLeft className="me-2 h-5 w-5" />
                 </Button>
               </Link>
               <Link href="/#demo">
                 <Button variant="outline" size="lg" className="h-14 px-8 text-lg rounded-full border-2 bg-background/50 backdrop-blur hover:bg-background transition-all w-full sm:w-auto">
-                  <Play className="ml-2 h-4 w-4 fill-foreground" />
+                  <Play className="ms-2 h-4 w-4 fill-foreground" />
                   مشاهده دمو
                 </Button>
               </Link>
@@ -113,7 +113,7 @@ export const StripeHero = () => {
 
           {/* === Visual Content (3D Interactive Mockup) === */}
           <div className="relative mx-auto w-full max-w-[600px]">
-             <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-tr from-primary/10 to-secondary/10 rounded-full blur-[100px] animate-pulse-slow" />
+             <div className="absolute top-0 end-0 w-full h-full bg-gradient-to-tr from-primary/10 to-secondary/10 rounded-full blur-[100px] animate-pulse-slow" />
              
              {/* Main Card */}
              <motion.div 
@@ -179,7 +179,7 @@ export const StripeHero = () => {
             <motion.div 
                 animate={{ y: [0, -20, 0] }}
                 transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -top-10 -left-10 z-20"
+                className="absolute -top-10 -start-10 z-20"
             >
                 <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-xl border border-border flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center">

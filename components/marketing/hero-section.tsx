@@ -128,7 +128,7 @@ export const HeroSection = () => {
                 هوشمند
               </span>
               {/* Underline decoration */}
-              <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
+              <svg className="absolute -bottom-2 start-0 w-full" viewBox="0 0 200 12" fill="none">
                 <motion.path
                   initial={{ pathLength: 0 }}
                   animate={{ pathLength: 1 }}
@@ -176,7 +176,7 @@ export const HeroSection = () => {
                 className="h-16 px-10 text-lg rounded-2xl bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-2xl shadow-primary/25 hover:shadow-primary/40 hover:scale-105 transition-all font-bold"
               >
                 شروع رایگان
-                <ArrowLeft className="mr-2 h-5 w-5" />
+                <ArrowLeft className="me-2 h-5 w-5" />
               </Button>
             </Link>
 
@@ -218,7 +218,7 @@ export const HeroSection = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        className="absolute bottom-8 start-1/2 -translate-x-1/2"
       >
         <motion.div
           animate={{ y: [0, 8, 0] }}

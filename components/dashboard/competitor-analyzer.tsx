@@ -265,7 +265,7 @@ ${result.swot?.threats?.map(s => `- ${s}`).join('\n')}
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Users size={14} className="inline ml-2" />
+                <Users size={14} className="inline ms-2" />
                 کارت‌ها
               </button>
               <button
@@ -277,7 +277,7 @@ ${result.swot?.threats?.map(s => `- ${s}`).join('\n')}
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <BarChart3 size={14} className="inline ml-2" />
+                <BarChart3 size={14} className="inline ms-2" />
                 مقایسه
               </button>
             </div>
@@ -302,7 +302,7 @@ ${result.swot?.threats?.map(s => `- ${s}`).join('\n')}
                       onClick={() => setSelectedCompetitor(selectedCompetitor === idx ? null : idx)}
                     >
                       {/* Badge */}
-                      <div className="absolute top-3 left-3">
+                      <div className="absolute top-3 start-3">
                         {comp.isIranian ? (
                           <Badge variant="secondary" size="sm" className="gap-1 bg-emerald-100 text-emerald-700 border-emerald-200">
                             <Building2 size={10} />
@@ -391,7 +391,7 @@ ${result.swot?.threats?.map(s => `- ${s}`).join('\n')}
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-border/50">
-                        <th className="text-right py-3 px-4 font-bold text-foreground">رقیب</th>
+                        <th className="text-end py-3 px-4 font-bold text-foreground">رقیب</th>
                         {scoreLabels.map((s) => (
                           <th key={s.key} className="text-center py-3 px-4 font-medium text-muted-foreground">
                             <div className="flex items-center justify-center gap-1">

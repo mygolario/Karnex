@@ -80,7 +80,7 @@ export function ComparisonView() {
               </Badge>
             </div>
             <Button variant="ghost" size="sm" onClick={toggleComparisonMode} className="text-xs text-muted-foreground hover:text-foreground">
-              <X size={14} className="ml-1" />
+              <X size={14} className="ms-1" />
               بستن
             </Button>
           </div>

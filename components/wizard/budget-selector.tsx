@@ -55,7 +55,7 @@ export function BudgetSelector({ selected, onSelect }: BudgetSelectorProps) {
           transition={{ delay: index * 0.1, type: "spring", stiffness: 300 }}
           onClick={() => onSelect(option.id)}
           className={cn(
-            "p-5 rounded-2xl border-2 transition-all text-right flex items-center gap-4 group",
+            "p-5 rounded-2xl border-2 transition-all text-end flex items-center gap-4 group",
             selected === option.id
               ? "border-primary bg-primary/5 shadow-xl shadow-primary/10"
               : "border-border hover:border-primary/30 hover:shadow-lg"

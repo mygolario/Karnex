@@ -37,7 +37,7 @@ export function DockNavigation() {
       initial={{ y: 100, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 200, damping: 25, delay: 0.2 }}
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+      className="fixed bottom-6 start-1/2 -translate-x-1/2 z-50"
     >
       <div className="flex items-center gap-1 px-4 py-3 rounded-2xl bg-black/60 backdrop-blur-2xl border border-white/10 shadow-2xl shadow-black/40">
         {navItems.map((item) => {

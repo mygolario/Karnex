@@ -286,7 +286,7 @@ export function VoiceInput({ onTranscript, onListening, className, disabled }: V
                         initial={{ scale: 0 }}
                         animate={{ scale: [1, 1.5, 1] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
-                        className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"
+                        className="absolute -top-1 -end-1 w-3 h-3 bg-red-500 rounded-full"
                     />
                 )}
             </Button>
@@ -298,7 +298,7 @@ export function VoiceInput({ onTranscript, onListening, className, disabled }: V
                         initial={{ opacity: 0, y: 10, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                        className="absolute bottom-full mb-2 right-0 w-64 bg-card border border-border rounded-xl p-3 shadow-xl z-50"
+                        className="absolute bottom-full mb-2 end-0 w-64 bg-card border border-border rounded-xl p-3 shadow-xl z-50"
                     >
                         <div className="flex items-center gap-2 mb-2">
                             {isTranscribing ? (
@@ -351,7 +351,7 @@ export function VoiceInput({ onTranscript, onListening, className, disabled }: V
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute bottom-full mb-2 right-0 bg-destructive text-destructive-foreground text-xs px-3 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap z-50"
+                        className="absolute bottom-full mb-2 end-0 bg-destructive text-destructive-foreground text-xs px-3 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap z-50"
                         onClick={() => setError(null)}
                     >
                         <AlertCircle size={14} />

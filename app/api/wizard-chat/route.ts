@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { callOpenRouter } from '@/lib/openrouter';
 import { checkAILimit } from '@/lib/ai-limit-middleware';
+import { callAIWithValidation, WizardExtractionSchema } from '@/lib/ai-validation';
 
 export const maxDuration = 30;
 export const dynamic = 'force-dynamic';
@@ -22,8 +23,6 @@ export async function POST(req: Request) {
       messages: ChatMessage[];
       systemPrompt: string;
     };
-
-    const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
 
     // Build a simple prompt
     const conversationContext = messages
@@ -50,7 +49,41 @@ export async function POST(req: Request) {
     }
 
     const assistantMessage = result.content || "ادامه بده...";
-    const extractedData = extractDataFromConversation(messages, assistantMessage);
+
+    // Extracted data using AI extraction via gemini-2.5-flash
+    let extractedData = null;
+    try {
+      const allMessages = [...messages, { role: 'assistant', content: assistantMessage } as ChatMessage];
+      const conversationHistoryText = allMessages
+        .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+        .join('\n');
+
+      const extractionSystemPrompt = `You are a data extraction assistant. Your task is to analyze the conversation history between a user and an onboarding assistant. 
+Extract the following details if they have been mentioned by the user:
+1. "idea": The main product/business idea or concept.
+2. "problem": The problem the idea is trying to solve.
+3. "audience": The target audience or customers.
+4. "budget": The budget or financial resources.
+5. "isComplete": A boolean indicating if all necessary details have been discussed and the user is ready to generate their final strategy/business plan. Set to true if the assistant is ready to build the plan, the user says they are ready, or all core elements have been described.
+
+Output strictly valid JSON with these fields. If a field has not been discussed or is unknown, return null for it.`;
+
+      extractedData = await callAIWithValidation(
+        conversationHistoryText,
+        {
+          systemPrompt: extractionSystemPrompt,
+          maxTokens: 300,
+          temperature: 0.1,
+          timeoutMs: 15000,
+          modelOverride: "google/gemini-2.5-flash",
+        },
+        WizardExtractionSchema,
+        1
+      );
+    } catch (extractError) {
+      console.error("Failed to extract wizard entities:", extractError);
+      // Fallback to null
+    }
 
     return NextResponse.json({
       message: assistantMessage,
@@ -65,33 +98,4 @@ export async function POST(req: Request) {
       error: 'Failed to process chat'
     }, { status: 500 });
   }
-}
-
-function extractDataFromConversation(
-  messages: ChatMessage[],
-  latestResponse: string
-): Record<string, any> | null {
-  const userMessages = messages.filter(m => m.role === "user").map(m => m.content);
-
-  const data: Record<string, any> = {};
-
-  if (userMessages.length === 1) {
-    data.idea = userMessages[0];
-  }
-
-  if (userMessages.length === 2) {
-    data.idea = userMessages[0];
-    data.problem = userMessages[1];
-  }
-
-  if (userMessages.length === 3) {
-    data.audience = userMessages[2];
-  }
-
-  if (userMessages.length >= 3 &&
-    (latestResponse.includes("طرح") || latestResponse.includes("ساخت") || latestResponse.includes("🚀"))) {
-    data.isComplete = true;
-  }
-
-  return Object.keys(data).length > 0 ? data : null;
 }

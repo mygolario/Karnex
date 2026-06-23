@@ -19,6 +19,8 @@ interface RoadmapStep {
     priority?: 'high' | 'medium' | 'low' | string;
     category?: string;
     resources?: string[];
+    checklist?: string[];
+    tips?: string[];
 }
 
 interface SubTask {
@@ -141,7 +143,7 @@ export function StepDetailModal({
                                     </Badge>
                                     {step.category && (
                                         <Badge variant="outline" className="text-xs bg-primary/5 border-primary/20 text-primary">
-                                            <FolderOpen size={10} className="ml-1" />
+                                            <FolderOpen size={10} className="ms-1" />
                                             {step.category}
                                         </Badge>
                                     )}
@@ -171,7 +173,7 @@ export function StepDetailModal({
                             )}
                             {step.priority && (
                                 <Badge variant="outline" className={cn("text-xs", getPriorityColor(step.priority))}>
-                                    <Flag size={10} className="ml-1" />
+                                    <Flag size={10} className="ms-1" />
                                     {getPriorityLabel(step.priority)}
                                 </Badge>
                             )}
@@ -190,6 +192,44 @@ export function StepDetailModal({
                             </div>
                         )}
 
+                        {/* Checklist */}
+                        {step.checklist && step.checklist.length > 0 && (
+                            <div className="bg-muted/30 rounded-2xl p-4">
+                                <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                                    <ListTree size={16} className="text-primary" />
+                                    چک‌لیست انجام کار
+                                </h3>
+                                <div className="space-y-2">
+                                    {step.checklist.map((item, i) => (
+                                        <div
+                                            key={i}
+                                            className="flex items-start gap-2.5 p-2 rounded-lg bg-background/40"
+                                        >
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
+                                            <span className="text-sm text-foreground/80 leading-relaxed">{item}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Tips */}
+                        {step.tips && step.tips.length > 0 && (
+                            <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4">
+                                <h3 className="text-sm font-bold text-amber-600 mb-2 flex items-center gap-2">
+                                    <Sparkles size={16} className="text-amber-500" />
+                                    نکات طلایی و فوت و فن
+                                </h3>
+                                <ul className="space-y-1.5 list-disc list-inside ps-2">
+                                    {step.tips.map((tip, i) => (
+                                        <li key={i} className="text-xs text-muted-foreground leading-relaxed">
+                                            {tip}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
                         {/* Sub-tasks */}
                         {subTasks.length > 0 && (
                             <div className="bg-muted/30 rounded-2xl p-4">
@@ -203,7 +243,7 @@ export function StepDetailModal({
                                             key={i}
                                             onClick={() => onSubTaskToggle(sub)}
                                             className={cn(
-                                                "flex items-center gap-3 w-full text-right p-3 rounded-xl transition-all",
+                                                "flex items-center gap-3 w-full text-end p-3 rounded-xl transition-all",
                                                 sub.isCompleted
                                                     ? "bg-muted/50 opacity-60"
                                                     : "hover:bg-background bg-background/50"
@@ -269,7 +309,7 @@ export function StepDetailModal({
                                         <Loader2 size={14} className="animate-spin" />
                                     ) : (
                                         <>
-                                            <MessageCircle size={14} className="ml-1" />
+                                            <MessageCircle size={14} className="ms-1" />
                                             راهنمایی بگیر
                                         </>
                                     )}

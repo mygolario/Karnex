@@ -50,11 +50,11 @@ export function DeckPreview({ slides, onEditSlide, onDeleteSlide, onRegenerate, 
          </div>
          <div className="flex gap-3" data-tour-id="deck-actions">
              <Button variant="outline" onClick={onRegenerate} className="h-12 px-6 rounded-xl border-dashed border-primary/30 hover:bg-primary/5 hover:text-primary">
-                <Sparkles size={16} className="ml-2" />
+                <Sparkles size={16} className="ms-2" />
                 کمک گرفتن از دستیار کارنکس
              </Button>
              <Button onClick={onDownload} className="h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold shadow-lg shadow-primary/20 hover:scale-105 transition-transform">
-                <Presentation size={16} className="ml-2" />
+                <Presentation size={16} className="ms-2" />
                 دانلود پاورپوینت
              </Button>
          </div>
@@ -92,7 +92,7 @@ export function DeckPreview({ slides, onEditSlide, onDeleteSlide, onRegenerate, 
 
                 {/* Decoration */}
                 <div className={`
-                    absolute bottom-0 left-0 w-24 h-24 rounded-tr-full blur-2xl opacity-20
+                    absolute bottom-0 start-0 w-24 h-24 rounded-tr-full blur-2xl opacity-20
                     ${index % 2 === 0 ? 'bg-blue-500' : 'bg-purple-500'}
                 `} />
             </div>
@@ -108,7 +108,7 @@ export function DeckPreview({ slides, onEditSlide, onDeleteSlide, onRegenerate, 
                         onEditSlide(index);
                     }}
                 >
-                    <Edit3 size={14} className="mr-2" />
+                    <Edit3 size={14} className="me-2" />
                     ویرایش
                 </Button>
                 <Button 

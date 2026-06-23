@@ -66,7 +66,7 @@ export function RecommendationsList() {
                         "text-[10px] font-bold shrink-0",
                         config.bg, config.color
                       )}>
-                        <Icon size={10} className="ml-1" />
+                        <Icon size={10} className="ms-1" />
                         {urgency}
                       </Badge>
                     </div>

@@ -66,7 +66,7 @@ export function LogoConceptsSection({
                     <a 
                       href={logo.imageUrl} 
                       download={`${projectName}-logo-${index + 1}.png`}
-                      className="absolute bottom-3 left-3 bg-white/90 backdrop-blur p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="absolute bottom-3 start-3 bg-white/90 backdrop-blur p-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <Download size={18} className="text-foreground" />
                     </a>

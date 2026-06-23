@@ -114,7 +114,7 @@ export function VoiceInputButton({ onTranscript, disabled, className }: VoiceInp
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute top-full mt-2 right-0 flex items-center gap-2 text-xs text-destructive whitespace-nowrap"
+          className="absolute top-full mt-2 end-0 flex items-center gap-2 text-xs text-destructive whitespace-nowrap"
         >
           <Loader2 size={12} className="animate-spin" />
           در حال گوش دادن...
@@ -126,7 +126,7 @@ export function VoiceInputButton({ onTranscript, disabled, className }: VoiceInp
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute top-full mt-2 right-0 text-xs text-destructive whitespace-nowrap"
+          className="absolute top-full mt-2 end-0 text-xs text-destructive whitespace-nowrap"
         >
           {error}
         </motion.div>

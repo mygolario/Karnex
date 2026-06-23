@@ -74,7 +74,7 @@ export function QuickAccessGrid({ projectType }: QuickAccessGridProps) {
                     </div>
 
                     {item.badge && (
-                        <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded text-[9px] font-black bg-primary text-white shadow-sm">
+                        <span className="absolute top-2 end-2 px-1.5 py-0.5 rounded text-[9px] font-black bg-primary text-white shadow-sm">
                             {item.badge}
                         </span>
                     )}

@@ -78,7 +78,7 @@ export const FAQ = () => {
                 {/* Question */}
                 <button
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                  className="w-full p-6 flex items-center justify-between gap-4 text-right"
+                  className="w-full p-6 flex items-center justify-between gap-4 text-end"
                 >
                   <span className="font-bold text-lg text-foreground">
                     {faq.question}

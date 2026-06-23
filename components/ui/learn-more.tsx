@@ -38,7 +38,7 @@ export function LearnMore({
       <button
         onClick={() => setExpanded(!expanded)}
         className={cn(
-          "w-full flex items-center justify-between gap-3 p-4 text-right transition-colors border",
+          "w-full flex items-center justify-between gap-3 p-4 text-end transition-colors border",
           variantStyles[variant],
           expanded ? "rounded-t-xl" : "rounded-xl"
         )}
@@ -96,7 +96,7 @@ export function FaqItem({ question, answer, defaultOpen = false, className }: Fa
       <button
         onClick={() => setExpanded(!expanded)}
         className={cn(
-          "w-full flex items-center justify-between gap-3 p-4 text-right transition-colors hover:bg-muted/50",
+          "w-full flex items-center justify-between gap-3 p-4 text-end transition-colors hover:bg-muted/50",
           expanded && "bg-muted/30"
         )}
       >
@@ -201,12 +201,12 @@ export function GlossaryTerm({ term, definition, className }: GlossaryTermProps)
     >
       {term}
       {show && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="absolute bottom-full start-1/2 -translate-x-1/2 mb-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div className="bg-foreground text-background text-xs px-3 py-2 rounded-lg shadow-xl max-w-xs leading-relaxed whitespace-normal min-w-[200px]">
             <strong className="block mb-1 text-secondary">{term}:</strong>
             {definition}
           </div>
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground" />
+          <div className="absolute top-full start-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground" />
         </div>
       )}
     </span>

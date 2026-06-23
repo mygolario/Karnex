@@ -136,7 +136,7 @@ export const PricingSection = () => {
             >
               {/* Popular badge */}
               {plan.popular && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+                <div className="absolute -top-4 start-1/2 -translate-x-1/2 z-20">
                   <div className="flex items-center gap-1 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white text-sm font-bold shadow-lg">
                     <Sparkles className="w-4 h-4" />
                     محبوب‌ترین
@@ -171,7 +171,7 @@ export const PricingSection = () => {
                       {plan.monthlyPrice}
                     </span>
                   )}
-                  <span className="text-muted-foreground mr-2">{plan.period}</span>
+                  <span className="text-muted-foreground me-2">{plan.period}</span>
                 </div>
                 
                 {/* CTA */}
@@ -192,7 +192,7 @@ export const PricingSection = () => {
                     }`}
                     variant={plan.popular ? "default" : "outline"}
                   >
-                    {plan.contactSales && <Phone className="w-4 h-4 ml-2" />}
+                    {plan.contactSales && <Phone className="w-4 h-4 ms-2" />}
                     {plan.contactSales ? "تماس با فروش" : plan.cta}
                   </Button>
                 </Link>

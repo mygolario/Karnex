@@ -750,7 +750,16 @@ export const createProject = async (userId: string, planData: any) => {
 
 export const getUserProjects = async (userId: string): Promise<BusinessPlan[]> => {
   const projects = await prisma.project.findMany({
-      where: { userId },
+      where: {
+          OR: [
+              { userId },
+              {
+                  members: {
+                      some: { userId }
+                  }
+              }
+          ]
+      },
       orderBy: { updatedAt: 'desc' }
   });
 
@@ -770,10 +779,20 @@ export const getUserProjects = async (userId: string): Promise<BusinessPlan[]> =
 
 export const getPlanFromCloud = async (userId: string, projectId: string) => {
   const project = await prisma.project.findUnique({
-      where: { id: projectId }
+      where: { id: projectId },
+      include: {
+          members: {
+              where: { userId }
+          }
+      }
   });
 
-  if (!project || project.userId !== userId) return null;
+  if (!project) return null;
+
+  const isOwner = project.userId === userId;
+  const isMember = project.members && project.members.length > 0;
+
+  if (!isOwner && !isMember) return null;
 
   const dbData = project.data as any || {};
   return {
@@ -788,15 +807,29 @@ export const getPlanFromCloud = async (userId: string, projectId: string) => {
 };
 
 export const savePlanToCloud = async (userId: string, planData: any, merge: boolean = true, projectId: string) => {
-    // 1. Fetch current to verify ownership
+    // 1. Fetch current to verify ownership or membership edit rights
     let currentData = {};
     const current = await prisma.project.findUnique({
         where: { id: projectId },
-        select: { data: true, userId: true }
+        select: { 
+            data: true, 
+            userId: true,
+            members: {
+                where: { userId }
+            }
+        }
     });
 
-    if (!current || current.userId !== userId) {
-        throw new Error("Unauthorized or project not found");
+    if (!current) {
+        throw new Error("Project not found");
+    }
+
+    const isOwner = current.userId === userId;
+    const membership = current.members?.[0];
+    const hasWriteAccess = isOwner || (membership && (membership.role === 'admin' || membership.role === 'editor'));
+
+    if (!hasWriteAccess) {
+        throw new Error("Unauthorized: You do not have edit access to this project");
     }
 
     if (merge) {

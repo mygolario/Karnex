@@ -134,7 +134,7 @@ export function AiAssistant() {
         transition={{ delay: 0.5, type: "spring" }}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "fixed bottom-6 left-6 z-50",
+          "fixed bottom-6 start-6 z-50",
           "p-3.5 rounded-2xl shadow-xl",
           "transition-all duration-300",
           "flex items-center gap-2 group",
@@ -149,7 +149,7 @@ export function AiAssistant() {
           <>
             <div className="relative">
               <Sparkles size={22} className="group-hover:animate-pulse" />
-              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-secondary rounded-full animate-pulse" />
+              <span className="absolute -top-1 -end-1 w-2.5 h-2.5 bg-secondary rounded-full animate-pulse" />
             </div>
           </>
         )}
@@ -164,7 +164,7 @@ export function AiAssistant() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed bottom-20 left-6 z-50 w-80 max-w-[calc(100vw-3rem)]"
+            className="fixed bottom-20 start-6 z-50 w-80 max-w-[calc(100vw-3rem)]"
           >
             <div className="bg-card/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-border/50 overflow-hidden">
               {/* Header */}

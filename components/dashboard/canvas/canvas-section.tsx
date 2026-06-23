@@ -96,7 +96,7 @@ export function CanvasSection({
            </div>
            
            <span className={cn(
-               "ml-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-colors",
+               "ms-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full transition-colors",
                cards.length > 0 
                   ? "bg-black/5 text-foreground/70 dark:bg-white/10" 
                   : "bg-transparent text-muted-foreground/40 group-hover:bg-black/5 dark:group-hover:bg-white/10"

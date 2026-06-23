@@ -110,7 +110,7 @@ export function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         {isActive && (
                           <Badge variant="outline" className="text-[8px] py-0 px-1.5 border-primary/20 text-primary">
-                            <Eye size={8} className="ml-0.5" /> فعال
+                            <Eye size={8} className="ms-0.5" /> فعال
                           </Badge>
                         )}
                         {comparisonMode && (

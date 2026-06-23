@@ -63,7 +63,7 @@ export function BillingSection() {
             <p className="text-sm text-muted-foreground">مدیریت اشتراک و صورتحساب</p>
           </div>
           <Badge className={tierColors[tier]}>
-            <TierIcon size={12} className="ml-1" />
+            <TierIcon size={12} className="ms-1" />
             {tierLabels[tier]}
           </Badge>
         </div>
@@ -100,7 +100,7 @@ export function BillingSection() {
                   </div>
                 </div>
               </div>
-              <div className="text-left">
+              <div className="text-start">
                 <div className="font-bold text-foreground">
                   {plan ? formatPrice(
                     subscription?.billingCycle === "yearly" 

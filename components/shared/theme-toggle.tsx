@@ -28,7 +28,7 @@ export function ThemeToggle({ className, showLabel }: ThemeToggleProps) {
         disabled
       >
         <Sun size={18} />
-        {showLabel && <span className="mr-2">تم</span>}
+        {showLabel && <span className="me-2">تم</span>}
       </Button>
     );
   }
@@ -72,7 +72,7 @@ export function ThemeToggle({ className, showLabel }: ThemeToggleProps) {
         />
       </div>
       {showLabel && (
-        <span className="mr-2">
+        <span className="me-2">
           {theme === "dark" ? "تم تاریک" : "تم روشن"}
         </span>
       )}
