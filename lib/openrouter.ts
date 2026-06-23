@@ -60,11 +60,28 @@ export async function callOpenRouter(
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-            const messages: { role: string; content: string }[] = [];
+            const messages: any[] = [];
             if (systemPrompt) {
-                messages.push({ role: "system", content: systemPrompt });
+                messages.push({
+                    role: "system",
+                    content: [
+                        {
+                            type: "text",
+                            text: systemPrompt,
+                            cache_control: { type: "ephemeral" }
+                        }
+                    ]
+                });
             }
-            messages.push({ role: "user", content: prompt });
+            messages.push({
+                role: "user",
+                content: [
+                    {
+                        type: "text",
+                        text: prompt
+                    }
+                ]
+            });
 
             const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",

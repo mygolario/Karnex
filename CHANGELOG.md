@@ -2,6 +2,21 @@
 
 All notable changes to the Karnex platform will be documented in this file.
 
+## [v2.0.0-sprint2] - 2026-06-23
+
+This release completes Sprint 2 (AI Engine v2) of the Karnex v2.0 upgrade program. It implements an external Prompt Registry with template variable injection, adds a Whisper-based Persian Voice Input fallback, stabilizes model routing with OpenRouter prompt caching (`cache_control`), and establishes a multi-step agentic loop for the Copilot chat.
+
+### Added
+- **AI Prompt Registry**: Created JSON-based prompt configurations under [lib/prompts/](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/prompts/) with template variable injection, structured few-shot examples for Persian tone/styling, and reasoning fields for Chain-of-Thought output.
+- **Whisper Speech-to-Text Fallback API**: Created a server-side route [app/api/stt/route.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/app/api/stt/route.ts) using the OpenRouter Whisper model (`openai/whisper-large-v3`) to handle audio uploads when native Web Speech API is unsupported.
+- **HTML5 MediaRecorder Fallback**: Rewrote [components/dashboard/assistant/voice-input.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/dashboard/assistant/voice-input.tsx) to record audio using HTML5 MediaRecorder and upload to `/api/stt` when browser SpeechRecognition is absent.
+- **Multi-step Copilot Agentic Loop**: Redesigned [app/api/copilot/route.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/app/api/copilot/route.ts) as a multi-step loop supporting up to 5 execution turns using `google/gemini-2.5-pro` with sequential tools like `search_competitors` and `update_swot_analysis`.
+- **Copilot Live Stream and UI Binding**: Modified [app/dashboard/copilot/page.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/app/dashboard/copilot/page.tsx) to parse an NDJSON progress stream and display real-time status messages (`statusMessage`) during execution.
+
+### Changed
+- **OpenRouter Model Caching & Routing**: Upgraded model configurations in [lib/openrouter.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/openrouter.ts) to use stable production models (`gemini-2.5-flash`, `gemini-2.5-pro`, `gpt-4o-mini`) and system prompts configured with `cache_control: { type: "ephemeral" }` to optimize latency and prompt cost.
+- **Prompt Registry Integration**: Updated [lib/ai-actions.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/ai-actions.ts), [lib/chat-actions.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/chat-actions.ts), and [lib/project-actions.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/project-actions.ts) to resolve prompt templates dynamically from the prompt registry and increased max token limit to handle LLM reasoning chains.
+
 ## [v2.0.0-sprint1] - 2026-06-23
 
 This release completes Sprint 1 (Core Architecture & Security Hardening) along with Sprint 0 (Foundations & Quick Wins) of the Karnex v2.0 upgrade program. It integrates robust security (RLS, Admin route guards, payment signature verification), stable RTL Persian PDF exports, local typography, optimized database indexes, state management migration to Zustand, Redis rate limiting, two-phase AI credits commit, and structured JSON plan normalization.

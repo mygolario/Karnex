@@ -147,6 +147,7 @@ export default function CopilotPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -428,6 +429,7 @@ export default function CopilotPage() {
     updateAssistantData({ messages: newMessages });
 
     setIsLoading(true);
+    setStatusMessage("درحال بررسی درخواست...");
 
     try {
       const response = await fetch('/api/copilot', {
@@ -440,21 +442,89 @@ export default function CopilotPage() {
         })
       });
 
-      const data = await response.json();
-
-      if (data.error === "AI_LIMIT_REACHED" || response.status === 429) {
+      if (response.status === 429) {
         setShowLimitModal(true);
         setIsLoading(false);
         return;
       }
 
-      if (data.error) throw new Error(data.error);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "خطا در ارتباط با سرور");
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) throw new Error("No response body");
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      const assistantMessageId = generateId();
+      let assistantContent = "";
+      let finalToolCall: any = null;
+
+      // Set empty assistant message first
+      setMessages(prev => [
+        ...prev,
+        {
+          id: assistantMessageId,
+          role: 'assistant',
+          content: "",
+          timestamp: Date.now()
+        }
+      ]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          try {
+            const parsed = JSON.parse(line);
+            if (parsed.type === "status") {
+              setStatusMessage(parsed.content);
+            } else if (parsed.type === "text") {
+              assistantContent += parsed.content;
+              setMessages(prev => prev.map(m => 
+                m.id === assistantMessageId ? { ...m, content: assistantContent } : m
+              ));
+            } else if (parsed.type === "tool_call") {
+              finalToolCall = parsed.tool_call;
+            } else if (parsed.type === "error") {
+              throw new Error(parsed.error);
+            }
+          } catch (e) {
+            console.error("Failed to parse chunk", line, e);
+          }
+        }
+      }
+
+      if (buffer.trim()) {
+        try {
+          const parsed = JSON.parse(buffer);
+          if (parsed.type === "text") {
+            assistantContent += parsed.content;
+            setMessages(prev => prev.map(m => 
+              m.id === assistantMessageId ? { ...m, content: assistantContent } : m
+            ));
+          }
+        } catch {}
+      }
 
       // Handle Tool Call Result
-      if (data.tool_call) {
-          const toolResult = data.tool_call.result;
+      if (finalToolCall) {
+          const toolResult = finalToolCall.result;
           
-          if (data.tool_call.status === 'success') {
+          setMessages(prev => prev.map(m => 
+            m.id === assistantMessageId ? { ...m, tool_call: finalToolCall } : m
+          ));
+
+          if (finalToolCall.status === 'success') {
               try {
                 await refreshProjects();
                 toast.success("تغییرات اعمال شد");
@@ -463,38 +533,22 @@ export default function CopilotPage() {
                   toast.error("خطا در به‌روزرسانی داده‌ها");
               }
           } else {
-              toast.error(toolResult.error || "خطا در انجام عملیات");
+              toast.error(toolResult?.error || "خطا در انجام عملیات");
           }
-
-          const assistantMessage: ChatMessage = {
-            id: generateId(),
-            role: 'assistant',
-            content: data.content || toolResult.message || "عملیات انجام شد.",
-            timestamp: Date.now(),
-            tool_call: data.tool_call
-          };
-
-          const updatedMessages = [...newMessages, assistantMessage];
-          setMessages(updatedMessages);
-          updateAssistantData({ messages: updatedMessages });
-
-      } else if (data.content) {
-          const assistantMessage: ChatMessage = {
-            id: generateId(),
-            role: 'assistant',
-            content: data.content,
-            timestamp: Date.now()
-          };
-          const updatedMessages = [...newMessages, assistantMessage];
-          setMessages(updatedMessages);
-          updateAssistantData({ messages: updatedMessages });
       }
 
-    } catch (error) {
+      // Sync updated messages with storage/state
+      setMessages(prev => {
+        updateAssistantData({ messages: prev });
+        return prev;
+      });
+
+    } catch (error: any) {
       console.error(error);
-      toast.error("خطا در ارتباط با سرور");
+      toast.error(error.message || "خطا در ارتباط با سرور");
     } finally {
       setIsLoading(false);
+      setStatusMessage("");
     }
   };
 
@@ -725,7 +779,7 @@ export default function CopilotPage() {
                              </div>
                              <div className="bg-white/50 dark:bg-white/5 border px-5 py-4 rounded-3xl rounded-tl-none flex items-center gap-3 shadow-sm backdrop-blur-sm">
                                 <Loader2 size={16} className="animate-spin text-primary" />
-                                <span className="text-xs font-medium text-foreground/70 tracking-wide animate-pulse">در حال انجام عملیات...</span>
+                                <span className="text-xs font-medium text-foreground/70 tracking-wide animate-pulse">{statusMessage || "در حال انجام عملیات..."}</span>
                              </div>
                         </div>
                     )}

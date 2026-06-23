@@ -2,6 +2,7 @@
 
 import { callOpenRouter } from '@/lib/openrouter';
 import { checkAILimit } from '@/lib/ai-limit-middleware';
+import { getPrompt } from '@/lib/prompts/registry';
 
 export async function chatAction(message: string, planContext: any, generateFollowUps: boolean = false) {
   let rollback = async () => {};
@@ -45,27 +46,25 @@ export async function chatAction(message: string, planContext: any, generateFoll
       `;
     }
 
-    const systemPrompt = `
-      ${personaInstructions}
-      
-      CONTEXT - USER'S CURRENT PROJECT:
-      Project Name: ${planContext?.projectName || 'Unknown'}
-      Business Idea: ${planContext?.overview || 'Unknown'}
-      Target Audience: ${planContext?.audience || 'Unknown'}
-      Current Budget: ${planContext?.budget || 'Unknown'}
-      Project Type: ${projectType}
-      
-      GENERAL INSTRUCTIONS:
-      1. Answer the user's question specifically for *their* project type. Don't give generic advice.
-      2. Keep answers concise (max 3-4 sentences) unless asked for more.
-      3. Reply in PERSIAN (Farsi).
-      
-      User Question: ${message}
-      ${generateFollowUps ? '\nدر آخر ۳ سوال پیگیری بنویس با فرمت:\n---FOLLOWUPS---\n- سوال ۱\n- سوال ۲\n- سوال ۳' : ''}
-    `;
+    const projectName = planContext?.projectName || 'Unknown';
+    const overview = planContext?.overview || 'Unknown';
+    const audience = planContext?.audience || 'Unknown';
+    const budget = planContext?.budget || 'Unknown';
+    const followUpBlock = generateFollowUps ? '\nدر آخر ۳ سوال پیگیری بنویس با فرمت:\n---FOLLOWUPS---\n- سوال ۱\n- سوال ۲\n- سوال ۳' : '';
 
-    const result = await callOpenRouter(`${message}\n\n(پاسخ فارسی بده)`, {
-      systemPrompt,
+    const { system, user } = getPrompt("chatAction", {
+      projectName,
+      overview,
+      audience,
+      budget,
+      projectType,
+      personaInstructions,
+      message,
+      followUpBlock
+    });
+
+    const result = await callOpenRouter(user, {
+      systemPrompt: system,
       maxTokens: 800,
       temperature: 0.5,
       // User request: Use gpt-4o-mini specifically for Assistant
@@ -173,24 +172,7 @@ export async function advisorChatAction(message: string, projectContext: any, co
 
     const projectSummary = buildProjectSummary();
 
-    // CRITICAL: Very explicit Persian-only system prompt
-    const systemPrompt = `تو دستیار هوشمند کارنکس هستی.
-
-قانون مهم: فقط به زبان فارسی پاسخ بده. هیچ کلمه انگلیسی یا زبان دیگر استفاده نکن.
-
-پروژه کاربر: ${projectSummary}
-
-وظایف:
-- پاسخ کوتاه و مفید بده
-- نکات عملی پیشنهاد کن
-- در آخر ۲ سوال پیگیری بنویس
-
-فرمت:
-[پاسخ فارسی]
-
----FOLLOWUPS---
-- سوال ۱
-- سوال ۲`;
+    const { system, user: userTemplate } = getPrompt("advisorChat", { projectSummary });
 
     // Build conversation context
     let fullPrompt = message;
@@ -205,7 +187,7 @@ export async function advisorChatAction(message: string, projectContext: any, co
     }
 
     const result = await callOpenRouter(fullPrompt, {
-      systemPrompt,
+      systemPrompt: system,
       maxTokens: 1024,
       temperature: 0.5, // Lower temperature for more consistent output
     });

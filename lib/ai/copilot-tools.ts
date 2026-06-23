@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "../../prisma/client";
+import { analyzeCompetitorsAction } from "@/lib/ai-actions";
 
 // === Tool Definitions ===
 
@@ -72,6 +73,39 @@ export const COPILOT_TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "search_competitors",
+      description: "Search and analyze real competitors and generate a market SWOT analysis for the user's startup. Use this when the user asks about competitors, market rivals, or competitive analysis.",
+      parameters: {
+        type: "object",
+        properties: {
+          projectName: { type: "string", description: "The name of the project" },
+          projectIdea: { type: "string", description: "The core business idea" },
+          audience: { type: "string", description: "Target audience" }
+        },
+        required: ["projectName", "projectIdea", "audience"]
+      }
+    }
+  },
+  {
+    type: "function",
+    function: {
+      name: "update_swot_analysis",
+      description: "Update the SWOT Analysis canvas. Use this when the user asks to update or add strengths, weaknesses, opportunities, or threats.",
+      parameters: {
+        type: "object",
+        properties: {
+          strengths: { type: "array", items: { type: "string" }, description: "Strengths list in Persian" },
+          weaknesses: { type: "array", items: { type: "string" }, description: "Weaknesses list in Persian" },
+          opportunities: { type: "array", items: { type: "string" }, description: "Opportunities list in Persian" },
+          threats: { type: "array", items: { type: "string" }, description: "Threats list in Persian" }
+        },
+        required: []
+      }
+    }
+  }
 ];
 
 // === Tool Executors ===
@@ -222,4 +256,56 @@ export async function executeUpdatePitchDeckSlide(projectId: string, args: any, 
    });
 
    return { success: true, message: `Slide "${updatedSlide.title}" updated successfully.` };
+}
+
+export async function executeSearchCompetitors(projectId: string, args: any, userId?: string) {
+    const result = await analyzeCompetitorsAction({
+        projectName: args.projectName,
+        projectIdea: args.projectIdea,
+        audience: args.audience
+    });
+
+    if (!result.success) {
+        throw new Error(result.error || "خطا در تحلیل رقبا");
+    }
+
+    return { 
+        success: true, 
+        message: "حریفان و رقبای استارتاپ شما شناسایی و تحلیل شدند.",
+        competitors: result.data.competitors,
+        swot: result.data.swot
+    };
+}
+
+export async function executeUpdateSwotAnalysis(projectId: string, args: any, userId?: string) {
+    if (!projectId) throw new Error("Project ID required");
+
+    const project = await prisma.project.findFirst({
+        where: { id: projectId, ...(userId && { userId }) },
+        select: { data: true }
+    });
+
+    if (!project) throw new Error("Project not found");
+
+    const currentData = (project.data as any) || {};
+    const currentSwot = currentData.swotAnalysis || { strengths: [], weaknesses: [], opportunities: [], threats: [] };
+
+    const newSwot = {
+        strengths: args.strengths || currentSwot.strengths || [],
+        weaknesses: args.weaknesses || currentSwot.weaknesses || [],
+        opportunities: args.opportunities || currentSwot.opportunities || [],
+        threats: args.threats || currentSwot.threats || []
+    };
+
+    const newData = {
+        ...currentData,
+        swotAnalysis: newSwot
+    };
+
+    await prisma.project.update({
+        where: { id: projectId },
+        data: { data: newData }
+    });
+
+    return { success: true, message: "بوم تحلیل SWOT پروژه شما با موفقیت به‌روزرسانی شد.", swot: newSwot };
 }

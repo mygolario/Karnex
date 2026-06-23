@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import { checkProjectLimit, checkAIRequestLimit, incrementAIUsage } from "@/lib/usage-tracker";
 import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
+import { getPrompt } from "@/lib/prompts/registry";
 import fs from 'fs';
 import path from 'path';
 
@@ -275,93 +276,23 @@ export async function generatePlanAction(data: any) {
 
     const { businessGlossary } = await import("@/lib/knowledge-base");
     
-    const systemPrompt = `
-      You are Karnex, a Senior Business Strategist & Product Manager specializing in the Iranian market.
-      
-      **YOUR MISSION:**
-      Create a highly personalized, actionable, and realistic execution roadmap for the user's specific project.
-      This is NOT a generic template. It MUST be tailored to the exact industry, business model, and constraints of the user.
-
-      **USER PROJECT CONTEXT:**
-      - **Project Type:** ${projectType} (Startup/Traditional/Creator)
-      - **Core Idea:** ${idea}
-      - **Target Audience:** ${audience}
-      - **Budget:** ${budget}
-      - **Specific Details:** 
-      ${formattedAnswers}
-
-      **CRITICAL INSTRUCTIONS FOR PERSONALIZATION:**
-      1.  **Analyze the Idea:** First, understand the specific niche (e.g., if it's a "Vegan Restaurant", steps must mention "Health Permits", "Menu Design", "Supplier Sourcing", NOT just "Get licenses").
-      2.  **Specific Platforms & Tools:** Recommend tools relevant to the Iranian market (e.g., "Divar/Sheypoor" for ads, "ZarinPal" for payments, "Bale/Eitaa/Telegram" for community).
-      3.  **Actionable Steps:** Every step must start with a verb and be a clear task.
-          - ❌ BAD: "Marketing Phase"
-          - ✅ GOOD: "Launch an Instagram campaign targeting [Audience] in Tehran"
-      4.  **Realistic Timeline:** Estimate hours based on the complexity of the specific task.
-
-      **TRANSLATION & FORMAT RULES:**
-      1.  **Strictly Persian:** All output MUST be in natural, professional Persian (Farsi).
-      2.  **Glossary Compliance:** You MUST use the following technical term translations:
-          ${JSON.stringify(businessGlossary, null, 2)}
-      3.  **Phase Names:** Use descriptive Persian names for phases (e.g., "فاز ۱: تحقیقات بازار و اعتبارسنجی", "فاز ۲: ساخت نمونه اولیه").
-      4.  **JSON Only:** Output raw JSON with no markdown formatting.
-      5.  **Conciseness:** Keep descriptions concise to ensure the full JSON fits within the token limit.
-
-      **REQUIRED JSON STRUCTURE:**
-      {
-        "projectName": "Name (Creative & Persian)",
-        "tagline": "Slogan (Catchy & Persian)",
-        "overview": "A compelling 2-3 sentence executive summary of the business strategy.",
-        "businessModelCanvas": { 
-            "keyPartners": "Exactly 3 key partners (e.g., Suppliers, Distributors, Alliances)", 
-            "keyActivities": "Exactly 3 critical daily activities (e.g., Development, Marketing, Sales)", 
-            "keyResources": "Exactly 3 key resources (e.g., Intellectual Property, Capital, Human)", 
-            "uniqueValue": "Exactly 3 distinct value propositions (Why you?)", 
-            "customerRelations": "Exactly 3 ways you interact with customers (e.g., Automated, Personal)", 
-            "channels": "Exactly 3 distribution channels (e.g., Website, App, Retail)", 
-            "customerSegments": "Exactly 3 distinct customer segments (be specific)", 
-            "costStructure": "Exactly 3 main cost drivers (e.g., Salaries, Server costs, Marketing)", 
-            "revenueStream": "Exactly 3 revenue sources (e.g., Subscription, Ads, One-time sales)" 
-        },
-        "brandKit": { 
-            "primaryColorHex": "#HEX", 
-            "secondaryColorHex": "#HEX", 
-            "colorPsychology": "Why these colors fit this specific industry?", 
-            "suggestedFont": "Name of a suitable Persian font (e.g., Vazir, Yekan, Shabnam)", 
-            "logoConcepts": ["Concept 1 description", "Concept 2 description"] 
-        },
-        "roadmap": [ 
-            { 
-                "phase": "Phase Name", 
-                "steps": [ 
-                    { 
-                        "title": "Actionable Step Title", 
-                        "description": "Specific how-to guide for this step. Mention specific tools/sites if applicable.", 
-                        "estimatedHours": 10, 
-                        "priority": "high", 
-                        "category": "legal/marketing/tech/product", 
-                        "status": "todo", 
-                        "checklist": ["Sub-task 1", "Sub-task 2"], 
-                        "tips": ["Expert tip 1", "Expert tip 2"] 
-                    } 
-                ] 
-            } 
-        ],
-        "marketingStrategy": [
-            { "channel": "Channel Name", "tactic": "Specific tactic for this business", "cost": "low/medium/high" }
-        ],
-        "competitors": [
-            { "name": "Competitor Name", "strength": "What they do well", "weakness": "Where you can win" }
-        ]
-      }
-    `;
+    const { system, user } = getPrompt("generatePlan", {
+      projectType,
+      idea,
+      audience,
+      budget,
+      formattedAnswers,
+      businessGlossary: JSON.stringify(businessGlossary, null, 2)
+    });
 
     const result = await callOpenRouter(
-      `طرح کسب‌وکار جامع JSON فارسی برای: ${idea}`,
+      user,
       {
-        systemPrompt,
+        systemPrompt: system,
         maxTokens: 16000,
         temperature: 0.6,
         timeoutMs: 80000,
+        modelOverride: "google/gemini-2.5-pro",
       }
     );
 
@@ -372,6 +303,9 @@ export async function generatePlanAction(data: any) {
 
     try {
       const structuredPlan = parseJsonFromAI(result.content!);
+      if (structuredPlan && typeof structuredPlan === 'object') {
+        delete structuredPlan.reasoning;
+      }
 
       // Normalize full plan structure
       const normalized = normalizeProjectPlan(structuredPlan);
