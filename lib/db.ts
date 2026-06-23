@@ -666,6 +666,23 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
     // Prisma doesn't do deep merge on JSON natively.
     if (updates.credits) prismaUpdates.credits = updates.credits;
     if (updates.avatar_url) prismaUpdates.image = updates.avatar_url;
+    if (updates.phone_number !== undefined) prismaUpdates.phoneNumber = updates.phone_number;
+    if (updates.bio !== undefined) prismaUpdates.bio = updates.bio;
+    if (updates.birth_date !== undefined) {
+        if (updates.birth_date) {
+            try {
+                const { parse } = require('date-fns-jalali');
+                const englishDigitsStr = updates.birth_date.replace(/[۰-۹]/g, (d: string) =>
+                  String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+                );
+                prismaUpdates.birthDate = parse(englishDigitsStr, 'yyyy/MM/dd', new Date());
+            } catch (e) {
+                prismaUpdates.birthDate = new Date(updates.birth_date);
+            }
+        } else {
+            prismaUpdates.birthDate = null;
+        }
+    }
     
     await prisma.user.update({
         where: { id: userId },
@@ -693,6 +710,9 @@ function mapPrismaUserToProfile(user: any): UserProfile {
         last_name: user.lastName || "",
         full_name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
         avatar_url: user.image,
+        phone_number: user.phoneNumber || "",
+        bio: user.bio || "",
+        birth_date: user.birthDate ? require('date-fns-jalali').format(user.birthDate, 'yyyy/MM/dd') : "",
         credits: user.credits as any || { aiTokens: 0, projectsUsed: 0 },
         settings: user.settings as any || { emailNotifications: true, theme: 'system' },
         subscription: activeSub as any,

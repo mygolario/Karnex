@@ -26,9 +26,7 @@ import {
   Download,
 } from "lucide-react";
 import { toast } from "sonner";
-import DatePicker from "react-multi-date-picker";
-import persian from "react-date-object/calendars/persian";
-import persian_fa from "react-date-object/locales/persian_fa";
+import { JalaliDatePicker } from "@/components/ui/date-picker";
 import Link from "next/link";
 
 export default function ProfilePage() {
@@ -326,19 +324,14 @@ export default function ProfilePage() {
                       تاریخ تولد
                     </label>
                     <div className="relative">
-                      <DatePicker
+                      <JalaliDatePicker
                         value={formData.birthDate}
-                        onChange={(date: any) =>
+                        onChange={(dateStr) =>
                           setFormData({
                             ...formData,
-                            birthDate: date ? date.toString() : "",
+                            birthDate: dateStr,
                           })
                         }
-                        calendar={persian}
-                        locale={persian_fa}
-                        calendarPosition="bottom-right"
-                        inputClass="flex h-12 w-full rounded-xl border border-input bg-background/50 px-4 py-3 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200 hover:bg-background/80 hover:border-primary/30 focus:border-primary"
-                        containerClassName="w-full"
                         placeholder="تاریخ تولد خود را انتخاب کنید"
                       />
                     </div>

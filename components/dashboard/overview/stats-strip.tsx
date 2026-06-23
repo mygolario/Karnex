@@ -5,6 +5,8 @@ import { TrendingUp, Award, Flame, CheckCircle2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
+import { toPersianDigits } from "@/lib/utils";
+
 interface StatsStripProps {
   progress: number;
   score: string | number; // Allow legacy number score or new grade
@@ -19,7 +21,7 @@ export function StatsStrip({ progress, score, completedCount, totalSteps, streak
       <StatCard 
         icon={TrendingUp} 
         label="پیشرفت کل" 
-        value={`${progress}%`} 
+        value={`${toPersianDigits(progress)}%`} 
         color="text-blue-500" 
         bgColor="bg-blue-500/10"
         footer={<Progress value={progress} className="h-1.5 mt-2 bg-blue-100 dark:bg-blue-950" indicatorClassName="bg-blue-500" />}
@@ -27,7 +29,7 @@ export function StatsStrip({ progress, score, completedCount, totalSteps, streak
       <StatCard 
         icon={Award} 
         label="امتیاز پروژه" 
-        value={typeof score === 'string' ? score : score.toString()} 
+        value={toPersianDigits(typeof score === 'string' ? score : score.toString())} 
         color="text-purple-500"
         bgColor="bg-purple-500/10"
         subValue="خوب" 
@@ -35,14 +37,14 @@ export function StatsStrip({ progress, score, completedCount, totalSteps, streak
       <StatCard 
         icon={CheckCircle2} 
         label="تسک‌های انجام شده" 
-        value={`${completedCount}/${totalSteps}`} 
+        value={`${toPersianDigits(completedCount)}/${toPersianDigits(totalSteps)}`} 
         color="text-emerald-500" 
         bgColor="bg-emerald-500/10"
       />
       <StatCard 
         icon={Flame} 
         label="زنجیره فعالیت" 
-        value={`${streak} روز`} 
+        value={`${toPersianDigits(streak)} روز`} 
         color="text-orange-500" 
         bgColor="bg-orange-500/10"
         isFire

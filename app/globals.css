@@ -63,6 +63,20 @@
     --glass-bg: rgba(255, 255, 255, 0.8);
     --glass-border: rgba(255, 255, 255, 0.4);
     --glass-blur: 20px;
+
+    /* === Unified Brand Design Tokens === */
+    --brand-primary: 330 81% 60%;
+    --brand-secondary: 25 95% 53%;
+    --brand-accent: 350 89% 60%;
+    
+    --radius-card: 1.25rem;
+    --radius-btn: 0.75rem;
+    --radius-input: 0.75rem;
+
+    --glass-premium-bg: rgba(255, 255, 255, 0.45);
+    --glass-premium-border: rgba(255, 255, 255, 0.40);
+    --glass-premium-blur: 20px;
+    --glass-premium-glow: 0 8px 32px 0 rgba(236, 72, 153, 0.08);
   }
 
   .dark {
@@ -108,6 +122,16 @@
     /* Glass */
     --glass-bg: rgba(0, 0, 0, 0.8);
     --glass-border: rgba(255, 255, 255, 0.1);
+
+    /* === Unified Brand Design Tokens === */
+    --brand-primary: 330 85% 65%;
+    --brand-secondary: 25 100% 60%;
+    --brand-accent: 350 90% 65%;
+
+    --glass-premium-bg: rgba(0, 0, 0, 0.55);
+    --glass-premium-border: rgba(255, 255, 255, 0.08);
+    --glass-premium-blur: 20px;
+    --glass-premium-glow: 0 8px 32px 0 rgba(236, 72, 153, 0.12);
   }
 
   /* === Persian Typography === */

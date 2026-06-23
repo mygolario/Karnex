@@ -2,6 +2,23 @@
 
 All notable changes to the Karnex platform will be documented in this file.
 
+## [v2.0.0-sprint3] - 2026-06-23
+
+This release completes Sprint 3 (Design System Overhaul) of the Karnex v2.0 upgrade program. It implements a fully custom Jalali date picker, resolves offline Vazirmatn typography issues for PWAs, localizes Latin digits to Farsi digits across all overview dashboards/roadmaps, and defines a centralized premium design token system.
+
+### Added
+- **Jalali Native Date Picker Component**: Built a reusable `JalaliDatePicker` component in [components/ui/date-picker.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/ui/date-picker.tsx) using Radix UI Popover (`@radix-ui/react-popover`) and `date-fns-jalali` with month/year dropdowns and Saturday-start weekday alignment.
+- **Unified Design Token System**: Defined CSS custom properties for primary/secondary/accent colors, border radii (`--radius-card`, `--radius-btn`, `--radius-input`), and glassmorphism elements in [app/globals.css](file:///c:/Ario%20Vibe%20Coding/Karnex/app/globals.css) and registered them in [tailwind.config.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/tailwind.config.ts).
+
+### Fixed
+- **Profile Field Persistence**: Restored missing backend database sync mapping for `phoneNumber`, `birthDate`, and `bio` fields inside `updateUserProfile` and `mapPrismaUserToProfile` in [lib/db.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/db.ts) so that profile values are correctly loaded and saved to PostgreSQL.
+
+### Changed
+- **PWA Offline Font Loading**: Configured `next/font/local` in [app/layout.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/app/layout.tsx) with custom variable `--font-vazirmatn` pointing to local Vazirmatn font assets inside `vazirmatn-v33.003/` directory.
+- **Farsi Digits Localization**: Extended `toPersianDigits` helper to render Farsi digits on dashboard progress percentages, completed task ratios, activity streaks, phase steps, and estimated hours in [stats-strip.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/dashboard/overview/stats-strip.tsx), [app/dashboard/roadmap/page.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/app/dashboard/roadmap/page.tsx), [roadmap-journey.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/dashboard/roadmap/roadmap-journey.tsx), and [step-detail-modal.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/dashboard/step-detail-modal.tsx).
+- **UI Primitives Refactoring**: Overhauled [button.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/ui/button.tsx), [input.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/ui/input.tsx), [card.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/ui/card.tsx), and [dialog.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/ui/dialog.tsx) to consume the unified brand design tokens and glass-premium classes instead of arbitrary Tailwind classes.
+- **Profile Date Picker Standardization**: Replaced `react-multi-date-picker` in [app/dashboard/profile/page.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/app/dashboard/profile/page.tsx) with the new standardized `<JalaliDatePicker>` component.
+
 ## [v2.0.0-sprint2] - 2026-06-23
 
 This release completes Sprint 2 (AI Engine v2) of the Karnex v2.0 upgrade program. It implements an external Prompt Registry with template variable injection, adds a Whisper-based Persian Voice Input fallback, stabilizes model routing with OpenRouter prompt caching (`cache_control`), and establishes a multi-step agentic loop for the Copilot chat.

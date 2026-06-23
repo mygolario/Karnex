@@ -3,16 +3,16 @@ import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const inputVariants = cva(
-  "flex w-full rounded-xl border transition-all duration-200 bg-transparent text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 outline-none",
+  "flex w-full rounded-input border transition-all duration-200 bg-transparent text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 outline-none",
   {
     variants: {
       variant: {
         default:
-          "border-input bg-background focus:border-primary focus:ring-2 focus:ring-primary/20",
+          "border-input bg-background focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20",
         ghost:
-          "border-transparent bg-muted/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/20",
+          "border-transparent bg-muted/50 focus:bg-background focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20",
         premium:
-          "border-border bg-muted/50 focus:bg-background focus:border-primary focus:ring-2 focus:ring-primary/20",
+          "border-border bg-muted/50 focus:bg-background focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20",
       },
       inputSize: {
         default: "h-11 px-4 py-2",

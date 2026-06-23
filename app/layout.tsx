@@ -92,6 +92,7 @@ const vazirmatn = localFont({
       style: 'normal',
     },
   ],
+  variable: '--font-vazirmatn',
   display: 'swap',
 });
 
@@ -101,7 +102,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fa" dir="rtl" suppressHydrationWarning>
+    <html lang="fa" dir="rtl" suppressHydrationWarning className={vazirmatn.variable}>
       <head />
       <body className={`${vazirmatn.className} theme-transition`}>
         <JsonLd />

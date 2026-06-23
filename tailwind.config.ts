@@ -18,8 +18,8 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["Vazirmatn", "system-ui", "sans-serif"],
-        vazir: ["Vazirmatn", "system-ui", "sans-serif"],
+        sans: ["var(--font-vazirmatn)", "system-ui", "sans-serif"],
+        vazir: ["var(--font-vazirmatn)", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -71,6 +71,12 @@ const config: Config = {
           light: "#fbbf24",
           dark: "#d97706",
         },
+        // Brand design tokens
+        brand: {
+          primary: "hsl(var(--brand-primary))",
+          secondary: "hsl(var(--brand-secondary))",
+          accent: "hsl(var(--brand-accent))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -78,6 +84,21 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
         xl: "var(--radius-xl)",
         "2xl": "var(--radius-2xl)",
+        card: "var(--radius-card)",
+        btn: "var(--radius-btn)",
+        input: "var(--radius-input)",
+      },
+      backgroundColor: {
+        "glass-premium": "var(--glass-premium-bg)",
+      },
+      borderColor: {
+        "glass-premium": "var(--glass-premium-border)",
+      },
+      backdropBlur: {
+        premium: "var(--glass-premium-blur)",
+      },
+      boxShadow: {
+        "glass-premium": "var(--glass-premium-glow)",
       },
       keyframes: {
         "accordion-down": {

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn, toPersianDigits } from "@/lib/utils";
 import { 
   CheckCircle2, 
   Circle, 
@@ -325,7 +325,7 @@ function MissionBadge({ index, isLeft }: { index: number; isLeft: boolean }) {
             <div className="flex items-center gap-2.5 border border-border/60 bg-card/50 rounded-2xl px-3 py-1.5 backdrop-blur-md shadow-sm group-hover:bg-card group-hover:shadow-md group-hover:border-primary/20 transition-all">
                 <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
                     <span className="text-xs font-bold text-primary font-mono">
-                        {index}
+                        {toPersianDigits(index)}
                     </span>
                 </div>
                 <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">

@@ -12,6 +12,7 @@ import { Activity, Search, Filter, Loader2, Map } from "lucide-react";
 import type { RoadmapPhase, RoadmapStepObject } from "@/hooks/use-roadmap";
 import type { SubTask } from "@/lib/db";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
+import { toPersianDigits } from "@/lib/utils";
 
 export default function RoadmapPage() {
   const { 
@@ -138,20 +139,20 @@ export default function RoadmapPage() {
            <Card className="p-4 bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card transition-colors">
               <div className="text-xs text-muted-foreground mb-1">پیشرفت کل</div>
               <div className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-cyan-500">
-                {progressPercent}%
+                {toPersianDigits(progressPercent)}%
               </div>
            </Card>
            <Card className="p-4 bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card transition-colors">
               <div className="text-xs text-muted-foreground mb-1">تسک‌های باقیمانده</div>
-              <div className="text-2xl font-bold text-foreground">{remainingCount}</div>
+              <div className="text-2xl font-bold text-foreground">{toPersianDigits(remainingCount)}</div>
            </Card>
            <Card className="p-4 bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card transition-colors">
               <div className="text-xs text-muted-foreground mb-1">تسک‌های تکمیل شده</div>
-              <div className="text-2xl font-bold text-emerald-500">{completedCount}</div>
+              <div className="text-2xl font-bold text-emerald-500">{toPersianDigits(completedCount)}</div>
            </Card>
            <Card className="p-4 bg-card/50 backdrop-blur-sm border-border/50 hover:bg-card transition-colors">
               <div className="text-xs text-muted-foreground mb-1">فازهای تکمیل‌شده</div>
-               <div className="text-2xl font-bold text-amber-500">{completedPhases}/{totalPhases}</div>
+               <div className="text-2xl font-bold text-amber-500">{toPersianDigits(completedPhases)}/{toPersianDigits(totalPhases)}</div>
            </Card>
         </div>
       </div>

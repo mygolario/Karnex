@@ -9,7 +9,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { cn, toPersianDigits } from "@/lib/utils";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 interface RoadmapStep {
@@ -133,7 +133,7 @@ export function StepDetailModal({
                                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                                     {weekNumber && (
                                         <Badge variant="outline" className="text-xs">
-                                            هفته {weekNumber}
+                                            هفته {toPersianDigits(weekNumber)}
                                         </Badge>
                                     )}
                                     <Badge variant="secondary" className="text-xs">
@@ -166,7 +166,7 @@ export function StepDetailModal({
                             {step.estimatedHours && (
                                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                     <Clock size={14} className="text-primary" />
-                                    <span>{step.estimatedHours} ساعت</span>
+                                    <span>{toPersianDigits(step.estimatedHours)} ساعت</span>
                                 </div>
                             )}
                             {step.priority && (
