@@ -8,6 +8,7 @@ import { auth } from "@/auth";
 export const maxDuration = 60; // Allow longer timeout for tool execution
 
 export async function POST(req: Request) {
+  let rollback = async () => {};
   try {
     const session = await auth();
     if (!session || !session.user) {
@@ -15,8 +16,9 @@ export async function POST(req: Request) {
     }
 
     // === AI Usage Limit Check ===
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return errorResponse;
+    const limitResult = await checkAILimit();
+    if (limitResult.errorResponse) return limitResult.errorResponse;
+    rollback = limitResult.rollback;
 
     const { messages, projectId, context } = await req.json();
 
@@ -24,19 +26,18 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: "Project ID required" }, { status: 400 });
     }
 
-    // Fetch Full Project Context
-    const project = await prisma.project.findUnique({
-        where: { id: projectId },
+    // Fetch Full Project Context (RLS check: project must belong to session user)
+    const project = await prisma.project.findFirst({
+        where: { id: projectId, userId: session.user.id },
         select: { 
             projectName: true,
             description: true,
             data: true,
-            // Add other fields if needed
         }
     });
 
     if (!project) {
-        return NextResponse.json({ error: "Project not found" }, { status: 404 });
+        return NextResponse.json({ error: "Project not found or unauthorized" }, { status: 404 });
     }
 
     const projectData = (project.data as any) || {};
@@ -108,11 +109,11 @@ export async function POST(req: Request) {
 
         try {
             if (fnName === 'update_business_plan') {
-                actionResult = await executeUpdateBusinessPlan(projectId, args);
+                actionResult = await executeUpdateBusinessPlan(projectId, args, session.user.id);
             } else if (fnName === 'create_pitch_deck_slide') {
-                actionResult = await executeCreatePitchDeckSlide(projectId, args);
+                actionResult = await executeCreatePitchDeckSlide(projectId, args, session.user.id);
             } else if (fnName === 'update_pitch_deck_slide') {
-                actionResult = await executeUpdatePitchDeckSlide(projectId, args);
+                actionResult = await executeUpdatePitchDeckSlide(projectId, args, session.user.id);
             } else {
                 actionResult = { error: "Unknown tool" };
             }
@@ -191,6 +192,7 @@ export async function POST(req: Request) {
 
   } catch (error: any) {
     console.error("Copilot API Error:", error);
+    await rollback();
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

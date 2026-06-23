@@ -7,6 +7,7 @@
  */
 
 import { PricingPlan, PlanTier } from './types';
+import { toPersianDigits } from '@/lib/utils';
 
 // Pricing plans (prices in Toman)
 export const PRICING_PLANS: PricingPlan[] = [
@@ -105,7 +106,7 @@ export function getHighlightedPlan(): PricingPlan | undefined {
 export function formatPrice(amount: number, showCurrency = true): string {
   if (amount === 0) return 'رایگان';
   
-  const formatted = new Intl.NumberFormat('fa-IR').format(amount);
+  const formatted = toPersianDigits(new Intl.NumberFormat('en-US').format(amount));
   return showCurrency ? `${formatted} تومان` : formatted;
 }
 

@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 import { useState, useCallback } from "react";
-import { toPng } from 'html-to-image';
 // We need to keep some AI logic or move it to context. For now, let's keep it minimal and assume futurerefactor moves it.
 // Actually, the AI logic (autoFillCanvas etc) depends on state which is now in Context.
 // So we should ideally move that logic to the Context or a hook.

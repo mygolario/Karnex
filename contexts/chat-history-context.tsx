@@ -37,72 +37,48 @@ export function useChatHistory() {
   return context;
 }
 
+import { useChatStore } from "@/lib/store/chat-store";
+
 export function ChatHistoryProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
-  const [loading, setLoading] = useState(false); // Default to false as we are not fetching
+  const {
+    sessions,
+    currentSession,
+    loading,
+    createSession: storeCreateSession,
+    addMessage: storeAddMessage,
+    loadSession: storeLoadSession,
+    deleteSession: storeDeleteSession,
+    refreshSessions: storeRefreshSessions,
+    clearStore
+  } = useChatStore();
 
-  // Load sessions on mount (Mock)
+  // Clear store on logout
   useEffect(() => {
-    if (user) {
-      // In a real app, we might load from localStorage or an API here
-      setSessions([]); 
-    } else {
-      setSessions([]);
-      setCurrentSession(null);
+    if (!user) {
+      clearStore();
     }
-  }, [user]);
+  }, [user, clearStore]);
 
   const refreshSessions = async () => {
-    // Stub
+    await storeRefreshSessions();
   };
 
   const createSession = (title?: string) => {
-    const newSession: ChatSession = {
-        id: crypto.randomUUID(),
-        title: title || `گفتگو ${sessions.length + 1}`,
-        messages: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-    };
-    setCurrentSession(newSession);
-    setSessions(prev => [newSession, ...prev]);
+    storeCreateSession(title);
   };
 
   const addMessage = async (role: "user" | "assistant", content: string) => {
-    if (!user || !currentSession) return;
-
-    const message: ChatMessage = {
-      id: crypto.randomUUID(),
-      role,
-      content,
-      timestamp: new Date().toISOString()
-    };
-
-    const updatedMessages = [...currentSession.messages, message];
-    const updatedSession = {
-        ...currentSession,
-        messages: updatedMessages,
-        updatedAt: new Date().toISOString()
-    };
-    
-    setCurrentSession(updatedSession);
-    setSessions(prev => prev.map(s => s.id === currentSession.id ? updatedSession : s));
+    if (!user?.id) return;
+    await storeAddMessage(user.id, role, content);
   };
 
   const loadSession = (sessionId: string) => {
-    const session = sessions.find(s => s.id === sessionId);
-    if (session) {
-      setCurrentSession(session);
-    }
+    storeLoadSession(sessionId);
   };
 
   const deleteSession = async (sessionId: string) => {
-      setSessions(prev => prev.filter(s => s.id !== sessionId));
-      if (currentSession?.id === sessionId) {
-        setCurrentSession(null);
-      }
+    await storeDeleteSession(sessionId);
   };
 
   return (

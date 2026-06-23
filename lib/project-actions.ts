@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { checkProjectLimit, checkAIRequestLimit, incrementAIUsage } from "@/lib/usage-tracker";
 import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
+import { checkAILimit } from "@/lib/ai-limit-middleware";
 import fs from 'fs';
 import path from 'path';
 
@@ -33,6 +34,7 @@ export async function createProjectAction(planData: any) {
     const projectName = planData.projectName || "New Project";
     const tagline = planData.tagline || "";
 
+    // RLS: Enforce project ownership by binding project to the authenticated user's ID
     const project = await prisma.project.create({
       data: {
         userId: userId,
@@ -59,6 +61,7 @@ export async function getUserProjectsAction() {
     const session = await auth();
     if (!session?.user?.id) return { error: "Unauthorized" };
 
+    // RLS: Enforce project ownership check (project.userId === session.user.id)
     const projects = await prisma.project.findMany({
       where: { userId: session.user.id },
       orderBy: { updatedAt: 'desc' }
@@ -142,6 +145,115 @@ function normalizeCanvasKeys(canvasData: any) {
 
 // --- Generate Plan ---
 
+function normalizeProjectPlan(plan: any): any {
+  if (!plan || typeof plan !== 'object') {
+    plan = {};
+  }
+
+  // 1. Ensure basic fields
+  plan.projectName = plan.projectName || "پروژه جدید";
+  plan.tagline = plan.tagline || "";
+  plan.overview = plan.overview || "";
+
+  // 2. Ensure leanCanvas (Business Model Canvas)
+  const defaultCanvas = {
+    keyPartners: "",
+    keyActivities: "",
+    keyResources: "",
+    uniqueValue: "",
+    customerRelations: "",
+    channels: "",
+    customerSegments: "",
+    costStructure: "",
+    revenueStream: ""
+  };
+  
+  if (plan.businessModelCanvas) {
+    plan.leanCanvas = { ...defaultCanvas, ...normalizeCanvasKeys(plan.businessModelCanvas) };
+    delete plan.businessModelCanvas;
+  } else {
+    plan.leanCanvas = { ...defaultCanvas, ...normalizeCanvasKeys(plan.leanCanvas || {}) };
+  }
+
+  // 3. Ensure brandKit
+  const defaultBrandKit = {
+    primaryColorHex: "#3b82f6",
+    secondaryColorHex: "#1d4ed8",
+    colorPsychology: "",
+    suggestedFont: "Vazirmatn",
+    logoConcepts: []
+  };
+  plan.brandKit = { ...defaultBrandKit, ...plan.brandKit };
+  if (!Array.isArray(plan.brandKit.logoConcepts)) {
+    plan.brandKit.logoConcepts = [];
+  }
+
+  // 4. Ensure roadmap
+  if (!Array.isArray(plan.roadmap)) {
+    plan.roadmap = [];
+  } else {
+    plan.roadmap = plan.roadmap.map((phase: any) => {
+      return {
+        phase: phase.phase || "فاز جدید",
+        steps: Array.isArray(phase.steps) ? phase.steps.map((step: any) => {
+          const stepTitle = typeof step === 'string' ? step : (step.title || "گام جدید");
+          const stepDesc = typeof step === 'object' ? (step.description || "") : "";
+          const stepHours = typeof step === 'object' ? (Number(step.estimatedHours) || 0) : 0;
+          const stepPriority = typeof step === 'object' ? (step.priority || "medium") : "medium";
+          const stepCategory = typeof step === 'object' ? (step.category || "general") : "general";
+          const stepStatus = typeof step === 'object' ? (step.status || "todo") : "todo";
+          const stepChecklist = typeof step === 'object' && Array.isArray(step.checklist) ? step.checklist : [];
+          const stepTips = typeof step === 'object' && Array.isArray(step.tips) ? step.tips : [];
+          
+          return {
+            title: stepTitle,
+            description: stepDesc,
+            estimatedHours: stepHours,
+            priority: stepPriority,
+            category: stepCategory,
+            status: stepStatus,
+            checklist: stepChecklist,
+            tips: stepTips
+          };
+        }) : []
+      };
+    });
+  }
+
+  // 5. Ensure marketingStrategy
+  if (!Array.isArray(plan.marketingStrategy)) {
+    plan.marketingStrategy = [];
+  } else {
+    plan.marketingStrategy = plan.marketingStrategy.map((item: any) => {
+      if (typeof item === 'string') {
+        return { channel: "عمومی", tactic: item, cost: "low" };
+      }
+      return {
+        channel: item.channel || "کانال بازاریابی",
+        tactic: item.tactic || "تاکتیک بازاریابی",
+        cost: item.cost || "low"
+      };
+    });
+  }
+
+  // 6. Ensure competitors
+  if (!Array.isArray(plan.competitors)) {
+    plan.competitors = [];
+  } else {
+    plan.competitors = plan.competitors.map((item: any) => {
+      return {
+        name: item.name || "نام رقیب",
+        strength: item.strength || "",
+        weakness: item.weakness || "",
+        channel: item.channel || "وب‌سایت",
+        isIranian: typeof item.isIranian === 'boolean' ? item.isIranian : true
+      };
+    });
+  }
+
+  return plan;
+}
+
 export async function generatePlanAction(data: any) {
     const { idea, audience, budget, projectType, genesisAnswers } = data;
     
@@ -149,11 +261,11 @@ export async function generatePlanAction(data: any) {
     if (!session?.user?.id) return { error: "Unauthorized" };
 
     // AI Limit Check
-    const usageCheck = await checkAIRequestLimit(session.user.id);
-    if (!usageCheck.allowed) {
+    const { errorResponse, rollback } = await checkAILimit();
+    if (errorResponse) {
         return { 
             error: 'AI_LIMIT_REACHED', 
-            message: `Limit reached: ${usageCheck.limit}` 
+            message: `Limit reached` 
         };
     }
 
@@ -254,28 +366,23 @@ export async function generatePlanAction(data: any) {
     );
 
     if (!result.success) {
+      await rollback();
       return { error: 'AI generation failed' };
     }
 
     try {
       const structuredPlan = parseJsonFromAI(result.content!);
 
-      // Compatibility & Normalization
-      if (structuredPlan.businessModelCanvas) {
-          structuredPlan.leanCanvas = normalizeCanvasKeys(structuredPlan.businessModelCanvas);
-          delete structuredPlan.businessModelCanvas;
-      } else if (structuredPlan.leanCanvas) {
-          structuredPlan.leanCanvas = normalizeCanvasKeys(structuredPlan.leanCanvas);
-      }
+      // Normalize full plan structure
+      const normalized = normalizeProjectPlan(structuredPlan);
       
-      // Increment usage
-      await incrementAIUsage(session.user.id);
-      
-      return { success: true, plan: structuredPlan };
+      return { success: true, plan: normalized };
     } catch (parseError) {
       console.error("JSON Parse Error:", parseError);
       console.error("Raw AI Content:", result.content);
       
+      await rollback();
+
       // Write to debug file
       try {
         const debugPath = path.join(process.cwd(), 'ai-debug.log');

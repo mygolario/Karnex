@@ -111,6 +111,37 @@ export async function incrementAIUsage(userId: string): Promise<void> {
 }
 
 /**
+ * Decrement AI request count for the current month (refund on failure)
+ */
+export async function decrementAIUsage(userId: string): Promise<void> {
+  const currentMonth = getCurrentMonth();
+  
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { credits: true }
+  });
+
+  const credits = (user?.credits as any) || {};
+  const aiUsage = credits.aiRequests || {};
+  const currentCount = (aiUsage[currentMonth] as number) || 0;
+  
+  if (currentCount <= 0) return;
+
+  const newCredits = {
+    ...credits,
+    aiRequests: {
+      ...aiUsage,
+      [currentMonth]: Math.max(0, currentCount - 1)
+    }
+  };
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { credits: newCredits }
+  });
+}
+
+/**
  * Check if user can create another project
  */
 export async function checkProjectLimit(userId: string): Promise<UsageCheckResult> {

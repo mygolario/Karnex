@@ -15,6 +15,18 @@ export const proxy = auth(async function proxy(req) {
   const path = request.nextUrl.pathname;
   const ip = request.headers.get('x-forwarded-for') || 'unknown';
   
+  // --- 1. Admin Route Guard ---
+  if (path.startsWith('/api/admin')) {
+    const isLoggedIn = !!req.auth;
+    const user = req.auth?.user;
+    if (!isLoggedIn) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if ((user as any)?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+  }
+
   // Note: 'auth' wrapper handles the 'authorized' callback logic in auth.config.ts
   // automatically. If the user is not authorized for a protected route, 
   // they are redirected/rejected before reaching here (or we can check req.auth).

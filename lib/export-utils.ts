@@ -122,10 +122,39 @@ export function exportMarketingAsMarkdown(plan: BusinessPlan): string {
 export function reshapePersian(text: string): string {
   if (!text) return "";
   try {
-    const { reshape } = require("arabic-persian-reshaper");
-    return reshape(text);
+    const { PersianShaper } = require("arabic-persian-reshaper");
+    return text
+      .split("\n")
+      .map(line => {
+        const shaped = PersianShaper.convertArabic(line);
+        // Reverse characters to support LTR rendering engine in jsPDF
+        return shaped.split("").reverse().join("");
+      })
+      .join("\n");
   } catch (e) {
     console.error("Persian Reshaper Error:", e);
-    return text;
+    // Simple fallback reverse for basic RTL
+    return text.split("\n").map(line => line.split("").reverse().join("")).join("\n");
   }
+}
+
+/**
+ * Create a jsPDF document with Vazirmatn-Regular font pre-registered and set
+ */
+export async function createPersianPDF(): Promise<any> {
+  const jsPDF = (await import("jspdf")).default;
+  const { VAZIRMATN_REGULAR_BASE64 } = await import("./vazirmatn-base64");
+  
+  const doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+  
+  // Register the Vazirmatn font
+  doc.addFileToVFS("Vazirmatn-Regular.ttf", VAZIRMATN_REGULAR_BASE64);
+  doc.addFont("Vazirmatn-Regular.ttf", "Vazirmatn", "normal");
+  doc.setFont("Vazirmatn");
+  
+  return doc;
 }

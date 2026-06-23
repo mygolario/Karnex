@@ -76,11 +76,11 @@ export const COPILOT_TOOLS = [
 
 // === Tool Executors ===
 
-export async function executeUpdateBusinessPlan(projectId: string, args: any) {
+export async function executeUpdateBusinessPlan(projectId: string, args: any, userId?: string) {
     if (!projectId) throw new Error("Project ID required");
 
-    const project = await prisma.project.findUnique({
-        where: { id: projectId },
+    const project = await prisma.project.findFirst({
+        where: { id: projectId, ...(userId && { userId }) },
         select: { data: true }
     });
 
@@ -150,11 +150,11 @@ export async function executeUpdateBusinessPlan(projectId: string, args: any) {
     return { success: true, message: "Business Plan updated with new cards/content." };
 }
 
-export async function executeCreatePitchDeckSlide(projectId: string, args: any) {
+export async function executeCreatePitchDeckSlide(projectId: string, args: any, userId?: string) {
      if (!projectId) throw new Error("Project ID required");
 
-     const project = await prisma.project.findUnique({
-        where: { id: projectId },
+     const project = await prisma.project.findFirst({
+        where: { id: projectId, ...(userId && { userId }) },
         select: { data: true }
     });
 
@@ -184,12 +184,12 @@ export async function executeCreatePitchDeckSlide(projectId: string, args: any) 
     return { success: true, message: "Slide added to Pitch Deck." };
 }
 
-export async function executeUpdatePitchDeckSlide(projectId: string, args: any) {
+export async function executeUpdatePitchDeckSlide(projectId: string, args: any, userId?: string) {
     if (!projectId) throw new Error("Project ID required");
     if (!args.slideId) throw new Error("Slide ID required");
 
-    const project = await prisma.project.findUnique({
-       where: { id: projectId },
+    const project = await prisma.project.findFirst({
+       where: { id: projectId, ...(userId && { userId }) },
        select: { data: true }
    });
 

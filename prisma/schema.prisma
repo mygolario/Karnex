@@ -118,6 +118,7 @@ model Subscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([status])
+  @@index([userId, status])
 }
 
 model Transaction {
@@ -141,6 +142,7 @@ model Transaction {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([trackId])
+  @@index([status])
   @@index([userId, status])
 }
 

@@ -70,7 +70,28 @@ export const metadata: Metadata = {
 };
 
 const vazirmatn = localFont({
-  src: '../public/fonts/Vazirmatn-Regular.woff2',
+  src: [
+    {
+      path: '../vazirmatn-v33.003/fonts/webfonts/Vazirmatn-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../vazirmatn-v33.003/fonts/webfonts/Vazirmatn-Medium.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../vazirmatn-v33.003/fonts/webfonts/Vazirmatn-SemiBold.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../vazirmatn-v33.003/fonts/webfonts/Vazirmatn-Bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
   display: 'swap',
 });
 

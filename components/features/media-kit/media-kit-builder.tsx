@@ -26,8 +26,6 @@ import {
   Palette
 } from "lucide-react";
 import { toast } from "sonner"; // Assuming sonner is used, or replace with hot-toast
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
 
 export function MediaKitBuilder() {
   const { user } = useAuth();
@@ -40,6 +38,9 @@ export function MediaKitBuilder() {
     if (!contentRef.current) return;
     setDownloading(true);
     try {
+      const html2canvas = (await import("html2canvas")).default;
+      const jsPDF = (await import("jspdf")).default;
+      
       const canvas = await html2canvas(contentRef.current, {
         scale: 2, 
         useCORS: true,

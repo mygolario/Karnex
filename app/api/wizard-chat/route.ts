@@ -11,10 +11,12 @@ interface ChatMessage {
 }
 
 export async function POST(req: Request) {
+  let rollback = async () => {};
   try {
     // === AI Usage Limit Check ===
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return errorResponse;
+    const limitResult = await checkAILimit();
+    if (limitResult.errorResponse) return limitResult.errorResponse;
+    rollback = limitResult.rollback;
 
     const { messages, systemPrompt } = await req.json() as {
       messages: ChatMessage[];
@@ -40,6 +42,7 @@ export async function POST(req: Request) {
     );
 
     if (!result.success) {
+      await rollback();
       return NextResponse.json({
         message: "خوبه! ادامه بده و بیشتر توضیح بده. 👂",
         extractedData: null
@@ -56,6 +59,7 @@ export async function POST(req: Request) {
 
   } catch (error) {
     console.error("Wizard chat error:", error);
+    await rollback();
     return NextResponse.json({
       message: "متاسفانه مشکلی پیش اومد. دوباره امتحان کن.",
       error: 'Failed to process chat'

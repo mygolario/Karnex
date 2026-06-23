@@ -26,10 +26,12 @@ const CANVAS_GENERATION_PROMPT = `ایده: {businessIdea}
 }}`;
 
 export async function POST(req: Request) {
+  let rollback = async () => {};
   try {
     // === AI Usage Limit Check ===
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return errorResponse;
+    const limitResult = await checkAILimit();
+    if (limitResult.errorResponse) return limitResult.errorResponse;
+    rollback = limitResult.rollback;
 
     const body = await req.json();
     const { action, prompt, systemPrompt, maxTokens = 2000, businessIdea, projectName, modelOverride, city, address, activeProject } = body;
@@ -119,6 +121,7 @@ export async function POST(req: Request) {
        
         if (!result.success) {
            console.error("❌ AI Generation Failed:", result.error);
+           await rollback();
            return NextResponse.json({ error: result.error }, { status: 503 });
         }
     
@@ -132,6 +135,7 @@ export async function POST(req: Request) {
         } catch (e) {
             console.error("❌ JSON Parse Error (Location Analysis):", e);
             console.error("Raw Content:", result.content);
+            await rollback();
             return NextResponse.json({ error: 'Failed to parse location analysis' }, { status: 500 });
         }
     }
@@ -154,6 +158,7 @@ export async function POST(req: Request) {
       });
 
       if (!result.success) {
+        await rollback();
         return NextResponse.json({ error: result.error }, { status: 503 });
       }
 
@@ -166,6 +171,7 @@ export async function POST(req: Request) {
         });
       } catch (parseError) {
         console.error('Failed to parse canvas JSON:', parseError);
+        await rollback();
         return NextResponse.json({
           success: false,
           error: 'Failed to parse canvas response',
@@ -211,7 +217,10 @@ export async function POST(req: Request) {
         temperature: 0.7,
       });
 
-      if (!result.success) return NextResponse.json({ error: result.error }, { status: 503 });
+      if (!result.success) {
+        await rollback();
+        return NextResponse.json({ error: result.error }, { status: 503 });
+      }
 
       try {
         let content = result.content!;
@@ -222,6 +231,7 @@ export async function POST(req: Request) {
         const slides = JSON.parse(content);
         return NextResponse.json({ success: true, slides });
       } catch (e) {
+        await rollback();
         return NextResponse.json({ error: 'Failed to parse slides' }, { status: 500 });
       }
     }
@@ -264,18 +274,22 @@ export async function POST(req: Request) {
          maxTokens: 2000
       });
 
-      if (!result.success) return NextResponse.json({ error: result.error }, { status: 503 });
-      
-      try {
-         let content = result.content!;
-         if (content.includes("```json")) {
-            content = content.split("```json")[1].split("```")[0].trim();
-         }
-         const validationData = JSON.parse(content);
-         return NextResponse.json({ success: true, validation: validationData });
-      } catch (e) {
-         return NextResponse.json({ error: 'Failed to parse validation data' }, { status: 500 });
-      }
+       if (!result.success) {
+         await rollback();
+         return NextResponse.json({ error: result.error }, { status: 503 });
+       }
+       
+       try {
+          let content = result.content!;
+          if (content.includes("```json")) {
+             content = content.split("```json")[1].split("```")[0].trim();
+          }
+          const validationData = JSON.parse(content);
+          return NextResponse.json({ success: true, validation: validationData });
+       } catch (e) {
+          await rollback();
+          return NextResponse.json({ error: 'Failed to parse validation data' }, { status: 500 });
+       }
     }
     
     // Handle Growth Planning (Roshdnama 2.0)
@@ -325,19 +339,23 @@ export async function POST(req: Request) {
          maxTokens: 1500
       });
 
-      if (!result.success) return NextResponse.json({ error: result.error }, { status: 503 });
+       if (!result.success) {
+         await rollback();
+         return NextResponse.json({ error: result.error }, { status: 503 });
+       }
 
-      try {
-        let content = result.content!;
-        if (content.includes("```json")) {
-           content = content.split("```json")[1].split("```")[0].trim();
-        }
-        const growthData = JSON.parse(content);
-        return NextResponse.json({ success: true, data: growthData });
-      } catch (e) {
-        return NextResponse.json({ error: 'Failed to parse growth data' }, { status: 500 });
-      }
-    }
+       try {
+         let content = result.content!;
+         if (content.includes("```json")) {
+            content = content.split("```json")[1].split("```")[0].trim();
+         }
+         const growthData = JSON.parse(content);
+         return NextResponse.json({ success: true, data: growthData });
+       } catch (e) {
+         await rollback();
+         return NextResponse.json({ error: 'Failed to parse growth data' }, { status: 500 });
+       }
+     }
 
     // Handle regular text generation
     if (!prompt) {
@@ -352,6 +370,7 @@ export async function POST(req: Request) {
     });
 
     if (!result.success) {
+      await rollback();
       return NextResponse.json({ error: result.error }, { status: 503 });
     }
 
@@ -361,10 +380,9 @@ export async function POST(req: Request) {
       content: result.content,
     });
 
-
-
   } catch (error) {
     console.error("AI Generate Error:", error);
+    await rollback();
     return NextResponse.json({ error: 'Failed to generate' }, { status: 500 });
   }
 }

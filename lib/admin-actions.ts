@@ -7,15 +7,10 @@ export async function getAdminUsers() {
   try {
     const session = await auth();
 
-    // Check if user is admin (simple check based on email or role if you have it)
-    // For now, let's assume if they can access the dashboard/admin page, they are authorized
-    // explicitly via middleware or layout. But good to check here too.
-    if (!session?.user?.email) {
-      return { error: "Unauthorized" };
+    // RLS/ACL: Enforce that only users with the 'admin' role can access admin actions
+    if (!session?.user || (session.user as any).role !== 'admin') {
+      return { error: "Forbidden" };
     }
-
-    // You might want to add a role check here
-    // if (session.user.role !== 'ADMIN') return { error: "Forbidden" };
 
     const users = await prisma.user.findMany({
       orderBy: { createdAt: 'desc' },

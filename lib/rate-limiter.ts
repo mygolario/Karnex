@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import Redis from "ioredis";
 
-// Simple in-memory rate limiter
+// Simple in-memory rate limiter fallback
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
 const RATE_LIMIT = {
@@ -8,13 +9,56 @@ const RATE_LIMIT = {
   maxRequests: 30, // Max requests per window
 };
 
-export function rateLimiter(req: NextRequest): { allowed: boolean; remaining: number } {
-  const ip = req.headers.get("x-forwarded-for") || 
+let redisClient: Redis | null = null;
+let redisInitialized = false;
+
+function getRedisClient(): Redis | null {
+  if (redisInitialized) return redisClient;
+  
+  const redisUrl = process.env.REDIS_URL;
+  if (redisUrl) {
+    try {
+      redisClient = new Redis(redisUrl, {
+        maxRetriesPerRequest: 1,
+        connectTimeout: 1000, // fail fast
+      });
+      redisClient.on("error", (err) => {
+        console.error("Redis Error:", err);
+      });
+    } catch (e) {
+      console.error("Failed to initialize Redis client:", e);
+    }
+  }
+  
+  redisInitialized = true;
+  return redisClient;
+}
+
+export async function rateLimiter(req: NextRequest): Promise<{ allowed: boolean; remaining: number }> {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || 
              req.headers.get("x-real-ip") || 
              "anonymous";
   
+  const redis = getRedisClient();
+  if (redis) {
+    try {
+      const key = `rate_limit:${ip}`;
+      const count = await redis.incr(key);
+      if (count === 1) {
+        await redis.expire(key, Math.ceil(RATE_LIMIT.windowMs / 1000));
+      }
+      const remaining = Math.max(0, RATE_LIMIT.maxRequests - count);
+      return {
+        allowed: count <= RATE_LIMIT.maxRequests,
+        remaining,
+      };
+    } catch (e) {
+      console.warn("Redis rate limit check failed, falling back to memory:", e);
+    }
+  }
+  
+  // Local memory fallback
   const now = Date.now();
-  const windowStart = now - RATE_LIMIT.windowMs;
   
   // Get or create entry
   let entry = rateLimitMap.get(ip);
@@ -46,7 +90,7 @@ export function rateLimiter(req: NextRequest): { allowed: boolean; remaining: nu
 
 export function withRateLimit(handler: (req: NextRequest) => Promise<NextResponse>) {
   return async (req: NextRequest): Promise<NextResponse> => {
-    const { allowed, remaining } = rateLimiter(req);
+    const { allowed, remaining } = await rateLimiter(req);
     
     if (!allowed) {
       return NextResponse.json(

@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { zibalRequest } from '@/lib/zibal';
 import { getPlanById } from '@/lib/payment/pricing';
 import prisma from "@/lib/prisma";
+import crypto from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -45,15 +46,25 @@ export async function POST(req: Request) {
     // Convert to Rials (Zibal expects Rials)
     const amountInRials = finalAmountTomans * 10;
 
+    // Create orderId first to include in the signature
+    const orderId = `${planId}_${Date.now()}`;
 
-    // Build callback URL with metadata for the verify page
+    // Cryptographic signature of payment request to prevent parameter tampering on callback
+    const secret = process.env.ZIBAL_WEBHOOK_SECRET || process.env.ZIBAL_MERCHANT;
+    if (!secret) {
+        console.error("[Payment Request API] Zibal secret/merchant key is not configured.");
+        return NextResponse.json({ error: 'Payment gateway configuration error' }, { status: 500 });
+    }
+    const dataToSign = `${user.id}:${planId}:${orderId}`;
+    const signature = crypto.createHmac('sha256', secret).update(dataToSign).digest('hex');
+
+    // Build callback URL with metadata for the verify page and the signature
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://karnex.ir';
     // Use the PAGE route, not the API route
-    const callbackUrl = `${baseUrl}/payment/verify?plan=${planId}&cycle=${billingCycle}&uid=${user.id}`;
+    const callbackUrl = `${baseUrl}/payment/verify?plan=${planId}&cycle=${billingCycle}&uid=${user.id}&orderId=${orderId}&sig=${signature}`;
     
     // Create description
     const description = `خرید اشتراک ${plan.name} - ${isAnnual ? 'سالانه' : 'ماهانه'} - کارنکس`;
-    const orderId = `${planId}_${Date.now()}`;
 
     // Record pending transaction in DB using Prisma
     // We create the transaction record before request to have a trace

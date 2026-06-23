@@ -4,10 +4,12 @@ import { callOpenRouter } from '@/lib/openrouter';
 import { checkAILimit } from '@/lib/ai-limit-middleware';
 
 export async function chatAction(message: string, planContext: any, generateFollowUps: boolean = false) {
+  let rollback = async () => {};
   try {
     // === AI Usage Limit Check ===
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
+    const limitResult = await checkAILimit();
+    if (limitResult.errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
+    rollback = limitResult.rollback;
 
     // Contextual System Prompt
     const projectType = planContext?.projectType || 'startup';
@@ -71,6 +73,7 @@ export async function chatAction(message: string, planContext: any, generateFoll
     });
 
     if (!result.success) {
+      await rollback();
       return {
         reply: "متاسفانه سرویس در دسترس نیست. لطفا دقایقی دیگر تلاش کنید.",
         followUps: []
@@ -107,6 +110,7 @@ export async function chatAction(message: string, planContext: any, generateFoll
 
   } catch (error) {
     console.error("Chat Error:", error);
+    await rollback();
     return { error: 'Chat failed' };
   }
 }
@@ -128,10 +132,12 @@ export interface AdvisorChatResult {
 }
 
 export async function advisorChatAction(message: string, projectContext: any, conversationHistory: Message[]): Promise<AdvisorChatResult> {
+  let rollback = async () => {};
   try {
     // === AI Usage Limit Check ===
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
+    const limitResult = await checkAILimit();
+    if (limitResult.errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
+    rollback = limitResult.rollback;
 
     // Calculate project progress
     const totalSteps = projectContext?.roadmap?.reduce((acc: any, p: any) => acc + p.steps.length, 0) || 0;
@@ -205,6 +211,7 @@ export async function advisorChatAction(message: string, projectContext: any, co
     });
 
     if (!result.success) {
+      await rollback();
       return {
         reply: "متاسفانه در حال حاضر امکان پاسخگویی نیست. لطفا دقایقی دیگر تلاش کنید.",
         followUps: ["دوباره تلاش کن", "به صفحه اصلی برگرد"]
@@ -251,6 +258,7 @@ export async function advisorChatAction(message: string, projectContext: any, co
 
   } catch (error) {
     console.error("Advisor Chat Error:", error);
+    await rollback();
     return { error: 'Advisor chat failed' };
   }
 }

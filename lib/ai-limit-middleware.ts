@@ -7,11 +7,12 @@
 
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { checkAIRequestLimit, incrementAIUsage } from '@/lib/usage-tracker';
+import { checkAIRequestLimit, incrementAIUsage, decrementAIUsage } from '@/lib/usage-tracker';
 
 export interface AILimitCheckResult {
   user: { id: string; email?: string } | null;
   errorResponse: NextResponse | null;
+  rollback: () => Promise<void>;
 }
 
 /**
@@ -20,12 +21,13 @@ export interface AILimitCheckResult {
  * 
  * Usage in API routes:
  * ```ts
- * const { user, errorResponse } = await checkAILimit();
+ * const { user, errorResponse, rollback } = await checkAILimit();
  * if (errorResponse) return errorResponse;
  * // user is authenticated and within limits
  * ```
  */
 export async function checkAILimit(): Promise<AILimitCheckResult> {
+  const noopRollback = async () => {};
   try {
     const session = await auth();
     const user = session?.user;
@@ -33,14 +35,17 @@ export async function checkAILimit(): Promise<AILimitCheckResult> {
     if (!user || !user.id) {
       return {
         user: null,
-        errorResponse: NextResponse.json({ error: 'Unauthorized. Please log in to use AI features.' }, { status: 401 })
+        errorResponse: NextResponse.json({ error: 'Unauthorized. Please log in to use AI features.' }, { status: 401 }),
+        rollback: noopRollback
       };
     }
 
-    const usageCheck = await checkAIRequestLimit(user.id);
+    const userId = user.id;
+
+    const usageCheck = await checkAIRequestLimit(userId);
     if (!usageCheck.allowed) {
       return {
-        user: { id: user.id, email: user.email || undefined },
+        user: { id: userId, email: user.email || undefined },
         errorResponse: NextResponse.json({
           error: 'AI_LIMIT_REACHED',
           message: `شما به سقف ${usageCheck.limit} درخواست AI در ماه رسیده‌اید. برای ادامه، پلن خود را ارتقا دهید.`,
@@ -48,16 +53,21 @@ export async function checkAILimit(): Promise<AILimitCheckResult> {
           used: usageCheck.used,
           limit: usageCheck.limit,
         }, { status: 429 }),
+        rollback: noopRollback
       };
     }
 
     // Increment usage counter
-    await incrementAIUsage(user.id);
+    await incrementAIUsage(userId);
 
-    return { user: { id: user.id, email: user.email || undefined }, errorResponse: null };
+    const rollback = async () => {
+      await decrementAIUsage(userId);
+    };
+
+    return { user: { id: userId, email: user.email || undefined }, errorResponse: null, rollback };
   } catch (error) {
     console.error('AI limit check error:', error);
     // On error, allow the request (fail open)
-    return { user: null, errorResponse: null };
+    return { user: null, errorResponse: null, rollback: noopRollback };
   }
 }

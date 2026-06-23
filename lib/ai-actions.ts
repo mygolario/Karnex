@@ -14,9 +14,11 @@ interface ActionResponse<T> {
 // === Suggest Audience ===
 
 export async function suggestAudienceAction(productIdea: string): Promise<ActionResponse<{ audiences: string[], revenueModels: string[] }>> {
+  let rollback = async () => {};
   try {
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    const limitResult = await checkAILimit();
+    if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    rollback = limitResult.rollback;
 
     if (!productIdea || productIdea.trim().length < 3) {
       return { success: true, data: { audiences: [], revenueModels: [] } };
@@ -34,6 +36,7 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
     );
 
     if (!result.success) {
+      await rollback();
       return { 
         success: true, // Return fallback as success
         data: {
@@ -53,6 +56,7 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
         }
       };
     } catch {
+       await rollback();
        return { 
         success: true, 
         data: {
@@ -63,6 +67,7 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
     }
   } catch (error) {
     console.error("suggestAudienceAction error:", error);
+    await rollback();
     return { success: false, error: "Failed to suggest audience" };
   }
 }
@@ -70,9 +75,11 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
 // === Suggest Project Name ===
 
 export async function suggestProjectNameAction(idea: string): Promise<ActionResponse<{ names: string[] }>> {
+  let rollback = async () => {};
   try {
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    const limitResult = await checkAILimit();
+    if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    rollback = limitResult.rollback;
 
     if (!idea) return { success: true, data: { names: [] } };
 
@@ -88,6 +95,7 @@ export async function suggestProjectNameAction(idea: string): Promise<ActionResp
     );
 
     if (!result.success) {
+       await rollback();
        return { success: true, data: { names: generateFallbackNames(idea) } };
     }
 
@@ -107,10 +115,12 @@ export async function suggestProjectNameAction(idea: string): Promise<ActionResp
        }
     }
     
+    await rollback();
     return { success: true, data: { names: generateFallbackNames(idea) } };
 
   } catch (error) {
     console.error("suggestProjectNameAction error:", error);
+    await rollback();
     return { success: false, error: "Failed to suggest name" };
   }
 }
@@ -127,9 +137,11 @@ function generateFallbackNames(idea: string): string[] {
 // === Break Task ===
 
 export async function breakTaskAction(taskName: string): Promise<ActionResponse<{ subTasks: string[] }>> {
+  let rollback = async () => {};
   try {
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    const limitResult = await checkAILimit();
+    if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    rollback = limitResult.rollback;
 
     if (!taskName) return { success: false, error: 'Task name required' };
 
@@ -151,6 +163,7 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
     ];
 
     if (!result.success) {
+      await rollback();
       return { success: true, data: { subTasks: fallback } };
     }
 
@@ -158,11 +171,13 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
       const parsed = parseJsonFromAI(result.content!);
       return { success: true, data: { subTasks: parsed.subTasks || [] } };
     } catch {
+      await rollback();
       return { success: true, data: { subTasks: fallback } };
     }
 
   } catch (error) {
     console.error("breakTaskAction error:", error);
+    await rollback();
     return { success: false, error: "Failed to break task" };
   }
 }
@@ -170,11 +185,14 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
 // === Analyze Competitors ===
 
 export async function analyzeCompetitorsAction(data: { projectName: string, projectIdea: string, audience: string }): Promise<ActionResponse<any>> {
+    let rollback = async () => {};
     try {
-        const { errorResponse } = await checkAILimit();
-        if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+        const limitResult = await checkAILimit();
+        if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+        rollback = limitResult.rollback;
 
         if (!process.env.OPENROUTER_API_KEY) {
+            await rollback();
             return { success: true, data: getMockCompetitors() };
         }
 
@@ -248,6 +266,7 @@ export async function analyzeCompetitorsAction(data: { projectName: string, proj
         }
 
         if (!response?.ok) {
+            await rollback();
             return { success: true, data: getMockCompetitors() };
         }
 
@@ -260,13 +279,19 @@ export async function analyzeCompetitorsAction(data: { projectName: string, proj
         } catch {
             const jsonMatch = content.match(/\{[\s\S]*\}/);
             if (jsonMatch) {
-                return { success: true, data: JSON.parse(jsonMatch[0]) };
+                try {
+                    return { success: true, data: JSON.parse(jsonMatch[0]) };
+                } catch {
+                    // fall through
+                }
             }
+            await rollback();
             return { success: true, data: getMockCompetitors() };
         }
 
     } catch (error) {
         console.error("analyzeCompetitorsAction error:", error);
+        await rollback();
         return { success: true, data: getMockCompetitors() };
     }
 }
@@ -291,9 +316,11 @@ function getMockCompetitors() {
 // === Generate Pitch Deck ===
 
 export async function generatePitchDeckAction(data: { idea: string, wizardAnswers?: any }): Promise<ActionResponse<{ slides: any[] }>> {
+    let rollback = async () => {};
     try {
-        const { errorResponse } = await checkAILimit();
-        if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+        const limitResult = await checkAILimit();
+        if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+        rollback = limitResult.rollback;
 
         const { idea, wizardAnswers } = data;
         const systemPrompt = `تو یک مشاور استارتاپ حرفه‌ای و متخصص جذب سرمایه هستی.
@@ -338,6 +365,7 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
         );
 
         if (!result.success) {
+             await rollback();
              return { success: false, error: "Failed to generate deck" };
         }
 
@@ -366,11 +394,13 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
 
         } catch (e) {
             console.error("JSON Parse Error:", e);
-             return { success: false, error: "Invalid AI response format" };
+            await rollback();
+            return { success: false, error: "Invalid AI response format" };
         }
 
     } catch (error) {
         console.error("generatePitchDeckAction error:", error);
+        await rollback();
         return { success: false, error: "Failed to generate deck" };
     }
 }
@@ -378,9 +408,11 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
 // === Generate Smart Canvas ===
 
 export async function generateSmartCanvasAction(data: { idea: string, answers: Record<string, string>, type: 'lean' | 'brand' }): Promise<ActionResponse<Record<string, string[]>>> {
+    let rollback = async () => {};
     try {
-        const { errorResponse } = await checkAILimit();
-        if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+        const limitResult = await checkAILimit();
+        if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+        rollback = limitResult.rollback;
 
         const { idea, answers, type } = data;
         
@@ -412,6 +444,7 @@ export async function generateSmartCanvasAction(data: { idea: string, answers: R
         );
 
         if (!result.success) {
+             await rollback();
              return { success: false, error: "Failed to generate canvas" };
         }
 
@@ -421,11 +454,13 @@ export async function generateSmartCanvasAction(data: { idea: string, answers: R
             return { success: true, data: parsed };
         } catch (e) {
             console.error("JSON Parse Error:", e);
-             return { success: false, error: "Invalid AI response format" };
+            await rollback();
+            return { success: false, error: "Invalid AI response format" };
         }
 
     } catch (error) {
         console.error("generateSmartCanvasAction error:", error);
+        await rollback();
         return { success: false, error: "Failed to generate canvas" };
     }
 }
