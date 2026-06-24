@@ -182,9 +182,6 @@ export function useRoadmap(): UseRoadmapReturn {
      if (!user || !plan) return;
 
     const stepName = getStepTitle(step);
-    // Logic for legacy array: if status is 'done', add to list. If not, remove.
-    // Ideally we should update the actual step object in the roadmap array too, 
-    // but for now we sync with the `completedSteps` array for backward compatibility
     const isNowCompleted = status === 'done';
     
     // Optimistic update
@@ -193,21 +190,21 @@ export function useRoadmap(): UseRoadmapReturn {
       : completedSteps.filter(s => s !== stepName);
     
     setCompletedSteps(newCompletedSteps);
-    
-    // Also update the local plan object to reflect status change in UI immediately if using object properties
-    // This is complex because we need to find the step in the nested array. 
-    // For this MVP, we rely on `completedSteps` array for "done" status,
-    // and we might need a local state for "in-progress" if we want to track it without DB changes yet.
-    
     updateActiveProject({ completedSteps: newCompletedSteps });
+
+    // Save to Cloud / Offline queue
+    if (typeof window !== "undefined" && !navigator.onLine) {
+      const { addToggleStepToQueue } = await import("@/lib/offline-sync");
+      addToggleStepToQueue(user.id!, plan.id || 'current', stepName, isNowCompleted);
+      return;
+    }
 
     try {
       await toggleStepCompletion(user.id!, stepName, isNowCompleted, plan.id || 'current');
     } catch (error) {
-      console.error("Sync failed", error);
-      // Revert on failure
-      setCompletedSteps(completedSteps);
-      updateActiveProject({ completedSteps: completedSteps });
+      console.error("Sync failed, queuing offline", error);
+      const { addToggleStepToQueue } = await import("@/lib/offline-sync");
+      addToggleStepToQueue(user.id!, plan.id || 'current', stepName, isNowCompleted);
     }
   };
 

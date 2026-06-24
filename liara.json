@@ -1,8 +1,5 @@
 {
-  "platform": "next",
+  "platform": "docker",
   "app": "karnex",
-  "port": 3000,
-  "next": {
-    "mirror": false
-  }
+  "port": 3000
 }

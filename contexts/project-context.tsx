@@ -59,6 +59,30 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     storeSwitch(projectId);
   };
 
+  // Replay offline queue on online
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleOnline = async () => {
+      console.log("PWA: Device is online. Replaying queued mutations...");
+      const { replayOfflineQueue } = await import("@/lib/offline-sync");
+      const success = await replayOfflineQueue();
+      if (success) {
+        await refreshProjects();
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    
+    if (navigator.onLine) {
+      handleOnline();
+    }
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
+  }, [user?.id]);
+
   const updateActiveProject = async (updates: Partial<BusinessPlan>) => {
     if (!user?.id) return;
     await storeUpdate(user.id, updates);

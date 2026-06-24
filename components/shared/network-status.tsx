@@ -33,7 +33,7 @@ export function NetworkStatus() {
       "bg-red-500 text-white animate-in slide-in-from-top-4"
     )}>
       <WifiOff size={16} />
-      <span className="text-sm font-bold">شما آفلاین هستید (ذخیره داخلی فعال است)</span>
+      <span className="text-sm font-semibold text-white">حالت آفلاین — تغییرات ذخیره می‌شوند</span>
     </div>
   );
 }

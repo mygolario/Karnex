@@ -2,6 +2,23 @@
 
 All notable changes to the Karnex platform will be documented in this file.
 
+## [v2.0.0-sprint5] - 2026-06-24
+
+This release completes Sprint 5 (Performance & Scale) of the Karnex v2.0 upgrade program. It optimizes Docker container builds for Liara Cloud standalone deployment, introduces service worker dynamic caching and reconnection queueing for offline PWA operations, and implements CLS layout optimizations for above-the-fold image components.
+
+### Added
+- **PWA Offline Sync Queue**: Created a local queue mechanism in [lib/offline-sync.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/offline-sync.ts) to store pending roadmap step completions and canvas/project mutations when offline.
+- **Dynamic Projects GET API Route**: Added a REST API endpoint `/api/projects` in [app/api/projects/route.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/app/api/projects/route.ts) to retrieve user projects, facilitating service worker interception.
+- **Network Reconnection Event Handler**: Registered a listener in [contexts/project-context.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/contexts/project-context.tsx) to replay queued mutations automatically once the network is restored.
+
+### Changed
+- **Optimized Multi-Stage Dockerfile**: Rewrote the [Dockerfile](file:///c:/Ario%20Vibe%20Coding/Karnex/Dockerfile) into a 2-stage build context (builder, runner) to compile standalone packages and remove all devDependencies, minimizing the final production image size.
+- **Liara Docker Platform Configuration**: Configured [liara.json](file:///c:/Ario%20Vibe%20Coding/Karnex/liara.json) to deploy using the Docker platform.
+- **REST Project Fetch Integration**: Updated [lib/store/project-store.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/store/project-store.ts) to fetch user projects via the `/api/projects` endpoint, integrating it with PWA service worker interception.
+- **Dynamic Service Worker Cache Rules**: Extended [app/sw.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/app/sw.ts) to cache `/api/projects` and `/api/user-data` responses using the Serwist `NetworkFirst` runtime caching strategy.
+- **Persian Offline UI Indicator**: Updated the status banner in [components/shared/network-status.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/shared/network-status.tsx) to exactly display: `حالت آفلاین — تغییرات ذخیره می‌شوند`.
+- **Next/Image LCP Tuning**: Applied the `priority` prop to the above-the-fold logo inside the starter wizard [app/new-project/page.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/app/new-project/page.tsx).
+
 ## [v2.0.0-sprint4] - 2026-06-23
 
 This release completes Sprint 4 (Feature Expansion) of the Karnex v2.0 upgrade program. It implements RTL logical layout migration, Zod validation for LLM responses, auto-drafting for the project wizard, onboarding entity extraction, sidebar credit usage metering, local compliance roadmaps, and multi-user project sharing/invitation controls.

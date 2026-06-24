@@ -229,6 +229,7 @@ export default function NewProjectPage() {
                     alt="Karnex Logo" 
                     fill 
                     className="object-contain"
+                    priority
                 />
             </div>
             <span className="font-bold text-xl tracking-tight text-foreground">کارنکس</span>

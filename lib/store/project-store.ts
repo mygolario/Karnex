@@ -32,16 +32,28 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
     set({ loading: true });
     try {
-      const { getUserProjectsAction } = await import("@/lib/project-actions");
-      const res = await getUserProjectsAction();
-      
-      if (res.error) {
-        console.error("Error fetching projects:", res.error);
-        set({ loading: false });
-        return;
+      // Fetch via standard HTTP GET so Serwist service worker can intercept and cache it
+      const res = await fetch("/api/projects").then(r => r.json()).catch(err => {
+        console.warn("API fetch failed, falling back to direct server action", err);
+        return null;
+      });
+
+      let allProjects: BusinessPlan[] = [];
+
+      if (res && res.success && res.projects) {
+        allProjects = res.projects;
+      } else {
+        // Fallback to server action if fetch failed or returned error
+        const { getUserProjectsAction } = await import("@/lib/project-actions");
+        const actionRes = await getUserProjectsAction();
+        if (actionRes.error) {
+          console.error("Error fetching projects via server action:", actionRes.error);
+          set({ loading: false });
+          return;
+        }
+        allProjects = (actionRes.projects as BusinessPlan[]) || [];
       }
       
-      const allProjects = (res.projects as BusinessPlan[]) || [];
       set({ projects: allProjects });
 
       // Determine active project
@@ -131,10 +143,18 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     });
 
     // Save to Cloud
+    if (typeof window !== "undefined" && !navigator.onLine) {
+      const { addUpdateProjectToQueue } = await import("@/lib/offline-sync");
+      addUpdateProjectToQueue(userId, activeProject.id, updates);
+      return;
+    }
+
     try {
       await savePlanToCloud(userId, updates as any, true, activeProject.id);
     } catch (err) {
-      console.error("Failed to save project updates", err);
+      console.error("Failed to save project updates, queuing offline", err);
+      const { addUpdateProjectToQueue } = await import("@/lib/offline-sync");
+      addUpdateProjectToQueue(userId, activeProject.id, updates);
     }
   }
 }));
