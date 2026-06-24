@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useOptimistic, startTransition } from "react";
 import { useProject } from "@/contexts/project-context";
 import { useAuth } from "@/contexts/auth-context";
 import { savePlanToCloud, CanvasCard } from "@/lib/db";
@@ -18,7 +18,7 @@ interface CanvasContextType {
   updateCard: (sectionId: string, cardId: string, content: string) => void;
   deleteCard: (sectionId: string, cardId: string) => void;
   moveCard: (activeId: string, overId: string, activeSection: string, overSection: string) => void;
-  saveCanvas: () => Promise<void>;
+  saveCanvas: (newState?: CanvasState) => Promise<void>;
   autoFillCanvas: () => Promise<void>;
   handleSmartWizardComplete: (answers: Record<string, string>) => Promise<void>;
   isSaving: boolean;
@@ -43,6 +43,10 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
   const { activeProject: plan, updateActiveProject } = useProject();
   const { user } = useAuth();
   const [canvasState, setCanvasState] = useState<CanvasState>({});
+  const [optimisticCanvasState, setOptimisticCanvasState] = useOptimistic(
+    canvasState,
+    (state, newCanvasState: CanvasState) => newCanvasState
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
 
@@ -128,34 +132,37 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
 
   const saveCanvas = async (newState: CanvasState = canvasState) => {
       if (!plan || !user) return;
-      setIsSaving(true);
-      try {
-          // Prepare update object
-          const updateData: any = {};
-          Object.keys(newState).forEach(key => {
-              updateData[key] = newState[key];
-          });
+      
+      const isBrand = plan.projectType === 'creator';
+      const fieldName = isBrand ? 'brandCanvas' : 'leanCanvas';
+      const updateData: any = {};
+      Object.keys(newState).forEach(key => {
+          updateData[key] = newState[key];
+      });
 
-          const isBrand = plan.projectType === 'creator';
-          const fieldName = isBrand ? 'brandCanvas' : 'leanCanvas';
-          
-          // 1. Update Project Context (Optimistic)
-          updateActiveProject({ [fieldName]: updateData });
-
-          // 2. Save to Cloud
-          // For nested updates in Firestore, specific paths should be used ideally, 
-          // but our db helper `savePlanToCloud` takes the whole object or merge.
-          // We'll update the plan document.
-          // Note: `savePlanToCloud` merges at top level. We need to construct the full update object.
-          
-          await savePlanToCloud(user.id!, { [fieldName]: updateData }, true, plan.id!);
-          
-      } catch (e) {
-          console.error("Save failed", e);
-          toast.error("خطا در ذخیره تغییرات");
-      } finally {
-          setIsSaving(false);
+      if (typeof window !== "undefined" && !navigator.onLine) {
+        setCanvasState(newState);
+        updateActiveProject({ [fieldName]: updateData });
+        const { addUpdateProjectToQueue } = await import("@/lib/offline-sync");
+        addUpdateProjectToQueue(user.id!, plan.id!, { [fieldName]: updateData });
+        return;
       }
+
+      setIsSaving(true);
+      startTransition(async () => {
+        setOptimisticCanvasState(newState);
+
+        try {
+          await savePlanToCloud(user.id!, { [fieldName]: updateData }, true, plan.id!);
+          setCanvasState(newState);
+          updateActiveProject({ [fieldName]: updateData });
+        } catch (e) {
+          console.error("Save failed", e);
+          toast.error("خطا در ذخیره‌سازی — لطفاً دوباره تلاش کنید");
+        } finally {
+          setIsSaving(false);
+        }
+      });
   };
 
   // Debounced Save (Optional: Implement if instant save feels too heavy)
@@ -381,7 +388,7 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <CanvasContext.Provider value={{
-        canvasState,
+        canvasState: optimisticCanvasState,
         setCanvasState,
         addCard,
         updateCard,

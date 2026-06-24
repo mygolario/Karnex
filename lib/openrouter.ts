@@ -19,6 +19,50 @@ export interface OpenRouterResponse {
     error?: string;
 }
 
+export class TransientError extends Error {
+    status?: number;
+    constructor(message: string, status?: number) {
+        super(message);
+        this.name = "TransientError";
+        this.status = status;
+    }
+}
+
+export async function withRetry<T>(
+    fn: (attempt: number) => Promise<T>,
+    maxAttempts: number = 3,
+    baseDelayMs: number = 1000,
+    shouldRetry: (error: any) => boolean = () => true
+): Promise<T> {
+    let attempt = 1;
+    while (true) {
+        try {
+            return await fn(attempt);
+        } catch (error: any) {
+            if (attempt >= maxAttempts || !shouldRetry(error)) {
+                throw error;
+            }
+            const delay = baseDelayMs * Math.pow(2, attempt - 1);
+            console.warn(`Retry attempt ${attempt} failed. Retrying in ${delay}ms... Error: ${error.message || error}`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            attempt++;
+        }
+    }
+}
+
+const isTransient = (error: any) => {
+    if (error.name === "AbortError" || error.message?.includes("timeout") || error.message?.includes("Timeout")) {
+        return true;
+    }
+    if (error instanceof TransientError) {
+        return true;
+    }
+    if (error.status === 429 || error.status === 503) {
+        return true;
+    }
+    return false;
+};
+
 /**
  * Call OpenRouter API with automatic model fallback
  */
@@ -55,83 +99,87 @@ export async function callOpenRouter(
     const modelsToTry = modelOverride ? [modelOverride] : TEXT_MODELS;
 
     for (const model of modelsToTry) {
-
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            const content = await withRetry(
+                async (attempt) => {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-            const messages: any[] = [];
-            if (systemPrompt) {
-                messages.push({
-                    role: "system",
-                    content: [
-                        {
-                            type: "text",
-                            text: systemPrompt,
-                            cache_control: { type: "ephemeral" }
+                    try {
+                        const messages: any[] = [];
+                        if (systemPrompt) {
+                            messages.push({
+                                role: "system",
+                                content: [
+                                    {
+                                        type: "text",
+                                        text: systemPrompt,
+                                        cache_control: { type: "ephemeral" }
+                                    }
+                                ]
+                            });
                         }
-                    ]
-                });
-            }
-            messages.push({
-                role: "user",
-                content: [
-                    {
-                        type: "text",
-                        text: prompt
+                        messages.push({
+                            role: "user",
+                            content: [
+                                {
+                                    type: "text",
+                                    text: prompt
+                                }
+                            ]
+                        });
+
+                        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                            method: "POST",
+                            headers: {
+                                "Authorization": `Bearer ${apiKey}`,
+                                "Content-Type": "application/json",
+                                "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+                                "X-Title": "Karnex"
+                            },
+                            body: JSON.stringify({
+                                model,
+                                messages,
+                                max_tokens: maxTokens,
+                                temperature,
+                                response_format: responseFormat,
+                            }),
+                            signal: controller.signal,
+                        });
+
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            console.warn(`⚠️ Model ${model} attempt ${attempt} failed: ${response.status} - ${errorText.substring(0, 100)}`);
+                            
+                            if (response.status === 429 || response.status === 503) {
+                                throw new TransientError(`HTTP ${response.status}`, response.status);
+                            }
+                            throw new Error(`HTTP ${response.status}: ${errorText}`);
+                        }
+
+                        const data = await response.json();
+                        const text = data.choices?.[0]?.message?.content;
+                        if (!text) {
+                            throw new Error("Empty response");
+                        }
+                        return text;
+                    } finally {
+                        clearTimeout(timeoutId);
                     }
-                ]
-            });
-
-            const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${apiKey}`,
-                    "Content-Type": "application/json",
-                    "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-                    "X-Title": "Karnex"
                 },
-                body: JSON.stringify({
-                    model,
-                    messages,
-                    max_tokens: maxTokens,
-                    temperature,
-                    response_format: responseFormat,
-                }),
-                signal: controller.signal,
-            });
+                3, // maxAttempts
+                1000, // baseDelayMs
+                isTransient
+            );
 
-            clearTimeout(timeoutId);
+            return { success: true, content, model };
 
-            if (!response.ok) {
-                const errorText = await response.text();
-                // 402 = Payment Required (Quota exceeded for free or insufficient credits)
-                // 429 = Rate Limited
-                console.warn(`⚠️ Model ${model} failed: ${response.status} - ${errorText.substring(0, 100)}`);
-                lastError = `${model}: HTTP ${response.status}`;
-
-                // If rate limited or payment issue, wait briefly and try next
-                if (response.status === 429 || response.status === 402) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                }
-                continue;
-            }
-
-            const data = await response.json();
-            const content = data.choices?.[0]?.message?.content;
-
-            if (content) {
-                return { success: true, content, model };
-            } else {
-                lastError = `${model}: Empty response`;
-                continue;
-            }
         } catch (error: any) {
-            if (error.name === "AbortError") {
-                console.warn(`⏱️ Model ${model} timed out`);
+            if (error.name === "AbortError" || error.message?.includes("Timeout") || error.message?.includes("timeout")) {
+                console.warn(`⏱️ Model ${model} timed out after all retries`);
                 lastError = `${model}: Timeout`;
             } else {
-                console.error(`❌ Model ${model} error:`, error.message);
+                console.error(`❌ Model ${model} failed after all retries:`, error.message);
                 lastError = `${model}: ${error.message}`;
             }
         }

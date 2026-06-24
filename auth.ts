@@ -13,7 +13,14 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
   trustHost: true,
   adapter: PrismaAdapter(prisma as any),
-  session: { strategy: "jwt" },
+  session: { 
+    strategy: "jwt",
+    maxAge: 604800, // 7 days in seconds
+    updateAge: 0,   // Rotate session token on every request
+  },
+  jwt: {
+    maxAge: 604800, // 7 days
+  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,

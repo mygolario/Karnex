@@ -2,10 +2,22 @@
 
 import { useProject } from "@/contexts/project-context";
 import { CanvasProvider } from "@/components/dashboard/canvas/canvas-context";
-import { CanvasBoard } from "@/components/dashboard/canvas/dnd-board";
+import dynamic from "next/dynamic";
 import { 
   Loader2, LayoutGrid, Sparkles, Search, Eye, Download
 } from "lucide-react";
+
+const CanvasBoard = dynamic(
+  () => import("@/components/dashboard/canvas/dnd-board").then((mod) => mod.CanvasBoard),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+);
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 

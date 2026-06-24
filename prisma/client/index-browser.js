@@ -130,6 +130,7 @@ exports.Prisma.UserScalarFieldEnum = {
   password: 'password',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt',
   firstName: 'firstName',
   lastName: 'lastName',
   phoneNumber: 'phoneNumber',
@@ -175,7 +176,8 @@ exports.Prisma.ProjectScalarFieldEnum = {
   description: 'description',
   data: 'data',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
 };
 
 exports.Prisma.SubscriptionScalarFieldEnum = {

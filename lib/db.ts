@@ -643,8 +643,8 @@ export const createUserProfile = async (userData: { uid: string, email?: string 
 };
 
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+  const user = await prisma.user.findFirst({
+    where: { id: userId, deletedAt: null },
     include: {
         subscriptions: true
     }
@@ -751,6 +751,7 @@ export const createProject = async (userId: string, planData: any) => {
 export const getUserProjects = async (userId: string): Promise<BusinessPlan[]> => {
   const projects = await prisma.project.findMany({
       where: {
+          deletedAt: null,
           OR: [
               { userId },
               {
@@ -778,8 +779,8 @@ export const getUserProjects = async (userId: string): Promise<BusinessPlan[]> =
 };
 
 export const getPlanFromCloud = async (userId: string, projectId: string) => {
-  const project = await prisma.project.findUnique({
-      where: { id: projectId },
+  const project = await prisma.project.findFirst({
+      where: { id: projectId, deletedAt: null },
       include: {
           members: {
               where: { userId }
@@ -809,8 +810,8 @@ export const getPlanFromCloud = async (userId: string, projectId: string) => {
 export const savePlanToCloud = async (userId: string, planData: any, merge: boolean = true, projectId: string) => {
     // 1. Fetch current to verify ownership or membership edit rights
     let currentData = {};
-    const current = await prisma.project.findUnique({
-        where: { id: projectId },
+    const current = await prisma.project.findFirst({
+        where: { id: projectId, deletedAt: null },
         select: { 
             data: true, 
             userId: true,
@@ -915,12 +916,13 @@ export const saveBrandCanvas = async (userId: string, canvas: BrandCanvas, proje
 
 export const deleteProject = async (userId: string, projectId: string) => {
   const project = await prisma.project.findFirst({
-      where: { id: projectId, userId }
+      where: { id: projectId, userId, deletedAt: null }
   });
   if (!project) throw new Error("Unauthorized or project not found");
 
-  await prisma.project.delete({
-      where: { id: projectId }
+  await prisma.project.update({
+      where: { id: projectId },
+      data: { deletedAt: new Date() }
   });
   return true;
 };

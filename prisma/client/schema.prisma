@@ -23,6 +23,7 @@ model User {
   password      String? // For credentials provider
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // For soft deletes
 
   // Profile fields (mapped from existing UserProfile)
   firstName   String?
@@ -94,8 +95,9 @@ model Project {
   // This preserves the flexibility of the existing NoSQL-like structure
   data Json
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // For soft deletes
 
   user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   members ProjectMember[]

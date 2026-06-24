@@ -13,6 +13,7 @@ export async function getAdminUsers() {
     }
 
     const users = await prisma.user.findMany({
+      where: { deletedAt: null },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,

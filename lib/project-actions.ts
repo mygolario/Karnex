@@ -66,6 +66,7 @@ export async function getUserProjectsAction() {
     // RLS: Enforce project ownership check OR membership
     const projects = await prisma.project.findMany({
       where: {
+        deletedAt: null,
         OR: [
           { userId: session.user.id },
           {
@@ -331,8 +332,8 @@ export async function getProjectMembersAction(projectId: string) {
     const currentUserId = session.user.id;
 
     // Fetch project and its members to check ownership/membership
-    const project = await prisma.project.findUnique({
-        where: { id: projectId },
+    const project = await prisma.project.findFirst({
+        where: { id: projectId, deletedAt: null },
         select: { 
             userId: true,
             user: {
@@ -342,6 +343,11 @@ export async function getProjectMembersAction(projectId: string) {
                 }
             },
             members: {
+                where: {
+                    user: {
+                        deletedAt: null
+                    }
+                },
                 include: {
                     user: {
                         select: {
@@ -394,8 +400,8 @@ export async function inviteMemberAction(projectId: string, email: string, role:
     const currentUserId = session.user.id;
 
     // Verify current user has admin rights (is owner or admin member)
-    const project = await prisma.project.findUnique({
-        where: { id: projectId },
+    const project = await prisma.project.findFirst({
+        where: { id: projectId, deletedAt: null },
         select: { 
             userId: true,
             projectName: true,
@@ -416,8 +422,8 @@ export async function inviteMemberAction(projectId: string, email: string, role:
     }
 
     // Find the target user by email
-    const targetUser = await prisma.user.findUnique({
-        where: { email }
+    const targetUser = await prisma.user.findFirst({
+        where: { email, deletedAt: null }
     });
 
     if (!targetUser) {

@@ -23,6 +23,7 @@ model User {
   password      String? // For credentials provider
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime? // For soft deletes
 
   // Profile fields (mapped from existing UserProfile)
   firstName   String?
@@ -96,6 +97,7 @@ model Project {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime? // For soft deletes
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   members ProjectMember[]

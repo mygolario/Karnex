@@ -2,6 +2,22 @@
 
 All notable changes to the Karnex platform will be documented in this file.
 
+## [v2.0.0-sprint6] - 2026-06-24
+
+This release completes Sprint 6 (Polish & Launch) of the Karnex v2.0 upgrade program, marking the final production-ready launch of Karnex v2.0.0. It integrates Optimistic UI updates on roadmaps and canvas boards, defers heavy third-party libraries via lazy loading, wraps OpenRouter model fallbacks with exponential backoff retries, configures PgBouncer connection pooling with Prisma globally cached instances, hardens NextAuth session lifetimes with active rotation, refactors route structures to React Server Components (RSC) to reduce client bundles, and implements User/Project soft deletes.
+
+### Added
+- **Optimistic UI Updates**: Configured React 19's `useOptimistic` hook in [hooks/use-roadmap.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/hooks/use-roadmap.ts) and [components/dashboard/canvas/canvas-context.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/dashboard/canvas/canvas-context.tsx) to provide instantaneous feedback on roadmap steps and canvas edits, rolling back automatically on failure and triggering Sonner error toasts in Persian.
+- **OpenRouter backoff and retry helper**: Created `withRetry` helper and custom `TransientError` in [lib/openrouter.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/openrouter.ts) supporting 3 attempts (1s → 2s → 4s delays) for transient errors (429, 503, timeout) before model fallback.
+- **ProjectsList Client Component**: Added a small, focused client component at [components/projects/projects-list.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/projects/projects-list.tsx) to handle interactive modals, switching, and project deletions.
+
+### Changed
+- **Server/Client Component Boundaries**: Refactored [app/projects/page.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/app/projects/page.tsx) and [app/dashboard/page.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/app/dashboard/page.tsx) into React Server Components (RSCs), fetching project lists directly on the server and executing server-side redirects.
+- **Prisma Connection Pooling**: Cached the `PrismaClient` instance globally using `globalThis.__prisma` singleton in [lib/prisma.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/prisma.ts) and configured PgBouncer query parameters (`?pgbouncer=true&connection_limit=1`) documented in [.env.example](file:///c:/Ario%20Vibe%20Coding/Karnex/.env.example).
+- **NextAuth Session Token Rotation**: Hardened auth token lifetimes in [auth.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/auth.ts) to 7 days (604800s) and enabled active rotation on every request using `updateAge: 0`.
+- **Soft Deletes implementation**: Added `deletedAt DateTime?` to both `User` and `Project` models in [prisma/schema.prisma](file:///c:/Ario%20Vibe%20Coding/Karnex/prisma/schema.prisma). Updated query filters in [lib/db.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/db.ts), [lib/project-actions.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/project-actions.ts), [lib/admin-actions.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/lib/admin-actions.ts), and [app/api/admin/users/route.ts](file:///c:/Ario%20Vibe%20Coding/Karnex/app/api/admin/users/route.ts) to check `deletedAt: null`. Replaced hard deletes with soft delete updates setting `deletedAt` to `new Date()`.
+- **Lazy Loaded heavy export libraries**: Deferred loading of `pptxgenjs` in [pitch-deck-builder.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/components/features/pitch-deck/pitch-deck-builder.tsx) using dynamic import and loaded `CanvasBoard` dynamically via `next/dynamic` in [app/dashboard/canvas/page.tsx](file:///c:/Ario%20Vibe%20Coding/Karnex/app/dashboard/canvas/page.tsx).
+
 ## [v2.0.0-sprint5] - 2026-06-24
 
 This release completes Sprint 5 (Performance & Scale) of the Karnex v2.0 upgrade program. It optimizes Docker container builds for Liara Cloud standalone deployment, introduces service worker dynamic caching and reconnection queueing for offline PWA operations, and implements CLS layout optimizations for above-the-fold image components.

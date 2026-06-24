@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from "react";
 import { toast } from "sonner";
-import pptxgen from "pptxgenjs"; // Import pptxgenjs
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { PitchDeckSlide, savePitchDeck } from "@/lib/db";
@@ -133,6 +132,7 @@ export function PitchDeckBuilder() {
   const handleExportPPTX = async () => {
     setDownloading(true);
     try {
+      const pptxgen = (await import("pptxgenjs")).default;
       const pres = new pptxgen();
       pres.layout = 'LAYOUT_16x9';
       pres.rtlMode = true; // Enable RTL mode globally if possible, or per element

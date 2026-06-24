@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useOptimistic, startTransition } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { toggleStepCompletion, RoadmapStep } from "@/lib/db";
@@ -51,6 +51,10 @@ export function useRoadmap(): UseRoadmapReturn {
   const { activeProject: plan, loading, updateActiveProject } = useProject();
   
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [optimisticCompletedSteps, setOptimisticCompletedSteps] = useOptimistic(
+    completedSteps,
+    (state, newCompletedSteps: string[]) => newCompletedSteps
+  );
   const [activeWeek, setActiveWeek] = useState(1);
 
   // Compute roadmap dynamically
@@ -168,7 +172,7 @@ export function useRoadmap(): UseRoadmapReturn {
   };
 
   const isCompleted = (step: string | RoadmapStepObject) => {
-    return completedSteps.includes(getStepTitle(step));
+    return optimisticCompletedSteps.includes(getStepTitle(step));
   };
 
   const getStepStatus = (step: string | RoadmapStepObject): "todo" | "in-progress" | "done" => {
@@ -189,23 +193,28 @@ export function useRoadmap(): UseRoadmapReturn {
       ? [...completedSteps, stepName] 
       : completedSteps.filter(s => s !== stepName);
     
-    setCompletedSteps(newCompletedSteps);
-    updateActiveProject({ completedSteps: newCompletedSteps });
-
     // Save to Cloud / Offline queue
     if (typeof window !== "undefined" && !navigator.onLine) {
+      setCompletedSteps(newCompletedSteps);
+      updateActiveProject({ completedSteps: newCompletedSteps });
       const { addToggleStepToQueue } = await import("@/lib/offline-sync");
       addToggleStepToQueue(user.id!, plan.id || 'current', stepName, isNowCompleted);
       return;
     }
 
-    try {
-      await toggleStepCompletion(user.id!, stepName, isNowCompleted, plan.id || 'current');
-    } catch (error) {
-      console.error("Sync failed, queuing offline", error);
-      const { addToggleStepToQueue } = await import("@/lib/offline-sync");
-      addToggleStepToQueue(user.id!, plan.id || 'current', stepName, isNowCompleted);
-    }
+    startTransition(async () => {
+      setOptimisticCompletedSteps(newCompletedSteps);
+
+      try {
+        await toggleStepCompletion(user.id!, stepName, isNowCompleted, plan.id || 'current');
+        setCompletedSteps(newCompletedSteps);
+        updateActiveProject({ completedSteps: newCompletedSteps });
+      } catch (error) {
+        console.error("Sync failed, showing toast error", error);
+        const { toast } = await import("sonner");
+        toast.error("خطا در ذخیره‌سازی — لطفاً دوباره تلاش کنید");
+      }
+    });
   };
 
   // Legacy toggle wrapper
@@ -221,14 +230,14 @@ export function useRoadmap(): UseRoadmapReturn {
 
   const progressPercent = useMemo(() => {
     if (totalSteps === 0) return 0;
-    return Math.round((completedSteps.length / totalSteps) * 100);
-  }, [completedSteps.length, totalSteps]);
+    return Math.round((optimisticCompletedSteps.length / totalSteps) * 100);
+  }, [optimisticCompletedSteps.length, totalSteps]);
 
   return {
     plan,
     loading,
     roadmap,
-    completedSteps,
+    completedSteps: optimisticCompletedSteps,
     progressPercent,
     totalSteps,
     activeWeek,
