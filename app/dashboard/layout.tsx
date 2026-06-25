@@ -46,7 +46,7 @@ export default function DashboardLayout({
           <DashboardSidebar />
 
           {/* Main Content Area */}
-          <div className="ml-0 md:ml-[280px] transition-all duration-300">
+          <div className="ms-0 md:ms-[280px] transition-all duration-300">
             {/* Header */}
             <DashboardHeader />
 
