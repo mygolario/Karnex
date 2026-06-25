@@ -1,10 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Lock, Play, Target } from "lucide-react";
+import { Play, Target } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 interface FocusHeroProps {
   nextStepName: string | null;
@@ -23,7 +22,7 @@ export function FocusHero({ nextStepName }: FocusHeroProps) {
       {/* Abstract Background Shapes */}
       <div className="absolute top-0 end-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/3 mix-blend-overlay" />
       <div className="absolute bottom-0 start-0 w-[300px] h-[300px] bg-black/10 rounded-full blur-[60px] translate-y-1/3 -translate-x-1/4 mix-blend-overlay" />
-       <div className="absolute inset-0 bg-[url('/noise.png')] opacity-20 mix-blend-soft-light" />
+       <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-20 mix-blend-soft-light" />
 
 
       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-8">

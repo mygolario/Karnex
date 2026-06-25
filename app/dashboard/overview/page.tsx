@@ -4,23 +4,31 @@ import { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { Calendar, Rocket, Plus } from "lucide-react";
+import { Rocket, Plus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { calculateProjectScore } from "@/lib/scoring";
 import { FocusHero } from "@/components/dashboard/overview/focus-hero";
 import { StatsStrip } from "@/components/dashboard/overview/stats-strip";
 import { QuickAccessGrid } from "@/components/dashboard/overview/quick-access-grid";
+import { KarnexScore } from "@/components/dashboard/karnex-score";
+import { RecentActivity } from "@/components/dashboard/overview/recent-activity";
+import { AIInsightsWidget } from "@/components/dashboard/overview/ai-insights-widget";
+import { UpcomingTasks } from "@/components/dashboard/overview/upcoming-tasks";
 
 // Helper to get step title
-function getStepTitle(step: any): string {
-  return typeof step === 'string' ? step : step?.title || '';
+function getStepTitle(step: unknown): string {
+  if (typeof step === "string") return step;
+  if (step && typeof step === "object" && "title" in step) {
+    return (step as { title: string }).title || "";
+  }
+  return "";
 }
 
 // Animation variants
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.15 } }
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
 };
 
 const itemVariants: Variants = {
@@ -29,7 +37,7 @@ const itemVariants: Variants = {
 };
 
 export default function DashboardOverviewPage() {
-  const { user, userProfile } = useAuth();
+  const { userProfile } = useAuth();
   const { activeProject: plan, loading } = useProject();
   const [greeting, setGreeting] = useState("سلام");
   const [actionStreak, setActionStreak] = useState(0);
@@ -40,8 +48,7 @@ export default function DashboardOverviewPage() {
     else if (hour < 12) setGreeting("صبح بخیر");
     else if (hour < 17) setGreeting("روز بخیر");
     else setGreeting("عصر بخیر");
-    
-    // Mock streak
+
     setActionStreak(Math.floor(Math.random() * 10) + 1);
   }, []);
 
@@ -63,7 +70,7 @@ export default function DashboardOverviewPage() {
                  <p className="text-muted-foreground mb-8 text-base">اولین پروژه خود را بسازید و مسیر موفقیت را آغاز کنید.</p>
                  <Link href="/new-project">
                     <Button size="lg" className="w-full text-base h-12 rounded-xl font-bold">
-                        <Plus size={20} className="ml-2" />
+                        <Plus size={20} className="ms-2" />
                         ساخت پروژه جدید
                     </Button>
                  </Link>
@@ -85,27 +92,29 @@ export default function DashboardOverviewPage() {
      </div>
   }
 
+  const roadmap = plan?.roadmap as unknown as Array<{ steps: unknown[]; phase?: string; title?: string }> | undefined;
+
   // Calculate Stats
-  const totalSteps = plan?.roadmap?.reduce((acc: number, p: any) => acc + p.steps.length, 0) || 1;
+  const totalSteps = roadmap?.reduce((acc: number, p) => acc + (p.steps?.length || 0), 0) || 1;
   const completedCount = plan?.completedSteps?.length || 0;
   const progressPercent = Math.round((completedCount / totalSteps) * 100);
   const scoreResult = plan ? calculateProjectScore(plan) : { total: 0, grade: 'N/A' };
 
   // Find next step
-  const nextStep = plan?.roadmap?.flatMap((p: any) => p.steps).find((s: any) => {
-    const name = typeof s === 'string' ? s : s.title;
+  const nextStep = roadmap?.flatMap((p) => p.steps || []).find((s) => {
+    const name = getStepTitle(s);
     return !plan?.completedSteps?.includes(name);
   });
-  const nextStepName = nextStep ? getStepTitle(nextStep) : "تبریک! تمام مراحل انجام شد 🎉";
+  const nextStepName = nextStep ? getStepTitle(nextStep) : null;
 
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="space-y-10 pb-20 max-w-7xl mx-auto px-4 sm:px-6 pt-6"
+      className="space-y-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 pt-6"
     >
-      {/* 1. Header & Greeting */}
+      {/* ═══ 1. Greeting Header ═══ */}
       <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
         <div>
            <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
@@ -116,7 +125,7 @@ export default function DashboardOverviewPage() {
              {greeting}، <span className="text-primary">{userProfile?.full_name?.split(' ')[0] || "دوست عزیز"}</span>
            </h1>
         </div>
-        
+
         {/* Project Context Pill */}
         <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full border border-border/50">
            <span className="text-xs text-muted-foreground">پروژه فعال:</span>
@@ -124,14 +133,14 @@ export default function DashboardOverviewPage() {
         </div>
       </motion.div>
 
-      {/* 2. Hero Section (Focus) */}
+      {/* ═══ 2. Focus Hero ═══ */}
       <motion.div variants={itemVariants}>
          <FocusHero nextStepName={nextStepName} />
       </motion.div>
 
-      {/* 3. Stats Strip */}
+      {/* ═══ 3. Stats Strip ═══ */}
       <motion.div variants={itemVariants}>
-         <StatsStrip 
+         <StatsStrip
             progress={progressPercent}
             score={scoreResult.grade}
             completedCount={completedCount}
@@ -140,9 +149,25 @@ export default function DashboardOverviewPage() {
          />
       </motion.div>
 
-      {/* 4. Quick Access Grid */}
+      {/* ═══ 4. Karnex Score + Achievements ═══ */}
+      <motion.div variants={itemVariants}>
+        <KarnexScore compact={false} />
+      </motion.div>
+
+      {/* ═══ 5. Two-column: Recent Activity + AI Insights ═══ */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+         <RecentActivity plan={plan} />
+         <AIInsightsWidget />
+      </motion.div>
+
+      {/* ═══ 6. Quick Access Grid ═══ */}
       <motion.div variants={itemVariants}>
          <QuickAccessGrid projectType={plan?.projectType} />
+      </motion.div>
+
+      {/* ═══ 7. Upcoming Tasks ═══ */}
+      <motion.div variants={itemVariants}>
+         <UpcomingTasks plan={plan} />
       </motion.div>
 
     </motion.div>
