@@ -8,8 +8,8 @@
     "serwist:build": "serwist build",
     "start": "next start",
     "lint": "eslint",
-    "deploy": "echo 'Use liara-cli to deploy'",
-    "postinstall": "echo 'Skipping prisma generate on Liara'"
+    "deploy": "echo 'Deploy via Vercel integration'",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

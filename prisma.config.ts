@@ -20,8 +20,9 @@ if (!url) {
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   datasource: {
-    url: url
-  },
+    url: url,
+    directUrl: process.env.DIRECT_URL
+  } as any,
   migrations: {
     seed: 'node scripts/migrate-data.js'
   }

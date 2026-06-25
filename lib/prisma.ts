@@ -12,9 +12,11 @@ const prismaClientSingleton = () => {
   // Liara might not support SSL on the public port, so we disable it for now or strictly follow the connection string.
   // If the server rejects SSL, we must set ssl: false.
   
+  const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1')
+  
   const pool = new Pool({ 
     connectionString,
-    ssl: false, // Explicitly disable SSL as the server rejects it
+    ssl: isLocalhost ? false : { rejectUnauthorized: false },
   })
   
   // Log connection errors but don't crash the server — the pool will reconnect automatically

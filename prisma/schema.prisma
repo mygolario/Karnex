@@ -7,8 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  // url is configured in prisma.config.ts for Prisma 7
+  provider  = "postgresql"
 }
 
 // --- NextAuth Models ---
