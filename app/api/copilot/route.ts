@@ -136,7 +136,7 @@ export async function POST(req: Request) {
                   headers: {
                       "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
                       "Content-Type": "application/json",
-                      "HTTP-Referer": "https://karnex.ir",
+                      "HTTP-Referer": "https://www.karnex.ir",
                       "X-Title": "Karnex"
                   },
                   body: JSON.stringify({
@@ -213,7 +213,7 @@ export async function POST(req: Request) {
                   headers: {
                       "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
                       "Content-Type": "application/json",
-                      "HTTP-Referer": "https://karnex.ir",
+                      "HTTP-Referer": "https://www.karnex.ir",
                       "X-Title": "Karnex"
                   },
                   body: JSON.stringify({

@@ -8,8 +8,8 @@ const organizationSchema = {
   '@type': 'Organization',
   name: 'کارنکس',
   alternateName: 'Karnex',
-  url: 'https://karnex.ir',
-  logo: 'https://karnex.ir/logo-light.png',
+  url: 'https://www.karnex.ir',
+  logo: 'https://www.karnex.ir/logo-light.png',
   description: 'دستیار هوشمند کارآفرینی - با کارنکس ایده خود را به کسب‌وکار تبدیل کنید',
   sameAs: [],
   contactPoint: {
@@ -25,7 +25,7 @@ const websiteSchema = {
   '@type': 'WebSite',
   name: 'کارنکس',
   alternateName: 'Karnex',
-  url: 'https://karnex.ir',
+  url: 'https://www.karnex.ir',
   inLanguage: 'fa-IR',
   description: 'با کارنکس، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید',
 };

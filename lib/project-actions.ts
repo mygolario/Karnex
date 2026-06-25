@@ -472,7 +472,7 @@ export async function inviteMemberAction(projectId: string, email: string, role:
                     <p>کاربر <strong>${session?.user?.name || session?.user?.email || "کاربر کارنکس"}</strong> شما را به عنوان <strong>${roleLabel}</strong> به پروژه <strong>${project.projectName}</strong> دعوت کرده است.</p>
                     <p>برای مشاهده و همکاری در پروژه، لطفا به پنل کاربری خود در کارنکس مراجعه کنید.</p>
                     <hr />
-                    <a href="https://karnex.ir/dashboard" style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">ورود به پیشخوان کارنکس</a>
+                    <a href="https://www.karnex.ir/dashboard" style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">ورود به پیشخوان کارنکس</a>
                 </div>
             `
         });

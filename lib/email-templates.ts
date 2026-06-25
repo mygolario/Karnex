@@ -132,7 +132,7 @@ export const getContactUserTemplate = (name: string) => {
         <p>اگر نیاز به اطلاعات فوری دارید، می‌توانید به بخش سوالات متداول در سایت مراجعه کنید.</p>
         
         <div style="text-align: center;">
-            <a href="https://karnex.ir" class="btn">بازگشت به وب‌سایت</a>
+            <a href="https://www.karnex.ir" class="btn">بازگشت به وب‌سایت</a>
         </div>
     `;
     return emailLayout(content, 'دریافت پیام شما - کارنکس');
@@ -232,10 +232,10 @@ export const getActivationEmailTemplate = (data: {
         </div>
 
         <div style="text-align: center;">
-            <a href="https://karnex.ir/dashboard" class="btn" style="padding: 14px 32px; font-size: 16px;">ورود به داشبورد</a>
+            <a href="https://www.karnex.ir/dashboard" class="btn" style="padding: 14px 32px; font-size: 16px;">ورود به داشبورد</a>
             <p style="margin-top: 20px; font-size: 12px; color: ${MUTED_COLOR};">
                 برای دریافت فاکتور رسمی می‌توانید به بخش 
-                <a href="https://karnex.ir/dashboard/profile" style="color: ${PRIMARY_COLOR}; text-decoration: none;">تاریخچه تراکنش‌ها</a>
+                <a href="https://www.karnex.ir/dashboard/profile" style="color: ${PRIMARY_COLOR}; text-decoration: none;">تاریخچه تراکنش‌ها</a>
                 مراجعه کنید.
             </p>
         </div>

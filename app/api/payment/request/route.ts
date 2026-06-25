@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     const signature = crypto.createHmac('sha256', secret).update(dataToSign).digest('hex');
 
     // Build callback URL with metadata for the verify page and the signature
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://karnex.ir';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.karnex.ir';
     // Use the PAGE route, not the API route
     const callbackUrl = `${baseUrl}/payment/verify?plan=${planId}&cycle=${billingCycle}&uid=${user.id}&orderId=${orderId}&sig=${signature}`;
     

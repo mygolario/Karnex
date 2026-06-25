@@ -31,10 +31,10 @@ export const metadata: Metadata = {
     'business model canvas',
     'AI business assistant',
   ],
-  authors: [{ name: 'Karnex Team', url: 'https://karnex.ir' }],
+  authors: [{ name: 'Karnex Team', url: 'https://www.karnex.ir' }],
   creator: 'Karnex',
   publisher: 'Karnex',
-  metadataBase: new URL('https://karnex.ir'),
+  metadataBase: new URL('https://www.karnex.ir'),
   alternates: {
     canonical: '/',
   },
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'کارنکس | دستیار هوشمند کارآفرینی',
     description: 'با دستیار کارنکس، ایده خود را به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
-    url: 'https://karnex.ir',
+    url: 'https://www.karnex.ir',
     siteName: 'Karnex',
     locale: 'fa_IR',
     type: 'website',

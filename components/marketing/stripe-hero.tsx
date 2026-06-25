@@ -130,7 +130,7 @@ export const StripeHero = () => {
                         <div className="w-3 h-3 rounded-full bg-green-400" />
                     </div>
                     <div className="px-3 py-1 rounded-full bg-muted/50 text-[10px] font-mono text-muted-foreground">
-                        karnex.ir/dashboard
+                        www.karnex.ir/dashboard
                     </div>
                 </div>
 

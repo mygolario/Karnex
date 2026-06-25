@@ -29,17 +29,6 @@ const nextConfig: NextConfig = {
     },
   },
 
-  async redirects() {
-    return [
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: 'www.karnex.ir' }],
-        destination: 'https://karnex.ir/:path*',
-        permanent: true,
-      },
-    ];
-  },
-
   // Headers for security and caching
   async headers() {
     return [

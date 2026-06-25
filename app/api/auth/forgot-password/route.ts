@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       },
     });
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://karnex.ir';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.karnex.ir';
     const resetUrl = `${baseUrl}/reset-password?token=${token}&email=${encodeURIComponent(email)}`;
 
     const htmlContent = `
