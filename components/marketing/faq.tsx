@@ -1,8 +1,10 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Plus, Minus } from "lucide-react";
+import { Plus, Minus, MessageCircle } from "lucide-react";
 import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const faqs = [
   {
@@ -11,7 +13,7 @@ const faqs = [
   },
   {
     question: "آیا استفاده از کارنکس رایگان است؟",
-    answer: "بله! پلن رایگان شامل ۱ پروژه، ۱۰ درخواست دستیار کارنکس و دسترسی به ابزارهای پایه است. برای امکانات بیشتر می‌توانید پلن Plus، Pro یا Ultra را انتخاب کنید.",
+    answer: "بله! پلن رایگان شامل ۱ پروژه، ۲۰ درخواست دستیار کارنکس و دسترسی به ابزارهای پایه است. برای امکانات بیشتر می‌توانید پلن Plus، Pro یا Ultra را انتخاب کنید.",
   },
   {
     question: "تفاوت سه مسیر (استارتاپ، سنتی، تولید محتوا) چیست؟",
@@ -29,6 +31,14 @@ const faqs = [
     question: "آیا داده‌های من امن هستند؟",
     answer: "بله، امنیت داده‌ها اولویت ماست. از رمزنگاری پیشرفته و سرورهای امن استفاده می‌کنیم. اطلاعات شما هرگز با اشخاص ثالث به اشتراک گذاشته نمی‌شود.",
   },
+  {
+    question: "دستیار کارنکس چقدر هوشمند است؟",
+    answer: "دستیار کارنکس با استفاده از هوش مصنوعی پیشرفته، ایده شما را تحلیل کرده و نقشه راه، استراتژی بازاریابی و ابزارهای لازم را شخصی‌سازی می‌کند. هرچه بیشتر با آن کار کنید، پیشنهادات دقیق‌تری دریافت خواهید کرد.",
+  },
+  {
+    question: "آیا برای تیم‌ها مناسب است؟",
+    answer: "پلن Ultra پشتیبانی از چند کاربر و مشاوره اختصاصی ارائه می‌دهد. برای تیم‌های بزرگتر، می‌توانید با تیم فروش ما تماس بگیرید تا راهکار اختصاصی دریافت کنید.",
+  },
 ];
 
 export const FAQ = () => {
@@ -36,9 +46,8 @@ export const FAQ = () => {
 
   return (
     <section id="faq" className="py-24 lg:py-32 relative overflow-hidden bg-muted/30">
-      {/* Background Pattern */}
       <div className="absolute inset-0 pattern-dots opacity-30" />
-      
+
       <div className="container relative z-10 px-4 md:px-6 max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
@@ -59,7 +68,7 @@ export const FAQ = () => {
         </motion.div>
 
         {/* FAQ Items */}
-        <div className="space-y-4">
+        <div className="space-y-4 mb-12">
           {faqs.map((faq, index) => (
             <motion.div
               key={index}
@@ -75,7 +84,6 @@ export const FAQ = () => {
                     : "border-border hover:border-primary/30"
                 }`}
               >
-                {/* Question */}
                 <button
                   onClick={() => setOpenIndex(openIndex === index ? null : index)}
                   className="w-full p-6 flex items-center justify-between gap-4 text-end"
@@ -98,7 +106,6 @@ export const FAQ = () => {
                   </div>
                 </button>
 
-                {/* Answer */}
                 <AnimatePresence>
                   {openIndex === index && (
                     <motion.div
@@ -119,6 +126,30 @@ export const FAQ = () => {
             </motion.div>
           ))}
         </div>
+
+        {/* Bottom CTA — "still have questions?" */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center"
+        >
+          <div className="inline-flex flex-col items-center gap-4 p-8 rounded-3xl bg-card border border-border">
+            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <MessageCircle className="w-7 h-7 text-primary" />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-foreground mb-2">سوال دیگه‌ای داری؟</h3>
+              <p className="text-muted-foreground text-sm mb-4">تیم پشتیبانی ما آماده پاسخگویی است</p>
+            </div>
+            <Link href="/contact">
+              <Button variant="outline" rounded="lg" className="font-bold gap-2">
+                <MessageCircle className="w-4 h-4" />
+                تماس با پشتیبانی
+              </Button>
+            </Link>
+          </div>
+        </motion.div>
       </div>
     </section>
   );

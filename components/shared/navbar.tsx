@@ -15,6 +15,7 @@ import {
   ArrowLeft,
   HeadphonesIcon,
   Sparkles,
+  Rocket,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -84,16 +85,40 @@ export function Navbar() {
           <div className="hidden lg:flex items-center">
             <div className="flex items-center bg-muted/50 rounded-2xl p-1.5 border border-border/50">
               
+              {/* Pillars */}
+              <Link
+                href="/#pillars"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
+              >
+                مسیرها
+              </Link>
+
+              {/* Features */}
+              <Link
+                href="/#features"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
+              >
+                امکانات
+              </Link>
+
               {/* Pricing */}
               <Link
-                href="/pricing"
+                href="/#pricing"
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
               >
                 <Crown size={14} />
                 تعرفه‌ها
               </Link>
 
-              {/* Help */}
+              {/* FAQ */}
+              <Link
+                href="/#faq"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
+              >
+                سوالات
+              </Link>
+
+              {/* Contact */}
               <Link
                 href="/contact"
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
@@ -184,12 +209,36 @@ export function Navbar() {
                 {/* Quick Links */}
                 <div className="mb-4 space-y-1">
                   <Link
+                    href="/#pillars"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors"
+                  >
+                    <Rocket size={18} className="text-startup" />
+                    <span className="font-medium text-foreground text-sm">مسیرها</span>
+                  </Link>
+                  <Link
+                    href="/#features"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors"
+                  >
+                    <Sparkles size={18} className="text-primary" />
+                    <span className="font-medium text-foreground text-sm">امکانات</span>
+                  </Link>
+                  <Link
                     href="/#pricing"
                     onClick={() => setMobileMenuOpen(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors"
                   >
                     <Crown size={18} className="text-amber-500" />
                     <span className="font-medium text-foreground text-sm">تعرفه‌ها</span>
+                  </Link>
+                  <Link
+                    href="/#faq"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors"
+                  >
+                    <HeadphonesIcon size={18} className="text-muted-foreground" />
+                    <span className="font-medium text-foreground text-sm">سوالات متداول</span>
                   </Link>
                   <Link
                     href="/contact"
