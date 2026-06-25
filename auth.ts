@@ -11,6 +11,7 @@ import { authenticateUser } from "@/lib/auth-actions"
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   ...authConfig,
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   trustHost: true,
   adapter: PrismaAdapter(prisma as any),
   session: { 
