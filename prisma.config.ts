@@ -13,14 +13,10 @@ if (fs.existsSync(envLocalPath)) {
 
 const url = process.env.DATABASE_URL;
 
-if (!url) {
-  throw new Error("DATABASE_URL is not defined in environment variables");
-}
-
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   datasource: {
-    url: url,
+    url: url || 'postgresql://dummy:dummy@localhost:5432/dummy',
     directUrl: process.env.DIRECT_URL
   } as any,
   migrations: {
