@@ -101,7 +101,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
   // Base Styling
   const baseClasses = "flex flex-col h-full bg-card border-l border-border";
   const positionClasses = variant === "desktop" 
-    ? "fixed inset-y-0 end-0 z-50 w-[280px] hidden md:flex" 
+    ? "fixed inset-y-0 start-0 z-50 w-[280px] hidden md:flex" 
     : "flex w-full"; // Mobile is handled by Sheet Wrapper
 
   return (
