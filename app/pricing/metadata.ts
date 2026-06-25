@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'قیمت‌گذاری کارنکس',
     description: 'پلن رایگان، پلاس، پرو و اولترا. بدون نیاز به کارت اعتباری برای شروع.',
-    url: 'https://www.karnex.ir/pricing',
+    url: 'https://karnex.ir/pricing',
     type: 'website',
   },
 };

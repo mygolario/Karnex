@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'تماس با تیم کارنکس',
     description: 'سوالات، پیشنهادات و مشکلات خود را با تیم کارنکس در میان بگذارید.',
-    url: 'https://www.karnex.ir/contact',
+    url: 'https://karnex.ir/contact',
     type: 'website',
   },
 };
