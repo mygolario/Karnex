@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { Prisma } from "../prisma/client";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/session";
 
 // Define the Data Structure (TypeScript Interface)
 

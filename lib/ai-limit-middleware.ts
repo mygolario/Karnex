@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/session';
 import { checkAIRequestLimit, incrementAIUsage, decrementAIUsage } from '@/lib/usage-tracker';
 
 export interface AILimitCheckResult {

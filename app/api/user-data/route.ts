@@ -1,7 +1,8 @@
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { UserProfile } from "@/lib/db";
+import { getUserSubscription, getUserTier, getUserFeatures } from "@/lib/subscription";
 
 export async function GET(request: Request) {
   try {
@@ -13,10 +14,11 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
+    const userId = session.user.id;
 
     if (type === "profile") {
       const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: userId },
         include: {
             subscriptions: true 
         }
@@ -26,32 +28,40 @@ export async function GET(request: Request) {
         return new NextResponse("User not found", { status: 404 });
       }
 
-      // Find active or latest subscription
-      const activeSub = user.subscriptions?.find((s: any) => s.status === 'active') || 
+      const activeSub = user.subscriptions?.find((s: { status: string }) => s.status === 'active') || 
                         user.subscriptions?.[0] || 
                         null;
 
-      // Map to UserProfile
       const profile: UserProfile = {
         id: user.id,
         email: user.email || "",
-        role: (user.role as any) || "user",
+        role: (user.role as UserProfile["role"]) || "user",
         full_name: user.name || "",
         avatar_url: user.image || "",
-        credits: (user.credits as any) || { aiTokens: 0, projectsUsed: 0 },
-        settings: (user.settings as any) || { emailNotifications: true, theme: 'system' },
+        credits: (user.credits as UserProfile["credits"]) || { aiTokens: 0, projectsUsed: 0 },
+        settings: (user.settings as UserProfile["settings"]) || { emailNotifications: true, theme: 'system' },
         subscription: {
-             planId: (activeSub?.planId as any) || 'free',
-             status: (activeSub?.status as any) || 'active',
+             planId: (activeSub?.planId as UserProfile["subscription"]["planId"]) || 'free',
+             status: (activeSub?.status as UserProfile["subscription"]["status"]) || 'active',
              endDate: activeSub?.endDate?.toISOString(),
              startDate: activeSub?.startDate?.toISOString(),
              autoRenew: activeSub?.autoRenew ?? false
-        } as any,
+        },
         created_at: user.createdAt.toISOString(),
         updated_at: user.updatedAt.toISOString()
       };
 
       return NextResponse.json({ profile });
+    }
+
+    if (type === "subscription") {
+      const [subscription, tier, features] = await Promise.all([
+        getUserSubscription(userId),
+        getUserTier(userId),
+        getUserFeatures(userId),
+      ]);
+
+      return NextResponse.json({ subscription, tier, features });
     }
 
     return new NextResponse("Invalid type", { status: 400 });

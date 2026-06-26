@@ -1,0 +1,5 @@
+{
+  "buildCommand": "prisma generate && next build && npm run serwist:build",
+  "framework": "nextjs",
+  "regions": ["cdg1"]
+}

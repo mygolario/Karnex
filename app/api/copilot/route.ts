@@ -9,7 +9,7 @@ import {
   executeUpdateSwotAnalysis 
 } from '@/lib/ai/copilot-tools';
 import prisma from '@/lib/prisma';
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/session";
 
 export const maxDuration = 60; // Allow longer timeout for agent tool chains
 

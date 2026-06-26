@@ -1,14 +1,21 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { User } from "next-auth"; // Use NextAuth User type
-import { useSession, signOut as nextAuthSignOut, signIn as nextAuthSignIn } from "next-auth/react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { UserProfile } from "@/lib/db";
+import { createClient } from "@/lib/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
-// Define the Context Shape
+export interface AppUser {
+  id: string;
+  email?: string | null;
+  name?: string | null;
+  image?: string | null;
+  role?: string | null;
+}
+
 interface AuthContextType {
-  user: User | null;
-  session: any | null; // Typed loosely for now, or import Session from next-auth
+  user: AppUser | null;
+  session: { user: AppUser } | null;
   userProfile: UserProfile | null;
   loading: boolean;
   refreshProfile: () => Promise<void>;
@@ -16,82 +23,142 @@ interface AuthContextType {
   signIn: (provider?: string) => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ 
-  user: null, 
+const AuthContext = createContext<AuthContextType>({
+  user: null,
   session: null,
-  userProfile: null, 
+  userProfile: null,
   loading: true,
   refreshProfile: async () => {},
   signOut: async () => {},
-  signIn: async () => {}
+  signIn: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
 
+function mapSupabaseUser(su: SupabaseUser | null, appId?: string): AppUser | null {
+  if (!su) return null;
+  return {
+    id: appId || su.id,
+    email: su.email,
+    name:
+      su.user_metadata?.full_name ||
+      su.user_metadata?.name ||
+      su.email?.split("@")[0],
+    image: su.user_metadata?.avatar_url || su.user_metadata?.picture,
+    role: null,
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { data: session, status, update } = useSession();
+  const supabase = createClient();
+  const [user, setUser] = useState<AppUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
   const [loadingProfile, setLoadingProfile] = useState(false);
 
-  // Loading state differs from NextAuth status
-  // We want 'loading' to be true if authentication is loading OR profile is fetching
-  const loading = status === "loading" || loadingProfile;
-
-  const fetchProfile = async (uid?: string) => {
-    if (!uid) return;
+  const fetchProfile = useCallback(async () => {
     try {
       setLoadingProfile(true);
-      // Calls our refactored API which uses auth() to identify user
       const res = await fetch("/api/user-data?type=profile");
-      if (!res.ok) {
-        console.error("Error fetching profile: HTTP", res.status);
-        return;
-      }
+      if (!res.ok) return;
       const data = await res.json();
       if (data.profile) {
         setUserProfile(data.profile as UserProfile);
+        setUser((prev) =>
+          prev
+            ? {
+                ...prev,
+                id: data.profile.id,
+                role: data.profile.role,
+                name: data.profile.full_name || prev.name,
+                image: data.profile.avatar_url || prev.image,
+              }
+            : {
+                id: data.profile.id,
+                email: data.profile.email,
+                name: data.profile.full_name,
+                image: data.profile.avatar_url,
+                role: data.profile.role,
+              }
+        );
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
     } finally {
-        setLoadingProfile(false);
+      setLoadingProfile(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    if (session?.user?.id) {
-        // Fetch profile when session is available and user changes
-        fetchProfile(session.user.id);
-    } else if (status === 'unauthenticated') {
+    const init = async () => {
+      const {
+        data: { user: su },
+      } = await supabase.auth.getUser();
+      if (su) {
+        await fetchProfile();
+      } else {
+        setUser(null);
         setUserProfile(null);
-    }
-  }, [session?.user?.id, status]);
+      }
+      setLoading(false);
+    };
 
-  const refreshProfile = React.useCallback(async () => {
-    if (session?.user?.id) {
-      await fetchProfile(session.user.id);
-    }
-  }, [session?.user?.id]);
+    init();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(mapSupabaseUser(session.user));
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          await fetchProfile();
+        }
+      } else {
+        setUser(null);
+        setUserProfile(null);
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth, fetchProfile]);
+
+  const refreshProfile = useCallback(async () => {
+    await fetchProfile();
+  }, [fetchProfile]);
 
   const signOut = async () => {
-    await nextAuthSignOut({ callbackUrl: "/" });
+    await supabase.auth.signOut();
     setUserProfile(null);
+    setUser(null);
+    window.location.href = "/";
   };
-  
+
   const signIn = async (provider?: string) => {
-      await nextAuthSignIn(provider);
-  }
+    if (provider === "google") {
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard/overview`,
+        },
+      });
+    }
+  };
+
+  const session = user ? { user } : null;
 
   return (
-    <AuthContext.Provider value={{ 
-        user: session?.user as User || null, 
-        session, 
-        userProfile, 
-        loading, 
-        refreshProfile, 
+    <AuthContext.Provider
+      value={{
+        user,
+        session,
+        userProfile,
+        loading: loading || loadingProfile,
+        refreshProfile,
         signOut,
-        signIn
-    }}>
+        signIn,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

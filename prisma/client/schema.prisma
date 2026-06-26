@@ -8,22 +8,22 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // url is configured in prisma.config.ts for Prisma 7
 }
 
 // --- NextAuth Models ---
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  role          String?   @default("user") // "user" | "admin"
-  password      String? // For credentials provider
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime? // For soft deletes
+  id             String    @id @default(cuid())
+  supabaseUserId String?   @unique
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  role           String?   @default("user") // "user" | "admin"
+  password       String? // For credentials provider
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime? // For soft deletes
 
   // Profile fields (mapped from existing UserProfile)
   firstName   String?

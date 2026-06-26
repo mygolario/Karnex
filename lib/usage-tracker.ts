@@ -9,7 +9,7 @@
 
 import prisma from '@/lib/prisma';
 import { DEFAULT_FEATURES, PlanTier } from '@/lib/payment/types';
-import { auth } from '@/auth';
+import { auth } from '@/lib/auth/session';
 
 export interface UsageCheckResult {
   allowed: boolean;
@@ -38,10 +38,14 @@ function getCurrentMonth(): string {
 async function getUserPlanTier(userId: string): Promise<PlanTier> {
   const sub = await prisma.subscription.findUnique({
     where: { userId },
-    select: { planId: true, status: true }
+    select: { planId: true, status: true, endDate: true }
   });
   
   if (!sub || sub.status !== 'active') {
+    return 'free';
+  }
+
+  if (sub.endDate && sub.endDate < new Date()) {
     return 'free';
   }
   

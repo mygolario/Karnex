@@ -8,7 +8,6 @@ import { JsonLd } from '@/components/shared/json-ld';
 import { NetworkStatus } from '@/components/shared/network-status';
 import { CookieBanner } from '@/components/shared/cookie-banner'; 
 import { GoogleAnalytics } from '@/components/shared/analytics';
-import { SessionProvider } from "next-auth/react";
 import { ToastProvider } from '@/components/ui/toast';
 
 export const metadata: Metadata = {
@@ -112,8 +111,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          <SessionProvider>
-            <AuthProvider>
+          <AuthProvider>
               <ToastProvider>
                 <GoogleAnalytics />
                 <ProjectProvider>
@@ -122,8 +120,7 @@ export default function RootLayout({
                   <CookieBanner />
                 </ProjectProvider>
               </ToastProvider>
-            </AuthProvider>
-          </SessionProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

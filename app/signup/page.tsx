@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { createClient } from "@/lib/supabase/client";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -26,6 +26,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function SignupPage() {
   const router = useRouter();
+  const supabase = createClient();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -88,40 +89,35 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      // Import the server action dynamically or ensure it's imported at top
-      const { signupUser } = await import("@/lib/auth-actions");
-      
-      const result = await signupUser({
-        fullName: name,
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: { full_name: name, name },
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/new-project`,
+        },
       });
 
-      if (result.error) {
-        throw new Error(result.error);
+      if (signUpError) {
+        throw signUpError;
       }
 
-      // Automatically sign in after signup
-      const loginResult = await signIn("credentials", {
-        redirect: false,
-        email,
-        password,
-      });
-
-      if (loginResult?.error) {
-         router.push("/login");
+      if (data.session) {
+        await fetch("/api/auth/sync", { method: "POST" });
+        setSignedUp(true);
+        setTimeout(() => router.push("/new-project"), 2500);
       } else {
-         setSignedUp(true);
-         // Redirect after a short delay so user sees the success message
-         setTimeout(() => router.push("/new-project"), 2500);
+        setSignedUp(true);
+        setError("");
+        setTimeout(() => router.push("/login?message=confirm_email"), 2500);
       }
-
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Signup Error:", err);
-      if (err.message?.includes("User already exists") || err.message === "User already exists") {
+      const message = err instanceof Error ? err.message : "خطای ناشناخته";
+      if (message.includes("already registered") || message.includes("User already registered")) {
         setError("این ایمیل قبلاً ثبت شده است. لطفاً وارد شوید");
       } else {
-        setError("خطا در ثبت‌نام: " + err.message);
+        setError("خطا در ثبت‌نام: " + message);
       }
     } finally {
       setLoading(false);
@@ -131,7 +127,12 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     setError("");
     setLoading(true);
-    await signIn("google", { callbackUrl: "/new-project" });
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=/new-project`,
+      },
+    });
   };
 
   if (signedUp) {

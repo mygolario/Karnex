@@ -106,8 +106,8 @@ export async function createSubscription(
       billingCycle,
       startDate: now,
       endDate: periodEnd,
+      provider: 'zibal',
       updatedAt: now,
-      // tier is derived from planId, not stored redundantly usually, but interface needs it
     },
     create: {
       userId,
@@ -116,6 +116,7 @@ export async function createSubscription(
       billingCycle,
       startDate: now,
       endDate: periodEnd,
+      provider: 'zibal',
     }
   });
   

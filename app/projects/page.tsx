@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { getUserProjectsAction } from "@/lib/project-actions";
 import { ProjectsList } from "@/components/projects/projects-list";

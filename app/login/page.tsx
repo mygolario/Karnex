@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
@@ -21,7 +21,21 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
+  );
+}
+
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -43,25 +57,27 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        redirect: false,
+      const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (result?.error) {
-        throw new Error(result.error);
+      if (signInError) {
+        throw signInError;
       }
 
-      router.push("/dashboard/overview");
-      router.refresh(); 
-    } catch (err: any) {
+      await fetch("/api/auth/sync", { method: "POST" });
+
+      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard/overview";
+      router.push(callbackUrl);
+      router.refresh();
+    } catch (err: unknown) {
       console.error("Login Error:", err);
-      // NextAuth returns "CredentialsSignin" or custom error string
-      if (err.message === "CredentialsSignin" || err.message.includes("credentials")) {
+      const message = err instanceof Error ? err.message : "خطای ناشناخته";
+      if (message.includes("Invalid login credentials")) {
          setError("اطلاعات ورود اشتباه است");
       } else {
-         setError(`خطا در ورود: ${err.message || "خطای ناشناخته"}`);
+         setError(`خطا در ورود: ${message}`);
       }
     } finally {
       setLoading(false);
@@ -71,8 +87,13 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     setError("");
     setLoading(true);
-    // NextAuth Google Sign In
-    await signIn("google", { callbackUrl: "/dashboard/overview" });
+    const callbackUrl = searchParams.get("callbackUrl") || "/dashboard/overview";
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(callbackUrl)}`,
+      },
+    });
   };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
@@ -82,20 +103,17 @@ export default function LoginPage() {
     setSuccess("");
 
     try {
-      const res = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: resetEmail }),
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth/confirm?type=recovery`,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "خطا در ارسال ایمیل");
+      if (resetError) {
+        setError(resetError.message || "خطا در ارسال ایمیل");
       } else {
         setSuccess("اگر این ایمیل در سیستم ثبت شده باشد، لینک بازیابی ارسال شد.");
         setTimeout(() => setShowForgotPassword(false), 4000);
         setResetEmail("");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Forgot Password Error:", err);
       setError("خطا در ارسال ایمیل. لطفاً دوباره تلاش کنید.");
     } finally {

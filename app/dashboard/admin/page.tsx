@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/hooks/use-admin";
 import { UserProfile } from "@/lib/db";
@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export default function AdminPage() {
-  const { data: session, status } = useSession();
+  const { user, loading: authLoading } = useAuth();
   const { isAdmin, checking, protectAdminRoute } = useAdmin();
   const router = useRouter();
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -51,7 +51,7 @@ export default function AdminPage() {
     fetchData();
   }, [checking, isAdmin]);
 
-  if (status === "loading" || isLoadingData) return <div className="p-12 text-center">Loading Admin Panel...</div>;
+  if (authLoading || isLoadingData) return <div className="p-12 text-center">Loading Admin Panel...</div>;
 
   const totalRevenue = users.reduce((acc, u) => {
     const planId = u.subscription?.planId;
