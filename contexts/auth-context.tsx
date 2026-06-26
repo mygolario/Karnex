@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { UserProfile } from "@/lib/db";
 import { createClient } from "@/lib/supabase/client";
+import { getOAuthRedirectUrl } from "@/lib/auth/oauth-redirect";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export interface AppUser {
@@ -139,7 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard/overview`,
+          redirectTo: getOAuthRedirectUrl("/dashboard/overview"),
         },
       });
     }

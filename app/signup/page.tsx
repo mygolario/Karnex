@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { getOAuthRedirectUrl } from "@/lib/auth/oauth-redirect";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -130,7 +131,7 @@ export default function SignupPage() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/new-project`,
+        redirectTo: getOAuthRedirectUrl("/new-project"),
       },
     });
   };

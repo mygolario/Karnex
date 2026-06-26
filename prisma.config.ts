@@ -16,7 +16,7 @@ const url = process.env.DATABASE_URL;
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   datasource: {
-    url: url || 'postgresql://dummy:dummy@localhost:5432/dummy',
+    url: url || "postgresql://127.0.0.1:5432/karnex_build",
     directUrl: process.env.DIRECT_URL
   } as any,
   migrations: {

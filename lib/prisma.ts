@@ -4,9 +4,10 @@ import { Pool } from 'pg'
 
 const prismaClientSingleton = () => {
   // During build time, DATABASE_URL might not be available.
-  // We use a dummy connection string to allow the build to proceed.
-  // The actual connection will verify the URL at runtime.
-  const connectionString = process.env.DATABASE_URL || 'postgresql://dummy:dummy@localhost:5432/dummy'
+  // Use a credential-free local URL so builds succeed without leaking placeholder passwords.
+  // Build-time fallback only — no credentials (avoids secret scanners flagging dummy passwords).
+  const connectionString =
+    process.env.DATABASE_URL || "postgresql://127.0.0.1:5432/karnex_build"
   
   // Determine if we need SSL (usually for remote DBs)
   // Liara might not support SSL on the public port, so we disable it for now or strictly follow the connection string.

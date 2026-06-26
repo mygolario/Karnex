@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { getAuthConfirmRedirectUrl, getOAuthRedirectUrl } from "@/lib/auth/oauth-redirect";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { 
@@ -91,7 +92,7 @@ function LoginContent() {
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(callbackUrl)}`,
+        redirectTo: getOAuthRedirectUrl(callbackUrl),
       },
     });
   };
@@ -104,7 +105,7 @@ function LoginContent() {
 
     try {
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth/confirm?type=recovery`,
+        redirectTo: getAuthConfirmRedirectUrl("recovery"),
       });
       if (resetError) {
         setError(resetError.message || "خطا در ارسال ایمیل");
