@@ -206,15 +206,21 @@ export default function ContentCalendarPage() {
       Strategy: ${strategies[strategyType]}
       Project: ${plan.projectName}
       Niche: ${plan.brandCanvas?.niche || "General"}
-      
+
+      IMPORTANT - Beginner-Friendly Output:
+      - Each "title" should be descriptive and action-oriented in Persian (not just a keyword).
+      - Each "notes" field should be at least 2 sentences explaining WHY this content matters and HOW to create it.
+      - Include practical tips for beginners (e.g. "از نور طبیعی پنجره استفاده کن" or "در ۳۰ ثانیه اول حس کنجکاوی ایجاد کن").
+      - Write in simple, friendly Persian that a beginner content creator can understand.
+
       Return ONLY valid JSON array of objects:
       [
         {
-          "title": "Title in Persian",
+          "title": "عنوان کامل و توصیفی به فارسی",
           "platform": "instagram" | "youtube" | "linkedin",
           "type": "reel" | "post" | "story",
           "dayOffset": number (1-14),
-          "notes": "Brief strategy note"
+          "notes": "توضیح حداقل ۲ جمله: چرا این محتوا مهم است و چگونه ساخته شود"
         }
       ]`;
 

@@ -301,10 +301,10 @@ export async function generatePlanAction(data: any) {
         user,
         {
           systemPrompt: system,
-          maxTokens: 16000,
-          temperature: 0.6,
-          timeoutMs: 80000,
-          modelOverride: "google/gemini-2.5-pro",
+          maxTokens: 8000,
+                    temperature: 0.6,
+                    timeoutMs: 45000,
+                    modelOverride: "google/gemini-3.5-flash",
         },
         BusinessPlanSchema,
         1

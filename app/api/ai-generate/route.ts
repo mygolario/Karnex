@@ -116,7 +116,7 @@ export async function POST(req: Request) {
           systemPrompt: 'You are a GIS Analyst. Use the provided Real-Time OSM Data if available.',
           maxTokens: 3000,
           temperature: 0.4, // Lower temperature for fact-based results
-          modelOverride: modelOverride || 'google/gemini-2.5-flash-lite'
+          modelOverride: modelOverride || 'google/gemini-3.5-flash'
        });
        
         if (!result.success) {
@@ -151,7 +151,7 @@ export async function POST(req: Request) {
         .replace('{projectName}', projectName || 'پروژه جدید');
 
       const result = await callOpenRouter(canvasPrompt, {
-        systemPrompt: 'تو متخصص کسب‌وکار هستی. فقط JSON فارسی خروجی بده.',
+        systemPrompt: 'تو متخصص کسب‌وکار هستی. فقط JSON فارسی خروجی بده. توضیحات هر بخش را کامل و قابل فهم برای مبتدی بنویس - حداقل ۲ جمله در هر فیلد.',
         maxTokens: 2000,
         temperature: 0.5,
         modelOverride
@@ -200,9 +200,9 @@ export async function POST(req: Request) {
       10. Ask (Funding/Requirements)
 
       For each slide, provide:
-      - title: Persian title
+      - title: Persian title (descriptive, not just a keyword)
       - type: slide type id
-      - bullets: Array of 3 short, punchy Persian bullet points.
+      - bullets: Array of 3-4 complete, explanatory Persian bullet points (not just keywords - each should be a full sentence that a beginner can understand).
 
       Return ONLY valid JSON array of objects:
       [
@@ -243,9 +243,9 @@ export async function POST(req: Request) {
       Project: ${projectName}
       Description: ${businessIdea}
 
-      1. ROAST: Give a brutal but constructive critique in Persian. Identify the biggest weakness.
-      2. ASSUMPTIONS: List 6 core assumptions this business is making in Persian.
-      3. EXPERIMENTS: Suggest 3 cheap, fast ways to test the riskiest assumption in Persian.
+      1. ROAST: Give a brutal but constructive critique in Persian. Identify the biggest weakness. Explain WHY it's a weakness in 2-3 sentences so beginners understand.
+      2. ASSUMPTIONS: List 6 core assumptions this business is making in Persian. Each assumption should be a complete sentence with brief explanation.
+      3. EXPERIMENTS: Suggest 3 cheap, fast ways to test the riskiest assumption in Persian. Each experiment should include step-by-step instructions that a beginner can follow. Include estimated cost and time for each.
 
       Return ONLY valid JSON:
       {
@@ -306,12 +306,12 @@ export async function POST(req: Request) {
 
           Return ONLY valid JSON in Persian:
           {
-            "northStarMetric": "The single key metric (e.g., Weekly Active Paid Users)",
-            "why": "One sentence explanation",
+            "northStarMetric": "The single key metric (e.g., Weekly Active Paid Users) - explain in simple Persian what this means",
+            "why": "At least 2 sentences explaining why this metric matters for beginners",
             "inputMetrics": [
-               { "name": "Input 1 (e.g., New Signups)", "target": "Target value" },
-               { "name": "Input 2 (e.g., Retention %)", "target": "Target value" },
-               { "name": "Input 3", "target": "Target value" }
+               { "name": "Input 1 (e.g., New Signups) - with brief explanation", "target": "Target value" },
+               { "name": "Input 2 (e.g., Retention %) - with brief explanation", "target": "Target value" },
+               { "name": "Input 3 - with brief explanation", "target": "Target value" }
             ]
           }`;
        } else if (planType === 'experiments') {
@@ -324,7 +324,7 @@ export async function POST(req: Request) {
           [
             {
               "title": "Experiment Title (e.g., LinkedIn Viral Loop)",
-              "description": "Short execution plan",
+              "description": "Detailed execution plan - at least 3 sentences explaining HOW to do it step by step for a beginner",
               "ice_score": 8,
               "difficulty": "Easy/Medium/Hard"
             },

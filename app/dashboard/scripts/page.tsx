@@ -148,18 +148,23 @@ export default function ScriptsPage() {
             "storytelling": "Format: The 'Before' State -> The Inciting Incident -> The Struggle -> The Realization -> The Transformation.",
             "sales": "Format: Attention -> Interest -> Desire -> Action (AIDA model). Hard sell."
         }[inputs.template];
-        
+
         const prompt = `
             Act as an expert Video Scriptwriter. Write a Persian script for a ${inputs.duration} video.
             Topic: ${inputs.topic}
             Target Audience: ${inputs.audience || "General"}
             Style/Template: ${templatePrompt}
 
-            Output Guidelines:
+            Output Guidelines (Beginner-Friendly):
             1. Write in spoken, natural Persian (محاوره‌ای).
-            2. Include Visual Cues in brackets, e.g., [Zoom in], [Show B-Roll].
-            3. Structure clearly with timecodes if possible.
+            2. Include Visual Cues in brackets, e.g., [Zoom in], [Show B-Roll], [نمایش محصول از نزدیک].
+            3. Structure clearly with timecodes (e.g. [0:00-0:05]).
             4. Make the hook extremely catchy.
+            5. After the script, add a "راهنمای اجرا" (Execution Guide) section with at least 3 beginner tips:
+               - How to film it (camera angle, lighting)
+               - What tools/apps to use for editing (mention Iranian-friendly apps)
+               - How to post it for maximum reach
+            6. Keep the tone friendly and encouraging for beginners.
         `;
 
         const response = await fetch("/api/ai-generate", {

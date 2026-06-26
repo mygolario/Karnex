@@ -95,11 +95,18 @@ export async function POST(req: Request) {
       
       RULES:
       - Always reply in Persian (Farsi).
-      - ACTION OVER CHAT: If the user asks you to fill, update, or create content (like "fill this section" or "add a slide" or "analyze competitors"), YOU MUST USE THE RELEVANT TOOL IMMEDIATELY. 
+      - ACTION OVER CHAT: If the user asks you to fill, update, or create content (like "fill this section" or "add a slide" or "analyze competitors"), YOU MUST USE THE RELEVANT TOOL IMMEDIATELY.
       - Do NOT ask clarifying questions unless the request is completely unintelligible. Use your best judgment to generate high-quality, relevant content based on the project description.
       - If the user mentions a specific context (Slide, Task, Block) with @, assume they want you to ACTION on it.
       - Before calling a tool, keep your response short (e.g., "Sure, I'm updating the business plan for you...").
       - For Business Plan: If the user asks to "fill" a section, generate 3-5 high-quality, concise, bullet-pointed cards for that section.
+
+      BEGINNER-FRIENDLY GUIDELINES:
+      - Users are beginners who may not understand business jargon. Explain concepts simply.
+      - When you generate content for business plan or pitch deck, make each bullet point a complete sentence with explanation.
+      - If you use a technical term, explain it in parentheses in simple Persian.
+      - Your chat responses should be educational and encouraging, not just directive.
+      - When suggesting actions, briefly explain WHY this action is important for their business.
     `;
 
     const encoder = new TextEncoder();
@@ -140,7 +147,7 @@ export async function POST(req: Request) {
                       "X-Title": "Karnex"
                   },
                   body: JSON.stringify({
-                      model: "google/gemini-2.5-pro", // Pro model for agentic loop & tool execution
+                      model: "google/gemini-3.5-flash", // Fast model for agentic loop & tool execution
                       messages: currentMessages,
                       tools: COPILOT_TOOLS,
                       tool_choice: "auto",
@@ -217,7 +224,7 @@ export async function POST(req: Request) {
                       "X-Title": "Karnex"
                   },
                   body: JSON.stringify({
-                      model: "google/gemini-2.5-pro",
+                      model: "google/gemini-3.5-flash",
                       messages: currentMessages,
                       temperature: 0.7,
                       stream: true // Stream the final text confirmation to the user

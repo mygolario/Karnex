@@ -50,7 +50,7 @@ export async function POST(req: Request) {
 
     const assistantMessage = result.content || "ادامه بده...";
 
-    // Extracted data using AI extraction via gemini-2.5-flash
+    // Extracted data using AI extraction via gemini-3.5-flash
     let extractedData = null;
     try {
       const allMessages = [...messages, { role: 'assistant', content: assistantMessage } as ChatMessage];
@@ -75,7 +75,7 @@ Output strictly valid JSON with these fields. If a field has not been discussed 
           maxTokens: 300,
           temperature: 0.1,
           timeoutMs: 15000,
-          modelOverride: "google/gemini-2.5-flash",
+          modelOverride: "google/gemini-3.5-flash",
         },
         WizardExtractionSchema,
         1

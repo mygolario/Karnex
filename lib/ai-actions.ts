@@ -176,10 +176,10 @@ export async function analyzeCompetitorsAction(data: { projectName: string, proj
                 user,
                 {
                     systemPrompt: system,
-                    maxTokens: 2500,
+                    maxTokens: 2000,
                     temperature: 0.7,
-                    timeoutMs: 45000,
-                    modelOverride: "google/gemini-2.5-pro",
+                    timeoutMs: 30000,
+                    modelOverride: "google/gemini-3.5-flash",
                 },
                 SwotCompetitorsSchema,
                 1
@@ -241,7 +241,7 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
         try {
             const parsed = await callAIWithValidation(
                 user,
-                { systemPrompt: system, maxTokens: 4000, temperature: 0.7, timeoutMs: 50000 },
+                { systemPrompt: system, maxTokens: 3000, temperature: 0.7, timeoutMs: 30000 },
                 PitchDeckSchema,
                 1
             );
@@ -287,7 +287,7 @@ export async function generateSmartCanvasAction(data: { idea: string, answers: R
         try {
             const parsed = await callAIWithValidation(
                 user,
-                { systemPrompt: system, maxTokens: 3500, temperature: 0.7, timeoutMs: 45000 },
+                { systemPrompt: system, maxTokens: 2500, temperature: 0.7, timeoutMs: 30000 },
                 SmartCanvasSchema,
                 1
             );

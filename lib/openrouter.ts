@@ -3,13 +3,13 @@
  * Centralized configuration for all AI text generation
  */
 
-// Cheap paid models (high reliability, low cost) + Free fallbacks
-// Ordered by preference: Paid Fast -> Free High Quality -> Free Fast
 // Google Gemini Models (Preferred Priority)
+// Primary: gemini-3.5-flash (fast, high quality, low cost, beginner-friendly Persian output)
+// Fallbacks kept for resilience
 export const TEXT_MODELS = [
-    "google/gemini-2.5-flash",       // Priority 1 (Stable, fast, low cost)
-    "google/gemini-2.5-pro",         // Priority 2 (High reasoning fallback)
-    "google/gemini-flash-1.5"        // Priority 3 (Highly reliable legacy fallback)
+    "google/gemini-3.5-flash",        // Priority 1 (Fast, high quality, low cost)
+    "google/gemini-2.5-flash",        // Priority 2 (Stable fallback)
+    "google/gemini-2.5-flash-lite"   // Priority 3 (Ultra-fast budget fallback)
 ];
 
 export interface OpenRouterResponse {
@@ -88,7 +88,7 @@ export async function callOpenRouter(
         systemPrompt,
         maxTokens = 2000,
         temperature = 0.7,
-        timeoutMs = 25000,
+        timeoutMs = 20000,
         modelOverride,
         responseFormat
     } = options || {};

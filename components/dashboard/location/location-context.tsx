@@ -214,10 +214,16 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         RULES:
         - **Accurate OSM Data:** Use the provided list of places.
         - **Realistic Scores:** Do not give 9/10 easily. Be critical.
-        - **Language:** Professional Persian (Business Farsi).
+        - **Language:** Professional Persian (Business Farsi) - but BEGINNER-FRIENDLY.
         - **Competitor scores** must be realistic and differentiated.
         - **Market gap cards** should be specific and actionable (minimum 2, maximum 4).
         - **prioritizedRecommendations** must have at least 3 items with mixed urgency levels.
+
+        BEGINNER-FRIENDLY GUIDELINES:
+        - Write descriptions and fields in simple, understandable Persian for beginners.
+        - In "scoreReason", "neighborhoodProfile", "aiInsight", and "marketGapCards.description", write at least 2 full sentences.
+        - Explain technical terms in parentheses (e.g. "CAC (هزینه جذب هر مشتری)").
+        - In "recommendations" and "prioritizedRecommendations", explain WHY and HOW, not just WHAT.
       `;
 
       const response = await fetch("/api/ai-generate", {
@@ -229,7 +235,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
           city,
           address,
           activeProject,
-          modelOverride: 'google/gemini-2.5-flash-lite' 
+          modelOverride: 'google/gemini-3.5-flash' 
         }),
       });
 
