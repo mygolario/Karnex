@@ -37,7 +37,6 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/api/chat") ||
     path.startsWith("/api/copilot") ||
     path.startsWith("/api/ai-generate") ||
-    path.startsWith("/api/wizard-chat") ||
     path.startsWith("/api/generate-document") ||
     path.startsWith("/api/generate-image");
 
