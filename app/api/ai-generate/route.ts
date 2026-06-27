@@ -158,38 +158,40 @@ ${anchorsDataStr || "جاذبه ترافیکی عمده‌ای نزدیک نیس
        }
 
        const enhancedPrompt = `
-       ${prompt}
-       
-       [IMPORTANT MAP DATA]
-       We fetched real-time POIs from OpenStreetMap for location coordinates (Lat: ${centerCoordinates.lat}, Lon: ${centerCoordinates.lon}) and radius ${radius} meters:
-       ${osmData}
-       
-       [PERSONALIZED BUSINESS CRITERIA]
-       - Footfall Dependency: ${footfallDependency === 'high' ? 'پاخورمحور (خیلی وابسته به تردد عابر)' : 'مقصدمحور (کشش محلی مهم‌تر است)'}
-       - Price Tier: ${priceTier === 'budget' ? 'اقتصادی و ارزان' : priceTier === 'mid' ? 'متوسط و میان‌رده' : 'لوکس و گران‌قیمت'}
-       - Monthly Rent Budget: ${rentBudget ? rentBudget.toLocaleString('fa-IR') + ' تومان' : 'ثبت نشده'}
-       
-       INSTRUCTIONS:
-       1. Calculate the 'score' (0-10) critical value taking into account how well the socioeconomic level of the location matches the business Price Tier and Footfall Dependency. For example:
-          - A premium store in a low spending power neighborhood should get a score under 5.0.
-          - A high footfall dependency store in a low traffic neighborhood should get a score under 5.0.
-       2. In "directCompetitors", include the competitors from the real-time data above with their name, coordinates (lat/lon) as provided, and estimate their strengths/weaknesses and axis scores.
-       3. Populate "hourlyFootfall" as a 24-hour traffic array representing estimated footfall index (0-100) per hour in Iran for this location (e.g. from 08:00 to 23:00).
-       4. Under "financialSim", estimate:
-          - "breakEvenTransactions" (number of daily transactions needed to cover rent budget and default operating costs in this neighborhood).
-          - "rentToRevenueRatio" (what percentage of estimated monthly revenue is the rent budget, e.g. 15% or 40%).
-          - "estimatedMonthlyRevenue" (estimated revenue range, e.g., 60 to 90 million Tomans).
-       5. Populate "legalChecklist" with 3-4 realistic permits, municipal guidelines, or trade union distances needed in Iran for this business type.
-       6. Return prioritizedRecommendations with unique "id" for each recommendation, and include "cost" ("کم‌هزینه" | "متوسط" | "سرمایه‌گذاری").
-       7. Output ONLY valid JSON in Persian. Ensure all text values are in Persian.
-       `;
-       
-       const result = await callOpenRouter(enhancedPrompt, {
-          systemPrompt: 'You are a GIS retail location strategy specialist. Return ONLY valid JSON in Persian.',
-          maxTokens: 3500,
-          temperature: 0.3,
-          modelOverride: modelOverride || 'google/gemini-3.5-flash'
-       });
+        ${prompt}
+        
+        [IMPORTANT MAP DATA]
+        We fetched real-time POIs from OpenStreetMap for location coordinates (Lat: ${centerCoordinates.lat}, Lon: ${centerCoordinates.lon}) and radius ${radius} meters:
+        ${osmData}
+        
+        [PERSONALIZED BUSINESS CRITERIA]
+        - Footfall Dependency: ${footfallDependency === 'high' ? 'پاخورمحور (خیلی وابسته به تردد عابر)' : 'مقصدمحور (کشش محلی مهم‌تر است)'}
+        - Price Tier: ${priceTier === 'budget' ? 'اقتصادی و ارزان' : priceTier === 'mid' ? 'متوسط و میان‌رده' : 'لوکس و گران‌قیمت'}
+        - Monthly Rent Budget: ${rentBudget ? rentBudget.toLocaleString('fa-IR') + ' تومان' : 'ثبت نشده'}
+        
+        INSTRUCTIONS:
+        1. Calculate the 'score' (0-10) critical value taking into account how well the socioeconomic level of the location matches the business Price Tier and Footfall Dependency. For example:
+           - A premium store in a low spending power neighborhood should get a score under 5.0.
+           - A high footfall dependency store in a low traffic neighborhood should get a score under 5.0.
+        2. Ensure all fields from the OUTPUT FORMAT structure (including "demographics", "swot", "metrics", "riskBreakdown", etc.) are populated.
+        3. Place the competitors inside the "competitorAnalysis.directCompetitors" array. Include their name, distance (e.g. "۱۵۰ متر"), estimate their strengths/weaknesses, and assign realistic scores (0-10) for product, marketing, price, and support. Also populate the outer "competitorAnalysis" fields: "saturationLevel", "saturationPercentage" (number), "marketGap", and "competitorCount" (number).
+        4. Populate "hourlyFootfall" (at the top level of the JSON) as a 24-element array of numbers representing traffic index (0-100) per hour (from 00:00 to 23:00).
+        5. Populate "financialSim" (at the top level of the JSON) with:
+           - "breakEvenTransactions": number (number of daily transactions needed to break even).
+           - "rentToRevenueRatio": number (percentage of rent to estimated revenue, 0-100).
+           - "estimatedMonthlyRevenue": string (estimated monthly revenue range in Persian).
+        6. Populate "legalChecklist" (at the top level of the JSON) as an array of objects:
+           - [{ "title": "نام مجوز/مقررات", "desc": "توضیح کوتاه کاربردی", "isRequired": boolean }]
+        7. In "prioritizedRecommendations", ensure each recommendation has a unique "id" (string or number), "title", "desc", "urgency" ("فوری" | "مهم" | "پیشنهادی"), and "cost" ("کم‌هزینه" | "متوسط" | "سرمایه‌گذاری").
+        8. Output ONLY valid JSON in Persian. Ensure all text values are in Persian.
+        `;
+        
+        const result = await callOpenRouter(enhancedPrompt, {
+           systemPrompt: 'You are a GIS retail location strategy specialist. Return ONLY valid JSON in Persian.',
+           maxTokens: 8000,
+           temperature: 0.3,
+           modelOverride: modelOverride || 'google/gemini-3.5-flash'
+        });
        
         if (!result.success) {
            console.error("❌ AI Generation Failed:", result.error);
