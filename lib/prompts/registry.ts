@@ -7,6 +7,7 @@ import generateSmartCanvas from "./generate-smart-canvas.json";
 import chatAction from "./chat-action.json";
 import advisorChat from "./advisor-chat.json";
 import generatePlan from "./generate-plan.json";
+import copilotSystem from "./copilot-system.json";
 
 export const Prompts = {
   suggestAudience,
@@ -17,7 +18,8 @@ export const Prompts = {
   generateSmartCanvas,
   chatAction,
   advisorChat,
-  generatePlan
+  generatePlan,
+  copilotSystem
 };
 
 export type PromptKey = keyof typeof Prompts;

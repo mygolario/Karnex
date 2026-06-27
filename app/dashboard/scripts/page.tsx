@@ -1,525 +1,752 @@
 "use client";
 
-import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
-
-import { useState, useRef, useEffect } from "react";
+import { PageTourHelp } from "@/components/tour/page-tour-help";
+import { useState, useEffect, useRef } from "react";
 import { useProject } from "@/contexts/project-context";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { 
-  Video, Mic, Type, FileText, PlayCircle, Copy, 
-  Check, Save, Sparkles, Loader2, Youtube, 
-  Instagram, Wand2, History, X, MonitorPlay, 
-  Maximize2, Settings2, FlipHorizontal, Play, Pause, Trash2
+  Video, Mic, FileText, Copy, Check, Save, Sparkles, Loader2, 
+  History, MonitorPlay, Maximize2, X, Plus, Search, Folder, 
+  Layers, Volume2, ArrowLeft, Edit3, Wand2
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { 
-  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger 
-} from "@/components/ui/sheet";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
-type SavedScript = {
+// Rework components
+import { AudioVideoScript } from "./components/audio-video-script";
+import { TeleprompterRecorder } from "./components/teleprompter-recorder";
+import { ScriptVault } from "./components/script-vault";
+
+// Server Actions
+import { 
+  createScriptAction, 
+  updateScriptAction, 
+  getProjectScriptsAction, 
+  deleteScriptAction,
+  getUserPreferredToneAction
+} from "@/lib/script-actions";
+
+type Script = {
   id: string;
-  topic: string;
+  title: string;
   content: string;
   template: string;
-  date: string;
   duration: string;
+  audience?: string | null;
+  status: string;
+  folder: string | null;
+  scenes?: any;
+  updatedAt: Date | string;
 };
+
+type Scene = {
+  id: string;
+  visual: string;
+  audio: string;
+};
+
+function parseTextToScenes(text: string): Scene[] {
+  if (!text) return [{ id: "1", visual: "نمای عمومی", audio: "" }];
+  
+  const regex = /(\[[^\]]+\]|\([^)]+\))/g;
+  const parts = text.split(regex);
+  
+  const parsedScenes: Scene[] = [];
+  let currentVisual = "";
+  
+  parts.forEach((part, index) => {
+    const trimmed = part.trim();
+    if (!trimmed) return;
+    
+    if ((trimmed.startsWith("[") && trimmed.endsWith("]")) || (trimmed.startsWith("(") && trimmed.endsWith(")"))) {
+      currentVisual = trimmed.slice(1, -1);
+    } else {
+      parsedScenes.push({
+        id: `${index}-${Date.now()}`,
+        visual: currentVisual || "نمای عمومی",
+        audio: trimmed
+      });
+      currentVisual = "";
+    }
+  });
+
+  if (parsedScenes.length === 0) {
+    return [{ id: "1", visual: "نمای عمومی", audio: text }];
+  }
+  
+  return parsedScenes;
+}
+
+function parseScenesToText(scenes: Scene[]): string {
+  return scenes.map(s => `[${s.visual || 'نمای عمومی'}]\n${s.audio}`).join('\n\n');
+}
 
 export default function ScriptsPage() {
   const { activeProject: plan } = useProject();
-  const [step, setStep] = useState<1 | 2>(1);
+  
+  // Navigation & View States
+  const [activeScript, setActiveScript] = useState<Script | null>(null);
+  const [scriptsList, setScriptsList] = useState<Script[]>([]);
+  const [isLoadingScripts, setIsLoadingScripts] = useState(false);
+  const [editorMode, setEditorMode] = useState<"text" | "av">("text");
+  
+  // Script Input States
   const [inputs, setInputs] = useState({
-    topic: "",
+    title: "",
     audience: "",
     duration: "60s",
-    template: "viral-hook"
+    template: "viral-hook",
+    folder: "General"
   });
+  
+  // Editor States
+  const [editorText, setEditorText] = useState("");
+  const [avScenes, setAvScenes] = useState<Scene[]>([]);
+  const [speakingPace, setSpeakingPace] = useState<"slow" | "medium" | "fast">("medium");
+  const [userPreferredTone, setUserPreferredTone] = useState("balanced");
+  
+  // Action & Modal States
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedScript, setGeneratedScript] = useState("");
-  
-  // History State
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [savedScripts, setSavedScripts] = useState<SavedScript[]>([]);
-  
-  // Teleprompter State
+  const [isSaving, setIsSaving] = useState(false);
   const [isTeleprompterOpen, setIsTeleprompterOpen] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [scrollSpeed, setScrollSpeed] = useState(2);
-  const [fontSize, setFontSize] = useState(48);
-  const [isMirrored, setIsMirrored] = useState(false);
-  const scrollerRef = useRef<HTMLDivElement>(null);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  // Load history on mount
-  useEffect(() => {
-    if (plan?.id) {
-      const stored = localStorage.getItem(`scripts_history_${plan.id}`);
-      if (stored) {
-        try {
-          setSavedScripts(JSON.parse(stored));
-        } catch (e) {
-          console.error("Failed to parse history", e);
-        }
-      }
+  // Load scripts list
+  const fetchScripts = async () => {
+    if (!plan?.id) return;
+    setIsLoadingScripts(true);
+    const res = await getProjectScriptsAction(plan.id);
+    if (res.success && res.scripts) {
+      // Cast scenes json correctly
+      const formatted = res.scripts.map((s: any) => ({
+        ...s,
+        updatedAt: s.updatedAt.toString()
+      })) as Script[];
+      setScriptsList(formatted);
+    } else {
+      toast.error("خطا در بارگذاری لیست سناریوها");
     }
+    setIsLoadingScripts(false);
+  };
+
+  useEffect(() => {
+    fetchScripts();
+    // Fetch brand voice tone
+    getUserPreferredToneAction().then(res => {
+      if (res.success && res.preferredTone) {
+        setUserPreferredTone(res.preferredTone);
+      }
+    });
   }, [plan?.id]);
 
-  // Save to history method
-  const saveToHistory = () => {
-    if (!generatedScript || !plan?.id) return;
-    
-    const newScript: SavedScript = {
-      id: Date.now().toString(),
-      topic: inputs.topic || "Untitled Script",
-      content: generatedScript,
-      template: inputs.template,
-      date: new Date().toISOString(),
-      duration: inputs.duration
+  // Sync editor mode with content format changes
+  const handleEditorModeChange = (mode: "text" | "av") => {
+    if (mode === "av" && editorMode === "text") {
+      // Convert standard text to A/V scenes
+      const scenes = parseTextToScenes(editorText);
+      setAvScenes(scenes);
+    } else if (mode === "text" && editorMode === "av") {
+      // Convert A/V scenes back to standard text
+      const text = parseScenesToText(avScenes);
+      setEditorText(text);
+    }
+    setEditorMode(mode);
+  };
+
+  // Keyboard shortcut Ctrl+S to save
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        handleSaveScript();
+      }
     };
-    
-    const updated = [newScript, ...savedScripts];
-    setSavedScripts(updated);
-    localStorage.setItem(`scripts_history_${plan.id}`, JSON.stringify(updated));
-    toast.success("اسکریپت در تاریخچه ذخیره شد");
-  };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeScript, inputs, editorText, avScenes, editorMode]);
 
-  const deleteFromHistory = (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!plan?.id) return;
-    const updated = savedScripts.filter(s => s.id !== id);
-    setSavedScripts(updated);
-    localStorage.setItem(`scripts_history_${plan.id}`, JSON.stringify(updated));
-    toast.success("حذف شد");
-  };
-
-  const loadScript = (script: SavedScript) => {
-    setGeneratedScript(script.content);
+  // Load Script
+  const handleSelectScript = (script: Script) => {
+    setActiveScript(script);
     setInputs({
-      ...inputs,
-      topic: script.topic,
+      title: script.title,
+      audience: script.audience || "",
+      duration: script.duration,
       template: script.template,
-      duration: script.duration
+      folder: script.folder || "General"
     });
-    setStep(2);
-    setHistoryOpen(false);
-    toast.info("اسکریپت بارگذاری شد");
+    setEditorText(script.content);
+    
+    // Parse scenes
+    if (script.scenes) {
+      try {
+        setAvScenes(script.scenes as Scene[]);
+        setEditorMode("av");
+      } catch (e) {
+        setAvScenes(parseTextToScenes(script.content));
+        setEditorMode("text");
+      }
+    } else {
+      setAvScenes(parseTextToScenes(script.content));
+      setEditorMode("text");
+    }
+    toast.info(`سناریو «${script.title}» بارگذاری شد`);
   };
 
-  // Check project type (keep existing check)
+  // Create New Empty Script
+  const handleCreateNew = () => {
+    setActiveScript(null);
+    setInputs({
+      title: "سناریو جدید",
+      audience: "",
+      duration: "60s",
+      template: "viral-hook",
+      folder: "General"
+    });
+    setEditorText("");
+    setAvScenes([{ id: "1", visual: "نمای عمومی", audio: "" }]);
+    setEditorMode("text");
+  };
+
+  // Save Script to Database
+  const handleSaveScript = async () => {
+    if (!plan?.id) return;
+    if (!inputs.title.trim()) {
+      toast.error("لطفا عنوان سناریو را وارد کنید");
+      return;
+    }
+
+    setIsSaving(true);
+    
+    // Get latest script text depending on mode
+    const content = editorMode === "text" ? editorText : parseScenesToText(avScenes);
+    const scenesData = editorMode === "av" ? avScenes : parseTextToScenes(editorText);
+
+    if (activeScript) {
+      // Update
+      const res = await updateScriptAction(activeScript.id, {
+        title: inputs.title,
+        content,
+        template: inputs.template,
+        duration: inputs.duration,
+        audience: inputs.audience,
+        scenes: scenesData,
+        folder: inputs.folder
+      });
+
+      if (res.success && res.script) {
+        toast.success("تغییرات با موفقیت ذخیره شد");
+        fetchScripts();
+        setActiveScript(res.script as unknown as Script);
+      } else {
+        toast.error(res.error || "خطا در ذخیره تغییرات");
+      }
+    } else {
+      // Create
+      const res = await createScriptAction({
+        projectId: plan.id,
+        title: inputs.title,
+        content,
+        template: inputs.template,
+        duration: inputs.duration,
+        audience: inputs.audience,
+        scenes: scenesData,
+        folder: inputs.folder
+      });
+
+      if (res.success && res.script) {
+        toast.success("سناریو جدید با موفقیت ایجاد و ذخیره شد");
+        fetchScripts();
+        setActiveScript(res.script as unknown as Script);
+      } else {
+        toast.error(res.error || "خطا در ذخیره سناریو");
+      }
+    }
+    setIsSaving(false);
+  };
+
+  // Delete Script
+  const handleDeleteScript = async (id: string) => {
+    if (confirm("آیا از حذف این سناریو مطمئن هستید؟")) {
+      const res = await deleteScriptAction(id);
+      if (res.success) {
+        toast.success("سناریو با موفقیت حذف شد");
+        if (activeScript?.id === id) {
+          handleCreateNew();
+        }
+        fetchScripts();
+      } else {
+        toast.error(res.error || "خطا در حذف سناریو");
+      }
+    }
+  };
+
+  // Generate Script via AI (using client-side custom prompt matching personalization)
+  const handleGenerateAI = async () => {
+    if (!inputs.title) {
+      toast.error("لطفا عنوان یا موضوع ویدیو را وارد کنید");
+      return;
+    }
+    if (!plan?.id) return;
+
+    setIsGenerating(true);
+    try {
+      const toneMapping: Record<string, string> = {
+        formal: "رسمی و کتابی",
+        casual: "دوستانه، صمیمی و محاوره‌ای",
+        balanced: "نیمه‌رسمی و محاوره‌ای محترمانه",
+      };
+
+      const preferredTone = toneMapping[userPreferredTone] || "محاوره‌ای و دوستانه";
+
+      const templatePrompts: Record<string, string> = {
+        "viral-hook": "فرمت: قلاب بسیار جذاب و پرانرژی (۰-۵ ثانیه) -> قلاب مجدد -> ارائه ارزش اصلی -> پیچش غیرمنتظره -> دعوت به اقدام (CTA). تمرکز روی افزایش نرخ نگهداری مخاطب.",
+        "educational": "فرمت: طرح مسئله -> دغدغه‌مند کردن مخاطب -> راه‌حل گام به گام -> اشتباهات رایج -> دعوت به اقدام (CTA).",
+        "storytelling": "فرمت: توصیف شرایط اولیه (قبل) -> حادثه محرک -> چالش‌ها و کشمکش -> لحظه تحول و درک -> تغییر نهایی (بعد).",
+        "sales": "فرمت: جلب توجه -> ایجاد علاقه -> برانگیختن تمایل -> دعوت به اقدام مستقیم (فرمول AIDA).",
+      };
+
+      const selectedTemplatePrompt = templatePrompts[inputs.template] || templatePrompts["viral-hook"];
+
+      const prompt = `
+            Act as an expert Video Scriptwriter. Write a Persian script for a ${inputs.duration} video.
+            Topic: ${inputs.title}
+            Target Audience: ${inputs.audience || "General"}
+            Style/Template: ${selectedTemplatePrompt}
+            Brand Voice Tone (Personalized): ${preferredTone}
+
+            Output Guidelines:
+            1. Write in spoken, natural Persian (محاوره‌ای روان و صمیمی).
+            2. Include Visual Cues in brackets, e.g., [Zoom in], [Show B-Roll], [نمایش نمودار قیمت].
+            3. Structure clearly with timecodes (e.g. [0:00-0:05]).
+            4. Make the hook extremely catchy.
+            5. After the script, add a "راهنمای اجرا" (Execution Guide) section with at least 3 beginner tips:
+               - How to film it (camera angle, lighting)
+               - What tools/apps to use for editing (mention capcut or similar)
+               - How to post it for maximum reach
+            6. Keep the tone friendly and encouraging.
+      `;
+
+      const response = await fetch("/api/ai-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          prompt, 
+          systemPrompt: "You are a professional YouTuber scriptwriter. Output ONLY the raw script text in Persian, formatted beautifully.",
+          activeProject: plan
+        })
+      });
+
+      if (response.status === 429) {
+        setShowLimitModal(true);
+        return;
+      }
+
+      const data = await response.json();
+      if (data.success && data.content) {
+        setEditorText(data.content);
+        setAvScenes(parseTextToScenes(data.content));
+        // Keep current mode
+        toast.success("سناریو با موفقیت توسط هوش مصنوعی تولید شد! 🪄");
+      } else {
+        toast.error("خطا در پاسخ هوش مصنوعی");
+      }
+    } catch (error) {
+      toast.error("خطا در تولید سناریو");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Refine specific section with AI shortcut
+  const handleRefineText = async (instruction: string) => {
+    if (!editorText) {
+      toast.error("ابتدا سناریو را بنویسید یا تولید کنید");
+      return;
+    }
+    setIsGenerating(true);
+    try {
+      const prompt = `
+        متن زیر را بر اساس این دستورالعمل بازنویسی کن: "${instruction}"
+        متن اصلی:
+        ${editorText}
+        
+        فقط متن بازنویسی شده را به زبان فارسی خروجی بده.
+      `;
+      const response = await fetch("/api/ai-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt,
+          systemPrompt: "You are a helpful copywriter. Refine the Persian text as instructed and output only the refined text.",
+          activeProject: plan
+        })
+      });
+      if (response.status === 429) {
+        setShowLimitModal(true);
+        return;
+      }
+      const data = await response.json();
+      if (data.success && data.content) {
+        setEditorText(data.content);
+        setAvScenes(parseTextToScenes(data.content));
+        toast.success("متن بازنویسی شد!");
+      }
+    } catch (e) {
+      toast.error("خطا در بازنویسی متن");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Word count & Speaking duration calculations
+  const textForStats = editorMode === "text" ? editorText : parseScenesToText(avScenes);
+  const wordCount = textForStats.trim().split(/\s+/).filter(Boolean).length;
+  const wpm = speakingPace === "slow" ? 120 : speakingPace === "medium" ? 145 : 170;
+  const estSeconds = Math.round((wordCount / wpm) * 60);
+  const durationStr = estSeconds < 60 ? `${estSeconds} ثانیه` : `${Math.floor(estSeconds / 60)} دقیقه و ${estSeconds % 60} ثانیه`;
+
+  // Protect route
   if (plan?.projectType !== "creator") {
-    // ... existing check code ...
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="p-8 text-center max-w-md">
+        <Card className="p-8 text-center max-w-md border border-slate-200">
           <Video size={64} className="mx-auto mb-4 text-muted-foreground/40" />
           <h2 className="text-xl font-bold mb-2">مدیریت اسکریپت (Director Mode)</h2>
           <p className="text-muted-foreground mb-4">
             این امکان فقط برای پروژه‌های Creator فعال است.
           </p>
           <Link href="/dashboard/overview">
-            <Button>بازگشت به داشبورد</Button>
+            <Button className="bg-red-600 hover:bg-red-700 text-white">بازگشت به داشبورد</Button>
           </Link>
         </Card>
       </div>
     );
   }
 
-  // AI Generation (Keep existing logic)
-  const handleGenerate = async () => {
-    if (!inputs.topic) {
-        toast.error("لطفا موضوع ویدیو را وارد کنید");
-        return;
-    }
-    setIsGenerating(true);
-    try {
-        const templatePrompt = {
-            "viral-hook": "Format: High-energy Hook (0-5s) -> Re-hook -> Value Delivery -> Surprise Twist -> CTA. Focus on retention.",
-            "educational": "Format: Problem Statement -> Agitation -> The Solution (Step by Step) -> Common Pitfalls -> CTA.",
-            "storytelling": "Format: The 'Before' State -> The Inciting Incident -> The Struggle -> The Realization -> The Transformation.",
-            "sales": "Format: Attention -> Interest -> Desire -> Action (AIDA model). Hard sell."
-        }[inputs.template];
-
-        const prompt = `
-            Act as an expert Video Scriptwriter. Write a Persian script for a ${inputs.duration} video.
-            Topic: ${inputs.topic}
-            Target Audience: ${inputs.audience || "General"}
-            Style/Template: ${templatePrompt}
-
-            Output Guidelines (Beginner-Friendly):
-            1. Write in spoken, natural Persian (محاوره‌ای).
-            2. Include Visual Cues in brackets, e.g., [Zoom in], [Show B-Roll], [نمایش محصول از نزدیک].
-            3. Structure clearly with timecodes (e.g. [0:00-0:05]).
-            4. Make the hook extremely catchy.
-            5. After the script, add a "راهنمای اجرا" (Execution Guide) section with at least 3 beginner tips:
-               - How to film it (camera angle, lighting)
-               - What tools/apps to use for editing (mention Iranian-friendly apps)
-               - How to post it for maximum reach
-            6. Keep the tone friendly and encouraging for beginners.
-        `;
-
-        const response = await fetch("/api/ai-generate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                prompt, 
-                systemPrompt: "You are a professional YouTuber scriptwriter. Output ONLY the raw script text." 
-            })
-        });
-
-        if (response.status === 429) {
-            setShowLimitModal(true);
-            return;
-        }
-
-        const data = await response.json();
-        if (data.success && data.content) {
-            setGeneratedScript(data.content);
-            setStep(2);
-            toast.success("سناریو آماده شد! 🎬");
-            
-            // Auto-save to history on generation? Maybe better manual.
-        }
-    } catch (error) {
-        toast.error("خطا در تولید سناریو");
-    } finally {
-        setIsGenerating(false);
-    }
-  };
-
-  // Teleprompter Logic (Keep existing)
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isTeleprompterOpen && isPlaying && scrollerRef.current) {
-      interval = setInterval(() => {
-        if (scrollerRef.current) {
-          scrollerRef.current.scrollTop += scrollSpeed;
-        }
-      }, 30);
-    }
-    return () => clearInterval(interval);
-  }, [isTeleprompterOpen, isPlaying, scrollSpeed]);
-
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
-
-
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4" data-tour-id="scripts-header">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-             <PageTourHelp tourId="scripts" />
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/20">
-              <Video className="w-7 h-7 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black text-foreground tracking-tight">استودیو اسکریپت (Director Mode)</h1>
-              <p className="text-muted-foreground text-lg">نویسنده هوشمند + تله‌پرامپتر حرفه‌ای</p>
-            </div>
+      
+      {/* Header Banner */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b pb-6" data-tour-id="scripts-header">
+        <div className="flex items-center gap-3">
+          <PageTourHelp tourId="scripts" />
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-rose-600 flex items-center justify-center shadow-lg shadow-red-500/20">
+            <Video className="w-7 h-7 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-foreground tracking-tight">استودیو اسکریپت ۲.۰ (Director Mode)</h1>
+            <p className="text-muted-foreground text-sm">کارگاه پیشرفته تولید سناریو، دوقابله‌نویسی و تله‌پرامپتر هوشمند</p>
           </div>
         </div>
-        
-        <div className="flex gap-2">
-           <Sheet open={historyOpen} onOpenChange={setHistoryOpen}>
-             <SheetTrigger asChild>
-                <Button variant="outline" className="gap-2" data-tour-id="scripts-list">
-                    <History size={16} /> تاریخچه
-                </Button>
-             </SheetTrigger>
-             <SheetContent side="left" className="w-[400px] sm:w-[540px]">
-                <SheetHeader className="mb-6">
-                    <SheetTitle>تاریخچه اسکریپت‌ها</SheetTitle>
-                    <SheetDescription>
-                        تمام اسکریپت‌های ذخیره شده شما در این بخش قابل دسترسی است.
-                    </SheetDescription>
-                </SheetHeader>
-                
-                <div className="space-y-4 overflow-y-auto max-h-[80vh] pr-2">
-                    {savedScripts.length === 0 ? (
-                        <div className="text-center py-12 text-muted-foreground border-2 border-dashed rounded-xl">
-                            <History className="mx-auto mb-2 opacity-50" size={32} />
-                            <p>هنوز اسکریپتی ذخیره نشده است</p>
-                        </div>
-                    ) : (
-                        savedScripts.map((s) => (
-                            <Card 
-                                key={s.id} 
-                                className="p-4 cursor-pointer hover:bg-muted/50 transition-colors group relative"
-                                onClick={() => loadScript(s)}
-                            >
-                                <div className="flex justify-between items-start mb-2">
-                                    <h4 className="font-bold text-foreground line-clamp-1">{s.topic}</h4>
-                                    <Button 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        className="h-6 w-6 text-muted-foreground hover:text-red-500 hover:bg-red-100 -mt-1 -mr-1"
-                                        onClick={(e) => deleteFromHistory(s.id, e)}
-                                    >
-                                        <Trash2 size={14} />
-                                    </Button>
-                                </div>
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                    <Badge variant="secondary" className="text-[10px] font-normal">
-                                        {s.template === 'viral-hook' ? 'وایرال' : s.template}
-                                    </Badge>
-                                    <span>•</span>
-                                    <span>{new Date(s.date).toLocaleDateString('fa-IR')}</span>
-                                    <span>•</span>
-                                    <span>{s.duration}</span>
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-2 line-clamp-2 font-mono opacity-70">
-                                    {s.content}
-                                </p>
-                            </Card>
-                        ))
-                    )}
-                </div>
-             </SheetContent>
-           </Sheet>
+
+        <div className="flex items-center gap-2">
+          {activeScript && (
+            <Badge variant="secondary" className="font-normal text-xs bg-slate-100 py-1.5 px-3">
+              در حال ویرایش: {activeScript.title}
+            </Badge>
+          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="hidden lg:flex gap-1.5"
+          >
+            <History size={16} />
+            {sidebarOpen ? "بستن مخزن" : "باز کردن مخزن"}
+          </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Left: Input / Editor (4 Cols) */}
-        <div className="lg:col-span-4 space-y-6">
-           <Card className="p-6 border-l-4 border-l-red-500 bg-gradient-to-br from-card to-background">
-             <h3 className="font-bold mb-6 flex items-center gap-2 text-lg">
-                <Wand2 className="text-red-500" />
-                تنظیمات سناریو
-             </h3>
-             
-             <div className="space-y-5">
-                <div>
-                   <label className="text-sm font-bold mb-2 block">موضوع ویدیو</label>
-                   <Textarea 
-                      placeholder="مثلاً: ۳ ترفند برای افزایش تمرکز در هنگام کار..." 
-                      className="min-h-[80px] bg-background/50 resize-none"
-                      value={inputs.topic}
-                      onChange={(e) => setInputs({...inputs, topic: e.target.value})}
-                   />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* Left Column: Folders & Saved Scripts Sidebar (3 Cols) */}
+        {sidebarOpen && (
+          <div className="lg:col-span-3 bg-card border rounded-2xl p-4 shadow-sm h-[650px]">
+            <ScriptVault 
+              scripts={scriptsList}
+              onSelect={handleSelectScript}
+              onDelete={handleDeleteScript}
+              activeScriptId={activeScript?.id}
+              onCreateNew={handleCreateNew}
+            />
+          </div>
+        )}
+
+        {/* Center Column: Workspace (Editor & Options) (9/12 Cols depending on Sidebar) */}
+        <div className={cn(
+          "space-y-6",
+          sidebarOpen ? "lg:col-span-9" : "lg:col-span-12"
+        )}>
+          
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+            
+            {/* Editor (8 Cols of Center Panel) */}
+            <div className="xl:col-span-8 space-y-4">
+              <Card className="flex flex-col border shadow-sm overflow-hidden h-[600px] relative bg-card">
+                
+                {/* Editor Header / Toolbars */}
+                <div className="p-3 border-b bg-muted/20 flex flex-wrap items-center justify-between gap-3">
+                  {/* Mode Toggles */}
+                  <div className="flex bg-muted p-0.5 rounded-lg border">
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className={cn("text-xs h-7 px-3", editorMode === "text" && "bg-card text-foreground font-bold shadow-sm")}
+                      onClick={() => handleEditorModeChange("text")}
+                    >
+                      <FileText size={14} className="ml-1" />
+                      متن خام
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className={cn("text-xs h-7 px-3", editorMode === "av" && "bg-card text-foreground font-bold shadow-sm")}
+                      onClick={() => handleEditorModeChange("av")}
+                    >
+                      <Layers size={14} className="ml-1" />
+                      دوقاب کارگردانی
+                    </Button>
+                  </div>
+
+                  {/* Calculations summary bar */}
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground bg-muted/40 py-1 px-3 rounded-md border border-slate-100">
+                    <div className="flex items-center gap-1">
+                      <Volume2 size={12} className="text-red-500" />
+                      <span>سرعت خوانش:</span>
+                      <select 
+                        value={speakingPace} 
+                        onChange={(e) => setSpeakingPace(e.target.value as any)}
+                        className="bg-transparent border-0 font-bold focus:ring-0 cursor-pointer pr-1"
+                      >
+                        <option value="slow">شمرده</option>
+                        <option value="medium">معمولی</option>
+                        <option value="fast">سریع</option>
+                      </select>
+                    </div>
+                    <span className="text-slate-200">|</span>
+                    <div>کلمات: <strong className="text-foreground">{wordCount}</strong></div>
+                    <span className="text-slate-200">|</span>
+                    <div>زمان تقریبی: <strong className="text-red-600 font-mono">{durationStr}</strong></div>
+                  </div>
+
+                  {/* Actions buttons */}
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => {
+                        const contentToCopy = editorMode === "text" ? editorText : parseScenesToText(avScenes);
+                        navigator.clipboard.writeText(contentToCopy);
+                        toast.success("کل سناریو در حافظه کپی شد");
+                      }}
+                      className="h-8 w-8 text-zinc-500"
+                    >
+                      <Copy size={15} />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={handleSaveScript}
+                      disabled={isSaving}
+                      className="gap-1 h-8 text-xs font-bold border-red-200 hover:bg-red-50"
+                    >
+                      {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
+                      ذخیره سناریو
+                    </Button>
+                    {editorText && (
+                      <Button 
+                        size="sm"
+                        className="bg-zinc-950 text-white hover:bg-zinc-800 gap-1 h-8 text-xs font-bold"
+                        onClick={() => setIsTeleprompterOpen(true)}
+                      >
+                        <MonitorPlay size={13} />
+                        تله‌پرامپتر و ضبط
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
-                <div>
-                   <label className="text-sm font-bold mb-2 block">مخاطب هدف (اختیاری)</label>
-                   <input 
-                      className="input-premium w-full"
-                      placeholder="مثلاً: دانشجویان، فریلنسرها..." 
+                {/* Editor Content Area */}
+                <div className="flex-1 overflow-y-auto p-4">
+                  {editorMode === "text" ? (
+                    <div className="h-full flex flex-col">
+                      <Textarea 
+                        className="w-full flex-1 p-4 text-base leading-relaxed resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent font-sans"
+                        value={editorText}
+                        onChange={(e) => setEditorText(e.target.value)}
+                        placeholder="در کادر سمت راست موضوع را بنویسید تا هوش مصنوعی سناریو را بنویسد، یا اینکه خودتان نوشتن را شروع کنید..."
+                        dir="rtl"
+                      />
+                    </div>
+                  ) : (
+                    <AudioVideoScript 
+                      scenes={avScenes} 
+                      onChange={setAvScenes} 
+                    />
+                  )}
+                </div>
+
+                {/* Inline Refiner Floating Toolbar */}
+                {editorText && editorMode === "text" && (
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-zinc-950 border border-white/10 p-1.5 rounded-full shadow-2xl flex items-center gap-1 text-white z-10">
+                    <span className="text-[10px] text-zinc-400 font-bold px-2.5">بهینه‌سازی سریع:</span>
+                    <Button 
+                      variant="ghost" 
+                      className="h-7 text-xs rounded-full py-0 px-2.5 text-zinc-200 hover:bg-white/10 hover:text-white"
+                      onClick={() => handleRefineText("قلاب اولیه ویدیو را جذاب‌تر و پرانرژی‌تر کن.")}
+                      disabled={isGenerating}
+                    >
+                      قلاب جذاب‌تر
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="h-7 text-xs rounded-full py-0 px-2.5 text-zinc-200 hover:bg-white/10 hover:text-white"
+                      onClick={() => handleRefineText("متن را محاوره‌ای‌تر و دوستانه‌تر کن.")}
+                      disabled={isGenerating}
+                    >
+                      محاوره‌ای‌تر
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="h-7 text-xs rounded-full py-0 px-2.5 text-zinc-200 hover:bg-white/10 hover:text-white"
+                      onClick={() => handleRefineText("متن سناریو را کوتاه‌تر و خلاصه‌تر کن تا ریتم ویدیو تندتر شود.")}
+                      disabled={isGenerating}
+                    >
+                      خلاصه‌سازی
+                    </Button>
+                  </div>
+                )}
+              </Card>
+            </div>
+
+            {/* Input Config & AI controls (4 Cols of Center Panel) */}
+            <div className="xl:col-span-4 space-y-6">
+              <Card className="p-5 border-l-4 border-l-red-500 bg-gradient-to-br from-card to-background shadow-sm space-y-5">
+                <h3 className="font-bold flex items-center gap-2 text-md text-foreground">
+                  <Wand2 className="text-red-500 w-5 h-5" />
+                  تنظیمات سناریونویسی
+                </h3>
+
+                <div className="space-y-4 text-sm">
+                  <div>
+                    <label className="text-xs font-bold mb-1.5 block">موضوع یا عنوان ویدیو</label>
+                    <Input 
+                      placeholder="مثال: ۵ راز پنهان برنامه نویسی..." 
+                      className="bg-background/50 border-slate-200 focus-visible:ring-red-500"
+                      value={inputs.title}
+                      onChange={(e) => setInputs({...inputs, title: e.target.value})}
+                      dir="rtl"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold mb-1.5 block">مخاطب هدف (اختیاری)</label>
+                    <Input 
+                      placeholder="مثال: طراحان، دانشجویان..." 
+                      className="bg-background/50 border-slate-200 focus-visible:ring-red-500"
                       value={inputs.audience}
                       onChange={(e) => setInputs({...inputs, audience: e.target.value})}
-                   />
-                </div>
+                      dir="rtl"
+                    />
+                  </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label className="text-sm font-bold mb-2 block">مدت زمان</label>
-                        <Select value={inputs.duration} onValueChange={(val) => setInputs({...inputs, duration: val})}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="30s">۳۰ ثانیه (Shorts)</SelectItem>
-                                <SelectItem value="60s">۱ دقیقه (Reels)</SelectItem>
-                                <SelectItem value="3m">۳ دقیقه (YouTube)</SelectItem>
-                                <SelectItem value="10m">۱۰ دقیقه (Long Form)</SelectItem>
-                            </SelectContent>
-                        </Select>
+                      <label className="text-xs font-bold mb-1.5 block">مدت زمان</label>
+                      <Select value={inputs.duration} onValueChange={(val) => setInputs({...inputs, duration: val})}>
+                        <SelectTrigger className="bg-background/50 border-slate-200 focus:ring-red-500">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="30s">۳۰ ثانیه (Shorts)</SelectItem>
+                          <SelectItem value="60s">۱ دقیقه (Reels)</SelectItem>
+                          <SelectItem value="3m">۳ دقیقه (YouTube)</SelectItem>
+                          <SelectItem value="10m">۱۰ دقیقه (Long Form)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
+
                     <div>
-                        <label className="text-sm font-bold mb-2 block">قالب (Template)</label>
-                        <Select value={inputs.template} onValueChange={(val) => setInputs({...inputs, template: val})}>
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="viral-hook">وایرال و سرگرم‌کننده</SelectItem>
-                                <SelectItem value="educational">آموزشی و نکته‌دار</SelectItem>
-                                <SelectItem value="storytelling">داستان‌سرایی</SelectItem>
-                                <SelectItem value="sales">فروش و تبلیغات</SelectItem>
-                            </SelectContent>
-                        </Select>
+                      <label className="text-xs font-bold mb-1.5 block">دسته‌بندی (پوشه)</label>
+                      <Input 
+                        placeholder="مانند: یوتیوب، رییلز" 
+                        className="bg-background/50 border-slate-200 focus-visible:ring-red-500 h-10"
+                        value={inputs.folder}
+                        onChange={(e) => setInputs({...inputs, folder: e.target.value})}
+                        dir="rtl"
+                      />
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold mb-1.5 block">قالب و ساختار هوشمند</label>
+                    <Select value={inputs.template} onValueChange={(val) => setInputs({...inputs, template: val})}>
+                      <SelectTrigger className="bg-background/50 border-slate-200 focus:ring-red-500">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="viral-hook">وایرال و سرگرم‌کننده</SelectItem>
+                        <SelectItem value="educational">آموزشی و تفصیلی</SelectItem>
+                        <SelectItem value="storytelling">داستان‌سرایی تعاملی</SelectItem>
+                        <SelectItem value="sales">تبلیغاتی و فروش محصول</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="bg-slate-50 p-3 rounded-lg border text-xs text-muted-foreground flex flex-col gap-1">
+                    <span className="font-bold flex items-center gap-1 text-slate-700">
+                      <Sparkles size={12} className="text-red-500" />
+                      شخصی‌سازی لحن فعال:
+                    </span>
+                    <span>
+                      لحن کلی بر اساس نمایه شما روی <strong>{userPreferredTone === 'formal' ? 'رسمی' : userPreferredTone === 'casual' ? 'صمیمی و دوستانه' : 'متعادل'}</strong> تنظیم شده است.
+                    </span>
+                  </div>
+
+                  <Button 
+                    className="w-full text-sm font-bold gap-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white py-6 shadow-md shadow-red-500/10"
+                    onClick={handleGenerateAI}
+                    disabled={isGenerating}
+                  >
+                    {isGenerating ? <Loader2 className="animate-spin w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+                    {editorText ? "بازنویسی کل سناریو" : "نوشتن سناریو با هوش مصنوعی"}
+                  </Button>
                 </div>
+              </Card>
 
-                <Button 
-                   size="lg" 
-                   className="w-full text-base gap-2 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-lg shadow-red-500/20"
-                   onClick={handleGenerate}
-                   disabled={isGenerating}
-                   data-tour-id="new-script-btn"
-                >
-                   {isGenerating ? <Loader2 className="animate-spin" /> : <Sparkles />}
-                   {step === 1 ? "نوشتن سناریو" : "بازنویسی سناریو"}
-                </Button>
-             </div>
-           </Card>
+              {/* Tips Banner */}
+              <Card className="p-5 border bg-zinc-900 text-zinc-300 space-y-2">
+                <span className="text-xs text-zinc-500 font-bold uppercase tracking-wide block">💡 راهنمای حرفه‌ای‌ها</span>
+                <p className="text-xs leading-relaxed">
+                  می‌توانید با انتخاب گزینه <strong>«دوقاب کارگردانی»</strong> در نوار بالای ویرایشگر، کات‌های ویدیویی و فیلم‌برداری را به صورت کاملاً مجزا از صحبت‌های خود برنامه‌ریزی کنید. این ساختار در زمان فیلم‌برداری کار را برایتان بسیار ساده‌تر می‌کند.
+                </p>
+              </Card>
+            </div>
+            
+          </div>
 
-           {/* Teleprompter Quick Settings (Visible only when script exists) */}
-           {step === 2 && (
-             <Card className="p-6 bg-slate-900 text-white border-0">
-               <h3 className="font-bold mb-4 flex items-center gap-2 text-emerald-400">
-                 <MonitorPlay size={20} />
-                 آماده ضبط؟
-               </h3>
-               <p className="text-sm text-slate-400 mb-4">
-                 سناریو را در حالت تله‌پرامپتر باز کنید و جلوی دوربین قرار بگیرید.
-               </p>
-               <Button 
-                 className="w-full bg-white text-slate-900 hover:bg-white/90 gap-2 h-12 font-bold transition-all"
-                 onClick={() => setIsTeleprompterOpen(true)}
-               >
-                 <Maximize2 size={18} />
-                 باز کردن تله‌پرامپتر
-               </Button>
-             </Card>
-           )}
         </div>
 
-        {/* Right: Script Editor (8 Cols) */}
-        <div className="lg:col-span-8">
-            <Card className="h-[600px] flex flex-col relative overflow-hidden ring-1 ring-border shadow-sm">
-                <div className="p-4 border-b bg-muted/30 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <FileText className="text-muted-foreground" size={18} />
-                        <span className="font-bold text-sm">متن سناریو</span>
-                    </div>
-                    <div className="flex gap-2">
-                         <Button variant="ghost" size="sm" onClick={() => {
-                             navigator.clipboard.writeText(generatedScript);
-                             toast.success("کپی شد");
-                         }}>
-                             <Copy size={16} />
-                         </Button>
-                         <Button variant="ghost" size="sm" onClick={saveToHistory} disabled={!generatedScript}>
-                            <Save size={16} className="mr-2" />
-                            ذخیره
-                         </Button>
-                    </div>
-                </div>
-                
-                <div className="flex-1 relative">
-                    {step === 1 && !generatedScript ? (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground opacity-50 p-8 text-center">
-                            <Video size={64} className="mb-4 stroke-1" />
-                            <p className="text-lg font-medium">هنوز سناریویی ندارید</p>
-                            <p className="text-sm">از پنل سمت راست موضوع را وارد کنید تا کارنکس برایتان بنویسد.</p>
-                        </div>
-                    ) : (
-                        <Textarea 
-                            className="w-full h-full p-8 text-lg leading-relaxed resize-none border-0 focus-visible:ring-0 font-sans"
-                            value={generatedScript}
-                            onChange={(e) => setGeneratedScript(e.target.value)}
-                            placeholder="متن سناریو اینجا قرار می‌گیرد..."
-                            dir="rtl"
-                        />
-                    )}
-                </div>
-            </Card>
-        </div>
       </div>
 
-      {/* Teleprompter Overlay */}
-      <AnimatePresence>
-        {isTeleprompterOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] bg-black text-white flex flex-col"
-          >
-            {/* Teleprompter Toolbar */}
-            <div className="h-20 shrink-0 flex items-center justify-between px-8 bg-black/80 backdrop-blur border-b border-white/10 z-50">
-               <div className="flex items-center gap-6">
-                  <Button variant="ghost" className="text-white hover:bg-white/10" onClick={() => setIsTeleprompterOpen(false)}>
-                      <X size={24} />
-                      <span className="mr-2">خروج</span>
-                  </Button>
-                  
-                  <div className="h-8 w-px bg-white/20" />
-                  
-                  <div className="flex items-center gap-4">
-                      <span className="text-xs font-bold uppercase text-white/50 tracking-wider">سرعت</span>
-                      <Slider 
-                         value={[scrollSpeed]} 
-                         onValueChange={(val) => setScrollSpeed(val[0])} 
-                         max={10} 
-                         step={1} 
-                         className="w-32"
-                      />
-                  </div>
+      {/* Teleprompter Recorder Overlay */}
+      <TeleprompterRecorder 
+        isOpen={isTeleprompterOpen}
+        onClose={() => setIsTeleprompterOpen(false)}
+        scriptTitle={inputs.title}
+        scriptText={editorMode === "text" ? editorText : parseScenesToText(avScenes)}
+      />
 
-                  <div className="flex items-center gap-4">
-                      <span className="text-xs font-bold uppercase text-white/50 tracking-wider">سایز متن</span>
-                      <Slider 
-                         value={[fontSize]} 
-                         onValueChange={(val) => setFontSize(val[0])} 
-                         min={24}
-                         max={120} 
-                         step={4} 
-                         className="w-32"
-                      />
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold uppercase text-white/50 tracking-wider">آینه</span>
-                      <Switch checked={isMirrored} onCheckedChange={setIsMirrored}  />
-                  </div>
-               </div>
-
-               <div className="flex items-center gap-4">
-                  <Button 
-                    size="lg" 
-                    className={cn(
-                        "rounded-full w-16 h-16 flex items-center justify-center text-black border-4 ring-2 ring-white/20",
-                        isPlaying ? "bg-red-500 border-red-900 hover:bg-red-600" : "bg-emerald-500 border-emerald-900 hover:bg-emerald-600"
-                    )}
-                    onClick={() => setIsPlaying(!isPlaying)}
-                  >
-                     {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
-                  </Button>
-               </div>
-            </div>
-
-            {/* Scrolling Text Area */}
-            <div className="flex-1 relative overflow-hidden bg-black cursor-pointer" onClick={() => setIsPlaying(!isPlaying)}>
-                {/* Visual Guide Line */}
-                <div className="absolute top-1/2 left-0 right-0 h-20 -translate-y-1/2 border-y-2 border-red-500/30 bg-red-500/5 pointer-events-none z-20 flex items-center px-4">
-                   <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                </div>
-
-                <div 
-                   ref={scrollerRef} 
-                   className={cn(
-                       "h-full overflow-y-scroll scrollbar-hide px-[20%] py-[40vh]",
-                       isMirrored && "scale-x-[-1]"
-                   )}
-                >
-                   <p 
-                     className="font-bold leading-relaxed text-center" 
-                     style={{ fontSize: `${fontSize}px` }}
-                   >
-                     {generatedScript.split('\n').map((line, i) => (
-                       <span key={i} className={cn(
-                           "block mb-8",
-                           line.trim().startsWith('[') || line.trim().startsWith('(') ? "text-yellow-400 text-[0.6em] opacity-80" : "text-white"
-                       )}>
-                         {line}
-                       </span>
-                     ))}
-                   </p>
-                </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       <LimitReachedModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} />
     </div>
   );

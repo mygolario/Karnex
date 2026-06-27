@@ -106,7 +106,7 @@ export default async function ReceiptPage({ params }: ReceiptPageProps) {
             
             <ReceiptPrintButton />
             
-            <Link href="/dashboard/profile">
+            <Link href="/dashboard/account">
               <Button variant="secondary" className="w-full h-11 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-sm rounded-xl">
                  تاریخچه
               </Button>

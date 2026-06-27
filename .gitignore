@@ -63,3 +63,6 @@ set_envs.ps1
 
 # Supabase CLI local state (may contain project connection hints)
 supabase/.temp/
+
+.vercel
+.env*

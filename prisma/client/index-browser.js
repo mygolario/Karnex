@@ -137,8 +137,11 @@ exports.Prisma.UserScalarFieldEnum = {
   phoneNumber: 'phoneNumber',
   birthDate: 'birthDate',
   bio: 'bio',
+  profile: 'profile',
   credits: 'credits',
-  settings: 'settings'
+  settings: 'settings',
+  twoFactorEnabled: 'twoFactorEnabled',
+  twoFactorSecret: 'twoFactorSecret'
 };
 
 exports.Prisma.AccountScalarFieldEnum = {
@@ -190,6 +193,7 @@ exports.Prisma.SubscriptionScalarFieldEnum = {
   startDate: 'startDate',
   endDate: 'endDate',
   autoRenew: 'autoRenew',
+  cancelAtPeriodEnd: 'cancelAtPeriodEnd',
   provider: 'provider',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -252,6 +256,293 @@ exports.Prisma.ProjectMemberScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CanvasScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  name: 'name',
+  type: 'type',
+  layout: 'layout',
+  viewport: 'viewport',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CardScalarFieldEnum = {
+  id: 'id',
+  canvasId: 'canvasId',
+  section: 'section',
+  order: 'order',
+  x: 'x',
+  y: 'y',
+  width: 'width',
+  height: 'height',
+  content: 'content',
+  cardType: 'cardType',
+  color: 'color',
+  metadata: 'metadata',
+  createdBy: 'createdBy',
+  updatedBy: 'updatedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CommentScalarFieldEnum = {
+  id: 'id',
+  canvasId: 'canvasId',
+  cardId: 'cardId',
+  authorId: 'authorId',
+  authorName: 'authorName',
+  authorAvatar: 'authorAvatar',
+  body: 'body',
+  resolved: 'resolved',
+  parentId: 'parentId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CanvasVersionScalarFieldEnum = {
+  id: 'id',
+  canvasId: 'canvasId',
+  name: 'name',
+  snapshot: 'snapshot',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.UserProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  role: 'role',
+  industry: 'industry',
+  businessStage: 'businessStage',
+  goals: 'goals',
+  preferredTone: 'preferredTone',
+  expertiseLevel: 'expertiseLevel',
+  language: 'language',
+  learnedPreferences: 'learnedPreferences',
+  memoryEntries: 'memoryEntries',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProjectMemoryScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  decisions: 'decisions',
+  openQuestions: 'openQuestions',
+  risks: 'risks',
+  keyFacts: 'keyFacts',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ChatConversationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  projectId: 'projectId',
+  title: 'title',
+  mode: 'mode',
+  persona: 'persona',
+  model: 'model',
+  pinned: 'pinned',
+  lastMessagePreview: 'lastMessagePreview',
+  lastMessageAt: 'lastMessageAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ChatMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  role: 'role',
+  content: 'content',
+  toolCalls: 'toolCalls',
+  artifacts: 'artifacts',
+  followUps: 'followUps',
+  parentMessageId: 'parentMessageId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AiFeedbackScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  rating: 'rating',
+  reason: 'reason',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ArtifactScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  conversationId: 'conversationId',
+  type: 'type',
+  refId: 'refId',
+  data: 'data',
+  version: 'version',
+  parentId: 'parentId',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AiActionLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  projectId: 'projectId',
+  conversationId: 'conversationId',
+  toolName: 'toolName',
+  args: 'args',
+  result: 'result',
+  status: 'status',
+  undoPayload: 'undoPayload',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AiInsightScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  projectId: 'projectId',
+  type: 'type',
+  priority: 'priority',
+  title: 'title',
+  body: 'body',
+  payload: 'payload',
+  actionPayload: 'actionPayload',
+  status: 'status',
+  snoozedUntil: 'snoozedUntil',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AiUsageScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  projectId: 'projectId',
+  conversationId: 'conversationId',
+  model: 'model',
+  provider: 'provider',
+  feature: 'feature',
+  promptTokens: 'promptTokens',
+  completionTokens: 'completionTokens',
+  totalTokens: 'totalTokens',
+  costUsd: 'costUsd',
+  success: 'success',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CustomerBotChannelScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  projectId: 'projectId',
+  provider: 'provider',
+  credentials: 'credentials',
+  config: 'config',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CustomerBotConversationScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  externalId: 'externalId',
+  customerName: 'customerName',
+  customerHandle: 'customerHandle',
+  status: 'status',
+  lastMessagePreview: 'lastMessagePreview',
+  lastMessageAt: 'lastMessageAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CustomerBotMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  role: 'role',
+  content: 'content',
+  externalId: 'externalId',
+  metadata: 'metadata',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ScriptScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  title: 'title',
+  content: 'content',
+  scenes: 'scenes',
+  template: 'template',
+  duration: 'duration',
+  audience: 'audience',
+  status: 'status',
+  folder: 'folder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserSessionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  token: 'token',
+  device: 'device',
+  platform: 'platform',
+  ip: 'ip',
+  location: 'location',
+  userAgent: 'userAgent',
+  lastActive: 'lastActive',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  revokedAt: 'revokedAt'
+};
+
+exports.Prisma.LoginEventScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  status: 'status',
+  method: 'method',
+  ip: 'ip',
+  userAgent: 'userAgent',
+  location: 'location',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.UserApiKeyScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  label: 'label',
+  keyHash: 'keyHash',
+  prefix: 'prefix',
+  scopes: 'scopes',
+  lastUsed: 'lastUsed',
+  createdAt: 'createdAt',
+  revokedAt: 'revokedAt'
+};
+
+exports.Prisma.UserIntegrationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  provider: 'provider',
+  providerAccountId: 'providerAccountId',
+  credentials: 'credentials',
+  metadata: 'metadata',
+  isConnected: 'isConnected',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DataExportRequestScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  status: 'status',
+  format: 'format',
+  url: 'url',
+  sizeBytes: 'sizeBytes',
+  error: 'error',
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -294,7 +585,29 @@ exports.Prisma.ModelName = {
   MediaItem: 'MediaItem',
   SystemLog: 'SystemLog',
   Feedback: 'Feedback',
-  ProjectMember: 'ProjectMember'
+  ProjectMember: 'ProjectMember',
+  Canvas: 'Canvas',
+  Card: 'Card',
+  Comment: 'Comment',
+  CanvasVersion: 'CanvasVersion',
+  UserProfile: 'UserProfile',
+  ProjectMemory: 'ProjectMemory',
+  ChatConversation: 'ChatConversation',
+  ChatMessage: 'ChatMessage',
+  AiFeedback: 'AiFeedback',
+  Artifact: 'Artifact',
+  AiActionLog: 'AiActionLog',
+  AiInsight: 'AiInsight',
+  AiUsage: 'AiUsage',
+  CustomerBotChannel: 'CustomerBotChannel',
+  CustomerBotConversation: 'CustomerBotConversation',
+  CustomerBotMessage: 'CustomerBotMessage',
+  Script: 'Script',
+  UserSession: 'UserSession',
+  LoginEvent: 'LoginEvent',
+  UserApiKey: 'UserApiKey',
+  UserIntegration: 'UserIntegration',
+  DataExportRequest: 'DataExportRequest'
 };
 
 /**

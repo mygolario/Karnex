@@ -1,11 +1,10 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
-import { BusinessPlan, savePlanToCloud, createProject } from "@/lib/db";
-import { useRouter, usePathname } from "next/navigation";
-
+import { BusinessPlan } from "@/lib/db";
 import { useProjectStore } from "@/lib/store/project-store";
+import { useShallow } from "zustand/react/shallow";
 
 interface ProjectContextType {
   projects: BusinessPlan[];
@@ -14,7 +13,7 @@ interface ProjectContextType {
   refreshProjects: () => Promise<void>;
   createNewProject: (planData: any) => Promise<string>; // Returns ID
   switchProject: (projectId: string) => void;
-  updateActiveProject: (updates: Partial<BusinessPlan>) => void; // Update active project in-place
+  updateActiveProject: (updates: Partial<BusinessPlan>) => void;
 }
 
 const ProjectContext = createContext<ProjectContextType>({
@@ -38,8 +37,18 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     refreshProjects: storeRefresh,
     createNewProject: storeCreate,
     switchProject: storeSwitch,
-    updateActiveProject: storeUpdate
-  } = useProjectStore();
+    updateActiveProject: storeUpdate,
+  } = useProjectStore(
+    useShallow((s) => ({
+      projects: s.projects,
+      activeProject: s.activeProject,
+      loading: s.loading,
+      refreshProjects: s.refreshProjects,
+      createNewProject: s.createNewProject,
+      switchProject: s.switchProject,
+      updateActiveProject: s.updateActiveProject,
+    }))
+  );
 
   // Load Projects on Auth
   useEffect(() => {
@@ -56,7 +65,7 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   };
 
   const switchProject = (projectId: string) => {
-    storeSwitch(projectId);
+    void storeSwitch(projectId);
   };
 
   // Replay offline queue on online

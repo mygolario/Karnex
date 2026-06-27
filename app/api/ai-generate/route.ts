@@ -39,44 +39,60 @@ export async function POST(req: Request) {
 
     // Handle Competitor Search (OSM Integration) - MOVED TO TOP to prevent generic handler from catching it
     if (action === 'analyze-location') {
-       console.log("📍 Analyze Location Request:", { city, address, projectType: activeProject?.projectType });
+       const { radius = 500, priceTier = 'mid', footfallDependency = 'high', rentBudget = 0 } = body;
+       console.log("📍 Analyze Location Request:", { city, address, projectType: activeProject?.projectType, radius, priceTier, footfallDependency, rentBudget });
        
        // 1. Geocode
-       // 1. Geocode
        const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address + ', ' + city + ', Iran')}&format=json&limit=1`;
-       const geoRes = await fetch(geoUrl, { headers: { 'User-Agent': 'Karnex-App/1.0' } });
-       if (!geoRes.ok) {
-           console.error("❌ Nominatim Error:", geoRes.status, await geoRes.text());
+       let geoData: any = null;
+       try {
+           const geoRes = await fetch(geoUrl, { headers: { 'User-Agent': 'Karnex-App/1.0' } });
+           if (geoRes.ok) {
+               geoData = await geoRes.json();
+           } else {
+               console.error("❌ Nominatim Geocoding API Error:", geoRes.status);
+           }
+       } catch (e) {
+           console.error("❌ Geocoding fetch failed:", e);
        }
-       const geoData = await geoRes.json();
        console.log("🌍 Geocoding Result:", geoData?.[0] ? "Found" : "Not Found");
        
        let osmData = "No real-time data available.";
+       let centerCoordinates = { lat: 35.6892, lon: 51.3890 }; // Fallback to Tehran coords
+       let competitorsList: any[] = [];
+       let transitList: any[] = [];
+       let anchorsList: any[] = [];
        
        if (geoData && geoData.length > 0) {
-          const { lat, lon } = geoData[0];
+          const lat = parseFloat(geoData[0].lat);
+          const lon = parseFloat(geoData[0].lon);
+          centerCoordinates = { lat, lon };
           
           // 2. Identify Category to Search
-          // Simple mapping from projectType to OSM tags
           let osmTag = 'amenity="cafe"'; // default
           const type = activeProject?.projectType?.toLowerCase() || '';
           if (type.includes('rest') || type.includes('food')) osmTag = 'amenity="restaurant"';
-          if (type.includes('cloth') || type.includes('fash')) osmTag = 'shop="clothes"';
-          if (type.includes('super') || type.includes('grocer')) osmTag = 'shop="supermarket"';
-          if (type.includes('tech') || type.includes('mobile')) osmTag = 'shop="mobile_phone"';
-          if (type.includes('beau') || type.includes('salon')) osmTag = 'shop="beauty"';
+          else if (type.includes('cloth') || type.includes('fash')) osmTag = 'shop="clothes"';
+          else if (type.includes('super') || type.includes('grocer')) osmTag = 'shop="supermarket"';
+          else if (type.includes('tech') || type.includes('mobile')) osmTag = 'shop="mobile_phone"';
+          else if (type.includes('beau') || type.includes('salon')) osmTag = 'shop="beauty"';
 
           // 3. Overpass Query
           const query = `
             [out:json][timeout:25];
             (
-              node[${osmTag}](around:500,${lat},${lon});
-              way[${osmTag}](around:500,${lat},${lon});
-              relation[${osmTag}](around:500,${lat},${lon});
+              node[${osmTag}](around:${radius},${lat},${lon});
+              way[${osmTag}](around:${radius},${lat},${lon});
+              relation[${osmTag}](around:${radius},${lat},${lon});
+              
+              node[railway=station](around:${radius},${lat},${lon});
+              node[amenity=bus_station](around:${radius},${lat},${lon});
+              node[shop=mall](around:${radius},${lat},${lon});
+              way[shop=mall](around:${radius},${lat},${lon});
+              node[amenity=university](around:${radius},${lat},${lon});
+              way[amenity=university](around:${radius},${lat},${lon});
             );
-            out body;
-            >;
-            out skel qt;
+            out center;
           `;
           
           try {
@@ -84,16 +100,57 @@ export async function POST(req: Request) {
                   method: "POST",
                   body: query
               });
-              const overpassJson = await overpassRes.json();
-              if (overpassJson.elements) {
-                  const places = overpassJson.elements
-                    .filter((el: any) => el.tags?.name || el.tags?.['name:fa'])
-                    .slice(0, 8)
-                    .map((el: any) => `- ${el.tags['name:fa'] || el.tags.name} (${el.tags.amenity || el.tags.shop})`);
-                  
-                  if (places.length > 0) {
-                      osmData = `REAL-TIME MAP DATA (VERIFIED): \n${places.join('\n')}`;
+              
+              if (overpassRes.ok) {
+                  const overpassJson = await overpassRes.json();
+                  if (overpassJson.elements) {
+                      overpassJson.elements.forEach((el: any) => {
+                          const name = el.tags?.['name:fa'] || el.tags?.name || el.tags?.operator;
+                          if (!name) return;
+                          
+                          const elLat = el.lat || el.center?.lat || lat;
+                          const elLon = el.lon || el.center?.lon || lon;
+                          
+                          const tagKey = osmTag.split('=')[0];
+                          const tagVal = osmTag.split('=')[1].replace(/"/g, '');
+                          
+                          const isCompetitor = el.tags?.[tagKey] === tagVal;
+                          const isTransit = el.tags?.railway === 'station' || el.tags?.amenity === 'bus_station';
+                          const isAnchor = el.tags?.shop === 'mall' || el.tags?.amenity === 'university';
+                          
+                          const item = {
+                              name,
+                              lat: elLat,
+                              lon: elLon,
+                              type: el.tags?.amenity || el.tags?.shop || el.tags?.railway || 'POI'
+                          };
+                          
+                          if (isCompetitor) {
+                              competitorsList.push(item);
+                          } else if (isTransit) {
+                              transitList.push(item);
+                          } else if (isAnchor) {
+                              anchorsList.push(item);
+                          }
+                      });
+                      
+                      const competitorDataStr = competitorsList.slice(0, 8).map(c => `- ${c.name} (موقعیت: ${c.lat}, ${c.lon})`).join('\n');
+                      const transitDataStr = transitList.slice(0, 5).map(t => `- ${t.name} (${t.type})`).join('\n');
+                      const anchorsDataStr = anchorsList.slice(0, 5).map(a => `- ${a.name} (${a.type})`).join('\n');
+                      
+                      osmData = `
+رقبا:
+${competitorDataStr || "رقیب مستقیمی در این محدوده پیدا نشد."}
+
+مراکز حمل و نقل نزدیک:
+${transitDataStr || "ایستگاه مترو یا اتوبوس مهمی نزدیک نیست."}
+
+مراکز جاذبه ترافیکی (شاپینگ سنترها/دانشگاه‌ها):
+${anchorsDataStr || "جاذبه ترافیکی عمده‌ای نزدیک نیست."}
+`;
                   }
+              } else {
+                  console.error("❌ Overpass API Error:", overpassRes.status);
               }
           } catch (e) {
               console.error("OSM Fetch Error:", e);
@@ -103,19 +160,34 @@ export async function POST(req: Request) {
        const enhancedPrompt = `
        ${prompt}
        
-       [IMPORTANT]
-       I have fetched REAL-TIME DATA from OpenStreetMap for this location:
+       [IMPORTANT MAP DATA]
+       We fetched real-time POIs from OpenStreetMap for location coordinates (Lat: ${centerCoordinates.lat}, Lon: ${centerCoordinates.lon}) and radius ${radius} meters:
        ${osmData}
        
+       [PERSONALIZED BUSINESS CRITERIA]
+       - Footfall Dependency: ${footfallDependency === 'high' ? 'پاخورمحور (خیلی وابسته به تردد عابر)' : 'مقصدمحور (کشش محلی مهم‌تر است)'}
+       - Price Tier: ${priceTier === 'budget' ? 'اقتصادی و ارزان' : priceTier === 'mid' ? 'متوسط و میان‌رده' : 'لوکس و گران‌قیمت'}
+       - Monthly Rent Budget: ${rentBudget ? rentBudget.toLocaleString('fa-IR') + ' تومان' : 'ثبت نشده'}
+       
        INSTRUCTIONS:
-       1. If the Real-Time Data lists specific names, USE THEM in the "directCompetitors" array.
-       2. If the data is empty, fall back to your internal knowledge but be very conservative.
+       1. Calculate the 'score' (0-10) critical value taking into account how well the socioeconomic level of the location matches the business Price Tier and Footfall Dependency. For example:
+          - A premium store in a low spending power neighborhood should get a score under 5.0.
+          - A high footfall dependency store in a low traffic neighborhood should get a score under 5.0.
+       2. In "directCompetitors", include the competitors from the real-time data above with their name, coordinates (lat/lon) as provided, and estimate their strengths/weaknesses and axis scores.
+       3. Populate "hourlyFootfall" as a 24-hour traffic array representing estimated footfall index (0-100) per hour in Iran for this location (e.g. from 08:00 to 23:00).
+       4. Under "financialSim", estimate:
+          - "breakEvenTransactions" (number of daily transactions needed to cover rent budget and default operating costs in this neighborhood).
+          - "rentToRevenueRatio" (what percentage of estimated monthly revenue is the rent budget, e.g. 15% or 40%).
+          - "estimatedMonthlyRevenue" (estimated revenue range, e.g., 60 to 90 million Tomans).
+       5. Populate "legalChecklist" with 3-4 realistic permits, municipal guidelines, or trade union distances needed in Iran for this business type.
+       6. Return prioritizedRecommendations with unique "id" for each recommendation, and include "cost" ("کم‌هزینه" | "متوسط" | "سرمایه‌گذاری").
+       7. Output ONLY valid JSON in Persian. Ensure all text values are in Persian.
        `;
        
        const result = await callOpenRouter(enhancedPrompt, {
-          systemPrompt: 'You are a GIS Analyst. Use the provided Real-Time OSM Data if available.',
-          maxTokens: 3000,
-          temperature: 0.4, // Lower temperature for fact-based results
+          systemPrompt: 'You are a GIS retail location strategy specialist. Return ONLY valid JSON in Persian.',
+          maxTokens: 3500,
+          temperature: 0.3,
           modelOverride: modelOverride || 'google/gemini-3.5-flash'
        });
        
@@ -126,11 +198,11 @@ export async function POST(req: Request) {
         }
     
         try {
-            let content = result.content!;
-            if (content.includes("```json")) {
-                content = content.split("```json")[1].split("```")[0].trim();
-            }
-            const json = JSON.parse(content);
+            const json = parseJsonFromAI(result.content!);
+            
+            // Add geocoded coordinates to the final response
+            json.coordinates = centerCoordinates;
+            
             return NextResponse.json({ success: true, analysis: json });
         } catch (e) {
             console.error("❌ JSON Parse Error (Location Analysis):", e);
@@ -180,6 +252,33 @@ export async function POST(req: Request) {
       }
     }
 
+    // Handle section card generation
+    if (action === 'generate-section-cards') {
+      const { prompt } = body;
+      if (!prompt) {
+        return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+      }
+
+      const result = await callOpenRouter(prompt, {
+        systemPrompt: 'تو متخصص کسب‌وکار هستی. فقط یک آرایه JSON از رشته‌ها خروجی بده - هر رشته یک ایده کوتاه. بدون توضیح اضافه. فرمت: ["ایده ۱", "ایده ۲", "ایده ۳"]',
+        maxTokens: 500,
+        temperature: 0.7,
+      });
+
+      if (!result.success) {
+        await rollback();
+        return NextResponse.json({ error: result.error }, { status: 503 });
+      }
+
+      try {
+        const cards = parseJsonFromAI(result.content!);
+        return NextResponse.json({ success: true, cards });
+      } catch (parseError) {
+        const lines = result.content!.split('\n').filter((l: string) => l.trim().startsWith('•') || l.trim().startsWith('-')).map((l: string) => l.replace(/^[•\-]\s*/, '').trim()).filter(Boolean);
+        return NextResponse.json({ success: true, cards: lines.length > 0 ? lines : ['ایده پیشنهادی'] });
+      }
+    }
+
     // Handle Pitch Deck Generation
     if (action === 'generate-pitch-deck') {
       const pitchPrompt = `
@@ -223,12 +322,7 @@ export async function POST(req: Request) {
       }
 
       try {
-        let content = result.content!;
-        // Ensure we parse array correctly
-        if (content.includes("```json")) {
-           content = content.split("```json")[1].split("```")[0].trim();
-        }
-        const slides = JSON.parse(content);
+        const slides = parseJsonFromAI(result.content!);
         return NextResponse.json({ success: true, slides });
       } catch (e) {
         await rollback();
@@ -280,11 +374,7 @@ export async function POST(req: Request) {
        }
        
        try {
-          let content = result.content!;
-          if (content.includes("```json")) {
-             content = content.split("```json")[1].split("```")[0].trim();
-          }
-          const validationData = JSON.parse(content);
+          const validationData = parseJsonFromAI(result.content!);
           return NextResponse.json({ success: true, validation: validationData });
        } catch (e) {
           await rollback();
@@ -345,11 +435,7 @@ export async function POST(req: Request) {
        }
 
        try {
-         let content = result.content!;
-         if (content.includes("```json")) {
-            content = content.split("```json")[1].split("```")[0].trim();
-         }
-         const growthData = JSON.parse(content);
+         const growthData = parseJsonFromAI(result.content!);
          return NextResponse.json({ success: true, data: growthData });
        } catch (e) {
          await rollback();

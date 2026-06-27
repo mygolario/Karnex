@@ -19,7 +19,7 @@ export interface UserProfile {
   bio?: string;
   avatar_url?: string; 
   subscription: {
-    planId: 'free' | 'plus' | 'pro';
+    planId: 'free' | 'plus' | 'pro' | 'ultra';
     status: 'active' | 'expired' | 'canceled';
     startDate?: string;
     endDate?: string;
@@ -43,11 +43,23 @@ export interface UserProfile {
 // ... existing interfaces (Keep them as is for now, will map to JSONB)
 // Roadmap Step detailed structure
 export interface RoadmapStep {
+  id?: string;
   title: string;
   category?: string;
   description?: string;
-  priority?: string;
+  priority?: "high" | "medium" | "low" | string;
   estimatedHours?: string | number;
+  actualHours?: number;
+  status?: "todo" | "in-progress" | "done" | string;
+  checklist?: string[];
+  tips?: string[];
+  resources?: string[];
+  dueDate?: string;
+  dependsOn?: string[];
+  assignee?: string;
+  tags?: string[];
+  cost?: string;
+  notes?: string;
 }
 
 // Roadmap Phase structure
@@ -56,6 +68,16 @@ export interface RoadmapPhase {
   steps: (string | RoadmapStep)[];
   weekNumber?: number;
   theme?: string;
+  icon?: string;
+}
+
+// Runtime status metadata stored per step (keyed by step title)
+export interface StepRuntimeStatus {
+  status: "todo" | "in-progress" | "blocked" | "skipped";
+  startedAt?: string;
+  completedAt?: string;
+  blockedReason?: string;
+  actualHours?: number;
 }
 
 // Logo concept structure
@@ -261,6 +283,7 @@ export interface PitchDeckSlide {
   bullets: string[];
   notes?: string;
   isHidden?: boolean;
+  metadata?: Record<string, any>;
 }
 
 // SWOT Analysis structure (For Traditional Businesses)
@@ -342,11 +365,52 @@ export interface CapTable {
 export interface ContentPost {
   id: string;
   title: string;
-  platform: 'instagram' | 'youtube' | 'linkedin' | 'twitter' | 'blog';
-  type: 'post' | 'reel' | 'story' | 'video' | 'thread';
+  platform: 'instagram' | 'youtube' | 'linkedin' | 'twitter' | 'tiktok' | 'telegram' | 'blog' | 'podcast';
+  type: 'post' | 'reel' | 'story' | 'video' | 'thread' | 'short' | 'episode' | 'article';
   status: 'idea' | 'scripting' | 'filming' | 'editing' | 'scheduled' | 'published';
-  date: string; // ISO date string
+  date: string; // ISO date string (Gregorian stored, Jalali displayed)
+  publishTime?: string; // "HH:MM" format
   notes?: string;
+  caption?: string; // Caption draft
+  tags?: string[]; // e.g. ["آموزشی", "ترند"]
+  priority?: 'high' | 'medium' | 'low';
+  collaborator?: string;
+  estimatedHours?: number;
+  thumbnailUrl?: string;
+  hashtags?: string[];
+  checklist?: {
+    script: boolean;
+    filmed: boolean;
+    edited: boolean;
+    captionReady: boolean;
+    hashtagsReady: boolean;
+    thumbnailReady: boolean;
+  };
+  isRecurring?: boolean;
+  recurringTemplateId?: string;
+}
+
+export interface RecurringTemplate {
+  id: string;
+  dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=Saturday (Jalali week start)
+  platform: ContentPost['platform'];
+  type: ContentPost['type'];
+  defaultTitle?: string;
+  defaultTags?: string[];
+  isActive: boolean;
+}
+
+export interface HashtagSet {
+  id: string;
+  name: string;
+  tags: string[];
+}
+
+export interface ContentStreak {
+  current: number;
+  best: number;
+  lastPublishedWeek?: string; // ISO week string e.g. "2024-W03"
+  thisWeekPublished: number;
 }
 
 // GeneratedDocument Removed
@@ -426,6 +490,14 @@ export interface LocationAnalysis {
   id?: string;
   city: string;
   address: string;
+  coordinates?: { lat: number; lon: number };
+  
+  // Custom user inputs for personalization
+  inputs?: {
+    footfallDependency: "high" | "destination";
+    priceTier: "budget" | "mid" | "premium";
+    rentBudget?: number;
+  };
   
   // Core Metrics
   score: number;
@@ -448,6 +520,7 @@ export interface LocationAnalysis {
   // Market & Competitors
   competitorAnalysis?: {
     saturationLevel?: string;
+    saturationPercentage?: number;
     marketGap?: string;
     competitorCount?: number;
     directCompetitors?: Array<{
@@ -455,6 +528,7 @@ export interface LocationAnalysis {
         distance: string;
         strength: string;
         weakness: string;
+        coordinates?: { lat: number; lon: number };
         scores?: {
           product: number;
           marketing: number;
@@ -464,9 +538,14 @@ export interface LocationAnalysis {
     }>;
   };
 
-  // Financials
+  // Financials & Rent feasibility
   rentEstimate: string;
   successMatch: { label: string; color: string };
+  financialSim?: {
+    breakEvenTransactions: number;
+    rentToRevenueRatio: number;
+    estimatedMonthlyRevenue: string;
+  };
 
   // Strategy
   swot: {
@@ -478,7 +557,7 @@ export interface LocationAnalysis {
   aiInsight: string;
   recommendations?: Array<{ title: string; desc: string }>;
 
-  // NEW: Intelligence Hub Fields
+  // Intelligence Hub Fields
   neighborhoodProfile?: string;
   marketGapCards?: Array<{
     title: string;
@@ -486,9 +565,11 @@ export interface LocationAnalysis {
     potential: "High" | "Medium" | "Low";
   }>;
   prioritizedRecommendations?: Array<{
+    id: string;
     title: string;
     desc: string;
     urgency: "فوری" | "مهم" | "پیشنهادی";
+    cost: "کم‌هزینه" | "متوسط" | "سرمایه‌گذاری";
   }>;
   riskBreakdown?: {
     financial: number;
@@ -497,6 +578,8 @@ export interface LocationAnalysis {
     market: number;
   };
   peakHours?: string;
+  hourlyFootfall?: Array<{ hour: string; trafficIndex: number }>;
+  legalChecklist?: Array<{ title: string; desc: string; isRequired: boolean }>;
   
   createdAt: string;
 }
@@ -524,6 +607,9 @@ export interface BusinessPlan {
   swotAnalysis?: SWOTAnalysis; // Traditional
   brandCanvas?: BrandCanvas; // Creator
   contentCalendar?: ContentPost[]; // Creator (Moved to top level)
+  recurringTemplates?: RecurringTemplate[]; // Creator: recurring post templates
+  hashtagBank?: HashtagSet[]; // Creator: saved hashtag sets
+  contentStreak?: ContentStreak; // Creator: streak tracking
   financials?: {
     runway?: RunwayCalculation;
     breakEven?: BreakEvenAnalysis;
@@ -547,6 +633,9 @@ export interface BusinessPlan {
   projectType: 'startup' | 'traditional' | 'creator';
   genesisAnswers?: Record<string, any>;
   completedSteps?: string[];
+  stepStatuses?: Record<string, StepRuntimeStatus>;
+  canvasConnections?: any[];
+  canvasViewMode?: string;
   // growth removed
   // ideaValidation removed
   // documents removed
@@ -1019,6 +1108,47 @@ export const toggleStepCompletion = async (userId: string, stepName: string, isC
   }
   
   return savePlanToCloud(userId, { completedSteps }, true, projectId);
+};
+
+// Persist richer per-step status metadata alongside the completed list.
+// `completedSteps` remains the source of truth for "done"; `stepStatuses`
+// carries in-progress / blocked / skipped state + timestamps.
+export const updateRoadmapStepStatus = async (
+  userId: string,
+  stepName: string,
+  status: "todo" | "in-progress" | "blocked" | "skipped" | "done",
+  projectId: string,
+  meta?: { blockedReason?: string; actualHours?: number }
+) => {
+  const current = await getPlanFromCloud(userId, projectId);
+  if (!current) throw new Error("Project not found");
+
+  let completedSteps: string[] = [...(current.completedSteps || [])];
+  const stepStatuses: Record<string, StepRuntimeStatus> = {
+    ...(current.stepStatuses || {}),
+  };
+  const now = new Date().toISOString();
+
+  if (status === "done") {
+    if (!completedSteps.includes(stepName)) completedSteps.push(stepName);
+    stepStatuses[stepName] = {
+      ...(stepStatuses[stepName] || {}),
+      status: "todo",
+      completedAt: now,
+      actualHours: meta?.actualHours ?? stepStatuses[stepName]?.actualHours,
+    };
+  } else {
+    completedSteps = completedSteps.filter((s) => s !== stepName);
+    const prev = stepStatuses[stepName];
+    stepStatuses[stepName] = {
+      status,
+      startedAt: status === "in-progress" ? prev?.startedAt || now : prev?.startedAt,
+      blockedReason: status === "blocked" ? meta?.blockedReason : undefined,
+      actualHours: meta?.actualHours ?? prev?.actualHours,
+    };
+  }
+
+  return savePlanToCloud(userId, { completedSteps, stepStatuses }, true, projectId);
 };
 
 // --- Gamification ---

@@ -60,7 +60,7 @@ export default function AdminPage() {
   }, 0);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-8 pb-24 md:pb-8">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-black text-foreground">پنل مدیریت (God Mode)</h1>

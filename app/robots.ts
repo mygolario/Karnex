@@ -1,23 +1,25 @@
-import type { MetadataRoute } from 'next';
+import type { MetadataRoute } from "next";
+import { getSiteUrl } from "@/lib/site-url";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = 'https://www.karnex.ir';
-  
+  const baseUrl = getSiteUrl();
+
   return {
     rules: [
       {
-        userAgent: '*',
-        allow: '/',
+        userAgent: "*",
+        allow: "/",
         disallow: [
-          '/api/',
-          '/dashboard/',
-          '/login/',
-          '/signup/',
-          '/new-project/',
-          '/projects/',
-          '/payment/',
-          '/playground/',
-          '/reset-password/',
+          "/api/",
+          "/dashboard/",
+          "/login/",
+          "/signup/",
+          "/new-project/",
+          "/projects/",
+          "/payment/",
+          "/playground/",
+          "/reset-password/",
+          "/checkout/",
         ],
       },
     ],

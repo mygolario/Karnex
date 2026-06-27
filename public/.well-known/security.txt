@@ -1,0 +1,4 @@
+Contact: mailto:support@karnex.ir
+Expires: 2027-06-27T00:00:00.000Z
+Preferred-Languages: fa, en
+Canonical: https://www.karnex.ir/.well-known/security.txt

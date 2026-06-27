@@ -15,7 +15,7 @@ export function GoogleButton({ label, onClick, disabled }: GoogleButtonProps) {
       variant="outline"
       size="lg"
       rounded="lg"
-      className="w-full h-12 border-border/80 hover:bg-muted/50 hover:border-brand-primary/50 transition-all"
+      className="relative w-full h-12 border-border/80 hover:bg-muted/50 hover:border-brand-primary/50 transition-all"
       onClick={onClick}
       disabled={disabled}
     >

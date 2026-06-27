@@ -1,15 +1,35 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { checkAILimit } from '@/lib/ai-limit-middleware';
-import { 
-  COPILOT_TOOLS, 
-  executeUpdateBusinessPlan, 
-  executeCreatePitchDeckSlide, 
+import { callCopilotChat } from '@/lib/openrouter';
+import { recordAiUsage, extractUsage } from '@/lib/copilot/usage-tracking';
+import { buildCopilotContext, serializeMentionedContext } from '@/lib/copilot/context';
+import {
+  loadUserProfile,
+  loadProjectMemory,
+  buildUserProfileSection,
+  buildProjectMemorySection,
+  extractAndSaveMemory,
+} from '@/lib/copilot/memory';
+import {
+  getCopilotTools,
+  executeUpdateBusinessPlan,
+  executeCreatePitchDeckSlide,
   executeUpdatePitchDeckSlide,
   executeSearchCompetitors,
-  executeUpdateSwotAnalysis 
+  executeUpdateSwotAnalysis,
+  executeSaveMemory,
+  executeUpdateStepStatus,
+  executeAddRoadmapStep,
+  executeAddStepNote,
+  executeAddCanvasCard,
+  executeCreateContentPost,
+  executeMoveContentPost,
+  executeCreateScript,
+  executeTogglePermit,
 } from '@/lib/ai/copilot-tools';
 import prisma from '@/lib/prisma';
 import { auth } from "@/lib/auth/session";
+import type { CopilotMode, CopilotPersona, CopilotModelTier } from "@/lib/copilot/types";
 
 export const maxDuration = 60; // Allow longer timeout for agent tool chains
 
@@ -20,8 +40,27 @@ function getToolStatusMessage(name: string): string {
         case 'update_pitch_deck_slide': return 'اصلاح اسلاید پیچ‌دک';
         case 'search_competitors': return 'جستجو و آنالیز رقبای بازار';
         case 'update_swot_analysis': return 'به‌روزرسانی جدول تحلیل SWOT';
+        case 'save_memory': return 'ذخیره در حافظه پروژه';
+        case 'update_step_status': return 'به‌روزرسانی وضعیت گام نقشه راه';
+        case 'add_roadmap_step': return 'افزودن گام به نقشه راه';
+        case 'add_step_note': return 'افزودن یادداشت به گام';
+        case 'add_canvas_card': return 'افزودن کارت به بوم';
+        case 'create_content_post': return 'ایجاد پست محتوایی';
+        case 'move_content_post': return 'تغییر وضعیت پست محتوا';
+        case 'create_script': return 'ایجاد اسکریپت';
+        case 'toggle_permit': return 'به‌روزرسانی وضعیت مجوز';
         default: return 'پردازش عملیات';
     }
+}
+
+interface CopilotRequestBody {
+  messages: { role: string; content: string }[];
+  projectId?: string;
+  context?: unknown;
+  persona?: CopilotPersona;
+  mode?: CopilotMode;
+  conversationId?: string;
+  tier?: CopilotModelTier;
 }
 
 export async function POST(req: Request) {
@@ -38,26 +77,30 @@ export async function POST(req: Request) {
     if (limitResult.errorResponse) return limitResult.errorResponse;
     rollback = limitResult.rollback;
 
-    const { messages, projectId, context } = await req.json();
+    const body: CopilotRequestBody = await req.json();
+    const { messages, projectId, context } = body;
+    const persona: CopilotPersona = body.persona || "default";
+    const mode: CopilotMode = body.mode || "cofounder";
+    const tier: CopilotModelTier = body.tier === "fast" ? "fast" : "hard";
+    const conversationIdIn = body.conversationId;
 
     if (!projectId) {
         return NextResponse.json({ error: "Project ID required" }, { status: 400 });
     }
+    if (!Array.isArray(messages) || messages.length === 0) {
+        return NextResponse.json({ error: "Messages required" }, { status: 400 });
+    }
 
-    // Fetch Full Project Context (RLS check: project must belong to session user OR user must be a member)
+    // Fetch Full Project Context (RLS check: project must belong to session user OR be a member)
     const project = await prisma.project.findFirst({
-        where: { 
+        where: {
             id: projectId,
             OR: [
                 { userId },
-                {
-                    members: {
-                        some: { userId }
-                    }
-                }
+                { members: { some: { userId } } }
             ]
         },
-        select: { 
+        select: {
             projectName: true,
             description: true,
             data: true,
@@ -69,48 +112,69 @@ export async function POST(req: Request) {
     }
 
     const projectData = (project.data as any) || {};
+    const projectType = projectData.projectType || "startup";
 
-    // Construct System Prompt
-    const systemPrompt = `
-      You are Karnex Project Manager, an expert AI co-founder for startups.
-      
-      CURRENT PROJECT CONTEXT:
-      - Name: ${project.projectName}
-      - Description: ${project.description || 'N/A'}
-      - Audience: ${projectData.audience || 'Unknown'}
-      - Business Plan Status: ${projectData.leanCanvas ? 'Partially Filled' : 'Empty'}
-      - Pitch Deck Slides: ${projectData.pitchDeck?.length || 0}
-      
-      USER CONTEXT (MENTIONED ITEMS):
-      ${context ? JSON.stringify(context, null, 2) : "No specific items mentioned."}
+    // === Load personalization + memory (Phase 1) ===
+    const [userProfile, projectMemory] = await Promise.all([
+      loadUserProfile(userId),
+      loadProjectMemory(projectId),
+    ]);
+    const userProfileSection = buildUserProfileSection(userProfile);
+    const projectMemorySection = buildProjectMemorySection(projectMemory);
 
-      CAPABILITIES:
-      - You can chat with the user in Persian (Farsi).
-      - You can UPDATE the Business Plan directly using 'update_business_plan'.
-      - You can CREATE Pitch Deck slides using 'create_pitch_deck_slide'.
-      - You can UPDATE specific Pitch Deck slides using 'update_pitch_deck_slide' (only if a slide is mentioned/known).
-      - You can SEARCH and analyze competitors in the market using 'search_competitors'.
-      - You can UPDATE the SWOT Analysis canvas using 'update_swot_analysis'.
-      - You CANNOT add tasks to the Roadmap anymore (User disabled this). Help them plan but tell them to add tasks manually if asked.
-      
-      RULES:
-      - Always reply in Persian (Farsi).
-      - ACTION OVER CHAT: If the user asks you to fill, update, or create content (like "fill this section" or "add a slide" or "analyze competitors"), YOU MUST USE THE RELEVANT TOOL IMMEDIATELY.
-      - Do NOT ask clarifying questions unless the request is completely unintelligible. Use your best judgment to generate high-quality, relevant content based on the project description.
-      - If the user mentions a specific context (Slide, Task, Block) with @, assume they want you to ACTION on it.
-      - Before calling a tool, keep your response short (e.g., "Sure, I'm updating the business plan for you...").
-      - For Business Plan: If the user asks to "fill" a section, generate 3-5 high-quality, concise, bullet-pointed cards for that section.
+    // Build pillar-aware, persona/mode-aware system prompt.
+    const { systemPrompt } = buildCopilotContext({
+        projectName: project.projectName,
+        projectDescription: project.description || "N/A",
+        projectAudience: projectData.audience || "Unknown",
+        projectType,
+        persona,
+        mode,
+        mentionedContext: serializeMentionedContext(context),
+        projectData,
+        userProfileSection,
+        projectMemorySection,
+    });
 
-      BEGINNER-FRIENDLY GUIDELINES:
-      - Users are beginners who may not understand business jargon. Explain concepts simply.
-      - When you generate content for business plan or pitch deck, make each bullet point a complete sentence with explanation.
-      - If you use a technical term, explain it in parentheses in simple Persian.
-      - Your chat responses should be educational and encouraging, not just directive.
-      - When suggesting actions, briefly explain WHY this action is important for their business.
-    `;
+    // === Resolve / create conversation ===
+    let conversationId = conversationIdIn;
+    if (conversationId) {
+      const owned = await prisma.chatConversation.findFirst({
+        where: { id: conversationId, userId },
+        select: { id: true },
+      });
+      if (!owned) conversationId = undefined;
+    }
+    if (!conversationId) {
+      const newConv = await prisma.chatConversation.create({
+        data: {
+          userId,
+          projectId,
+          title: deriveTitle(messages),
+          mode,
+          persona,
+        },
+      });
+      conversationId = newConv.id;
+    }
+
+    // === Persist the new user message ===
+    const lastUserMsg = [...messages].reverse().find((m) => m.role === "user");
+    let userMessageDbId: string | undefined;
+    if (lastUserMsg) {
+      const userMsg = await prisma.chatMessage.create({
+        data: {
+          conversationId,
+          role: "user",
+          content: lastUserMsg.content,
+        },
+      });
+      userMessageDbId = userMsg.id;
+    }
 
     const encoder = new TextEncoder();
-    
+    const clientSignal = req.signal; // propagate client disconnect/abort to the provider
+
     // Create ReadableStream to stream NDJSON tokens/progress to client
     const customStream = new ReadableStream({
       async start(controller) {
@@ -118,15 +182,27 @@ export async function POST(req: Request) {
           controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
         };
 
+        // Tell the client which conversation + user message we're using.
+        sendJSON({ type: "meta", conversationId, userMessageId: userMessageDbId });
+
+        // Aggregate token usage across all model calls for this request.
+        let totalPromptTokens = 0;
+        let totalCompletionTokens = 0;
+        let lastModelUsed = tier === "fast" ? "google/gemini-3.1-flash-lite" : "google/gemini-3.5-flash";
+        let assistantContent = "";
+        let finalToolResult: any = null;
+
         try {
-          let currentMessages = [
+          const currentMessages: any[] = [
               { role: "system", content: systemPrompt },
               ...messages
           ];
 
+          // Pillar- and mode-aware tool set (insights mode → no tools).
+          const activeTools = getCopilotTools(projectType, mode);
+
           let loopCount = 0;
           const maxTurns = 5;
-          let finalToolResult: any = null;
 
           while (loopCount < maxTurns) {
               loopCount++;
@@ -137,30 +213,22 @@ export async function POST(req: Request) {
                   sendJSON({ type: "status", content: "درحال تحلیل نتایج ابزار..." });
               }
 
-              // Call OpenRouter with active tools list
-              const openRouterRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                  method: "POST",
-                  headers: {
-                      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                      "Content-Type": "application/json",
-                      "HTTP-Referer": "https://www.karnex.ir",
-                      "X-Title": "Karnex"
-                  },
-                  body: JSON.stringify({
-                      model: "google/gemini-3.5-flash", // Fast model for agentic loop & tool execution
-                      messages: currentMessages,
-                      tools: COPILOT_TOOLS,
-                      tool_choice: "auto",
-                      temperature: 0.7,
-                  })
+              // Agentic loop call: non-streaming, with tools (always hard tier for tool-use).
+              const { response: loopRes, model: loopModel } = await callCopilotChat({
+                  messages: currentMessages,
+                  tools: activeTools,
+                  toolChoice: activeTools.length > 0 ? "auto" : "none",
+                  temperature: 0.7,
+                  signal: clientSignal,
+                  tier: "hard",
               });
+              lastModelUsed = loopModel;
 
-              if (!openRouterRes.ok) {
-                  const errorText = await openRouterRes.text();
-                  throw new Error(`OpenRouter API error: ${errorText}`);
-              }
+              const aiData = await loopRes.json();
+              const usage = extractUsage(aiData);
+              totalPromptTokens += usage.promptTokens;
+              totalCompletionTokens += usage.completionTokens;
 
-              const aiData = await openRouterRes.json();
               const choice = aiData.choices[0];
               const responseMessage = choice.message;
 
@@ -186,6 +254,24 @@ export async function POST(req: Request) {
                               actionResult = await executeSearchCompetitors(projectId, args, userId);
                           } else if (fnName === 'update_swot_analysis') {
                               actionResult = await executeUpdateSwotAnalysis(projectId, args, userId);
+                          } else if (fnName === 'save_memory') {
+                              actionResult = await executeSaveMemory(projectId, args, userId);
+                          } else if (fnName === 'update_step_status') {
+                              actionResult = await executeUpdateStepStatus(projectId, args, userId, { conversationId });
+                          } else if (fnName === 'add_roadmap_step') {
+                              actionResult = await executeAddRoadmapStep(projectId, args, userId, { conversationId });
+                          } else if (fnName === 'add_step_note') {
+                              actionResult = await executeAddStepNote(projectId, args, userId, { conversationId });
+                          } else if (fnName === 'add_canvas_card') {
+                              actionResult = await executeAddCanvasCard(projectId, args, userId, { conversationId });
+                          } else if (fnName === 'create_content_post') {
+                              actionResult = await executeCreateContentPost(projectId, args, userId, { conversationId });
+                          } else if (fnName === 'move_content_post') {
+                              actionResult = await executeMoveContentPost(projectId, args, userId, { conversationId });
+                          } else if (fnName === 'create_script') {
+                              actionResult = await executeCreateScript(projectId, args, userId, { conversationId });
+                          } else if (fnName === 'toggle_permit') {
+                              actionResult = await executeTogglePermit(projectId, args, userId, { conversationId });
                           } else {
                               actionResult = { error: "Unknown tool" };
                           }
@@ -207,7 +293,7 @@ export async function POST(req: Request) {
                           content: JSON.stringify(actionResult)
                       });
                   }
-                  
+
                   // Run loop again to let agent decide next step
                   continue;
               }
@@ -215,30 +301,19 @@ export async function POST(req: Request) {
               // No tool calls - this is the final response. Stream the tokens back!
               sendJSON({ type: "status", content: "درحال آماده‌سازی پاسخ نهایی..." });
 
-              const finalStreamRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                  method: "POST",
-                  headers: {
-                      "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                      "Content-Type": "application/json",
-                      "HTTP-Referer": "https://www.karnex.ir",
-                      "X-Title": "Karnex"
-                  },
-                  body: JSON.stringify({
-                      model: "google/gemini-3.5-flash",
-                      messages: currentMessages,
-                      temperature: 0.7,
-                      stream: true // Stream the final text confirmation to the user
-                  })
+              const { response: finalStreamRes, model: finalModel } = await callCopilotChat({
+                  messages: currentMessages,
+                  temperature: 0.7,
+                  stream: true,
+                  signal: clientSignal,
+                  tier,
               });
-
-              if (!finalStreamRes.ok) {
-                  const errorText = await finalStreamRes.text();
-                  throw new Error(`OpenRouter Final Stream error: ${errorText}`);
-              }
+              lastModelUsed = finalModel;
 
               const reader = finalStreamRes.body?.getReader();
               if (!reader) {
                   if (responseMessage.content) {
+                      assistantContent = responseMessage.content;
                       sendJSON({ type: "text", content: responseMessage.content });
                   }
                   break;
@@ -264,25 +339,125 @@ export async function POST(req: Request) {
                               const parsed = JSON.parse(cleaned.substring(6));
                               const text = parsed.choices?.[0]?.delta?.content;
                               if (text) {
+                                  assistantContent += text;
                                   sendJSON({ type: "text", content: text });
                               }
-                          } catch (e) {
+                              if (parsed.usage) {
+                                  const u = extractUsage({ usage: parsed.usage });
+                                  totalPromptTokens += u.promptTokens;
+                                  totalCompletionTokens += u.completionTokens;
+                              }
+                          } catch {
                               // Ignore parse error on chunks
                           }
                       }
                   }
               }
 
-              break; 
+              break;
           }
 
           if (finalToolResult) {
               sendJSON({ type: "tool_call", tool_call: finalToolResult });
           }
 
+          // === Persist the assistant message ===
+          let assistantMessageDbId: string | undefined;
+          if (assistantContent.trim() || finalToolResult) {
+            try {
+              const assistantMsg = await prisma.chatMessage.create({
+                data: {
+                  conversationId,
+                  role: "assistant",
+                  content: assistantContent || "_(پاسخ خالی)_",
+                  toolCalls: finalToolResult ? [finalToolResult] : undefined,
+                  parentMessageId: userMessageDbId || null,
+                },
+              });
+              assistantMessageDbId = assistantMsg.id;
+
+              await prisma.chatConversation.update({
+                where: { id: conversationId },
+                data: {
+                  lastMessagePreview: assistantContent.slice(0, 120) || (finalToolResult ? `ابزار: ${finalToolResult.name}` : "گفتگوی جدید"),
+                  lastMessageAt: new Date(),
+                },
+              });
+
+              // Schedule a cheap, non-blocking memory-extraction pass after the
+              // response is flushed so it never delays the user's stream.
+              if (lastUserMsg && assistantContent.trim()) {
+                after(() =>
+                  extractAndSaveMemory({
+                    userId,
+                    projectId,
+                    conversationId,
+                    userMessage: lastUserMsg.content,
+                    assistantMessage: assistantContent,
+                  })
+                );
+              }
+            } catch (persistErr) {
+              console.error("Failed to persist assistant message (non-fatal):", persistErr);
+            }
+          }
+
+          sendJSON({ type: "meta", assistantMessageId: assistantMessageDbId });
+
+          // Record aggregated token/cost usage for this request (non-fatal).
+          await recordAiUsage({
+              userId,
+              projectId,
+              conversationId,
+              model: lastModelUsed,
+              feature: "copilot_chat",
+              promptTokens: totalPromptTokens,
+              completionTokens: totalCompletionTokens,
+              success: true,
+          });
+
         } catch (err: any) {
-          console.error("Agentic Loop Stream error:", err);
-          sendJSON({ type: "error", error: err.message || "خطای ناخواسته در سرور" });
+          if (err?.name === "AbortError") {
+            // User stopped — persist partial assistant content.
+            try {
+              if (assistantContent.trim()) {
+                await prisma.chatMessage.create({
+                  data: {
+                    conversationId,
+                    role: "assistant",
+                    content: assistantContent + "\n\n_(متوقف شد)_",
+                    parentMessageId: userMessageDbId || null,
+                  },
+                });
+                await prisma.chatConversation.update({
+                  where: { id: conversationId },
+                  data: {
+                    lastMessagePreview: assistantContent.slice(0, 120),
+                    lastMessageAt: new Date(),
+                  },
+                });
+              }
+            } catch {
+              // non-fatal
+            }
+            sendJSON({ type: "error", error: "stopped" });
+          } else {
+            console.error("Agentic Loop Stream error:", err);
+            sendJSON({ type: "error", error: err.message || "خطای ناخواسته در سرور" });
+          }
+
+          // Record failed usage (non-fatal).
+          await recordAiUsage({
+              userId,
+              projectId,
+              conversationId,
+              model: lastModelUsed,
+              feature: "copilot_chat",
+              promptTokens: totalPromptTokens,
+              completionTokens: totalCompletionTokens,
+              success: false,
+              errorMessage: err?.message || "unknown",
+          });
         } finally {
           controller.close();
         }
@@ -303,4 +478,11 @@ export async function POST(req: Request) {
     await rollback();
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
+}
+
+function deriveTitle(messages: { role: string; content: string }[]): string {
+  const firstUser = messages.find((m) => m.role === "user");
+  if (!firstUser) return "گفتگوی جدید";
+  const text = firstUser.content.replace(/\s+/g, " ").trim();
+  return text.length > 40 ? text.slice(0, 40) + "…" : text || "گفتگوی جدید";
 }

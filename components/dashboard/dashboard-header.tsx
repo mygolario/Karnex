@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   Settings, LogOut, User, Crown,
-  ChevronDown, Sparkles, CircleHelp, ChevronLeft,
+  ChevronDown, Sparkles, ChevronLeft,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { CommandMenu } from "@/components/dashboard/command-menu";
@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { cn } from "@/lib/utils";
+import { TourLauncher } from "@/components/tour/tour-launcher";
 
 /* ── Breadcrumb map ── */
 const routeLabels: Record<string, string> = {
@@ -27,8 +28,7 @@ const routeLabels: Record<string, string> = {
   "/dashboard/content-calendar": "تقویم محتوا",
   "/dashboard/scripts": "اسکریپت‌نویسی",
   "/dashboard/sponsor-rates": "تعرفه اسپانسری",
-  "/dashboard/settings": "تنظیمات",
-  "/dashboard/profile": "حساب کاربری",
+  "/dashboard/account": "حساب کاربری",
   "/dashboard/media-kit": "مدیاکیت",
   "/dashboard/analytics": "آنالیتیکس",
   "/dashboard/ideas": "ایده‌ها",
@@ -92,15 +92,8 @@ export function DashboardHeader() {
         {/* Theme Toggle */}
         <ThemeToggle />
 
-        {/* Help Button */}
-        <button
-          onClick={() => window.dispatchEvent(new Event('restart-tour'))}
-          className="p-2 rounded-xl hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
-          title="راهنما"
-          data-tour-id="help-button"
-        >
-          <CircleHelp size={20} />
-        </button>
+        {/* Tour Launcher */}
+        <TourLauncher />
 
         {/* User Avatar & Dropdown */}
         <div className="relative" ref={userMenuRef}>
@@ -126,7 +119,8 @@ export function DashboardHeader() {
                 )} />
                 <span className="text-[10px] text-muted-foreground">
                   {userProfile?.subscription?.planId === "pro" ? "حرفه‌ای" :
-                   userProfile?.subscription?.planId === "plus" ? "پلاس" : "رایگان"}
+                   userProfile?.subscription?.planId === "plus" ? "پلاس" :
+                   userProfile?.subscription?.planId === "ultra" ? "اولترا" : "رایگان"}
                 </span>
               </div>
             </div>
@@ -140,7 +134,7 @@ export function DashboardHeader() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute start-0 top-full mt-2 w-72 bg-card border border-border rounded-2xl shadow-2xl shadow-black/10 overflow-hidden"
+                className="absolute end-0 top-full mt-2 w-72 bg-card border border-border rounded-2xl shadow-2xl shadow-black/10 overflow-hidden"
               >
                 {/* User Info Header */}
                 <div className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 border-b border-border">
@@ -177,7 +171,8 @@ export function DashboardHeader() {
                             : "text-yellow-600 dark:text-yellow-400"
                         )}>
                           {userProfile?.subscription?.planId === "pro" ? "حرفه‌ای" :
-                           userProfile?.subscription?.planId === "plus" ? "پلاس" : "رایگان"}
+                           userProfile?.subscription?.planId === "plus" ? "پلاس" :
+                           userProfile?.subscription?.planId === "ultra" ? "اولترا" : "رایگان"}
                         </span>
                       </div>
                     </div>
@@ -187,25 +182,25 @@ export function DashboardHeader() {
                 {/* Menu Items */}
                 <div className="p-2">
                   <Link
-                    href="/dashboard/profile"
+                    href="/dashboard/account"
                     onClick={() => setShowUserMenu(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/80 transition-colors group"
                   >
                     <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
                       <User size={16} />
                     </div>
-                    <span className="text-sm font-medium text-foreground">حساب کاربری</span>
+                    <span className="text-sm font-medium text-foreground">حساب کاربری و تنظیمات</span>
                   </Link>
 
                   <Link
-                    href="/dashboard/settings"
+                    href="/dashboard/account?section=integrations"
                     onClick={() => setShowUserMenu(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/80 transition-colors group"
                   >
                     <div className="w-8 h-8 rounded-lg bg-slate-500/10 flex items-center justify-center text-slate-500">
                       <Settings size={16} />
                     </div>
-                    <span className="text-sm font-medium text-foreground">تنظیمات</span>
+                    <span className="text-sm font-medium text-foreground">شخصی‌سازی و یکپارچه‌سازی</span>
                   </Link>
 
                   <Link

@@ -34,6 +34,7 @@ export const PitchDeckSlideSchema = z.object({
   title: z.string().default('بدون عنوان'),
   bullets: z.array(z.string()).default([]),
   isHidden: z.boolean().optional().default(false),
+  metadata: z.any().optional(),
 });
 
 export const PitchDeckSchema = z.object({

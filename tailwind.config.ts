@@ -77,6 +77,13 @@ const config: Config = {
           secondary: "hsl(var(--brand-secondary))",
           accent: "hsl(var(--brand-accent))",
         },
+        // Copilot AI signature color (violet/indigo)
+        ai: {
+          DEFAULT: "hsl(var(--ai))",
+          foreground: "hsl(var(--ai-foreground))",
+          muted: "hsl(var(--ai-muted))",
+          border: "hsl(var(--ai-border))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -135,6 +142,16 @@ const config: Config = {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
         },
+        // Copilot thinking orb pulse
+        "ai-pulse": {
+          "0%, 100%": { opacity: "0.4", transform: "scale(0.8)" },
+          "50%": { opacity: "1", transform: "scale(1)" },
+        },
+        // Typing dots bounce
+        "typing-dot": {
+          "0%, 60%, 100%": { transform: "translateY(0)", opacity: "0.4" },
+          "30%": { transform: "translateY(-4px)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -146,6 +163,8 @@ const config: Config = {
         "scale-in": "scale-in 0.3s ease-out forwards",
         "bounce-gentle": "bounce-gentle 2s ease-in-out infinite",
         "spin-slow": "spin 3s linear infinite",
+        "ai-pulse": "ai-pulse 1.4s ease-in-out infinite",
+        "typing-dot": "typing-dot 1.4s ease-in-out infinite",
       },
     },
   },

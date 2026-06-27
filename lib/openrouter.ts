@@ -12,6 +12,37 @@ export const TEXT_MODELS = [
     "google/gemini-2.5-flash-lite"   // Priority 3 (Ultra-fast budget fallback)
 ];
 
+// Dedicated model list for the agentic Copilot loop (tool-calling + streaming).
+// Kept separate so the copilot can evolve independently of the generic TEXT_MODELS.
+// Falls back through the chain on transient failure (handled by callOpenRouter / inline calls).
+export const COPILOT_MODELS = [
+    "google/gemini-3.5-flash",        // Priority 1 (Fast tool-calling, high quality)
+    "google/gemini-2.5-flash",        // Priority 2 (Stable fallback)
+    "google/gemini-2.5-flash-lite"   // Priority 3 (Ultra-fast budget fallback)
+];
+
+// Fast tier — used for cheap, high-volume background work: titles, summaries,
+// follow-up generation, memory extraction, classification, quick replies.
+// gemini-3.1-flash-lite is the primary choice (per product strategy); the
+// 2.5-flash-lite is kept as a resilience fallback if the primary slug is
+// temporarily unavailable on OpenRouter.
+export const COPILOT_FAST_MODELS = [
+    "google/gemini-3.1-flash-lite",   // Priority 1 (ultra-cheap, fast)
+    "google/gemini-2.5-flash-lite",   // Priority 2 (stable fallback)
+];
+
+export type CopilotModelTier = "hard" | "fast";
+
+/**
+ * Pick the model chain to try for a given tier, honoring an optional override.
+ * Returns the ordered list of models to attempt (override first, then fallbacks).
+ */
+export function copilotModelChain(override?: string, tier: CopilotModelTier = "hard"): string[] {
+    const base = tier === "fast" ? COPILOT_FAST_MODELS : COPILOT_MODELS;
+    if (override) return [override, ...base.filter(m => m !== override)];
+    return base;
+}
+
 export interface OpenRouterResponse {
     success: boolean;
     content?: string;
@@ -205,19 +236,164 @@ export function parseJsonFromAI(content: string): any {
     try {
         return JSON.parse(jsonStr);
     } catch (e) {
-        // 3. Fallback: Find first '{' and last '}'
+        // 3. Fallback: Find first '{' or '[' and last '}' or ']'
         const firstBrace = jsonStr.indexOf('{');
+        const firstBracket = jsonStr.indexOf('[');
         const lastBrace = jsonStr.lastIndexOf('}');
+        const lastBracket = jsonStr.lastIndexOf(']');
         
-        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-            const potentialJson = jsonStr.substring(firstBrace, lastBrace + 1);
+        let start = -1;
+        if (firstBrace !== -1 && firstBracket !== -1) {
+            start = Math.min(firstBrace, firstBracket);
+        } else if (firstBrace !== -1) {
+            start = firstBrace;
+        } else if (firstBracket !== -1) {
+            start = firstBracket;
+        }
+
+        let end = -1;
+        if (lastBrace !== -1 && lastBracket !== -1) {
+            end = Math.max(lastBrace, lastBracket);
+        } else if (lastBrace !== -1) {
+            end = lastBrace;
+        } else if (lastBracket !== -1) {
+            end = lastBracket;
+        }
+        
+        if (start !== -1 && end !== -1 && end > start) {
+            const potentialJson = jsonStr.substring(start, end + 1);
             try {
                 return JSON.parse(potentialJson);
             } catch (innerE) {
-                // Formatting might be slightly off (e.g. standard Gemini/Flash issues)
                 throw e; // Throw original error for now
             }
         }
         throw e;
     }
+}
+
+// === Copilot Agentic Chat ===
+
+export interface CopilotChatParams {
+    messages: any[];
+    tools?: any[];
+    toolChoice?: string;       // "auto" | "none" | specific
+    temperature?: number;
+    stream?: boolean;
+    signal?: AbortSignal;      // supports user-initiated stop
+    modelOverride?: string;
+    timeoutMs?: number;
+    tier?: CopilotModelTier;   // "hard" (default) for reasoning/tool-use, "fast" for cheap tasks
+}
+
+export interface CopilotChatResult {
+    response: Response;         // raw fetch Response (body is stream when stream=true)
+    model: string;              // the model that succeeded
+}
+
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+function openRouterHeaders(): Record<string, string> {
+    return {
+        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL || "https://www.karnex.ir",
+        "X-Title": "Karnex",
+    };
+}
+
+/**
+ * Call OpenRouter for the Copilot agentic loop with automatic model fallback,
+ * retry on transient errors, and AbortSignal support (for the Stop button).
+ *
+ * Returns the raw Response so callers can either `.json()` it (non-streaming
+ * tool-call turns) or read the body as a stream (final text streaming).
+ */
+export async function callCopilotChat(params: CopilotChatParams): Promise<CopilotChatResult> {
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+        throw new Error("OPENROUTER_API_KEY is missing from environment variables");
+    }
+
+    const {
+        messages,
+        tools,
+        toolChoice = "auto",
+        temperature = 0.7,
+        stream = false,
+        signal,
+        modelOverride,
+        timeoutMs = 30000,
+        tier = "hard",
+    } = params;
+
+    const models = copilotModelChain(modelOverride, tier);
+    let lastError: Error | null = null;
+
+    for (const model of models) {
+        try {
+            const response = await withRetry(
+                async () => {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+                    // Propagate an external (user) abort to the inner controller.
+                    if (signal) {
+                        if (signal.aborted) controller.abort();
+                        else signal.addEventListener("abort", () => controller.abort(), { once: true });
+                    }
+
+                    try {
+                        const body: Record<string, unknown> = {
+                            model,
+                            messages,
+                            temperature,
+                        };
+                        if (tools && tools.length > 0) {
+                            body.tools = tools;
+                            body.tool_choice = toolChoice;
+                        }
+                        if (stream) {
+                            body.stream = true;
+                            // Ask the provider to include a final usage chunk so we
+                            // can record token/cost data for streaming responses.
+                            body.stream_options = { include_usage: true };
+                        }
+
+                        const res = await fetch(OPENROUTER_URL, {
+                            method: "POST",
+                            headers: openRouterHeaders(),
+                            body: JSON.stringify(body),
+                            signal: controller.signal,
+                        });
+
+                        if (!res.ok) {
+                            const errorText = await res.text();
+                            if (res.status === 429 || res.status === 503) {
+                                throw new TransientError(`HTTP ${res.status}`, res.status);
+                            }
+                            throw new Error(`HTTP ${res.status}: ${errorText.substring(0, 200)}`);
+                        }
+                        return res;
+                    } finally {
+                        clearTimeout(timeoutId);
+                    }
+                },
+                3,
+                1000,
+                isTransient
+            );
+
+            return { response, model };
+        } catch (error: any) {
+            // User cancelled — don't try the next model.
+            if (signal?.aborted || error.name === "AbortError") {
+                throw error;
+            }
+            console.warn(`Copilot model ${model} failed: ${error.message}`);
+            lastError = error;
+        }
+    }
+
+    throw lastError || new Error("All copilot models failed");
 }

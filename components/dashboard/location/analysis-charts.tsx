@@ -3,85 +3,115 @@
 import { Card } from "@/components/ui/card";
 import { useLocation } from "./location-context";
 import { 
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, Legend 
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from "recharts";
 import { motion } from "framer-motion";
-
-const COLORS = ['#8884d8', '#00C49F', '#FFBB28', '#FF8042', '#A28CDA'];
+import { Clock, Info } from "lucide-react";
 
 export function AnalysisCharts() {
   const { analysis } = useLocation();
 
-  if (!analysis?.demographics) return null;
+  if (!analysis?.hourlyFootfall && !analysis?.peakHours) return null;
 
-  // Transform demographics for Pie Chart
-  const pieData = analysis.demographics.map((d, index) => ({
-    name: d.label,
-    value: d.percent,
-    color: d.color || COLORS[index % COLORS.length]
-  }));
-
-  // Mock data for "Trend" if not available (since prompt doesn't strictly provide historical data yet)
-  const trafficData = [
-    { name: 'شنبه', traffic: 65 },
-    { name: '۱شنبه', traffic: 59 },
-    { name: '۲شنبه', traffic: 80 },
-    { name: '۳شنبه', traffic: 81 },
-    { name: '۴شنبه', traffic: 90 }, // Peak usually
-    { name: '۵شنبه', traffic: 95 },
-    { name: 'جمعه', traffic: 40 },
+  // Fallback traffic data if AI didn't provide specific coordinates/hours
+  const defaultTrafficData = [
+    { hour: '۰۸:۰۰', trafficIndex: 25 },
+    { hour: '۱۰:۰۰', trafficIndex: 45 },
+    { hour: '۱۲:۰۰', trafficIndex: 65 },
+    { hour: '۱۴:۰۰', trafficIndex: 50 },
+    { hour: '۱۶:۰۰', trafficIndex: 60 },
+    { hour: '۱۸:۰۰', trafficIndex: 85 },
+    { hour: '۲۰:۰۰', trafficIndex: 95 },
+    { hour: '۲۲:۰۰', trafficIndex: 70 },
   ];
 
+  const chartData = analysis.hourlyFootfall && analysis.hourlyFootfall.length > 0
+    ? analysis.hourlyFootfall.map(item => ({
+        hour: item.hour.replace(/[0-9]/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[parseInt(d)]),
+        trafficIndex: item.trafficIndex
+      }))
+    : defaultTrafficData;
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-      
-      {/* Demographics Pie Chart */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-        <Card className="p-6 h-[350px] flex flex-col items-center justify-center bg-card/40 backdrop-blur-md border-white/10">
-          <h3 className="text-sm font-semibold mb-4 self-start text-muted-foreground">ترکیب جمعیتی (Demographics)</h3>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={pieData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                ))}
-              </Pie>
-              <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', backgroundColor: '#1e293b', color: '#fff' }}
-              />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" />
-            </PieChart>
-          </ResponsiveContainer>
-        </Card>
-      </motion.div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ delay: 0.2 }}
+      className="space-y-6"
+    >
+      <Card className="p-6 bg-card/30 border-white/5 shadow-xl backdrop-blur-md text-right dir-rtl">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-bold text-sm flex items-center gap-2">
+            <Clock size={16} className="text-primary" />
+            تحلیل زمانی تردد عابرین پیاده (پاخور)
+          </h4>
+          {analysis.peakHours && (
+            <div className="text-xs text-primary font-bold bg-primary/10 border border-primary/20 px-2.5 py-1 rounded-full">
+              ساعات پیک: {analysis.peakHours}
+            </div>
+          )}
+        </div>
 
-      {/* Traffic Trend (Mock/Estimated) - Placeholder for future "Peak Hours" real data */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-        <Card className="p-6 h-[350px] bg-card/40 backdrop-blur-md border-white/10">
-          <h3 className="text-sm font-semibold mb-4 text-muted-foreground">روند ترافیک هفتگی (تخمین)</h3>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={trafficData}>
-              <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis hide />
-              <Tooltip 
-                cursor={{ fill: 'rgba(255,255,255,0.1)' }}
-                contentStyle={{ borderRadius: '8px', border: 'none', backgroundColor: '#1e293b', color: '#fff' }}
-              />
-              <Bar dataKey="traffic" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={30} />
-            </BarChart>
-          </ResponsiveContainer>
-        </Card>
-      </motion.div>
+        <p className="text-xs text-muted-foreground mb-6">
+          میزان تخمینی شلوغی و ترافیک عابرین پیاده در محدوده مغازه در ساعات مختلف روز
+        </p>
 
-    </div>
+        <div className="h-[240px] w-full mt-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="trafficGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
+              <XAxis 
+                dataKey="hour" 
+                fontSize={10} 
+                tickLine={false} 
+                axisLine={false} 
+                stroke="#64748b" 
+              />
+              <YAxis 
+                fontSize={10} 
+                tickLine={false} 
+                axisLine={false} 
+                stroke="#64748b" 
+                domain={[0, 100]}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  borderRadius: '12px', 
+                  border: '1px solid rgba(255,255,255,0.08)', 
+                  backgroundColor: '#0f172a', 
+                  color: '#fff', 
+                  fontSize: '11px',
+                  textAlign: 'right',
+                  direction: 'rtl'
+                }}
+                formatter={(value: any) => [`${value}٪`, 'شاخص شلوغی']}
+                labelFormatter={(label) => `ساعت: ${label}`}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="trafficIndex" 
+                stroke="#8b5cf6" 
+                strokeWidth={2}
+                fillOpacity={1} 
+                fill="url(#trafficGradient)" 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {analysis.aiInsight && (
+          <div className="mt-4 flex items-start gap-2 p-3 bg-white/[0.02] border border-white/5 rounded-lg text-[11px] text-muted-foreground leading-relaxed">
+            <Info size={14} className="text-primary shrink-0 mt-0.5" />
+            <span>پیشنهاد کارنکس: با تکیه بر پیک شلوغی در ساعات مشخص شده، بازه‌های تخفیفی پویا یا شیفت‌های کاری پرسنل را بهینه‌سازی کنید.</span>
+          </div>
+        )}
+      </Card>
+    </motion.div>
   );
 }

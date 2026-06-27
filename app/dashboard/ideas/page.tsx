@@ -14,7 +14,7 @@ import {
 import { toast } from "sonner";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { LimitReachedModal } from "@/components/dashboard/limit-reached-modal";
+import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 interface Idea {
   id: string;
@@ -103,7 +103,7 @@ export default function IdeasPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+    <div className="max-w-7xl mx-auto space-y-6 pb-24 md:pb-12">
       {/* Header */}
       <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
         <div>
@@ -237,10 +237,8 @@ export default function IdeasPage() {
       <LimitReachedModal
         isOpen={showLimitModal}
         onClose={() => setShowLimitModal(false)}
-        type="ai"
-        used={0}
         limit={10}
-        tier="free"
+        used={0}
       />
     </div>
   );

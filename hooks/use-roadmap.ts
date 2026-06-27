@@ -3,8 +3,8 @@
 import { useState, useEffect, useMemo, useOptimistic, startTransition, useCallback } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import {
-  updateRoadmapStepStatus,
+import { updateRoadmapStepStatus } from "@/lib/db";
+import type {
   RoadmapStep,
   RoadmapPhase,
   StepRuntimeStatus,

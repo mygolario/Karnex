@@ -13,7 +13,7 @@ interface LocationContextType {
   comparisonItems: LocationAnalysis[];
   comparisonMode: boolean;
   saveAnalysis: (data: LocationAnalysis) => Promise<void>;
-  analyzeLocation: (city: string, address: string) => Promise<void>;
+  analyzeLocation: (city: string, address: string, radius?: number, priceTier?: string, footfallDependency?: string, rentBudget?: number) => Promise<void>;
   loadFromHistory: (item: LocationAnalysis) => void;
   addToComparison: (item: LocationAnalysis) => void;
   removeFromComparison: (id: string) => void;
@@ -108,7 +108,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
     toast.success("تحلیل حذف شد");
   };
 
-  const analyzeLocation = async (city: string, address: string) => {
+  const analyzeLocation = async (city: string, address: string, radius = 500, priceTier = 'mid', footfallDependency = 'high', rentBudget = 25000000) => {
     setLoading(true);
     try {
       const prompt = `
@@ -155,6 +155,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
           
           "competitorAnalysis": {
             "saturationLevel": "Blue Ocean (Opportunity)" | "Red Ocean (Saturated)" | "Niche Market",
+            "saturationPercentage": number (0-100),
             "marketGap": "string (What specific concept is missing?)",
             "competitorCount": number,
             "directCompetitors": [
@@ -204,11 +205,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
             "market": number (0-100)
           },
           
-          "peakHours": "string (e.g. 'ساعات ۱۷ تا ۲۱ بیشترین تردد')",
-          
-          "recommendations": [
-             { "title": "string", "desc": "string" }
-          ]
+          "peakHours": "string (e.g. 'ساعات ۱۷ تا ۲۱ بیشترین تردد')"
         }
         
         RULES:
@@ -223,7 +220,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         - Write descriptions and fields in simple, understandable Persian for beginners.
         - In "scoreReason", "neighborhoodProfile", "aiInsight", and "marketGapCards.description", write at least 2 full sentences.
         - Explain technical terms in parentheses (e.g. "CAC (هزینه جذب هر مشتری)").
-        - In "recommendations" and "prioritizedRecommendations", explain WHY and HOW, not just WHAT.
+        - In "prioritizedRecommendations", explain WHY and HOW, not just WHAT.
       `;
 
       const response = await fetch("/api/ai-generate", {
@@ -235,6 +232,10 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
           city,
           address,
           activeProject,
+          radius,
+          priceTier,
+          footfallDependency,
+          rentBudget,
           modelOverride: 'google/gemini-3.5-flash' 
         }),
       });

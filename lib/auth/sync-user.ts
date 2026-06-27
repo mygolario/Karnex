@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { archiveAppUser } from "@/lib/auth/archive-user";
 
 function displayName(supabaseUser: SupabaseUser): string | undefined {
   const meta = supabaseUser.user_metadata ?? {};
@@ -38,17 +39,29 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
   });
 
   if (byEmail) {
-    return prisma.user.update({
-      where: { id: byEmail.id },
-      data: {
-        supabaseUserId: supabaseUser.id,
-        name: byEmail.name || displayName(supabaseUser),
-        image: byEmail.image || avatarUrl(supabaseUser),
-        emailVerified: supabaseUser.email_confirmed_at
-          ? new Date(supabaseUser.email_confirmed_at)
-          : byEmail.emailVerified,
-      },
-    });
+    // Legacy migration: link Supabase ID to a row that never had one.
+    if (!byEmail.supabaseUserId) {
+      return prisma.user.update({
+        where: { id: byEmail.id },
+        data: {
+          supabaseUserId: supabaseUser.id,
+          name: byEmail.name || displayName(supabaseUser),
+          image: byEmail.image || avatarUrl(supabaseUser),
+          emailVerified: supabaseUser.email_confirmed_at
+            ? new Date(supabaseUser.email_confirmed_at)
+            : byEmail.emailVerified,
+        },
+      });
+    }
+
+    // Same Supabase auth identity — normal re-login.
+    if (byEmail.supabaseUserId === supabaseUser.id) {
+      return byEmail;
+    }
+
+    // New Supabase auth user re-used an email from a previous auth identity.
+    // Archive the old app record (subscription does not carry over).
+    await archiveAppUser(byEmail.id);
   }
 
   const name = displayName(supabaseUser);

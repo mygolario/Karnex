@@ -1,18 +1,25 @@
 import { create } from "zustand";
 import { BusinessPlan, savePlanToCloud } from "@/lib/db";
 
+async function fetchProjectDetail(projectId: string): Promise<BusinessPlan | null> {
+  const res = await fetch(`/api/projects/${projectId}`, { cache: "no-store" });
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.project as BusinessPlan;
+}
+
 interface ProjectState {
   projects: BusinessPlan[];
   activeProject: BusinessPlan | null;
   loading: boolean;
-  
+
   setProjects: (projects: BusinessPlan[]) => void;
   setActiveProject: (project: BusinessPlan | null) => void;
   setLoading: (loading: boolean) => void;
-  
+
   refreshProjects: (userId?: string) => Promise<void>;
-  createNewProject: (userId: string, planData: any) => Promise<string>;
-  switchProject: (projectId: string) => void;
+  createNewProject: (userId: string, planData: Record<string, unknown>) => Promise<string>;
+  switchProject: (projectId: string) => Promise<void>;
   updateActiveProject: (userId: string, updates: Partial<BusinessPlan>) => Promise<void>;
 }
 
@@ -32,43 +39,51 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
     set({ loading: true });
     try {
-      // Fetch via standard HTTP GET so Serwist service worker can intercept and cache it
-      const res = await fetch("/api/projects").then(r => r.json()).catch(err => {
-        console.warn("API fetch failed, falling back to direct server action", err);
-        return null;
-      });
+      const res = await fetch("/api/projects", { cache: "no-store" })
+        .then((r) => r.json())
+        .catch(() => null);
 
-      let allProjects: BusinessPlan[] = [];
+      let summaries: BusinessPlan[] = [];
 
-      if (res && res.success && res.projects) {
-        allProjects = res.projects;
+      if (res?.success && res.projects) {
+        summaries = res.projects;
       } else {
-        // Fallback to server action if fetch failed or returned error
         const { getUserProjectsAction } = await import("@/lib/project-actions");
         const actionRes = await getUserProjectsAction();
         if (actionRes.error) {
-          console.error("Error fetching projects via server action:", actionRes.error);
+          console.error("Error fetching projects:", actionRes.error);
           set({ loading: false });
           return;
         }
-        allProjects = (actionRes.projects as BusinessPlan[]) || [];
+        summaries = (actionRes.projects as BusinessPlan[]) || [];
       }
-      
-      set({ projects: allProjects });
 
-      // Determine active project
-      let selected = get().activeProject;
-      if (selected && selected.id) {
-         selected = allProjects.find((p) => p.id === selected!.id) || null;
+      set({ projects: summaries });
+
+      let selectedId = get().activeProject?.id;
+      if (selectedId && !summaries.find((p) => p.id === selectedId)) {
+        selectedId = undefined;
       }
-      
-      if (!selected && allProjects.length > 0) {
-        selected = [...allProjects].sort((a, b) => 
+      if (!selectedId && summaries.length > 0) {
+        selectedId = [...summaries].sort(
+          (a, b) =>
             new Date(b.updatedAt || 0).getTime() - new Date(a.updatedAt || 0).getTime()
-        )[0];
+        )[0].id;
       }
 
-      set({ activeProject: selected });
+      if (selectedId) {
+        const full = await fetchProjectDetail(selectedId);
+        if (full) {
+          set({
+            activeProject: full,
+            projects: summaries.map((p) => (p.id === full.id ? full : p)),
+          });
+        } else {
+          set({ activeProject: summaries.find((p) => p.id === selectedId) || null });
+        }
+      } else {
+        set({ activeProject: null });
+      }
     } catch (err) {
       console.error("Failed to load projects", err);
     } finally {
@@ -87,62 +102,64 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }
 
       const newId = res.id;
-      
-      // Fetch fresh list
-      const { getUserProjectsAction } = await import("@/lib/project-actions");
-      const fetchRes = await getUserProjectsAction();
-      
-      if (fetchRes.error) throw new Error("Failed to refresh projects");
-      
-      let allProjects = (fetchRes.projects as BusinessPlan[]) || [];
-      let newProject = allProjects.find(p => p.id === newId);
-      
-      if (!newProject) {
-        newProject = {
-          id: newId,
-          userId,
-          projectName: planData.projectName,
-          tagline: planData.tagline,
-          description: planData.description || "",
-          data: planData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          ...planData 
-        } as BusinessPlan;
-        
-        allProjects = [newProject, ...allProjects];
+      const full = await fetchProjectDetail(newId);
+
+      if (full) {
+        set((state) => ({
+          projects: [full, ...state.projects.filter((p) => p.id !== newId)],
+          activeProject: full,
+        }));
+      } else {
+        await get().refreshProjects(userId);
       }
-      
-      set({ projects: allProjects, activeProject: newProject });
+
       return newId;
     } catch (err) {
-      console.error("❌ Error switching to new project:", err);
+      console.error("Error creating project:", err);
       throw err;
     } finally {
       set({ loading: false });
     }
   },
 
-  switchProject: (projectId) => {
-    const { projects } = get();
-    const target = projects.find(p => p.id === projectId);
-    if (target) {
-      set({ activeProject: target });
+  switchProject: async (projectId) => {
+    const { projects, activeProject } = get();
+    if (activeProject?.id === projectId && activeProject.roadmap) {
+      return;
+    }
+
+    const cached = projects.find((p) => p.id === projectId);
+    if (cached?.roadmap) {
+      set({ activeProject: cached });
+      return;
+    }
+
+    set({ loading: true });
+    try {
+      const full = await fetchProjectDetail(projectId);
+      if (full) {
+        set({
+          activeProject: full,
+          projects: projects.map((p) => (p.id === projectId ? full : p)),
+        });
+      }
+    } finally {
+      set({ loading: false });
     }
   },
 
   updateActiveProject: async (userId, updates) => {
     const { activeProject } = get();
-    if (!activeProject || !activeProject.id) return;
-    
-    // Optimistic Update
+    if (!activeProject?.id) return;
+
     const updatedProject = { ...activeProject, ...updates };
     set({
       activeProject: updatedProject,
-      projects: get().projects.map(p => p.id === activeProject.id ? updatedProject : p)
+      projects: get().projects.map((p) =>
+        p.id === activeProject.id ? updatedProject : p
+      ),
     });
 
-    // Save to Cloud
     if (typeof window !== "undefined" && !navigator.onLine) {
       const { addUpdateProjectToQueue } = await import("@/lib/offline-sync");
       addUpdateProjectToQueue(userId, activeProject.id, updates);
@@ -150,11 +167,11 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
 
     try {
-      await savePlanToCloud(userId, updates as any, true, activeProject.id);
+      await savePlanToCloud(userId, updates as Partial<BusinessPlan>, true, activeProject.id);
     } catch (err) {
       console.error("Failed to save project updates, queuing offline", err);
       const { addUpdateProjectToQueue } = await import("@/lib/offline-sync");
       addUpdateProjectToQueue(userId, activeProject.id, updates);
     }
-  }
+  },
 }));

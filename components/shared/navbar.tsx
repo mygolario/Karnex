@@ -16,6 +16,7 @@ import {
   HeadphonesIcon,
   Sparkles,
   Rocket,
+  Smartphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -65,6 +66,7 @@ export function Navbar() {
                 alt="کارنکس" 
                 width={44} 
                 height={44} 
+                sizes="44px"
                 className="rounded-xl shadow-lg shadow-primary/20"
                 priority
               />
@@ -108,6 +110,15 @@ export function Navbar() {
               >
                 <Crown size={14} />
                 تعرفه‌ها
+              </Link>
+
+              {/* Mobile App */}
+              <Link
+                href="/mobile-app"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-primary hover:bg-primary/10 transition-all"
+              >
+                <Smartphone size={14} />
+                نسخه موبایل
               </Link>
 
               {/* FAQ */}
@@ -223,6 +234,14 @@ export function Navbar() {
                   >
                     <Sparkles size={18} className="text-primary" />
                     <span className="font-medium text-foreground text-sm">امکانات</span>
+                  </Link>
+                  <Link
+                    href="/mobile-app"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/10 transition-colors"
+                  >
+                    <Smartphone size={18} className="text-primary" />
+                    <span className="font-medium text-foreground text-sm">نسخه موبایل</span>
                   </Link>
                   <Link
                     href="/#pricing"

@@ -18,6 +18,7 @@ export function Footer() {
     product: [
       { label: "مسیرها", href: "/#pillars" },
       { label: "امکانات", href: "/#features" },
+      { label: "نسخه موبایل", href: "/mobile-app" },
       { label: "نحوه کار", href: "/#how-it-works" },
       { label: "تعرفه‌ها", href: "/#pricing" },
       { label: "سوالات متداول", href: "/#faq" },

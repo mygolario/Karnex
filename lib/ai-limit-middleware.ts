@@ -18,7 +18,12 @@ export interface AILimitCheckResult {
 /**
  * Check AI request limits for the current user.
  * Returns the authenticated user if allowed, or an error response if not.
- * 
+ *
+ * Failure modes:
+ *  - No session            → 401 (legitimate denial)
+ *  - Monthly limit reached → 429 (legitimate denial)
+ *  - DB/infra error        → 503 FAIL CLOSED (prevents overage on transient errors)
+ *
  * Usage in API routes:
  * ```ts
  * const { user, errorResponse, rollback } = await checkAILimit();
@@ -31,7 +36,7 @@ export async function checkAILimit(): Promise<AILimitCheckResult> {
   try {
     const session = await auth();
     const user = session?.user;
-    
+
     if (!user || !user.id) {
       return {
         user: null,
@@ -42,7 +47,23 @@ export async function checkAILimit(): Promise<AILimitCheckResult> {
 
     const userId = user.id;
 
-    const usageCheck = await checkAIRequestLimit(userId);
+    let usageCheck;
+    try {
+      usageCheck = await checkAIRequestLimit(userId);
+    } catch (dbError) {
+      // Fail closed: a transient DB error must NOT let the request through,
+      // otherwise users could blow past their monthly quota.
+      console.error('AI limit check DB error (failing closed):', dbError);
+      return {
+        user: { id: userId, email: user.email || undefined },
+        errorResponse: NextResponse.json({
+          error: 'AI_LIMIT_CHECK_UNAVAILABLE',
+          message: 'به دلیل مشکل موقت در سرور، امکان بررسی سقف استفاده از هوش مصنوعی نیست. لطفاً کمی بعد تلاش کنید.',
+        }, { status: 503 }),
+        rollback: noopRollback
+      };
+    }
+
     if (!usageCheck.allowed) {
       return {
         user: { id: userId, email: user.email || undefined },
@@ -57,17 +78,38 @@ export async function checkAILimit(): Promise<AILimitCheckResult> {
       };
     }
 
-    // Increment usage counter
-    await incrementAIUsage(userId);
+    let incrementFailed = false;
+    try {
+      // Increment usage counter
+      await incrementAIUsage(userId);
+    } catch (dbError) {
+      // If increment fails we still allow the request (the check passed) but
+      // flag it so we don't block the user for our own infra hiccup.
+      console.error('AI usage increment failed (allowing request):', dbError);
+      incrementFailed = true;
+    }
 
     const rollback = async () => {
-      await decrementAIUsage(userId);
+      if (incrementFailed) return; // nothing to roll back
+      try {
+        await decrementAIUsage(userId);
+      } catch (e) {
+        console.error('AI usage rollback failed:', e);
+      }
     };
 
     return { user: { id: userId, email: user.email || undefined }, errorResponse: null, rollback };
   } catch (error) {
-    console.error('AI limit check error:', error);
-    // On error, allow the request (fail open)
-    return { user: null, errorResponse: null, rollback: noopRollback };
+    // Unexpected error — fail closed rather than letting an unknown failure
+    // bypass the quota enforcement.
+    console.error('AI limit check unexpected error (failing closed):', error);
+    return {
+      user: null,
+      errorResponse: NextResponse.json({
+        error: 'AI_LIMIT_CHECK_UNAVAILABLE',
+        message: 'به دلیل مشکل موقت در سرور، امکان بررسی سقف استفاده از هوش مصنوعی نیست. لطفاً کمی بعد تلاش کنید.',
+      }, { status: 503 }),
+      rollback: noopRollback
+    };
   }
 }

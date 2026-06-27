@@ -15,14 +15,35 @@ import {
   LogOut,
   Search,
   Sparkles,
-  ImageIcon
+  ImageIcon,
+  Sliders,
+  Shield,
+  CircleHelp,
 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+import { useProject } from "@/contexts/project-context";
+import { useCopilotStore } from "@/lib/copilot/store";
+import { useTourStore } from "@/lib/tour/store";
+import { getToursForProjectType } from "@/lib/tour/registry";
 
-export function CommandMenu() {
+interface CommandMenuProps {
+  mobile?: boolean;
+}
+
+export function CommandMenu({ mobile = false }: CommandMenuProps) {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const { activeProject } = useProject();
+  const startTour = useTourStore((s) => s.startTour);
+  const { setPendingPrefill, clearMessages } = useCopilotStore();
+
+  const askCopilot = React.useCallback((prefill?: string) => {
+    clearMessages();
+    if (prefill) setPendingPrefill(prefill);
+    setOpen(false);
+    router.push("/dashboard/copilot");
+  }, [router, setPendingPrefill, clearMessages]);
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -42,6 +63,15 @@ export function CommandMenu() {
 
   return (
     <>
+      {mobile ? (
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center justify-center h-10 w-10 rounded-xl hover:bg-muted/80 transition-colors mobile-touch-target"
+          aria-label="جستجو"
+        >
+          <Search size={20} className="text-muted-foreground" />
+        </button>
+      ) : (
       <button 
          onClick={() => setOpen(true)}
          className="hidden md:flex items-center justify-between w-64 px-4 py-2.5 bg-muted/40 hover:bg-muted/60 dark:bg-white/5 dark:hover:bg-white/10 hover:shadow-lg hover:scale-[1.02] border border-border/50 rounded-2xl text-sm text-muted-foreground cursor-pointer transition-all duration-300 group backdrop-blur-sm"
@@ -56,12 +86,17 @@ export function CommandMenu() {
             </kbd>
         </div>
       </button>
+      )}
 
       <Command.Dialog
         open={open}
         onOpenChange={setOpen}
         label="Global Command Menu"
-        className="fixed top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-popover/95 backdrop-blur-xl border border-border shadow-2xl rounded-xl overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-100"
+        className={
+          mobile
+            ? "fixed inset-x-0 top-0 bottom-0 w-full max-w-none h-dvh bg-popover/98 backdrop-blur-xl border-0 shadow-2xl rounded-none overflow-hidden z-[9999] animate-in slide-in-from-bottom duration-200"
+            : "fixed top-1/2 start-1/2 translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-popover/95 backdrop-blur-xl border border-border shadow-2xl rounded-xl overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-100"
+        }
       >
         <DialogPrimitive.Title className="sr-only">Command Menu</DialogPrimitive.Title>
         <div className="flex items-center border-b border-border/50 px-3" cmdk-input-wrapper="">
@@ -72,7 +107,7 @@ export function CommandMenu() {
           />
         </div>
         
-        <Command.List className="max-h-[300px] overflow-y-auto overflow-x-hidden p-2 dir-rtl">
+        <Command.List className={mobile ? "flex-1 max-h-none overflow-y-auto overflow-x-hidden p-2 dir-rtl" : "max-h-[300px] overflow-y-auto overflow-x-hidden p-2 dir-rtl"}>
           <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
              نتیجه‌ای یافت نشد.
           </Command.Empty>
@@ -100,7 +135,7 @@ export function CommandMenu() {
               <span>نقشه راه</span>
             </Command.Item>
              <Command.Item 
-                onSelect={() => runCommand(() => router.push('/dashboard/brand'))}
+                onSelect={() => runCommand(() => router.push('/dashboard/canvas'))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
               <ImageIcon className="ms-2 h-4 w-4" />
@@ -108,20 +143,82 @@ export function CommandMenu() {
             </Command.Item>
           </Command.Group>
 
+          <Command.Group heading="راهنمای تعاملی">
+            {getToursForProjectType(activeProject?.projectType)
+              .filter((t) => t.id !== "whats-new")
+              .slice(0, 6)
+              .map((tour) => (
+                <Command.Item
+                  key={tour.id}
+                  onSelect={() => runCommand(() => startTour(tour.id, 0, true))}
+                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+                >
+                  <CircleHelp className="ms-2 h-4 w-4 text-primary" />
+                  <span>شروع تور: {tour.title.replace("تور ", "")}</span>
+                </Command.Item>
+              ))}
+            <Command.Item
+              onSelect={() => runCommand(() => startTour("dashboard", 0, true))}
+              className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+            >
+              <CircleHelp className="ms-2 h-4 w-4" />
+              <span>بازپخش تور پیشخوان</span>
+            </Command.Item>
+          </Command.Group>
+
+          <Command.Group heading="دستیار AI">
+            <Command.Item
+                onSelect={() => askCopilot()}
+                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+            >
+              <Sparkles className="ms-2 h-4 w-4 text-primary" />
+              <span>پرسش از دستیار کارنکس</span>
+              <kbd className="ms-auto me-1 text-[10px] text-muted-foreground">⏎</kbd>
+            </Command.Item>
+            <Command.Item
+                onSelect={() => askCopilot("/plan برام یه برنامه عملی هفته‌آینده بنویس")}
+                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+            >
+              <Sparkles className="ms-2 h-4 w-4 text-muted-foreground" />
+              <span>برنامه‌ریزی هفته</span>
+            </Command.Item>
+            <Command.Item
+                onSelect={() => askCopilot("/critique ایده و استراتژی پروژه‌ام رو نقد کن")}
+                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+            >
+              <Sparkles className="ms-2 h-4 w-4 text-muted-foreground" />
+              <span>نقد استراتژی پروژه</span>
+            </Command.Item>
+            <Command.Item
+                onSelect={() => askCopilot("/competitors رقبای اصلی پروژه‌ام رو تحلیل کن")}
+                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+            >
+              <Sparkles className="ms-2 h-4 w-4 text-muted-foreground" />
+              <span>تحلیل رقبا</span>
+            </Command.Item>
+          </Command.Group>
+
           <Command.Group heading="تنظیمات">
             <Command.Item 
-                onSelect={() => runCommand(() => router.push('/dashboard/profile'))}
+                onSelect={() => runCommand(() => router.push('/dashboard/account'))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
               <User className="ms-2 h-4 w-4" />
-              <span>پروفایل من</span>
+              <span>حساب کاربری و تنظیمات</span>
             </Command.Item>
             <Command.Item 
-                onSelect={() => runCommand(() => router.push('/dashboard/settings'))}
+                onSelect={() => runCommand(() => router.push('/dashboard/account?section=preferences'))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
-              <Settings className="ms-2 h-4 w-4" />
-              <span>تنظیمات</span>
+              <Sliders className="ms-2 h-4 w-4" />
+              <span>ترجیحات ظاهری</span>
+            </Command.Item>
+            <Command.Item 
+                onSelect={() => runCommand(() => router.push('/dashboard/account?section=security'))}
+                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+            >
+              <Shield className="ms-2 h-4 w-4" />
+              <span>امنیت</span>
             </Command.Item>
             <Command.Item 
                 onSelect={() => runCommand(() => signOut().then(() => router.push('/')))}

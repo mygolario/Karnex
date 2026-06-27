@@ -16,6 +16,8 @@ import { useProject } from "@/contexts/project-context";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTourStore } from "@/lib/tour/store";
+import { TOUR_VERSION } from "@/lib/tour/registry";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "desktop" | "mobile";
@@ -35,6 +37,8 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
   const [usage, setUsage] = useState<{ ai?: { limit: number | 'unlimited'; used: number }; tier?: string } | null>(null);
   const [loadingUsage, setLoadingUsage] = useState(true);
   const [showProjectSwitcher, setShowProjectSwitcher] = useState(false);
+  const lastSeenWhatsNew = useTourStore((s) => s.persisted.lastSeenWhatsNewVersion);
+  const showWhatsNewBadge = lastSeenWhatsNew !== TOUR_VERSION;
 
   useEffect(() => {
     async function fetchUsage() {
@@ -59,7 +63,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
 
   // --- Common Routes ---
   const commonRoutes: Route[] = [
-    { icon: LayoutGrid, label: "پیشخوان", href: "/dashboard/overview" },
+    { icon: LayoutGrid, label: "پیشخوان", href: "/dashboard/overview", badge: showWhatsNewBadge ? "جدید" : undefined },
     { icon: Map, label: "نقشه راه", href: "/dashboard/roadmap" },
     { icon: Target, label: "تحلیل کسب‌وکار", href: "/dashboard/canvas" },
   ];
@@ -236,8 +240,8 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
             href="/dashboard/copilot"
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden",
-              pathname === "/dashboard/copilot"
-                ? "bg-gradient-to-r from-primary to-secondary text-white shadow-md shadow-primary/20"
+              pathname.startsWith("/dashboard/copilot")
+                ? "bg-gradient-to-r from-ai to-purple-600 text-white shadow-md shadow-ai/20"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"
             )}
           >
@@ -245,9 +249,9 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
             <span>دستیار کارنکس</span>
             <span className={cn(
               "me-auto text-[10px] px-1.5 py-0.5 rounded-full font-bold",
-              pathname === "/dashboard/copilot"
+              pathname.startsWith("/dashboard/copilot")
                 ? "bg-white/20 text-white"
-                : "bg-primary/10 text-primary"
+                : "bg-ai/10 text-ai"
             )}>
               AI
             </span>
@@ -287,7 +291,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
                     <Crown className="w-4 h-4 fill-destructive/10 animate-pulse" />
                     <span>اعتبار تمام شده</span>
                   </div>
-                  <Link href="/dashboard/settings" className="w-full block">
+                  <Link href="/dashboard/account?section=billing" className="w-full block">
                     <Button variant="destructive" size="sm" className="w-full text-xs font-bold h-8 rounded-lg">
                       ارتقای اشتراک
                     </Button>
@@ -309,7 +313,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
                   <div className="w-full bg-muted h-1.5 rounded-full overflow-hidden mb-2">
                     <div className="h-full bg-amber-500 rounded-full" style={{ width: `${progressPercent}%` }} />
                   </div>
-                  <Link href="/dashboard/settings" className="w-full block">
+                  <Link href="/dashboard/account?section=billing" className="w-full block">
                     <Button variant="outline" size="sm" className="w-full text-xs text-amber-600 border-amber-500/30 hover:bg-amber-500/5 h-8 font-bold rounded-lg">
                       ارتقای سریع
                     </Button>
@@ -338,7 +342,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
         <Link href="/dashboard/copilot">
           <Button
             variant="gradient"
-            className="w-full font-bold gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-[1.02] transition-all"
+            className="w-full font-bold gap-2 shadow-lg shadow-ai/20 hover:shadow-ai/30 hover:scale-[1.02] transition-all"
           >
             <Bot className="w-4 h-4" />
             پرسش از دستیار

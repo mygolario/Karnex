@@ -47,7 +47,7 @@ export default async function ProjectsPage() {
               </div>
 
               <div className="flex gap-4">
-                 <Link href="/dashboard/settings">
+                 <Link href="/dashboard/account">
                     <Button variant="outline" className="h-12 border-white/20 hover:bg-white/10 text-white bg-transparent">
                       تنظیمات حساب
                     </Button>

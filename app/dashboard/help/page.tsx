@@ -18,17 +18,26 @@ import {
   Lightbulb,
   ArrowLeft,
   ExternalLink,
-  X
+  X,
+  CircleHelp,
+  Play,
 } from "lucide-react";
 import { Card, CardIcon } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FaqItem, FeatureGuide } from "@/components/ui/learn-more";
 import { featureExplanations, businessGlossary } from "@/lib/knowledge-base";
+import { useTourStore } from "@/lib/tour/store";
+import { getToursForProjectType } from "@/lib/tour/registry";
+import { useProject } from "@/contexts/project-context";
 
 export default function HelpCenterPage() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"faq" | "features" | "glossary">("faq");
+  const [activeTab, setActiveTab] = useState<"faq" | "features" | "glossary" | "tours">("faq");
+  const { activeProject } = useProject();
+  const startTour = useTourStore((s) => s.startTour);
+  const completedTours = useTourStore((s) => s.persisted.completedTours);
+  const tours = getToursForProjectType(activeProject?.projectType).filter((t) => t.id !== "whats-new");
 
   const faqs = [
     {
@@ -129,7 +138,7 @@ export default function HelpCenterPage() {
     : Object.entries(businessGlossary);
 
   return (
-    <div className="max-w-[1000px] mx-auto space-y-10 pb-20 animate-fade-in-up">
+    <div className="max-w-[1000px] mx-auto space-y-10 pb-24 md:pb-20 animate-fade-in-up">
 
       {/* Header */}
       <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 to-purple-700 text-white shadow-2xl shadow-indigo-500/20 py-16 px-6 text-center">
@@ -167,7 +176,7 @@ export default function HelpCenterPage() {
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 -mt-8 relative z-20 px-4">
-        <Card variant="glass" hover="lift" className="text-center cursor-pointer group py-8 border-t-4 border-t-amber-400">
+        <Card variant="glass" hover="lift" className="text-center cursor-pointer group py-8 border-t-4 border-t-amber-400" onClick={() => setActiveTab("tours")}>
           <div className="bg-amber-400/10 text-amber-500 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
             <Zap size={32} />
           </div>
@@ -199,6 +208,7 @@ export default function HelpCenterPage() {
             {[
               { id: "faq", label: "سوالات متداول", count: faqs.length },
               { id: "features", label: "راهنمای امکانات", count: features.length },
+              { id: "tours", label: "تورهای تعاملی", count: tours.length },
               { id: "glossary", label: "واژه‌نامه", count: Object.keys(businessGlossary).length }
             ].map((tab) => (
               <button
@@ -253,6 +263,34 @@ export default function HelpCenterPage() {
                 </Link>
               </FeatureGuide>
             ))}
+          </section>
+        )}
+
+        {/* Tours Tab */}
+        {activeTab === "tours" && (
+          <section className="space-y-4 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <p className="text-sm text-muted-foreground text-center mb-4">
+              تورهای تعاملی را دوباره اجرا کنید و با هر بخش کارنکس آشنا شوید.
+            </p>
+            {tours.map((tour) => {
+              const done = completedTours.includes(tour.id);
+              return (
+                <div key={tour.id} className="flex items-center gap-4 p-4 rounded-2xl border border-border/50 bg-card hover:border-primary/30 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                    <CircleHelp size={18} className="text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-foreground">{tour.title}</h4>
+                    <p className="text-xs text-muted-foreground truncate">{tour.description}</p>
+                  </div>
+                  {done && <Badge variant="muted" size="sm">تکمیل شده</Badge>}
+                  <Button size="sm" variant="outline" className="gap-1 shrink-0" onClick={() => startTour(tour.id, 0, true)}>
+                    <Play size={14} />
+                    {done ? "بازپخش" : "شروع"}
+                  </Button>
+                </div>
+              );
+            })}
           </section>
         )}
 

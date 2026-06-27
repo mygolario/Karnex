@@ -2,7 +2,7 @@
 
 import { defaultCache } from "@serwist/next/worker";
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
-import { Serwist, NetworkFirst } from "serwist";
+import { Serwist, NetworkOnly } from "serwist";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -21,20 +21,10 @@ const serwist = new Serwist({
     {
       matcher: ({ url }) =>
         url.pathname.startsWith("/api/projects") ||
-        url.pathname.startsWith("/api/user-data"),
-      handler: new NetworkFirst({
-        cacheName: "karnex-api-cache",
-        plugins: [
-          {
-            cacheWillUpdate: async ({ response }) => {
-              if (response && response.status === 200) {
-                return response;
-              }
-              return null;
-            },
-          },
-        ],
-      }),
+        url.pathname.startsWith("/api/user-data") ||
+        url.pathname.startsWith("/api/copilot") ||
+        url.pathname.startsWith("/api/user"),
+      handler: new NetworkOnly(),
     },
     ...defaultCache,
   ],

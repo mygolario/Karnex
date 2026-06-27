@@ -1,11 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
-
-const rateLimit = new Map<string, number[]>();
+import { memoryRateLimiter } from "@/lib/rate-limiter-memory";
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
   const { supabaseResponse, user } = await updateSession(request);
 
@@ -38,27 +36,27 @@ export async function middleware(request: NextRequest) {
     path.startsWith("/api/copilot") ||
     path.startsWith("/api/ai-generate") ||
     path.startsWith("/api/generate-document") ||
-    path.startsWith("/api/generate-image");
+    path.startsWith("/api/generate-image") ||
+    path.startsWith("/api/stt");
 
-  let response = supabaseResponse;
+  const isPublicWriteRoute =
+    path.startsWith("/api/contact");
 
-  if (isAIRoute) {
-    const limit = 30;
-    const windowMs = 60 * 1000;
-    const now = Date.now();
-    const windowStart = now - windowMs;
-    const requestLog = rateLimit.get(ip) || [];
-    const recentRequests = requestLog.filter((timestamp) => timestamp > windowStart);
+  const response = supabaseResponse;
 
-    if (recentRequests.length >= limit) {
+  if (isAIRoute || isPublicWriteRoute) {
+    // Redis-backed sliding window limiter (with in-memory fallback).
+    // Works across serverless instances unlike the previous in-memory Map.
+    const { allowed, remaining } = memoryRateLimiter(request);
+
+    if (!allowed) {
       return NextResponse.json(
         { error: "Too many requests. Please wait a minute." },
-        { status: 429 }
+        { status: 429, headers: { "Retry-After": "60" } }
       );
     }
 
-    recentRequests.push(now);
-    rateLimit.set(ip, recentRequests);
+    response.headers.set("X-RateLimit-Remaining", String(remaining));
   }
 
   response.headers.set("X-Frame-Options", "DENY");
@@ -70,6 +68,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!monitoring|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

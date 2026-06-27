@@ -4,12 +4,14 @@ import { NextResponse } from "next/server";
 import { UserProfile } from "@/lib/db";
 import { getUserSubscription, getUserTier, getUserFeatures } from "@/lib/subscription";
 
+const NO_STORE_HEADERS = { "Cache-Control": "no-store, private" };
+
 export async function GET(request: Request) {
   try {
     const session = await auth();
 
     if (!session || !session.user?.id) {
-      return new NextResponse("Unauthorized", { status: 401 });
+      return new NextResponse("Unauthorized", { status: 401, headers: NO_STORE_HEADERS });
     }
 
     const { searchParams } = new URL(request.url);
@@ -37,6 +39,11 @@ export async function GET(request: Request) {
         email: user.email || "",
         role: (user.role as UserProfile["role"]) || "user",
         full_name: user.name || "",
+        first_name: user.firstName || "",
+        last_name: user.lastName || "",
+        phone_number: user.phoneNumber || "",
+        birth_date: user.birthDate?.toISOString() || "",
+        bio: user.bio || "",
         avatar_url: user.image || "",
         credits: (user.credits as UserProfile["credits"]) || { aiTokens: 0, projectsUsed: 0 },
         settings: (user.settings as UserProfile["settings"]) || { emailNotifications: true, theme: 'system' },
@@ -51,7 +58,7 @@ export async function GET(request: Request) {
         updated_at: user.updatedAt.toISOString()
       };
 
-      return NextResponse.json({ profile });
+      return NextResponse.json({ profile }, { headers: NO_STORE_HEADERS });
     }
 
     if (type === "subscription") {
@@ -61,12 +68,12 @@ export async function GET(request: Request) {
         getUserFeatures(userId),
       ]);
 
-      return NextResponse.json({ subscription, tier, features });
+      return NextResponse.json({ subscription, tier, features }, { headers: NO_STORE_HEADERS });
     }
 
-    return new NextResponse("Invalid type", { status: 400 });
+    return new NextResponse("Invalid type", { status: 400, headers: NO_STORE_HEADERS });
   } catch (error) {
     console.error("[USER_DATA_GET]", error);
-    return new NextResponse("Internal Error", { status: 500 });
+    return new NextResponse("Internal Error", { status: 500, headers: NO_STORE_HEADERS });
   }
 }

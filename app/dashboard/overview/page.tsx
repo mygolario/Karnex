@@ -15,6 +15,7 @@ import { KarnexScore } from "@/components/dashboard/karnex-score";
 import { RecentActivity } from "@/components/dashboard/overview/recent-activity";
 import { AIInsightsWidget } from "@/components/dashboard/overview/ai-insights-widget";
 import { UpcomingTasks } from "@/components/dashboard/overview/upcoming-tasks";
+import { SetupChecklist } from "@/components/tour/setup-checklist";
 
 // Helper to get step title
 function getStepTitle(step: unknown): string {
@@ -42,14 +43,23 @@ export default function DashboardOverviewPage() {
   const [greeting, setGreeting] = useState("سلام");
   const [actionStreak, setActionStreak] = useState(0);
 
-  useEffect(() => {
+    useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 5) setGreeting("شب بخیر");
     else if (hour < 12) setGreeting("صبح بخیر");
     else if (hour < 17) setGreeting("روز بخیر");
     else setGreeting("عصر بخیر");
 
-    setActionStreak(Math.floor(Math.random() * 10) + 1);
+    // Server-backed streak (was previously Math.random — see plan cleanup).
+    fetch("/api/user/gamification")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (d?.gamification) {
+          // Use level as a stable progress signal in place of the fake streak.
+          setActionStreak(d.gamification.level || 0);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Empty state
@@ -136,6 +146,11 @@ export default function DashboardOverviewPage() {
       {/* ═══ 2. Focus Hero ═══ */}
       <motion.div variants={itemVariants}>
          <FocusHero nextStepName={nextStepName} />
+      </motion.div>
+
+      {/* ═══ Setup Checklist ═══ */}
+      <motion.div variants={itemVariants}>
+         <SetupChecklist />
       </motion.div>
 
       {/* ═══ 3. Stats Strip ═══ */}

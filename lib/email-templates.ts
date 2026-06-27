@@ -235,7 +235,7 @@ export const getActivationEmailTemplate = (data: {
             <a href="https://www.karnex.ir/dashboard" class="btn" style="padding: 14px 32px; font-size: 16px;">ورود به داشبورد</a>
             <p style="margin-top: 20px; font-size: 12px; color: ${MUTED_COLOR};">
                 برای دریافت فاکتور رسمی می‌توانید به بخش 
-                <a href="https://www.karnex.ir/dashboard/profile" style="color: ${PRIMARY_COLOR}; text-decoration: none;">تاریخچه تراکنش‌ها</a>
+                <a href="https://www.karnex.ir/dashboard/account?section=billing" style="color: ${PRIMARY_COLOR}; text-decoration: none;">تاریخچه تراکنش‌ها</a>
                 مراجعه کنید.
             </p>
         </div>

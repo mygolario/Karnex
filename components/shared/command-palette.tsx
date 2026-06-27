@@ -110,7 +110,7 @@ export function CommandPalette() {
       title: "تنظیمات",
       subtitle: "مدیریت حساب کاربری",
       icon: <Settings size={20} />,
-      action: () => router.push("/dashboard/settings"),
+      action: () => router.push("/dashboard/account"),
       keywords: ["settings", "account", "profile", "تنظیمات"],
       category: "navigation",
     },

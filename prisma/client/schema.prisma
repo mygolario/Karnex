@@ -32,9 +32,18 @@ model User {
   birthDate   DateTime?
   bio         String?
 
+  // Extensible account profile data (creator channel links, location, pronouns,
+  // timezone, display name, default project type, dashboard layout, etc.)
+  // See lib/account/types.ts for the shape.
+  profile Json?
+
   // Settings & Credits (stored as JSON to avoid too many columns)
   credits  Json? @default("{\"aiTokens\": 10, \"projectsUsed\": 0}")
-  settings Json? @default("{\"emailNotifications\": true, \"theme\": \"system\", \"language\": \"fa\"}")
+  settings Json? @default("{\"emailNotifications\": true, \"theme\": \"system\", \"language\": \"fa\", \"accent\": \"pink\", \"density\": \"comfortable\", \"dateFormat\": \"jalali\"}")
+
+  // Two-factor auth
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
 
   // Relations
   accounts           Account[]
@@ -45,6 +54,21 @@ model User {
   transactions       Transaction[]
   feedbacks          Feedback[]
   projectMemberships ProjectMember[]
+
+  // Copilot Rework Relations
+  userProfile         UserProfile?
+  chatConversations   ChatConversation[]
+  aiActionLogs        AiActionLog[]
+  aiInsights          AiInsight[]
+  aiUsages            AiUsage[]
+  customerBotChannels CustomerBotChannel[]
+
+  // Account Center Relations
+  userSessions       UserSession[]
+  userApiKeys        UserApiKey[]
+  userIntegrations   UserIntegration[]
+  dataExportRequests DataExportRequest[]
+  loginEvents        LoginEvent[]
 }
 
 model Account {
@@ -99,25 +123,37 @@ model Project {
   updatedAt DateTime  @updatedAt
   deletedAt DateTime? // For soft deletes
 
-  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  members ProjectMember[]
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members  ProjectMember[]
+  canvases Canvas[]
+  scripts  Script[]
+
+  // Copilot Rework Relations
+  projectMemory       ProjectMemory?
+  chatConversations   ChatConversation[]
+  artifacts           Artifact[]
+  aiActionLogs        AiActionLog[]
+  aiInsights          AiInsight[]
+  aiUsages            AiUsage[]
+  customerBotChannels CustomerBotChannel[]
 
   @@index([userId])
   @@index([createdAt])
 }
 
 model Subscription {
-  id           String    @id @default(cuid())
-  userId       String    @unique // One active subscription per user usually, or remove unique if key-based
-  planId       String // "free", "plus", "pro"
-  status       String // "active", "expired", "canceled"
-  billingCycle String? // "monthly", "yearly"
-  startDate    DateTime  @default(now())
-  endDate      DateTime?
-  autoRenew    Boolean   @default(false)
-  provider     String? // "zibal", "manual"
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  userId            String    @unique // One active subscription per user usually, or remove unique if key-based
+  planId            String // "free", "plus", "pro"
+  status            String // "active", "expired", "canceled"
+  billingCycle      String? // "monthly", "yearly"
+  startDate         DateTime  @default(now())
+  endDate           DateTime?
+  autoRenew         Boolean   @default(false)
+  cancelAtPeriodEnd Boolean   @default(false)
+  provider          String? // "zibal", "manual"
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -201,4 +237,474 @@ model ProjectMember {
   @@unique([userId, projectId])
   @@index([userId])
   @@index([projectId])
+}
+
+// --- Canvas Models ---
+
+model Canvas {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name      String   @default("بوم کسب‌وکار")
+  type      String   @default("BMC") // BMC | LEAN | BRAND | SWOT | EMPATHY | VPC | OKR
+  layout    Json?
+  viewport  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cards    Card[]
+  comments Comment[]
+  versions CanvasVersion[]
+
+  @@index([projectId])
+}
+
+model Card {
+  id        String   @id @default(cuid())
+  canvasId  String
+  canvas    Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  section   String
+  order     Int      @default(0)
+  x         Float?
+  y         Float?
+  width     Float?
+  height    Float?
+  content   String   @db.Text
+  cardType  String   @default("NOTE") // NOTE | CHECKLIST | IMAGE | LINK | METRIC | VOTE
+  color     String   @default("blue")
+  metadata  Json?
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([canvasId, section])
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  canvasId     String
+  canvas       Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  cardId       String?
+  authorId     String
+  authorName   String?
+  authorAvatar String?
+  body         String   @db.Text
+  resolved     Boolean  @default(false)
+  parentId     String?
+  createdAt    DateTime @default(now())
+
+  @@index([canvasId])
+  @@index([cardId])
+}
+
+model CanvasVersion {
+  id        String   @id @default(cuid())
+  canvasId  String
+  canvas    Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  name      String?
+  snapshot  Json
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([canvasId])
+}
+
+// ====================================================================
+// COPILOT REWORK — Phase 1 Models
+// Personalization, persistent chat, artifacts, audit, insights,
+// usage tracking, and multi-channel customer bot.
+// ====================================================================
+
+// --- Personalization & Memory ---
+
+model UserProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role           String? // "founder" | "student" | "marketer" | "consultant" | ...
+  industry       String?
+  businessStage  String? // "idea" | "validation" | "mvp" | "launch" | "growth"
+  goals          Json? // string[]
+  preferredTone  String  @default("balanced") // "formal" | "casual" | "balanced"
+  expertiseLevel String  @default("beginner") // "beginner" | "intermediate" | "expert"
+  language       String  @default("fa")
+
+  // AI-maintained learned preferences & long-term memory entries
+  // learnedPreferences: { prefersBullets, formalityScore, ... }
+  // memoryEntries: [{ id, content, category, createdAt }]
+  learnedPreferences Json?
+  memoryEntries      Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ProjectMemory {
+  id        String  @id @default(cuid())
+  projectId String  @unique
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Structured facts the AI extracts/updates across sessions
+  // decisions:     [{ id, content, date }]
+  // openQuestions: [{ id, question, status }]
+  // risks:         [{ id, content, severity }]
+  // keyFacts:      [{ id, key, value }]
+  decisions     Json?
+  openQuestions Json?
+  risks         Json?
+  keyFacts      Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- Chat Persistence ---
+
+model ChatConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title   String
+  mode    String  @default("cofounder") // "cofounder" | "customer_bot"
+  persona String? // "startup" | "traditional" | "creator"
+  model   String?
+  pinned  Boolean @default(false)
+
+  lastMessagePreview String?
+  lastMessageAt      DateTime?
+
+  messages     ChatMessage[]
+  artifacts    Artifact[]
+  aiActionLogs AiActionLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([pinned])
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role    String // "user" | "assistant" | "system" | "tool"
+  content String @db.Text
+
+  // toolCalls: [{ id, name, args, result, status }]
+  // artifacts: [{ id, type, refId, summary }]
+  // followUps: string[]
+  toolCalls Json?
+  artifacts Json?
+  followUps Json?
+
+  // Branching support
+  parentMessageId String?
+  parentMessage   ChatMessage?  @relation("MessageBranch", fields: [parentMessageId], references: [id], onDelete: SetNull)
+  children        ChatMessage[] @relation("MessageBranch")
+
+  feedback AiFeedback?
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([parentMessageId])
+}
+
+model AiFeedback {
+  id        String      @id @default(cuid())
+  messageId String      @unique
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  rating String // "up" | "down"
+  reason String? @db.Text
+
+  createdAt DateTime @default(now())
+}
+
+// --- Artifacts (versioned, live-editable outputs) ---
+
+model Artifact {
+  id             String            @id @default(cuid())
+  projectId      String
+  project        Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  conversationId String?
+  conversation   ChatConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  type  String // "lean_canvas" | "pitch_slide" | "swot" | "roadmap" | "brand_kit" | "plan" | "competitor_matrix"
+  refId String? // reference to the concrete artifact (slide id, canvas section, etc.)
+  data  Json
+
+  version  Int     @default(1)
+  parentId String? // previous version id
+
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([conversationId])
+  @@index([type])
+}
+
+// --- Audit & Trust ---
+
+model AiActionLog {
+  id             String            @id @default(cuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project?          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  conversationId String?
+  conversation   ChatConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  toolName    String
+  args        Json?
+  result      Json?
+  status      String @default("success") // "success" | "error" | "reverted"
+  undoPayload Json? // data needed to revert the action
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([projectId])
+}
+
+model AiInsight {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  type          String // "gap" | "competitor" | "streak" | "decision" | "summary"
+  priority      String @default("info") // "info" | "warning" | "urgent"
+  title         String
+  body          String @db.Text
+  payload       Json? // structured insight data
+  actionPayload Json? // one-click action definition ({ type, label, ... })
+
+  status       String    @default("unread") // "unread" | "read" | "dismissed" | "snoozed"
+  snoozedUntil DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+}
+
+model AiUsage {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  conversationId String?
+
+  model    String
+  provider String @default("openrouter")
+  feature  String // "copilot_chat" | "ai_generate" | "tool_call" | "customer_bot" | ...
+
+  promptTokens     Int   @default(0)
+  completionTokens Int   @default(0)
+  totalTokens      Int   @default(0)
+  costUsd          Float @default(0)
+
+  success      Boolean @default(true)
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([createdAt])
+}
+
+// --- Customer Bot (multi-channel auto-responder) ---
+
+model CustomerBotChannel {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  provider    String // "whatsapp" | "telegram" | "instagram"
+  credentials Json? // encrypted credentials (token, verifyToken, phoneId, etc.)
+  config      Json? // auto-reply settings, brand voice, confidence threshold, handoff config
+  isActive    Boolean @default(false)
+
+  conversations CustomerBotConversation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+model CustomerBotConversation {
+  id        String             @id @default(cuid())
+  channelId String
+  channel   CustomerBotChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  externalId     String // customer's id on the channel
+  customerName   String?
+  customerHandle String?
+
+  status             String    @default("open") // "open" | "resolved" | "handed_off"
+  lastMessagePreview String?
+  lastMessageAt      DateTime?
+
+  messages CustomerBotMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([channelId])
+  @@index([status])
+}
+
+model CustomerBotMessage {
+  id             String                  @id @default(cuid())
+  conversationId String
+  conversation   CustomerBotConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role    String // "customer" | "bot" | "agent"
+  content String @db.Text
+
+  externalId String?
+  metadata   Json?
+  isRead     Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+}
+
+model Script {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title    String
+  content  String  @db.Text
+  scenes   Json? // For A/V mode: Array of objects { id, visual, audio }
+  template String  @default("viral-hook")
+  duration String  @default("60s")
+  audience String?
+  status   String  @default("draft") // "draft" | "recording" | "recorded" | "published"
+  folder   String? // Folder name or platform grouping (e.g. YouTube, Reels)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+// ====================================================================
+// ACCOUNT CENTER — unified account, settings, security, integrations
+// ====================================================================
+
+model UserSession {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Supabase access-token jti or a random session token id
+  token      String    @unique
+  device     String? // "Chrome on macOS", "iPhone Safari"
+  platform   String? // "web" | "ios" | "android"
+  ip         String?
+  location   String? // best-effort city/country
+  userAgent  String?   @db.Text
+  lastActive DateTime  @default(now())
+  expiresAt  DateTime?
+
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  @@index([userId])
+  @@index([lastActive])
+}
+
+model LoginEvent {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // "success" | "failed"
+  status    String
+  method    String? // "google" | "password" | "2fa"
+  ip        String?
+  userAgent String? @db.Text
+  location  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model UserApiKey {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label     String
+  // SHA-256 hash of the raw key; raw key only shown once at creation
+  keyHash   String    @unique
+  prefix    String // first 8 chars for display, e.g. "kex_abc"
+  scopes    Json? // string[]
+  lastUsed  DateTime?
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  @@index([userId])
+}
+
+model UserIntegration {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider          String // "youtube" | "google_calendar" | "instagram" | "telegram" | "zapier"
+  providerAccountId String?
+  // encrypted credentials/tokens (access/refresh tokens, channel id, scopes)
+  credentials       Json?
+  metadata          Json? // channel title, profile picture, scopes, etc.
+  isConnected       Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+model DataExportRequest {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // "pending" | "processing" | "ready" | "failed" | "expired"
+  status    String  @default("pending")
+  format    String  @default("json") // "json" | "zip"
+  url       String? // signed download URL once ready
+  sizeBytes Int?
+  error     String?
+
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
+
+  @@index([userId])
 }

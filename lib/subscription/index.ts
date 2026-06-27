@@ -45,7 +45,7 @@ export async function getUserSubscription(userId: string): Promise<Subscription 
       billingCycle: data.billingCycle as BillingCycle,
       currentPeriodStart: data.startDate, // aligned with previous schema 'startDate' vs 'currentPeriodStart'
       currentPeriodEnd: data.endDate ?? null,
-      cancelAtPeriodEnd: false, // Add this to schema if missing, or default false
+      cancelAtPeriodEnd: data.cancelAtPeriodEnd ?? false,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };
@@ -151,7 +151,7 @@ export async function updateSubscription(
   };
 
   if (updates.status) dbUpdates.status = updates.status;
-  // if (updates.cancelAtPeriodEnd !== undefined) dbUpdates.cancelAtPeriodEnd = updates.cancelAtPeriodEnd;
+  if (updates.cancelAtPeriodEnd !== undefined) dbUpdates.cancelAtPeriodEnd = updates.cancelAtPeriodEnd;
   if (updates.currentPeriodEnd) dbUpdates.endDate = updates.currentPeriodEnd;
   if (updates.planId) dbUpdates.planId = updates.planId;
  

@@ -153,12 +153,17 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
 
 // === Analyze Competitors ===
 
-export async function analyzeCompetitorsAction(data: { projectName: string, projectIdea: string, audience: string }): Promise<ActionResponse<any>> {
+export async function analyzeCompetitorsAction(data: { projectName: string, projectIdea: string, audience: string }, options?: { skipLimitCheck?: boolean }): Promise<ActionResponse<any>> {
     let rollback = async () => {};
     try {
-        const limitResult = await checkAILimit();
-        if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
-        rollback = limitResult.rollback;
+        // When invoked from the Copilot agent loop, the outer request already
+        // incremented the monthly quota — skip a second charge to avoid
+        // double-counting a single user message.
+        if (!options?.skipLimitCheck) {
+            const limitResult = await checkAILimit();
+            if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+            rollback = limitResult.rollback;
+        }
 
         if (!process.env.OPENROUTER_API_KEY) {
             await rollback();
@@ -220,15 +225,15 @@ function getMockCompetitors() {
 }
 // === Generate Pitch Deck ===
 
-export async function generatePitchDeckAction(data: { idea: string, wizardAnswers?: any }): Promise<ActionResponse<{ slides: any[] }>> {
+export async function generatePitchDeckAction(data: { idea: string, wizardAnswers?: any, projectContext?: any }): Promise<ActionResponse<{ slides: any[] }>> {
     let rollback = async () => {};
     try {
         const limitResult = await checkAILimit();
         if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
         rollback = limitResult.rollback;
 
-        const { idea, wizardAnswers } = data;
-        const wizardAnswersBlock = wizardAnswers ? `اطلاعات تکمیلی:
+        const { idea, wizardAnswers, projectContext } = data;
+        const wizardAnswersBlock = wizardAnswers ? `اطلاعات تکمیلی از فرم دستیار:
         - تگ‌لاین: ${wizardAnswers.tagline || ''}
         - مشکل: ${wizardAnswers.problem || ''}
         - راهکار: ${wizardAnswers.solution || ''}
@@ -236,7 +241,27 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
         - مدل درآمدی: ${wizardAnswers.revenue || ''}
         - تیم: ${wizardAnswers.team || ''}` : '';
 
-        const { system, user } = getPrompt("generatePitchDeck", { idea, wizardAnswersBlock });
+        let projectContextBlock = '';
+        if (projectContext) {
+            projectContextBlock = `اطلاعات پروژه‌ای فعلی در سیستم (از این اطلاعات برای شخصی‌سازی ارائه استفاده کن):
+- نام پروژه: ${projectContext.projectName || ''}
+- بوم ناب (Lean Canvas):
+  * ارزش پیشنهادی: ${projectContext.leanCanvas?.uniqueValue || ''}
+  * بخش مشتریان: ${projectContext.leanCanvas?.customerSegments || ''}
+  * مدل درآمدی: ${projectContext.leanCanvas?.revenueStream || ''}
+  * ساختار هزینه‌ها: ${projectContext.leanCanvas?.costStructure || ''}
+- لیست رقبا: ${Array.isArray(projectContext.competitors) ? projectContext.competitors.map((c: any) => `${c.name} (${c.strength || ''})`).join('، ') : ''}
+- نقشه راه فازها: ${Array.isArray(projectContext.roadmap) ? projectContext.roadmap.map((r: any) => `${r.title}`).join('، ') : ''}`;
+        }
+
+        const projectName = projectContext?.projectName || 'پروژه استارتاپی';
+
+        const { system, user } = getPrompt("generatePitchDeck", { 
+            projectName, 
+            idea, 
+            projectContextBlock, 
+            wizardAnswersBlock 
+        });
 
         try {
             const parsed = await callAIWithValidation(
@@ -247,13 +272,14 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
             );
             
             let slides = parsed.slides || [];
-            // Post-process to ensure IDs and types
+            // Post-process to ensure IDs, types, and metadata are intact
             slides = slides.map((s: any, i: number) => ({
                 id: s.id || `slide-${Date.now()}-${i}`,
                 type: s.type || 'generic',
                 title: s.title || 'بدون عنوان',
                 bullets: Array.isArray(s.bullets) ? s.bullets : [],
-                isHidden: s.isHidden || false
+                isHidden: s.isHidden || false,
+                metadata: s.metadata || {}
             }));
 
             return { success: true, data: { slides } };
