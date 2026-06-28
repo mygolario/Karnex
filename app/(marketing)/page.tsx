@@ -38,6 +38,10 @@ const PricingSection = dynamic(
 const FAQ = dynamic(() => import("@/components/marketing/faq").then((m) => m.FAQ), {
   loading: () => <div className="min-h-[300px]" />,
 });
+const TrustLinksSection = dynamic(
+  () => import("@/components/marketing/trust-links-section").then((m) => m.TrustLinksSection),
+  { loading: () => <div className="min-h-[150px]" /> }
+);
 const CTASection = dynamic(
   () => import("@/components/marketing/cta-section").then((m) => m.CTASection),
   { loading: () => <div className="min-h-[200px]" /> }
@@ -79,6 +83,7 @@ export default function MarketingPage() {
         <Testimonials />
         <PricingSection />
         <FAQ />
+        <TrustLinksSection />
         <CTASection />
       </main>
 

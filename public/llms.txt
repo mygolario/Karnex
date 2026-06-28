@@ -1,0 +1,17 @@
+# Karnex
+
+> Karnex is an AI-powered smart co-founder and business execution planner tailored for entrepreneurs, traditional businesses, and content creators. It helps validate ideas, generate roadmap checklists, draft business model canvases, design marketing strategies, and prepare startup pitch decks.
+
+## Key Sections & Features
+
+- [Genesis Wizard](/new-project): Interactive multi-step form to initialize a new business project.
+- [Pricing & Plans](/pricing): Pricing information for Free, Plus, Pro, and Ultra subscription plans.
+- [Contact Support](/contact): Contact forms and support desk for general queries and customer assistance.
+- [Terms & Conditions](/terms): Standard terms of service, usage guidelines, and intellectual property conditions.
+- [Privacy Policy](/privacy): Data encryption policies, data storage rules, and personal information handling guidelines.
+
+## Technical Capabilities
+
+- **AI Strategy Engine**: Leveraging OpenRouter to generate Lean Canvases, execution roadmaps, and marketing structures.
+- **Scoring & Evaluation**: Algorithmic scoring system that rates project completeness and provides actionable recommendations.
+- **Local Integrations**: Persian-localized business guidelines, including registration steps on official portals (IRNIC, eNamad) and payment gateways (Zibal).
