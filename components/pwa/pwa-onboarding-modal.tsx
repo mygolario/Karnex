@@ -13,15 +13,34 @@ import {
 import { useMobileContextOptional } from "@/contexts/mobile-context";
 import { PwaInstallButton } from "@/components/pwa/pwa-install-button";
 
-export function PwaOnboardingModal() {
+interface PwaOnboardingModalProps {
+  /** Wait until main onboarding is complete before prompting install */
+  deferUntilMission?: boolean;
+}
+
+export function PwaOnboardingModal({ deferUntilMission }: PwaOnboardingModalProps) {
   const mobile = useMobileContextOptional();
   const [open, setOpen] = useState(false);
+  const [onboardingDone, setOnboardingDone] = useState(!deferUntilMission);
 
   useEffect(() => {
+    if (!deferUntilMission) return;
+    fetch("/api/onboarding")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.user?.onboardingCompletedAt || data?.user?.currentStep === "complete") {
+          setOnboardingDone(true);
+        }
+      })
+      .catch(() => {});
+  }, [deferUntilMission]);
+
+  useEffect(() => {
+    if (!onboardingDone) return;
     if (!mobile?.isMobile || mobile.isInstalled || mobile.onboardingSeen) return;
     const timer = setTimeout(() => setOpen(true), 1500);
     return () => clearTimeout(timer);
-  }, [mobile]);
+  }, [mobile, onboardingDone]);
 
   const handleClose = () => {
     mobile?.markOnboardingSeen();

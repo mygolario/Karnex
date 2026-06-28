@@ -7,6 +7,7 @@ import { ThemeProvider } from '@/components/shared/theme-provider';
 import { JsonLd } from '@/components/shared/json-ld';
 import { NetworkStatus } from '@/components/shared/network-status';
 import { GoogleAnalytics, PerformanceMonitoring } from '@/components/shared/analytics';
+import { PostHogAnalytics } from '@/components/shared/posthog-analytics';
 import { ToastProvider } from '@/components/ui/toast';
 import { ClientHelpers } from '@/components/shared/client-helpers';
 
@@ -140,6 +141,7 @@ export default function RootLayout({
           <AuthProvider>
               <ToastProvider>
                 <GoogleAnalytics />
+                <PostHogAnalytics />
                 <PerformanceMonitoring />
                 <ProjectProvider>
                   <NetworkStatus />

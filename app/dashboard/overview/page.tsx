@@ -16,6 +16,7 @@ import { RecentActivity } from "@/components/dashboard/overview/recent-activity"
 import { AIInsightsWidget } from "@/components/dashboard/overview/ai-insights-widget";
 import { UpcomingTasks } from "@/components/dashboard/overview/upcoming-tasks";
 import { SetupChecklist } from "@/components/tour/setup-checklist";
+import { OnboardingResumeBanner } from "@/components/onboarding/onboarding-resume-banner";
 
 // Helper to get step title
 function getStepTitle(step: unknown): string {
@@ -78,7 +79,7 @@ export default function DashboardOverviewPage() {
                  </div>
                  <h2 className="text-2xl font-black text-foreground mb-3">شروع یک ماجراجویی جدید</h2>
                  <p className="text-muted-foreground mb-8 text-base">اولین پروژه خود را بسازید و مسیر موفقیت را آغاز کنید.</p>
-                 <Link href="/new-project">
+                 <Link href="/onboarding/genesis">
                     <Button size="lg" className="w-full text-base h-12 rounded-xl font-bold">
                         <Plus size={20} className="ms-2" />
                         ساخت پروژه جدید
@@ -124,6 +125,7 @@ export default function DashboardOverviewPage() {
       animate="show"
       className="space-y-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 pt-6"
     >
+      <OnboardingResumeBanner />
       {/* ═══ 1. Greeting Header ═══ */}
       <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
         <div>

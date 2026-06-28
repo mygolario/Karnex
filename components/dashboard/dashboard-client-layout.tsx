@@ -5,7 +5,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { MentorProvider } from "@/components/dashboard/mentor-context";
 import { TourProvider } from "@/components/tour/tour-provider";
-import { TourOverlay } from "@/components/tour/tour-overlay";
+import { TourRoot } from "@/components/tour/tour-root";
+import { OnboardingGuard } from "@/components/onboarding/onboarding-guard";
 import { MobileProvider } from "@/contexts/mobile-context";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { DesktopDashboardShell } from "@/components/dashboard/desktop-dashboard-shell";
@@ -45,17 +46,19 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
     <MobileProvider>
       <MentorProvider>
         <TourProvider>
-          <TourOverlay />
-          {isMobile ? (
-            <MobileDashboardShell>{children}</MobileDashboardShell>
-          ) : (
-            <DesktopDashboardShell>{children}</DesktopDashboardShell>
-          )}
-          <PwaInstallBanner />
-          <PwaOnboardingModal />
-          <Suspense fallback={null}>
-            <PwaWelcomeToast />
-          </Suspense>
+          <OnboardingGuard>
+            <TourRoot />
+            {isMobile ? (
+              <MobileDashboardShell>{children}</MobileDashboardShell>
+            ) : (
+              <DesktopDashboardShell>{children}</DesktopDashboardShell>
+            )}
+            <PwaInstallBanner />
+            <PwaOnboardingModal deferUntilMission />
+            <Suspense fallback={null}>
+              <PwaWelcomeToast />
+            </Suspense>
+          </OnboardingGuard>
         </TourProvider>
       </MentorProvider>
     </MobileProvider>

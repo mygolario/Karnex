@@ -1,141 +1,23 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, History } from "lucide-react";
-import { useAuth } from "@/contexts/auth-context";
-import {
-  GenesisWizardProvider,
-  useGenesisWizard,
-} from "@/components/features/new-project/genesis-wizard-context";
-import { GenesisWizardShell } from "@/components/features/new-project/genesis-wizard-shell";
-import { StepPillar } from "@/components/features/new-project/step-pillar";
-import { StepDetails } from "@/components/features/new-project/step-details";
-import { StepVision } from "@/components/features/new-project/step-vision";
-import { StepReview } from "@/components/features/new-project/step-review";
-import { GenerationLoader } from "@/components/shared/generation-loader";
-import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Loader2 } from "lucide-react";
 
-export default function NewProjectPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="h-screen flex items-center justify-center bg-background">
-          <Loader2 className="animate-spin text-primary w-8 h-8" />
-        </div>
-      }
-    >
-      <GenesisWizardProvider>
-        <NewProjectInner />
-      </GenesisWizardProvider>
-    </Suspense>
-  );
-}
-
-function NewProjectInner() {
+/** Legacy route — redirects to unified onboarding genesis step */
+export default function NewProjectRedirectPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
-  const {
-    activeStep,
-    isGenerating,
-    isCreating,
-    showLimitModal,
-    closeLimitModal,
-    hasResumableDraft,
-    dismissResume,
-  } = useGenesisWizard();
 
-  // Auth gate: logged-out users go to /login (not /signup).
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/login");
-    }
-  }, [user, authLoading, router]);
-
-  if (authLoading) {
-    return (
-      <div className="h-screen flex items-center justify-center bg-background">
-        <Loader2 className="animate-spin text-primary w-8 h-8" />
-      </div>
-    );
-  }
-
-  if (isGenerating || isCreating) {
-    return (
-      <div className="h-screen w-full bg-background flex flex-col items-center justify-center text-center p-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-brand-primary/5 blur-3xl opacity-50" />
-        <GenerationLoader
-          isLoading
-          title={
-            isCreating
-              ? "در حال ساخت امپراطوری شما..."
-              : "کارنکس در حال طراحی استراتژی..."
-          }
-        />
-      </div>
-    );
-  }
+    (async () => {
+      await fetch("/api/onboarding/project", { method: "POST" }).catch(() => {});
+      router.replace("/onboarding/genesis");
+    })();
+  }, [router]);
 
   return (
-    <>
-      <GenesisWizardShell>
-        {activeStep === 0 && <StepPillar />}
-        {activeStep === 1 && <StepDetails />}
-        {activeStep === 2 && <StepVision />}
-        {activeStep === 3 && <StepReview />}
-      </GenesisWizardShell>
-
-      <LimitReachedModal isOpen={showLimitModal} onClose={closeLimitModal} />
-
-      <Dialog
-        open={hasResumableDraft}
-        onOpenChange={(open) => {
-          if (!open) dismissResume(false);
-        }}
-      >
-        <DialogContent
-          className="sm:max-w-md bg-card border-border shadow-2xl"
-          dir="rtl"
-        >
-          <DialogHeader className="flex flex-col items-center gap-4 text-center">
-            <div className="w-16 h-16 rounded-full bg-brand-primary/10 flex items-center justify-center mb-2">
-              <History className="w-8 h-8 text-brand-primary" />
-            </div>
-            <DialogTitle className="text-xl font-bold text-foreground">
-              بازیابی پیش‌نویس قبلی
-            </DialogTitle>
-            <DialogDescription className="text-center text-muted-foreground leading-relaxed">
-              پیش‌نویس تکمیل‌نشده‌ای از مراحل ثبت پروژه قبلی شما پیدا شد. آیا مایلید
-              آن را بازیابی کنید؟
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter className="flex flex-col sm:flex-row gap-3 mt-6 w-full">
-            <Button
-              onClick={() => dismissResume(true)}
-              className="w-full sm:w-auto flex-1 gap-2 bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-90 text-white shadow-lg shadow-primary/20"
-            >
-              بله، بازیابی کن
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => dismissResume(false)}
-              className="w-full sm:w-auto"
-            >
-              خیر، شروع مجدد
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+    <div className="h-screen flex items-center justify-center bg-background" role="status">
+      <Loader2 className="animate-spin text-primary w-8 h-8" />
+    </div>
   );
 }

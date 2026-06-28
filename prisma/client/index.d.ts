@@ -178,6 +178,16 @@ export type UserIntegration = $Result.DefaultSelection<Prisma.$UserIntegrationPa
  * 
  */
 export type DataExportRequest = $Result.DefaultSelection<Prisma.$DataExportRequestPayload>
+/**
+ * Model UserOnboarding
+ * 
+ */
+export type UserOnboarding = $Result.DefaultSelection<Prisma.$UserOnboardingPayload>
+/**
+ * Model ProjectOnboarding
+ * 
+ */
+export type ProjectOnboarding = $Result.DefaultSelection<Prisma.$ProjectOnboardingPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -625,6 +635,26 @@ export class PrismaClient<
     * ```
     */
   get dataExportRequest(): Prisma.DataExportRequestDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.userOnboarding`: Exposes CRUD operations for the **UserOnboarding** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more UserOnboardings
+    * const userOnboardings = await prisma.userOnboarding.findMany()
+    * ```
+    */
+  get userOnboarding(): Prisma.UserOnboardingDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.projectOnboarding`: Exposes CRUD operations for the **ProjectOnboarding** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ProjectOnboardings
+    * const projectOnboardings = await prisma.projectOnboarding.findMany()
+    * ```
+    */
+  get projectOnboarding(): Prisma.ProjectOnboardingDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1091,7 +1121,9 @@ export namespace Prisma {
     LoginEvent: 'LoginEvent',
     UserApiKey: 'UserApiKey',
     UserIntegration: 'UserIntegration',
-    DataExportRequest: 'DataExportRequest'
+    DataExportRequest: 'DataExportRequest',
+    UserOnboarding: 'UserOnboarding',
+    ProjectOnboarding: 'ProjectOnboarding'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1107,7 +1139,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "subscription" | "transaction" | "mediaItem" | "systemLog" | "feedback" | "projectMember" | "canvas" | "card" | "comment" | "canvasVersion" | "userProfile" | "projectMemory" | "chatConversation" | "chatMessage" | "aiFeedback" | "artifact" | "aiActionLog" | "aiInsight" | "aiUsage" | "customerBotChannel" | "customerBotConversation" | "customerBotMessage" | "script" | "userSession" | "loginEvent" | "userApiKey" | "userIntegration" | "dataExportRequest"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "subscription" | "transaction" | "mediaItem" | "systemLog" | "feedback" | "projectMember" | "canvas" | "card" | "comment" | "canvasVersion" | "userProfile" | "projectMemory" | "chatConversation" | "chatMessage" | "aiFeedback" | "artifact" | "aiActionLog" | "aiInsight" | "aiUsage" | "customerBotChannel" | "customerBotConversation" | "customerBotMessage" | "script" | "userSession" | "loginEvent" | "userApiKey" | "userIntegration" | "dataExportRequest" | "userOnboarding" | "projectOnboarding"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3553,6 +3585,154 @@ export namespace Prisma {
           }
         }
       }
+      UserOnboarding: {
+        payload: Prisma.$UserOnboardingPayload<ExtArgs>
+        fields: Prisma.UserOnboardingFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.UserOnboardingFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserOnboardingPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.UserOnboardingFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserOnboardingPayload>
+          }
+          findFirst: {
+            args: Prisma.UserOnboardingFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserOnboardingPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.UserOnboardingFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserOnboardingPayload>
+          }
+          findMany: {
+            args: Prisma.UserOnboardingFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserOnboardingPayload>[]
+          }
+          create: {
+            args: Prisma.UserOnboardingCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserOnboardingPayload>
+          }
+          createMany: {
+            args: Prisma.UserOnboardingCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.UserOnboardingCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserOnboardingPayload>[]
+          }
+          delete: {
+            args: Prisma.UserOnboardingDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserOnboardingPayload>
+          }
+          update: {
+            args: Prisma.UserOnboardingUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserOnboardingPayload>
+          }
+          deleteMany: {
+            args: Prisma.UserOnboardingDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.UserOnboardingUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.UserOnboardingUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserOnboardingPayload>[]
+          }
+          upsert: {
+            args: Prisma.UserOnboardingUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$UserOnboardingPayload>
+          }
+          aggregate: {
+            args: Prisma.UserOnboardingAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateUserOnboarding>
+          }
+          groupBy: {
+            args: Prisma.UserOnboardingGroupByArgs<ExtArgs>
+            result: $Utils.Optional<UserOnboardingGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.UserOnboardingCountArgs<ExtArgs>
+            result: $Utils.Optional<UserOnboardingCountAggregateOutputType> | number
+          }
+        }
+      }
+      ProjectOnboarding: {
+        payload: Prisma.$ProjectOnboardingPayload<ExtArgs>
+        fields: Prisma.ProjectOnboardingFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ProjectOnboardingFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectOnboardingPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ProjectOnboardingFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectOnboardingPayload>
+          }
+          findFirst: {
+            args: Prisma.ProjectOnboardingFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectOnboardingPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ProjectOnboardingFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectOnboardingPayload>
+          }
+          findMany: {
+            args: Prisma.ProjectOnboardingFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectOnboardingPayload>[]
+          }
+          create: {
+            args: Prisma.ProjectOnboardingCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectOnboardingPayload>
+          }
+          createMany: {
+            args: Prisma.ProjectOnboardingCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ProjectOnboardingCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectOnboardingPayload>[]
+          }
+          delete: {
+            args: Prisma.ProjectOnboardingDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectOnboardingPayload>
+          }
+          update: {
+            args: Prisma.ProjectOnboardingUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectOnboardingPayload>
+          }
+          deleteMany: {
+            args: Prisma.ProjectOnboardingDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ProjectOnboardingUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ProjectOnboardingUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectOnboardingPayload>[]
+          }
+          upsert: {
+            args: Prisma.ProjectOnboardingUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ProjectOnboardingPayload>
+          }
+          aggregate: {
+            args: Prisma.ProjectOnboardingAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateProjectOnboarding>
+          }
+          groupBy: {
+            args: Prisma.ProjectOnboardingGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ProjectOnboardingGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ProjectOnboardingCountArgs<ExtArgs>
+            result: $Utils.Optional<ProjectOnboardingCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3694,6 +3874,8 @@ export namespace Prisma {
     userApiKey?: UserApiKeyOmit
     userIntegration?: UserIntegrationOmit
     dataExportRequest?: DataExportRequestOmit
+    userOnboarding?: UserOnboardingOmit
+    projectOnboarding?: ProjectOnboardingOmit
   }
 
   /* Types for Logging */
@@ -3792,6 +3974,7 @@ export namespace Prisma {
     userIntegrations: number
     dataExportRequests: number
     loginEvents: number
+    projectOnboardings: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3813,6 +3996,7 @@ export namespace Prisma {
     userIntegrations?: boolean | UserCountOutputTypeCountUserIntegrationsArgs
     dataExportRequests?: boolean | UserCountOutputTypeCountDataExportRequestsArgs
     loginEvents?: boolean | UserCountOutputTypeCountLoginEventsArgs
+    projectOnboardings?: boolean | UserCountOutputTypeCountProjectOnboardingsArgs
   }
 
   // Custom InputTypes
@@ -3950,6 +4134,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountLoginEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LoginEventWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountProjectOnboardingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProjectOnboardingWhereInput
   }
 
 
@@ -4550,6 +4741,8 @@ export namespace Prisma {
     userIntegrations?: boolean | User$userIntegrationsArgs<ExtArgs>
     dataExportRequests?: boolean | User$dataExportRequestsArgs<ExtArgs>
     loginEvents?: boolean | User$loginEventsArgs<ExtArgs>
+    userOnboarding?: boolean | User$userOnboardingArgs<ExtArgs>
+    projectOnboardings?: boolean | User$projectOnboardingsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -4646,6 +4839,8 @@ export namespace Prisma {
     userIntegrations?: boolean | User$userIntegrationsArgs<ExtArgs>
     dataExportRequests?: boolean | User$dataExportRequestsArgs<ExtArgs>
     loginEvents?: boolean | User$loginEventsArgs<ExtArgs>
+    userOnboarding?: boolean | User$userOnboardingArgs<ExtArgs>
+    projectOnboardings?: boolean | User$projectOnboardingsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -4673,6 +4868,8 @@ export namespace Prisma {
       userIntegrations: Prisma.$UserIntegrationPayload<ExtArgs>[]
       dataExportRequests: Prisma.$DataExportRequestPayload<ExtArgs>[]
       loginEvents: Prisma.$LoginEventPayload<ExtArgs>[]
+      userOnboarding: Prisma.$UserOnboardingPayload<ExtArgs> | null
+      projectOnboardings: Prisma.$ProjectOnboardingPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5109,6 +5306,8 @@ export namespace Prisma {
     userIntegrations<T extends User$userIntegrationsArgs<ExtArgs> = {}>(args?: Subset<T, User$userIntegrationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserIntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dataExportRequests<T extends User$dataExportRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$dataExportRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DataExportRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     loginEvents<T extends User$loginEventsArgs<ExtArgs> = {}>(args?: Subset<T, User$loginEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LoginEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    userOnboarding<T extends User$userOnboardingArgs<ExtArgs> = {}>(args?: Subset<T, User$userOnboardingArgs<ExtArgs>>): Prisma__UserOnboardingClient<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    projectOnboardings<T extends User$projectOnboardingsArgs<ExtArgs> = {}>(args?: Subset<T, User$projectOnboardingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5995,6 +6194,49 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LoginEventScalarFieldEnum | LoginEventScalarFieldEnum[]
+  }
+
+  /**
+   * User.userOnboarding
+   */
+  export type User$userOnboardingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingInclude<ExtArgs> | null
+    where?: UserOnboardingWhereInput
+  }
+
+  /**
+   * User.projectOnboardings
+   */
+  export type User$projectOnboardingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+    where?: ProjectOnboardingWhereInput
+    orderBy?: ProjectOnboardingOrderByWithRelationInput | ProjectOnboardingOrderByWithRelationInput[]
+    cursor?: ProjectOnboardingWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ProjectOnboardingScalarFieldEnum | ProjectOnboardingScalarFieldEnum[]
   }
 
   /**
@@ -9416,6 +9658,7 @@ export namespace Prisma {
     aiInsights?: boolean | Project$aiInsightsArgs<ExtArgs>
     aiUsages?: boolean | Project$aiUsagesArgs<ExtArgs>
     customerBotChannels?: boolean | Project$customerBotChannelsArgs<ExtArgs>
+    projectOnboarding?: boolean | Project$projectOnboardingArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["project"]>
 
@@ -9470,6 +9713,7 @@ export namespace Prisma {
     aiInsights?: boolean | Project$aiInsightsArgs<ExtArgs>
     aiUsages?: boolean | Project$aiUsagesArgs<ExtArgs>
     customerBotChannels?: boolean | Project$customerBotChannelsArgs<ExtArgs>
+    projectOnboarding?: boolean | Project$projectOnboardingArgs<ExtArgs>
     _count?: boolean | ProjectCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProjectIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9493,6 +9737,7 @@ export namespace Prisma {
       aiInsights: Prisma.$AiInsightPayload<ExtArgs>[]
       aiUsages: Prisma.$AiUsagePayload<ExtArgs>[]
       customerBotChannels: Prisma.$CustomerBotChannelPayload<ExtArgs>[]
+      projectOnboarding: Prisma.$ProjectOnboardingPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9909,6 +10154,7 @@ export namespace Prisma {
     aiInsights<T extends Project$aiInsightsArgs<ExtArgs> = {}>(args?: Subset<T, Project$aiInsightsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiInsightPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiUsages<T extends Project$aiUsagesArgs<ExtArgs> = {}>(args?: Subset<T, Project$aiUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     customerBotChannels<T extends Project$customerBotChannelsArgs<ExtArgs> = {}>(args?: Subset<T, Project$customerBotChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomerBotChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    projectOnboarding<T extends Project$projectOnboardingArgs<ExtArgs> = {}>(args?: Subset<T, Project$projectOnboardingArgs<ExtArgs>>): Prisma__ProjectOnboardingClient<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10575,6 +10821,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CustomerBotChannelScalarFieldEnum | CustomerBotChannelScalarFieldEnum[]
+  }
+
+  /**
+   * Project.projectOnboarding
+   */
+  export type Project$projectOnboardingArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+    where?: ProjectOnboardingWhereInput
   }
 
   /**
@@ -42527,6 +42792,2419 @@ export namespace Prisma {
 
 
   /**
+   * Model UserOnboarding
+   */
+
+  export type AggregateUserOnboarding = {
+    _count: UserOnboardingCountAggregateOutputType | null
+    _min: UserOnboardingMinAggregateOutputType | null
+    _max: UserOnboardingMaxAggregateOutputType | null
+  }
+
+  export type UserOnboardingMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    version: string | null
+    currentStep: string | null
+    profileCompletedAt: Date | null
+    needsReonboard: boolean | null
+    onboardingCompletedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserOnboardingMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    version: string | null
+    currentStep: string | null
+    profileCompletedAt: Date | null
+    needsReonboard: boolean | null
+    onboardingCompletedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type UserOnboardingCountAggregateOutputType = {
+    id: number
+    userId: number
+    version: number
+    currentStep: number
+    profileCompletedAt: number
+    needsReonboard: number
+    profileData: number
+    gamification: number
+    completedMissions: number
+    onboardingCompletedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type UserOnboardingMinAggregateInputType = {
+    id?: true
+    userId?: true
+    version?: true
+    currentStep?: true
+    profileCompletedAt?: true
+    needsReonboard?: true
+    onboardingCompletedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserOnboardingMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    version?: true
+    currentStep?: true
+    profileCompletedAt?: true
+    needsReonboard?: true
+    onboardingCompletedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type UserOnboardingCountAggregateInputType = {
+    id?: true
+    userId?: true
+    version?: true
+    currentStep?: true
+    profileCompletedAt?: true
+    needsReonboard?: true
+    profileData?: true
+    gamification?: true
+    completedMissions?: true
+    onboardingCompletedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type UserOnboardingAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserOnboarding to aggregate.
+     */
+    where?: UserOnboardingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserOnboardings to fetch.
+     */
+    orderBy?: UserOnboardingOrderByWithRelationInput | UserOnboardingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: UserOnboardingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserOnboardings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserOnboardings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned UserOnboardings
+    **/
+    _count?: true | UserOnboardingCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: UserOnboardingMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: UserOnboardingMaxAggregateInputType
+  }
+
+  export type GetUserOnboardingAggregateType<T extends UserOnboardingAggregateArgs> = {
+        [P in keyof T & keyof AggregateUserOnboarding]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateUserOnboarding[P]>
+      : GetScalarType<T[P], AggregateUserOnboarding[P]>
+  }
+
+
+
+
+  export type UserOnboardingGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserOnboardingWhereInput
+    orderBy?: UserOnboardingOrderByWithAggregationInput | UserOnboardingOrderByWithAggregationInput[]
+    by: UserOnboardingScalarFieldEnum[] | UserOnboardingScalarFieldEnum
+    having?: UserOnboardingScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: UserOnboardingCountAggregateInputType | true
+    _min?: UserOnboardingMinAggregateInputType
+    _max?: UserOnboardingMaxAggregateInputType
+  }
+
+  export type UserOnboardingGroupByOutputType = {
+    id: string
+    userId: string
+    version: string
+    currentStep: string
+    profileCompletedAt: Date | null
+    needsReonboard: boolean
+    profileData: JsonValue | null
+    gamification: JsonValue | null
+    completedMissions: JsonValue | null
+    onboardingCompletedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: UserOnboardingCountAggregateOutputType | null
+    _min: UserOnboardingMinAggregateOutputType | null
+    _max: UserOnboardingMaxAggregateOutputType | null
+  }
+
+  type GetUserOnboardingGroupByPayload<T extends UserOnboardingGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<UserOnboardingGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof UserOnboardingGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], UserOnboardingGroupByOutputType[P]>
+            : GetScalarType<T[P], UserOnboardingGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type UserOnboardingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    version?: boolean
+    currentStep?: boolean
+    profileCompletedAt?: boolean
+    needsReonboard?: boolean
+    profileData?: boolean
+    gamification?: boolean
+    completedMissions?: boolean
+    onboardingCompletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userOnboarding"]>
+
+  export type UserOnboardingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    version?: boolean
+    currentStep?: boolean
+    profileCompletedAt?: boolean
+    needsReonboard?: boolean
+    profileData?: boolean
+    gamification?: boolean
+    completedMissions?: boolean
+    onboardingCompletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userOnboarding"]>
+
+  export type UserOnboardingSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    version?: boolean
+    currentStep?: boolean
+    profileCompletedAt?: boolean
+    needsReonboard?: boolean
+    profileData?: boolean
+    gamification?: boolean
+    completedMissions?: boolean
+    onboardingCompletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["userOnboarding"]>
+
+  export type UserOnboardingSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    version?: boolean
+    currentStep?: boolean
+    profileCompletedAt?: boolean
+    needsReonboard?: boolean
+    profileData?: boolean
+    gamification?: boolean
+    completedMissions?: boolean
+    onboardingCompletedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type UserOnboardingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "version" | "currentStep" | "profileCompletedAt" | "needsReonboard" | "profileData" | "gamification" | "completedMissions" | "onboardingCompletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["userOnboarding"]>
+  export type UserOnboardingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type UserOnboardingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type UserOnboardingIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $UserOnboardingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "UserOnboarding"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      version: string
+      currentStep: string
+      profileCompletedAt: Date | null
+      needsReonboard: boolean
+      profileData: Prisma.JsonValue | null
+      gamification: Prisma.JsonValue | null
+      completedMissions: Prisma.JsonValue | null
+      onboardingCompletedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["userOnboarding"]>
+    composites: {}
+  }
+
+  type UserOnboardingGetPayload<S extends boolean | null | undefined | UserOnboardingDefaultArgs> = $Result.GetResult<Prisma.$UserOnboardingPayload, S>
+
+  type UserOnboardingCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<UserOnboardingFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: UserOnboardingCountAggregateInputType | true
+    }
+
+  export interface UserOnboardingDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['UserOnboarding'], meta: { name: 'UserOnboarding' } }
+    /**
+     * Find zero or one UserOnboarding that matches the filter.
+     * @param {UserOnboardingFindUniqueArgs} args - Arguments to find a UserOnboarding
+     * @example
+     * // Get one UserOnboarding
+     * const userOnboarding = await prisma.userOnboarding.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends UserOnboardingFindUniqueArgs>(args: SelectSubset<T, UserOnboardingFindUniqueArgs<ExtArgs>>): Prisma__UserOnboardingClient<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one UserOnboarding that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserOnboardingFindUniqueOrThrowArgs} args - Arguments to find a UserOnboarding
+     * @example
+     * // Get one UserOnboarding
+     * const userOnboarding = await prisma.userOnboarding.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends UserOnboardingFindUniqueOrThrowArgs>(args: SelectSubset<T, UserOnboardingFindUniqueOrThrowArgs<ExtArgs>>): Prisma__UserOnboardingClient<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserOnboarding that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserOnboardingFindFirstArgs} args - Arguments to find a UserOnboarding
+     * @example
+     * // Get one UserOnboarding
+     * const userOnboarding = await prisma.userOnboarding.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends UserOnboardingFindFirstArgs>(args?: SelectSubset<T, UserOnboardingFindFirstArgs<ExtArgs>>): Prisma__UserOnboardingClient<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first UserOnboarding that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserOnboardingFindFirstOrThrowArgs} args - Arguments to find a UserOnboarding
+     * @example
+     * // Get one UserOnboarding
+     * const userOnboarding = await prisma.userOnboarding.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends UserOnboardingFindFirstOrThrowArgs>(args?: SelectSubset<T, UserOnboardingFindFirstOrThrowArgs<ExtArgs>>): Prisma__UserOnboardingClient<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more UserOnboardings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserOnboardingFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all UserOnboardings
+     * const userOnboardings = await prisma.userOnboarding.findMany()
+     * 
+     * // Get first 10 UserOnboardings
+     * const userOnboardings = await prisma.userOnboarding.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const userOnboardingWithIdOnly = await prisma.userOnboarding.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends UserOnboardingFindManyArgs>(args?: SelectSubset<T, UserOnboardingFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a UserOnboarding.
+     * @param {UserOnboardingCreateArgs} args - Arguments to create a UserOnboarding.
+     * @example
+     * // Create one UserOnboarding
+     * const UserOnboarding = await prisma.userOnboarding.create({
+     *   data: {
+     *     // ... data to create a UserOnboarding
+     *   }
+     * })
+     * 
+     */
+    create<T extends UserOnboardingCreateArgs>(args: SelectSubset<T, UserOnboardingCreateArgs<ExtArgs>>): Prisma__UserOnboardingClient<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many UserOnboardings.
+     * @param {UserOnboardingCreateManyArgs} args - Arguments to create many UserOnboardings.
+     * @example
+     * // Create many UserOnboardings
+     * const userOnboarding = await prisma.userOnboarding.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends UserOnboardingCreateManyArgs>(args?: SelectSubset<T, UserOnboardingCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many UserOnboardings and returns the data saved in the database.
+     * @param {UserOnboardingCreateManyAndReturnArgs} args - Arguments to create many UserOnboardings.
+     * @example
+     * // Create many UserOnboardings
+     * const userOnboarding = await prisma.userOnboarding.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many UserOnboardings and only return the `id`
+     * const userOnboardingWithIdOnly = await prisma.userOnboarding.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends UserOnboardingCreateManyAndReturnArgs>(args?: SelectSubset<T, UserOnboardingCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a UserOnboarding.
+     * @param {UserOnboardingDeleteArgs} args - Arguments to delete one UserOnboarding.
+     * @example
+     * // Delete one UserOnboarding
+     * const UserOnboarding = await prisma.userOnboarding.delete({
+     *   where: {
+     *     // ... filter to delete one UserOnboarding
+     *   }
+     * })
+     * 
+     */
+    delete<T extends UserOnboardingDeleteArgs>(args: SelectSubset<T, UserOnboardingDeleteArgs<ExtArgs>>): Prisma__UserOnboardingClient<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one UserOnboarding.
+     * @param {UserOnboardingUpdateArgs} args - Arguments to update one UserOnboarding.
+     * @example
+     * // Update one UserOnboarding
+     * const userOnboarding = await prisma.userOnboarding.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends UserOnboardingUpdateArgs>(args: SelectSubset<T, UserOnboardingUpdateArgs<ExtArgs>>): Prisma__UserOnboardingClient<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more UserOnboardings.
+     * @param {UserOnboardingDeleteManyArgs} args - Arguments to filter UserOnboardings to delete.
+     * @example
+     * // Delete a few UserOnboardings
+     * const { count } = await prisma.userOnboarding.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends UserOnboardingDeleteManyArgs>(args?: SelectSubset<T, UserOnboardingDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserOnboardings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserOnboardingUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many UserOnboardings
+     * const userOnboarding = await prisma.userOnboarding.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends UserOnboardingUpdateManyArgs>(args: SelectSubset<T, UserOnboardingUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more UserOnboardings and returns the data updated in the database.
+     * @param {UserOnboardingUpdateManyAndReturnArgs} args - Arguments to update many UserOnboardings.
+     * @example
+     * // Update many UserOnboardings
+     * const userOnboarding = await prisma.userOnboarding.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more UserOnboardings and only return the `id`
+     * const userOnboardingWithIdOnly = await prisma.userOnboarding.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends UserOnboardingUpdateManyAndReturnArgs>(args: SelectSubset<T, UserOnboardingUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one UserOnboarding.
+     * @param {UserOnboardingUpsertArgs} args - Arguments to update or create a UserOnboarding.
+     * @example
+     * // Update or create a UserOnboarding
+     * const userOnboarding = await prisma.userOnboarding.upsert({
+     *   create: {
+     *     // ... data to create a UserOnboarding
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the UserOnboarding we want to update
+     *   }
+     * })
+     */
+    upsert<T extends UserOnboardingUpsertArgs>(args: SelectSubset<T, UserOnboardingUpsertArgs<ExtArgs>>): Prisma__UserOnboardingClient<$Result.GetResult<Prisma.$UserOnboardingPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of UserOnboardings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserOnboardingCountArgs} args - Arguments to filter UserOnboardings to count.
+     * @example
+     * // Count the number of UserOnboardings
+     * const count = await prisma.userOnboarding.count({
+     *   where: {
+     *     // ... the filter for the UserOnboardings we want to count
+     *   }
+     * })
+    **/
+    count<T extends UserOnboardingCountArgs>(
+      args?: Subset<T, UserOnboardingCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], UserOnboardingCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a UserOnboarding.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserOnboardingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends UserOnboardingAggregateArgs>(args: Subset<T, UserOnboardingAggregateArgs>): Prisma.PrismaPromise<GetUserOnboardingAggregateType<T>>
+
+    /**
+     * Group by UserOnboarding.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserOnboardingGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends UserOnboardingGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: UserOnboardingGroupByArgs['orderBy'] }
+        : { orderBy?: UserOnboardingGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, UserOnboardingGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetUserOnboardingGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the UserOnboarding model
+   */
+  readonly fields: UserOnboardingFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for UserOnboarding.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__UserOnboardingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the UserOnboarding model
+   */
+  interface UserOnboardingFieldRefs {
+    readonly id: FieldRef<"UserOnboarding", 'String'>
+    readonly userId: FieldRef<"UserOnboarding", 'String'>
+    readonly version: FieldRef<"UserOnboarding", 'String'>
+    readonly currentStep: FieldRef<"UserOnboarding", 'String'>
+    readonly profileCompletedAt: FieldRef<"UserOnboarding", 'DateTime'>
+    readonly needsReonboard: FieldRef<"UserOnboarding", 'Boolean'>
+    readonly profileData: FieldRef<"UserOnboarding", 'Json'>
+    readonly gamification: FieldRef<"UserOnboarding", 'Json'>
+    readonly completedMissions: FieldRef<"UserOnboarding", 'Json'>
+    readonly onboardingCompletedAt: FieldRef<"UserOnboarding", 'DateTime'>
+    readonly createdAt: FieldRef<"UserOnboarding", 'DateTime'>
+    readonly updatedAt: FieldRef<"UserOnboarding", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * UserOnboarding findUnique
+   */
+  export type UserOnboardingFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter, which UserOnboarding to fetch.
+     */
+    where: UserOnboardingWhereUniqueInput
+  }
+
+  /**
+   * UserOnboarding findUniqueOrThrow
+   */
+  export type UserOnboardingFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter, which UserOnboarding to fetch.
+     */
+    where: UserOnboardingWhereUniqueInput
+  }
+
+  /**
+   * UserOnboarding findFirst
+   */
+  export type UserOnboardingFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter, which UserOnboarding to fetch.
+     */
+    where?: UserOnboardingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserOnboardings to fetch.
+     */
+    orderBy?: UserOnboardingOrderByWithRelationInput | UserOnboardingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserOnboardings.
+     */
+    cursor?: UserOnboardingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserOnboardings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserOnboardings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserOnboardings.
+     */
+    distinct?: UserOnboardingScalarFieldEnum | UserOnboardingScalarFieldEnum[]
+  }
+
+  /**
+   * UserOnboarding findFirstOrThrow
+   */
+  export type UserOnboardingFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter, which UserOnboarding to fetch.
+     */
+    where?: UserOnboardingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserOnboardings to fetch.
+     */
+    orderBy?: UserOnboardingOrderByWithRelationInput | UserOnboardingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for UserOnboardings.
+     */
+    cursor?: UserOnboardingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserOnboardings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserOnboardings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of UserOnboardings.
+     */
+    distinct?: UserOnboardingScalarFieldEnum | UserOnboardingScalarFieldEnum[]
+  }
+
+  /**
+   * UserOnboarding findMany
+   */
+  export type UserOnboardingFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter, which UserOnboardings to fetch.
+     */
+    where?: UserOnboardingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of UserOnboardings to fetch.
+     */
+    orderBy?: UserOnboardingOrderByWithRelationInput | UserOnboardingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing UserOnboardings.
+     */
+    cursor?: UserOnboardingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` UserOnboardings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` UserOnboardings.
+     */
+    skip?: number
+    distinct?: UserOnboardingScalarFieldEnum | UserOnboardingScalarFieldEnum[]
+  }
+
+  /**
+   * UserOnboarding create
+   */
+  export type UserOnboardingCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingInclude<ExtArgs> | null
+    /**
+     * The data needed to create a UserOnboarding.
+     */
+    data: XOR<UserOnboardingCreateInput, UserOnboardingUncheckedCreateInput>
+  }
+
+  /**
+   * UserOnboarding createMany
+   */
+  export type UserOnboardingCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many UserOnboardings.
+     */
+    data: UserOnboardingCreateManyInput | UserOnboardingCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * UserOnboarding createManyAndReturn
+   */
+  export type UserOnboardingCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * The data used to create many UserOnboardings.
+     */
+    data: UserOnboardingCreateManyInput | UserOnboardingCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserOnboarding update
+   */
+  export type UserOnboardingUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingInclude<ExtArgs> | null
+    /**
+     * The data needed to update a UserOnboarding.
+     */
+    data: XOR<UserOnboardingUpdateInput, UserOnboardingUncheckedUpdateInput>
+    /**
+     * Choose, which UserOnboarding to update.
+     */
+    where: UserOnboardingWhereUniqueInput
+  }
+
+  /**
+   * UserOnboarding updateMany
+   */
+  export type UserOnboardingUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update UserOnboardings.
+     */
+    data: XOR<UserOnboardingUpdateManyMutationInput, UserOnboardingUncheckedUpdateManyInput>
+    /**
+     * Filter which UserOnboardings to update
+     */
+    where?: UserOnboardingWhereInput
+    /**
+     * Limit how many UserOnboardings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserOnboarding updateManyAndReturn
+   */
+  export type UserOnboardingUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * The data used to update UserOnboardings.
+     */
+    data: XOR<UserOnboardingUpdateManyMutationInput, UserOnboardingUncheckedUpdateManyInput>
+    /**
+     * Filter which UserOnboardings to update
+     */
+    where?: UserOnboardingWhereInput
+    /**
+     * Limit how many UserOnboardings to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * UserOnboarding upsert
+   */
+  export type UserOnboardingUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingInclude<ExtArgs> | null
+    /**
+     * The filter to search for the UserOnboarding to update in case it exists.
+     */
+    where: UserOnboardingWhereUniqueInput
+    /**
+     * In case the UserOnboarding found by the `where` argument doesn't exist, create a new UserOnboarding with this data.
+     */
+    create: XOR<UserOnboardingCreateInput, UserOnboardingUncheckedCreateInput>
+    /**
+     * In case the UserOnboarding was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<UserOnboardingUpdateInput, UserOnboardingUncheckedUpdateInput>
+  }
+
+  /**
+   * UserOnboarding delete
+   */
+  export type UserOnboardingDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter which UserOnboarding to delete.
+     */
+    where: UserOnboardingWhereUniqueInput
+  }
+
+  /**
+   * UserOnboarding deleteMany
+   */
+  export type UserOnboardingDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which UserOnboardings to delete
+     */
+    where?: UserOnboardingWhereInput
+    /**
+     * Limit how many UserOnboardings to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * UserOnboarding without action
+   */
+  export type UserOnboardingDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the UserOnboarding
+     */
+    select?: UserOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the UserOnboarding
+     */
+    omit?: UserOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserOnboardingInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ProjectOnboarding
+   */
+
+  export type AggregateProjectOnboarding = {
+    _count: ProjectOnboardingCountAggregateOutputType | null
+    _avg: ProjectOnboardingAvgAggregateOutputType | null
+    _sum: ProjectOnboardingSumAggregateOutputType | null
+    _min: ProjectOnboardingMinAggregateOutputType | null
+    _max: ProjectOnboardingMaxAggregateOutputType | null
+  }
+
+  export type ProjectOnboardingAvgAggregateOutputType = {
+    qualityScore: number | null
+    chatTurnsUsed: number | null
+  }
+
+  export type ProjectOnboardingSumAggregateOutputType = {
+    qualityScore: number | null
+    chatTurnsUsed: number | null
+  }
+
+  export type ProjectOnboardingMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    projectId: string | null
+    currentStep: string | null
+    pillar: string | null
+    projectName: string | null
+    projectVision: string | null
+    audience: string | null
+    budget: string | null
+    qualityScore: number | null
+    chatTurnsUsed: number | null
+    completedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ProjectOnboardingMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    projectId: string | null
+    currentStep: string | null
+    pillar: string | null
+    projectName: string | null
+    projectVision: string | null
+    audience: string | null
+    budget: string | null
+    qualityScore: number | null
+    chatTurnsUsed: number | null
+    completedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ProjectOnboardingCountAggregateOutputType = {
+    id: number
+    userId: number
+    projectId: number
+    currentStep: number
+    pillar: number
+    projectName: number
+    projectVision: number
+    answers: number
+    audience: number
+    budget: number
+    extractedData: number
+    qualityScore: number
+    chatTurnsUsed: number
+    genesisDraft: number
+    completedMissions: number
+    completedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ProjectOnboardingAvgAggregateInputType = {
+    qualityScore?: true
+    chatTurnsUsed?: true
+  }
+
+  export type ProjectOnboardingSumAggregateInputType = {
+    qualityScore?: true
+    chatTurnsUsed?: true
+  }
+
+  export type ProjectOnboardingMinAggregateInputType = {
+    id?: true
+    userId?: true
+    projectId?: true
+    currentStep?: true
+    pillar?: true
+    projectName?: true
+    projectVision?: true
+    audience?: true
+    budget?: true
+    qualityScore?: true
+    chatTurnsUsed?: true
+    completedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ProjectOnboardingMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    projectId?: true
+    currentStep?: true
+    pillar?: true
+    projectName?: true
+    projectVision?: true
+    audience?: true
+    budget?: true
+    qualityScore?: true
+    chatTurnsUsed?: true
+    completedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ProjectOnboardingCountAggregateInputType = {
+    id?: true
+    userId?: true
+    projectId?: true
+    currentStep?: true
+    pillar?: true
+    projectName?: true
+    projectVision?: true
+    answers?: true
+    audience?: true
+    budget?: true
+    extractedData?: true
+    qualityScore?: true
+    chatTurnsUsed?: true
+    genesisDraft?: true
+    completedMissions?: true
+    completedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ProjectOnboardingAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProjectOnboarding to aggregate.
+     */
+    where?: ProjectOnboardingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectOnboardings to fetch.
+     */
+    orderBy?: ProjectOnboardingOrderByWithRelationInput | ProjectOnboardingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ProjectOnboardingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectOnboardings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectOnboardings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ProjectOnboardings
+    **/
+    _count?: true | ProjectOnboardingCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: ProjectOnboardingAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: ProjectOnboardingSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ProjectOnboardingMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ProjectOnboardingMaxAggregateInputType
+  }
+
+  export type GetProjectOnboardingAggregateType<T extends ProjectOnboardingAggregateArgs> = {
+        [P in keyof T & keyof AggregateProjectOnboarding]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateProjectOnboarding[P]>
+      : GetScalarType<T[P], AggregateProjectOnboarding[P]>
+  }
+
+
+
+
+  export type ProjectOnboardingGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ProjectOnboardingWhereInput
+    orderBy?: ProjectOnboardingOrderByWithAggregationInput | ProjectOnboardingOrderByWithAggregationInput[]
+    by: ProjectOnboardingScalarFieldEnum[] | ProjectOnboardingScalarFieldEnum
+    having?: ProjectOnboardingScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ProjectOnboardingCountAggregateInputType | true
+    _avg?: ProjectOnboardingAvgAggregateInputType
+    _sum?: ProjectOnboardingSumAggregateInputType
+    _min?: ProjectOnboardingMinAggregateInputType
+    _max?: ProjectOnboardingMaxAggregateInputType
+  }
+
+  export type ProjectOnboardingGroupByOutputType = {
+    id: string
+    userId: string
+    projectId: string | null
+    currentStep: string
+    pillar: string | null
+    projectName: string | null
+    projectVision: string | null
+    answers: JsonValue | null
+    audience: string | null
+    budget: string | null
+    extractedData: JsonValue | null
+    qualityScore: number
+    chatTurnsUsed: number
+    genesisDraft: JsonValue | null
+    completedMissions: JsonValue | null
+    completedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: ProjectOnboardingCountAggregateOutputType | null
+    _avg: ProjectOnboardingAvgAggregateOutputType | null
+    _sum: ProjectOnboardingSumAggregateOutputType | null
+    _min: ProjectOnboardingMinAggregateOutputType | null
+    _max: ProjectOnboardingMaxAggregateOutputType | null
+  }
+
+  type GetProjectOnboardingGroupByPayload<T extends ProjectOnboardingGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ProjectOnboardingGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ProjectOnboardingGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ProjectOnboardingGroupByOutputType[P]>
+            : GetScalarType<T[P], ProjectOnboardingGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ProjectOnboardingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    projectId?: boolean
+    currentStep?: boolean
+    pillar?: boolean
+    projectName?: boolean
+    projectVision?: boolean
+    answers?: boolean
+    audience?: boolean
+    budget?: boolean
+    extractedData?: boolean
+    qualityScore?: boolean
+    chatTurnsUsed?: boolean
+    genesisDraft?: boolean
+    completedMissions?: boolean
+    completedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectOnboarding$projectArgs<ExtArgs>
+  }, ExtArgs["result"]["projectOnboarding"]>
+
+  export type ProjectOnboardingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    projectId?: boolean
+    currentStep?: boolean
+    pillar?: boolean
+    projectName?: boolean
+    projectVision?: boolean
+    answers?: boolean
+    audience?: boolean
+    budget?: boolean
+    extractedData?: boolean
+    qualityScore?: boolean
+    chatTurnsUsed?: boolean
+    genesisDraft?: boolean
+    completedMissions?: boolean
+    completedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectOnboarding$projectArgs<ExtArgs>
+  }, ExtArgs["result"]["projectOnboarding"]>
+
+  export type ProjectOnboardingSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    projectId?: boolean
+    currentStep?: boolean
+    pillar?: boolean
+    projectName?: boolean
+    projectVision?: boolean
+    answers?: boolean
+    audience?: boolean
+    budget?: boolean
+    extractedData?: boolean
+    qualityScore?: boolean
+    chatTurnsUsed?: boolean
+    genesisDraft?: boolean
+    completedMissions?: boolean
+    completedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectOnboarding$projectArgs<ExtArgs>
+  }, ExtArgs["result"]["projectOnboarding"]>
+
+  export type ProjectOnboardingSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    projectId?: boolean
+    currentStep?: boolean
+    pillar?: boolean
+    projectName?: boolean
+    projectVision?: boolean
+    answers?: boolean
+    audience?: boolean
+    budget?: boolean
+    extractedData?: boolean
+    qualityScore?: boolean
+    chatTurnsUsed?: boolean
+    genesisDraft?: boolean
+    completedMissions?: boolean
+    completedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ProjectOnboardingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "projectId" | "currentStep" | "pillar" | "projectName" | "projectVision" | "answers" | "audience" | "budget" | "extractedData" | "qualityScore" | "chatTurnsUsed" | "genesisDraft" | "completedMissions" | "completedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["projectOnboarding"]>
+  export type ProjectOnboardingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectOnboarding$projectArgs<ExtArgs>
+  }
+  export type ProjectOnboardingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectOnboarding$projectArgs<ExtArgs>
+  }
+  export type ProjectOnboardingIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectOnboarding$projectArgs<ExtArgs>
+  }
+
+  export type $ProjectOnboardingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ProjectOnboarding"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      project: Prisma.$ProjectPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      projectId: string | null
+      currentStep: string
+      pillar: string | null
+      projectName: string | null
+      projectVision: string | null
+      answers: Prisma.JsonValue | null
+      audience: string | null
+      budget: string | null
+      extractedData: Prisma.JsonValue | null
+      qualityScore: number
+      chatTurnsUsed: number
+      genesisDraft: Prisma.JsonValue | null
+      completedMissions: Prisma.JsonValue | null
+      completedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["projectOnboarding"]>
+    composites: {}
+  }
+
+  type ProjectOnboardingGetPayload<S extends boolean | null | undefined | ProjectOnboardingDefaultArgs> = $Result.GetResult<Prisma.$ProjectOnboardingPayload, S>
+
+  type ProjectOnboardingCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ProjectOnboardingFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ProjectOnboardingCountAggregateInputType | true
+    }
+
+  export interface ProjectOnboardingDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ProjectOnboarding'], meta: { name: 'ProjectOnboarding' } }
+    /**
+     * Find zero or one ProjectOnboarding that matches the filter.
+     * @param {ProjectOnboardingFindUniqueArgs} args - Arguments to find a ProjectOnboarding
+     * @example
+     * // Get one ProjectOnboarding
+     * const projectOnboarding = await prisma.projectOnboarding.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ProjectOnboardingFindUniqueArgs>(args: SelectSubset<T, ProjectOnboardingFindUniqueArgs<ExtArgs>>): Prisma__ProjectOnboardingClient<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ProjectOnboarding that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ProjectOnboardingFindUniqueOrThrowArgs} args - Arguments to find a ProjectOnboarding
+     * @example
+     * // Get one ProjectOnboarding
+     * const projectOnboarding = await prisma.projectOnboarding.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ProjectOnboardingFindUniqueOrThrowArgs>(args: SelectSubset<T, ProjectOnboardingFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ProjectOnboardingClient<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProjectOnboarding that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectOnboardingFindFirstArgs} args - Arguments to find a ProjectOnboarding
+     * @example
+     * // Get one ProjectOnboarding
+     * const projectOnboarding = await prisma.projectOnboarding.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ProjectOnboardingFindFirstArgs>(args?: SelectSubset<T, ProjectOnboardingFindFirstArgs<ExtArgs>>): Prisma__ProjectOnboardingClient<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ProjectOnboarding that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectOnboardingFindFirstOrThrowArgs} args - Arguments to find a ProjectOnboarding
+     * @example
+     * // Get one ProjectOnboarding
+     * const projectOnboarding = await prisma.projectOnboarding.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ProjectOnboardingFindFirstOrThrowArgs>(args?: SelectSubset<T, ProjectOnboardingFindFirstOrThrowArgs<ExtArgs>>): Prisma__ProjectOnboardingClient<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ProjectOnboardings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectOnboardingFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ProjectOnboardings
+     * const projectOnboardings = await prisma.projectOnboarding.findMany()
+     * 
+     * // Get first 10 ProjectOnboardings
+     * const projectOnboardings = await prisma.projectOnboarding.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const projectOnboardingWithIdOnly = await prisma.projectOnboarding.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ProjectOnboardingFindManyArgs>(args?: SelectSubset<T, ProjectOnboardingFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ProjectOnboarding.
+     * @param {ProjectOnboardingCreateArgs} args - Arguments to create a ProjectOnboarding.
+     * @example
+     * // Create one ProjectOnboarding
+     * const ProjectOnboarding = await prisma.projectOnboarding.create({
+     *   data: {
+     *     // ... data to create a ProjectOnboarding
+     *   }
+     * })
+     * 
+     */
+    create<T extends ProjectOnboardingCreateArgs>(args: SelectSubset<T, ProjectOnboardingCreateArgs<ExtArgs>>): Prisma__ProjectOnboardingClient<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ProjectOnboardings.
+     * @param {ProjectOnboardingCreateManyArgs} args - Arguments to create many ProjectOnboardings.
+     * @example
+     * // Create many ProjectOnboardings
+     * const projectOnboarding = await prisma.projectOnboarding.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ProjectOnboardingCreateManyArgs>(args?: SelectSubset<T, ProjectOnboardingCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ProjectOnboardings and returns the data saved in the database.
+     * @param {ProjectOnboardingCreateManyAndReturnArgs} args - Arguments to create many ProjectOnboardings.
+     * @example
+     * // Create many ProjectOnboardings
+     * const projectOnboarding = await prisma.projectOnboarding.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ProjectOnboardings and only return the `id`
+     * const projectOnboardingWithIdOnly = await prisma.projectOnboarding.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ProjectOnboardingCreateManyAndReturnArgs>(args?: SelectSubset<T, ProjectOnboardingCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ProjectOnboarding.
+     * @param {ProjectOnboardingDeleteArgs} args - Arguments to delete one ProjectOnboarding.
+     * @example
+     * // Delete one ProjectOnboarding
+     * const ProjectOnboarding = await prisma.projectOnboarding.delete({
+     *   where: {
+     *     // ... filter to delete one ProjectOnboarding
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ProjectOnboardingDeleteArgs>(args: SelectSubset<T, ProjectOnboardingDeleteArgs<ExtArgs>>): Prisma__ProjectOnboardingClient<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ProjectOnboarding.
+     * @param {ProjectOnboardingUpdateArgs} args - Arguments to update one ProjectOnboarding.
+     * @example
+     * // Update one ProjectOnboarding
+     * const projectOnboarding = await prisma.projectOnboarding.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ProjectOnboardingUpdateArgs>(args: SelectSubset<T, ProjectOnboardingUpdateArgs<ExtArgs>>): Prisma__ProjectOnboardingClient<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ProjectOnboardings.
+     * @param {ProjectOnboardingDeleteManyArgs} args - Arguments to filter ProjectOnboardings to delete.
+     * @example
+     * // Delete a few ProjectOnboardings
+     * const { count } = await prisma.projectOnboarding.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ProjectOnboardingDeleteManyArgs>(args?: SelectSubset<T, ProjectOnboardingDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProjectOnboardings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectOnboardingUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ProjectOnboardings
+     * const projectOnboarding = await prisma.projectOnboarding.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ProjectOnboardingUpdateManyArgs>(args: SelectSubset<T, ProjectOnboardingUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ProjectOnboardings and returns the data updated in the database.
+     * @param {ProjectOnboardingUpdateManyAndReturnArgs} args - Arguments to update many ProjectOnboardings.
+     * @example
+     * // Update many ProjectOnboardings
+     * const projectOnboarding = await prisma.projectOnboarding.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ProjectOnboardings and only return the `id`
+     * const projectOnboardingWithIdOnly = await prisma.projectOnboarding.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ProjectOnboardingUpdateManyAndReturnArgs>(args: SelectSubset<T, ProjectOnboardingUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ProjectOnboarding.
+     * @param {ProjectOnboardingUpsertArgs} args - Arguments to update or create a ProjectOnboarding.
+     * @example
+     * // Update or create a ProjectOnboarding
+     * const projectOnboarding = await prisma.projectOnboarding.upsert({
+     *   create: {
+     *     // ... data to create a ProjectOnboarding
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ProjectOnboarding we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ProjectOnboardingUpsertArgs>(args: SelectSubset<T, ProjectOnboardingUpsertArgs<ExtArgs>>): Prisma__ProjectOnboardingClient<$Result.GetResult<Prisma.$ProjectOnboardingPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ProjectOnboardings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectOnboardingCountArgs} args - Arguments to filter ProjectOnboardings to count.
+     * @example
+     * // Count the number of ProjectOnboardings
+     * const count = await prisma.projectOnboarding.count({
+     *   where: {
+     *     // ... the filter for the ProjectOnboardings we want to count
+     *   }
+     * })
+    **/
+    count<T extends ProjectOnboardingCountArgs>(
+      args?: Subset<T, ProjectOnboardingCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ProjectOnboardingCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ProjectOnboarding.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectOnboardingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ProjectOnboardingAggregateArgs>(args: Subset<T, ProjectOnboardingAggregateArgs>): Prisma.PrismaPromise<GetProjectOnboardingAggregateType<T>>
+
+    /**
+     * Group by ProjectOnboarding.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ProjectOnboardingGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ProjectOnboardingGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ProjectOnboardingGroupByArgs['orderBy'] }
+        : { orderBy?: ProjectOnboardingGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ProjectOnboardingGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetProjectOnboardingGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ProjectOnboarding model
+   */
+  readonly fields: ProjectOnboardingFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ProjectOnboarding.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ProjectOnboardingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    project<T extends ProjectOnboarding$projectArgs<ExtArgs> = {}>(args?: Subset<T, ProjectOnboarding$projectArgs<ExtArgs>>): Prisma__ProjectClient<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ProjectOnboarding model
+   */
+  interface ProjectOnboardingFieldRefs {
+    readonly id: FieldRef<"ProjectOnboarding", 'String'>
+    readonly userId: FieldRef<"ProjectOnboarding", 'String'>
+    readonly projectId: FieldRef<"ProjectOnboarding", 'String'>
+    readonly currentStep: FieldRef<"ProjectOnboarding", 'String'>
+    readonly pillar: FieldRef<"ProjectOnboarding", 'String'>
+    readonly projectName: FieldRef<"ProjectOnboarding", 'String'>
+    readonly projectVision: FieldRef<"ProjectOnboarding", 'String'>
+    readonly answers: FieldRef<"ProjectOnboarding", 'Json'>
+    readonly audience: FieldRef<"ProjectOnboarding", 'String'>
+    readonly budget: FieldRef<"ProjectOnboarding", 'String'>
+    readonly extractedData: FieldRef<"ProjectOnboarding", 'Json'>
+    readonly qualityScore: FieldRef<"ProjectOnboarding", 'Float'>
+    readonly chatTurnsUsed: FieldRef<"ProjectOnboarding", 'Int'>
+    readonly genesisDraft: FieldRef<"ProjectOnboarding", 'Json'>
+    readonly completedMissions: FieldRef<"ProjectOnboarding", 'Json'>
+    readonly completedAt: FieldRef<"ProjectOnboarding", 'DateTime'>
+    readonly createdAt: FieldRef<"ProjectOnboarding", 'DateTime'>
+    readonly updatedAt: FieldRef<"ProjectOnboarding", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ProjectOnboarding findUnique
+   */
+  export type ProjectOnboardingFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectOnboarding to fetch.
+     */
+    where: ProjectOnboardingWhereUniqueInput
+  }
+
+  /**
+   * ProjectOnboarding findUniqueOrThrow
+   */
+  export type ProjectOnboardingFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectOnboarding to fetch.
+     */
+    where: ProjectOnboardingWhereUniqueInput
+  }
+
+  /**
+   * ProjectOnboarding findFirst
+   */
+  export type ProjectOnboardingFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectOnboarding to fetch.
+     */
+    where?: ProjectOnboardingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectOnboardings to fetch.
+     */
+    orderBy?: ProjectOnboardingOrderByWithRelationInput | ProjectOnboardingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProjectOnboardings.
+     */
+    cursor?: ProjectOnboardingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectOnboardings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectOnboardings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProjectOnboardings.
+     */
+    distinct?: ProjectOnboardingScalarFieldEnum | ProjectOnboardingScalarFieldEnum[]
+  }
+
+  /**
+   * ProjectOnboarding findFirstOrThrow
+   */
+  export type ProjectOnboardingFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectOnboarding to fetch.
+     */
+    where?: ProjectOnboardingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectOnboardings to fetch.
+     */
+    orderBy?: ProjectOnboardingOrderByWithRelationInput | ProjectOnboardingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ProjectOnboardings.
+     */
+    cursor?: ProjectOnboardingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectOnboardings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectOnboardings.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ProjectOnboardings.
+     */
+    distinct?: ProjectOnboardingScalarFieldEnum | ProjectOnboardingScalarFieldEnum[]
+  }
+
+  /**
+   * ProjectOnboarding findMany
+   */
+  export type ProjectOnboardingFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter, which ProjectOnboardings to fetch.
+     */
+    where?: ProjectOnboardingWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ProjectOnboardings to fetch.
+     */
+    orderBy?: ProjectOnboardingOrderByWithRelationInput | ProjectOnboardingOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ProjectOnboardings.
+     */
+    cursor?: ProjectOnboardingWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ProjectOnboardings from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ProjectOnboardings.
+     */
+    skip?: number
+    distinct?: ProjectOnboardingScalarFieldEnum | ProjectOnboardingScalarFieldEnum[]
+  }
+
+  /**
+   * ProjectOnboarding create
+   */
+  export type ProjectOnboardingCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ProjectOnboarding.
+     */
+    data: XOR<ProjectOnboardingCreateInput, ProjectOnboardingUncheckedCreateInput>
+  }
+
+  /**
+   * ProjectOnboarding createMany
+   */
+  export type ProjectOnboardingCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ProjectOnboardings.
+     */
+    data: ProjectOnboardingCreateManyInput | ProjectOnboardingCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ProjectOnboarding createManyAndReturn
+   */
+  export type ProjectOnboardingCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * The data used to create many ProjectOnboardings.
+     */
+    data: ProjectOnboardingCreateManyInput | ProjectOnboardingCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ProjectOnboarding update
+   */
+  export type ProjectOnboardingUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ProjectOnboarding.
+     */
+    data: XOR<ProjectOnboardingUpdateInput, ProjectOnboardingUncheckedUpdateInput>
+    /**
+     * Choose, which ProjectOnboarding to update.
+     */
+    where: ProjectOnboardingWhereUniqueInput
+  }
+
+  /**
+   * ProjectOnboarding updateMany
+   */
+  export type ProjectOnboardingUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ProjectOnboardings.
+     */
+    data: XOR<ProjectOnboardingUpdateManyMutationInput, ProjectOnboardingUncheckedUpdateManyInput>
+    /**
+     * Filter which ProjectOnboardings to update
+     */
+    where?: ProjectOnboardingWhereInput
+    /**
+     * Limit how many ProjectOnboardings to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProjectOnboarding updateManyAndReturn
+   */
+  export type ProjectOnboardingUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * The data used to update ProjectOnboardings.
+     */
+    data: XOR<ProjectOnboardingUpdateManyMutationInput, ProjectOnboardingUncheckedUpdateManyInput>
+    /**
+     * Filter which ProjectOnboardings to update
+     */
+    where?: ProjectOnboardingWhereInput
+    /**
+     * Limit how many ProjectOnboardings to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ProjectOnboarding upsert
+   */
+  export type ProjectOnboardingUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ProjectOnboarding to update in case it exists.
+     */
+    where: ProjectOnboardingWhereUniqueInput
+    /**
+     * In case the ProjectOnboarding found by the `where` argument doesn't exist, create a new ProjectOnboarding with this data.
+     */
+    create: XOR<ProjectOnboardingCreateInput, ProjectOnboardingUncheckedCreateInput>
+    /**
+     * In case the ProjectOnboarding was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ProjectOnboardingUpdateInput, ProjectOnboardingUncheckedUpdateInput>
+  }
+
+  /**
+   * ProjectOnboarding delete
+   */
+  export type ProjectOnboardingDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+    /**
+     * Filter which ProjectOnboarding to delete.
+     */
+    where: ProjectOnboardingWhereUniqueInput
+  }
+
+  /**
+   * ProjectOnboarding deleteMany
+   */
+  export type ProjectOnboardingDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ProjectOnboardings to delete
+     */
+    where?: ProjectOnboardingWhereInput
+    /**
+     * Limit how many ProjectOnboardings to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ProjectOnboarding.project
+   */
+  export type ProjectOnboarding$projectArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Project
+     */
+    select?: ProjectSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Project
+     */
+    omit?: ProjectOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectInclude<ExtArgs> | null
+    where?: ProjectWhereInput
+  }
+
+  /**
+   * ProjectOnboarding without action
+   */
+  export type ProjectOnboardingDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ProjectOnboarding
+     */
+    select?: ProjectOnboardingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ProjectOnboarding
+     */
+    omit?: ProjectOnboardingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ProjectOnboardingInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -43062,6 +45740,48 @@ export namespace Prisma {
   export type DataExportRequestScalarFieldEnum = (typeof DataExportRequestScalarFieldEnum)[keyof typeof DataExportRequestScalarFieldEnum]
 
 
+  export const UserOnboardingScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    version: 'version',
+    currentStep: 'currentStep',
+    profileCompletedAt: 'profileCompletedAt',
+    needsReonboard: 'needsReonboard',
+    profileData: 'profileData',
+    gamification: 'gamification',
+    completedMissions: 'completedMissions',
+    onboardingCompletedAt: 'onboardingCompletedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type UserOnboardingScalarFieldEnum = (typeof UserOnboardingScalarFieldEnum)[keyof typeof UserOnboardingScalarFieldEnum]
+
+
+  export const ProjectOnboardingScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    projectId: 'projectId',
+    currentStep: 'currentStep',
+    pillar: 'pillar',
+    projectName: 'projectName',
+    projectVision: 'projectVision',
+    answers: 'answers',
+    audience: 'audience',
+    budget: 'budget',
+    extractedData: 'extractedData',
+    qualityScore: 'qualityScore',
+    chatTurnsUsed: 'chatTurnsUsed',
+    genesisDraft: 'genesisDraft',
+    completedMissions: 'completedMissions',
+    completedAt: 'completedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ProjectOnboardingScalarFieldEnum = (typeof ProjectOnboardingScalarFieldEnum)[keyof typeof ProjectOnboardingScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -43239,6 +45959,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationListRelationFilter
     dataExportRequests?: DataExportRequestListRelationFilter
     loginEvents?: LoginEventListRelationFilter
+    userOnboarding?: XOR<UserOnboardingNullableScalarRelationFilter, UserOnboardingWhereInput> | null
+    projectOnboardings?: ProjectOnboardingListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -43282,6 +46004,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationOrderByRelationAggregateInput
     dataExportRequests?: DataExportRequestOrderByRelationAggregateInput
     loginEvents?: LoginEventOrderByRelationAggregateInput
+    userOnboarding?: UserOnboardingOrderByWithRelationInput
+    projectOnboardings?: ProjectOnboardingOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -43328,6 +46052,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationListRelationFilter
     dataExportRequests?: DataExportRequestListRelationFilter
     loginEvents?: LoginEventListRelationFilter
+    userOnboarding?: XOR<UserOnboardingNullableScalarRelationFilter, UserOnboardingWhereInput> | null
+    projectOnboardings?: ProjectOnboardingListRelationFilter
   }, "id" | "supabaseUserId" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -43594,6 +46320,7 @@ export namespace Prisma {
     aiInsights?: AiInsightListRelationFilter
     aiUsages?: AiUsageListRelationFilter
     customerBotChannels?: CustomerBotChannelListRelationFilter
+    projectOnboarding?: XOR<ProjectOnboardingNullableScalarRelationFilter, ProjectOnboardingWhereInput> | null
   }
 
   export type ProjectOrderByWithRelationInput = {
@@ -43617,6 +46344,7 @@ export namespace Prisma {
     aiInsights?: AiInsightOrderByRelationAggregateInput
     aiUsages?: AiUsageOrderByRelationAggregateInput
     customerBotChannels?: CustomerBotChannelOrderByRelationAggregateInput
+    projectOnboarding?: ProjectOnboardingOrderByWithRelationInput
   }
 
   export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -43643,6 +46371,7 @@ export namespace Prisma {
     aiInsights?: AiInsightListRelationFilter
     aiUsages?: AiUsageListRelationFilter
     customerBotChannels?: CustomerBotChannelListRelationFilter
+    projectOnboarding?: XOR<ProjectOnboardingNullableScalarRelationFilter, ProjectOnboardingWhereInput> | null
   }, "id">
 
   export type ProjectOrderByWithAggregationInput = {
@@ -45957,6 +48686,221 @@ export namespace Prisma {
     expiresAt?: DateTimeNullableWithAggregatesFilter<"DataExportRequest"> | Date | string | null
   }
 
+  export type UserOnboardingWhereInput = {
+    AND?: UserOnboardingWhereInput | UserOnboardingWhereInput[]
+    OR?: UserOnboardingWhereInput[]
+    NOT?: UserOnboardingWhereInput | UserOnboardingWhereInput[]
+    id?: StringFilter<"UserOnboarding"> | string
+    userId?: StringFilter<"UserOnboarding"> | string
+    version?: StringFilter<"UserOnboarding"> | string
+    currentStep?: StringFilter<"UserOnboarding"> | string
+    profileCompletedAt?: DateTimeNullableFilter<"UserOnboarding"> | Date | string | null
+    needsReonboard?: BoolFilter<"UserOnboarding"> | boolean
+    profileData?: JsonNullableFilter<"UserOnboarding">
+    gamification?: JsonNullableFilter<"UserOnboarding">
+    completedMissions?: JsonNullableFilter<"UserOnboarding">
+    onboardingCompletedAt?: DateTimeNullableFilter<"UserOnboarding"> | Date | string | null
+    createdAt?: DateTimeFilter<"UserOnboarding"> | Date | string
+    updatedAt?: DateTimeFilter<"UserOnboarding"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type UserOnboardingOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    version?: SortOrder
+    currentStep?: SortOrder
+    profileCompletedAt?: SortOrderInput | SortOrder
+    needsReonboard?: SortOrder
+    profileData?: SortOrderInput | SortOrder
+    gamification?: SortOrderInput | SortOrder
+    completedMissions?: SortOrderInput | SortOrder
+    onboardingCompletedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type UserOnboardingWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: UserOnboardingWhereInput | UserOnboardingWhereInput[]
+    OR?: UserOnboardingWhereInput[]
+    NOT?: UserOnboardingWhereInput | UserOnboardingWhereInput[]
+    version?: StringFilter<"UserOnboarding"> | string
+    currentStep?: StringFilter<"UserOnboarding"> | string
+    profileCompletedAt?: DateTimeNullableFilter<"UserOnboarding"> | Date | string | null
+    needsReonboard?: BoolFilter<"UserOnboarding"> | boolean
+    profileData?: JsonNullableFilter<"UserOnboarding">
+    gamification?: JsonNullableFilter<"UserOnboarding">
+    completedMissions?: JsonNullableFilter<"UserOnboarding">
+    onboardingCompletedAt?: DateTimeNullableFilter<"UserOnboarding"> | Date | string | null
+    createdAt?: DateTimeFilter<"UserOnboarding"> | Date | string
+    updatedAt?: DateTimeFilter<"UserOnboarding"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId">
+
+  export type UserOnboardingOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    version?: SortOrder
+    currentStep?: SortOrder
+    profileCompletedAt?: SortOrderInput | SortOrder
+    needsReonboard?: SortOrder
+    profileData?: SortOrderInput | SortOrder
+    gamification?: SortOrderInput | SortOrder
+    completedMissions?: SortOrderInput | SortOrder
+    onboardingCompletedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: UserOnboardingCountOrderByAggregateInput
+    _max?: UserOnboardingMaxOrderByAggregateInput
+    _min?: UserOnboardingMinOrderByAggregateInput
+  }
+
+  export type UserOnboardingScalarWhereWithAggregatesInput = {
+    AND?: UserOnboardingScalarWhereWithAggregatesInput | UserOnboardingScalarWhereWithAggregatesInput[]
+    OR?: UserOnboardingScalarWhereWithAggregatesInput[]
+    NOT?: UserOnboardingScalarWhereWithAggregatesInput | UserOnboardingScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"UserOnboarding"> | string
+    userId?: StringWithAggregatesFilter<"UserOnboarding"> | string
+    version?: StringWithAggregatesFilter<"UserOnboarding"> | string
+    currentStep?: StringWithAggregatesFilter<"UserOnboarding"> | string
+    profileCompletedAt?: DateTimeNullableWithAggregatesFilter<"UserOnboarding"> | Date | string | null
+    needsReonboard?: BoolWithAggregatesFilter<"UserOnboarding"> | boolean
+    profileData?: JsonNullableWithAggregatesFilter<"UserOnboarding">
+    gamification?: JsonNullableWithAggregatesFilter<"UserOnboarding">
+    completedMissions?: JsonNullableWithAggregatesFilter<"UserOnboarding">
+    onboardingCompletedAt?: DateTimeNullableWithAggregatesFilter<"UserOnboarding"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"UserOnboarding"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"UserOnboarding"> | Date | string
+  }
+
+  export type ProjectOnboardingWhereInput = {
+    AND?: ProjectOnboardingWhereInput | ProjectOnboardingWhereInput[]
+    OR?: ProjectOnboardingWhereInput[]
+    NOT?: ProjectOnboardingWhereInput | ProjectOnboardingWhereInput[]
+    id?: StringFilter<"ProjectOnboarding"> | string
+    userId?: StringFilter<"ProjectOnboarding"> | string
+    projectId?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    currentStep?: StringFilter<"ProjectOnboarding"> | string
+    pillar?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    projectName?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    projectVision?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    answers?: JsonNullableFilter<"ProjectOnboarding">
+    audience?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    budget?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    extractedData?: JsonNullableFilter<"ProjectOnboarding">
+    qualityScore?: FloatFilter<"ProjectOnboarding"> | number
+    chatTurnsUsed?: IntFilter<"ProjectOnboarding"> | number
+    genesisDraft?: JsonNullableFilter<"ProjectOnboarding">
+    completedMissions?: JsonNullableFilter<"ProjectOnboarding">
+    completedAt?: DateTimeNullableFilter<"ProjectOnboarding"> | Date | string | null
+    createdAt?: DateTimeFilter<"ProjectOnboarding"> | Date | string
+    updatedAt?: DateTimeFilter<"ProjectOnboarding"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    project?: XOR<ProjectNullableScalarRelationFilter, ProjectWhereInput> | null
+  }
+
+  export type ProjectOnboardingOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrderInput | SortOrder
+    currentStep?: SortOrder
+    pillar?: SortOrderInput | SortOrder
+    projectName?: SortOrderInput | SortOrder
+    projectVision?: SortOrderInput | SortOrder
+    answers?: SortOrderInput | SortOrder
+    audience?: SortOrderInput | SortOrder
+    budget?: SortOrderInput | SortOrder
+    extractedData?: SortOrderInput | SortOrder
+    qualityScore?: SortOrder
+    chatTurnsUsed?: SortOrder
+    genesisDraft?: SortOrderInput | SortOrder
+    completedMissions?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    project?: ProjectOrderByWithRelationInput
+  }
+
+  export type ProjectOnboardingWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    projectId?: string
+    AND?: ProjectOnboardingWhereInput | ProjectOnboardingWhereInput[]
+    OR?: ProjectOnboardingWhereInput[]
+    NOT?: ProjectOnboardingWhereInput | ProjectOnboardingWhereInput[]
+    userId?: StringFilter<"ProjectOnboarding"> | string
+    currentStep?: StringFilter<"ProjectOnboarding"> | string
+    pillar?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    projectName?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    projectVision?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    answers?: JsonNullableFilter<"ProjectOnboarding">
+    audience?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    budget?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    extractedData?: JsonNullableFilter<"ProjectOnboarding">
+    qualityScore?: FloatFilter<"ProjectOnboarding"> | number
+    chatTurnsUsed?: IntFilter<"ProjectOnboarding"> | number
+    genesisDraft?: JsonNullableFilter<"ProjectOnboarding">
+    completedMissions?: JsonNullableFilter<"ProjectOnboarding">
+    completedAt?: DateTimeNullableFilter<"ProjectOnboarding"> | Date | string | null
+    createdAt?: DateTimeFilter<"ProjectOnboarding"> | Date | string
+    updatedAt?: DateTimeFilter<"ProjectOnboarding"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    project?: XOR<ProjectNullableScalarRelationFilter, ProjectWhereInput> | null
+  }, "id" | "projectId">
+
+  export type ProjectOnboardingOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrderInput | SortOrder
+    currentStep?: SortOrder
+    pillar?: SortOrderInput | SortOrder
+    projectName?: SortOrderInput | SortOrder
+    projectVision?: SortOrderInput | SortOrder
+    answers?: SortOrderInput | SortOrder
+    audience?: SortOrderInput | SortOrder
+    budget?: SortOrderInput | SortOrder
+    extractedData?: SortOrderInput | SortOrder
+    qualityScore?: SortOrder
+    chatTurnsUsed?: SortOrder
+    genesisDraft?: SortOrderInput | SortOrder
+    completedMissions?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ProjectOnboardingCountOrderByAggregateInput
+    _avg?: ProjectOnboardingAvgOrderByAggregateInput
+    _max?: ProjectOnboardingMaxOrderByAggregateInput
+    _min?: ProjectOnboardingMinOrderByAggregateInput
+    _sum?: ProjectOnboardingSumOrderByAggregateInput
+  }
+
+  export type ProjectOnboardingScalarWhereWithAggregatesInput = {
+    AND?: ProjectOnboardingScalarWhereWithAggregatesInput | ProjectOnboardingScalarWhereWithAggregatesInput[]
+    OR?: ProjectOnboardingScalarWhereWithAggregatesInput[]
+    NOT?: ProjectOnboardingScalarWhereWithAggregatesInput | ProjectOnboardingScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ProjectOnboarding"> | string
+    userId?: StringWithAggregatesFilter<"ProjectOnboarding"> | string
+    projectId?: StringNullableWithAggregatesFilter<"ProjectOnboarding"> | string | null
+    currentStep?: StringWithAggregatesFilter<"ProjectOnboarding"> | string
+    pillar?: StringNullableWithAggregatesFilter<"ProjectOnboarding"> | string | null
+    projectName?: StringNullableWithAggregatesFilter<"ProjectOnboarding"> | string | null
+    projectVision?: StringNullableWithAggregatesFilter<"ProjectOnboarding"> | string | null
+    answers?: JsonNullableWithAggregatesFilter<"ProjectOnboarding">
+    audience?: StringNullableWithAggregatesFilter<"ProjectOnboarding"> | string | null
+    budget?: StringNullableWithAggregatesFilter<"ProjectOnboarding"> | string | null
+    extractedData?: JsonNullableWithAggregatesFilter<"ProjectOnboarding">
+    qualityScore?: FloatWithAggregatesFilter<"ProjectOnboarding"> | number
+    chatTurnsUsed?: IntWithAggregatesFilter<"ProjectOnboarding"> | number
+    genesisDraft?: JsonNullableWithAggregatesFilter<"ProjectOnboarding">
+    completedMissions?: JsonNullableWithAggregatesFilter<"ProjectOnboarding">
+    completedAt?: DateTimeNullableWithAggregatesFilter<"ProjectOnboarding"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"ProjectOnboarding"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ProjectOnboarding"> | Date | string
+  }
+
   export type UserCreateInput = {
     id?: string
     supabaseUserId?: string | null
@@ -45998,6 +48942,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -46041,6 +48987,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -46084,6 +49032,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -46127,6 +49077,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -46415,6 +49367,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateInput = {
@@ -46437,6 +49390,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUpdateInput = {
@@ -46459,6 +49413,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateInput = {
@@ -46481,6 +49436,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectCreateManyInput = {
@@ -49035,6 +51991,255 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type UserOnboardingCreateInput = {
+    id?: string
+    version?: string
+    currentStep?: string
+    profileCompletedAt?: Date | string | null
+    needsReonboard?: boolean
+    profileData?: NullableJsonNullValueInput | InputJsonValue
+    gamification?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    onboardingCompletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutUserOnboardingInput
+  }
+
+  export type UserOnboardingUncheckedCreateInput = {
+    id?: string
+    userId: string
+    version?: string
+    currentStep?: string
+    profileCompletedAt?: Date | string | null
+    needsReonboard?: boolean
+    profileData?: NullableJsonNullValueInput | InputJsonValue
+    gamification?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    onboardingCompletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserOnboardingUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    version?: StringFieldUpdateOperationsInput | string
+    currentStep?: StringFieldUpdateOperationsInput | string
+    profileCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    needsReonboard?: BoolFieldUpdateOperationsInput | boolean
+    profileData?: NullableJsonNullValueInput | InputJsonValue
+    gamification?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    onboardingCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutUserOnboardingNestedInput
+  }
+
+  export type UserOnboardingUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    version?: StringFieldUpdateOperationsInput | string
+    currentStep?: StringFieldUpdateOperationsInput | string
+    profileCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    needsReonboard?: BoolFieldUpdateOperationsInput | boolean
+    profileData?: NullableJsonNullValueInput | InputJsonValue
+    gamification?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    onboardingCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserOnboardingCreateManyInput = {
+    id?: string
+    userId: string
+    version?: string
+    currentStep?: string
+    profileCompletedAt?: Date | string | null
+    needsReonboard?: boolean
+    profileData?: NullableJsonNullValueInput | InputJsonValue
+    gamification?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    onboardingCompletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserOnboardingUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    version?: StringFieldUpdateOperationsInput | string
+    currentStep?: StringFieldUpdateOperationsInput | string
+    profileCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    needsReonboard?: BoolFieldUpdateOperationsInput | boolean
+    profileData?: NullableJsonNullValueInput | InputJsonValue
+    gamification?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    onboardingCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserOnboardingUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    version?: StringFieldUpdateOperationsInput | string
+    currentStep?: StringFieldUpdateOperationsInput | string
+    profileCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    needsReonboard?: BoolFieldUpdateOperationsInput | boolean
+    profileData?: NullableJsonNullValueInput | InputJsonValue
+    gamification?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    onboardingCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectOnboardingCreateInput = {
+    id?: string
+    currentStep?: string
+    pillar?: string | null
+    projectName?: string | null
+    projectVision?: string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: string | null
+    budget?: string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: number
+    chatTurnsUsed?: number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutProjectOnboardingsInput
+    project?: ProjectCreateNestedOneWithoutProjectOnboardingInput
+  }
+
+  export type ProjectOnboardingUncheckedCreateInput = {
+    id?: string
+    userId: string
+    projectId?: string | null
+    currentStep?: string
+    pillar?: string | null
+    projectName?: string | null
+    projectVision?: string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: string | null
+    budget?: string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: number
+    chatTurnsUsed?: number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProjectOnboardingUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    currentStep?: StringFieldUpdateOperationsInput | string
+    pillar?: NullableStringFieldUpdateOperationsInput | string | null
+    projectName?: NullableStringFieldUpdateOperationsInput | string | null
+    projectVision?: NullableStringFieldUpdateOperationsInput | string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: NullableStringFieldUpdateOperationsInput | string | null
+    budget?: NullableStringFieldUpdateOperationsInput | string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: FloatFieldUpdateOperationsInput | number
+    chatTurnsUsed?: IntFieldUpdateOperationsInput | number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutProjectOnboardingsNestedInput
+    project?: ProjectUpdateOneWithoutProjectOnboardingNestedInput
+  }
+
+  export type ProjectOnboardingUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    projectId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentStep?: StringFieldUpdateOperationsInput | string
+    pillar?: NullableStringFieldUpdateOperationsInput | string | null
+    projectName?: NullableStringFieldUpdateOperationsInput | string | null
+    projectVision?: NullableStringFieldUpdateOperationsInput | string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: NullableStringFieldUpdateOperationsInput | string | null
+    budget?: NullableStringFieldUpdateOperationsInput | string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: FloatFieldUpdateOperationsInput | number
+    chatTurnsUsed?: IntFieldUpdateOperationsInput | number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectOnboardingCreateManyInput = {
+    id?: string
+    userId: string
+    projectId?: string | null
+    currentStep?: string
+    pillar?: string | null
+    projectName?: string | null
+    projectVision?: string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: string | null
+    budget?: string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: number
+    chatTurnsUsed?: number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProjectOnboardingUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    currentStep?: StringFieldUpdateOperationsInput | string
+    pillar?: NullableStringFieldUpdateOperationsInput | string | null
+    projectName?: NullableStringFieldUpdateOperationsInput | string | null
+    projectVision?: NullableStringFieldUpdateOperationsInput | string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: NullableStringFieldUpdateOperationsInput | string | null
+    budget?: NullableStringFieldUpdateOperationsInput | string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: FloatFieldUpdateOperationsInput | number
+    chatTurnsUsed?: IntFieldUpdateOperationsInput | number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectOnboardingUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    projectId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentStep?: StringFieldUpdateOperationsInput | string
+    pillar?: NullableStringFieldUpdateOperationsInput | string | null
+    projectName?: NullableStringFieldUpdateOperationsInput | string | null
+    projectVision?: NullableStringFieldUpdateOperationsInput | string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: NullableStringFieldUpdateOperationsInput | string | null
+    budget?: NullableStringFieldUpdateOperationsInput | string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: FloatFieldUpdateOperationsInput | number
+    chatTurnsUsed?: IntFieldUpdateOperationsInput | number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -49228,6 +52433,17 @@ export namespace Prisma {
     none?: LoginEventWhereInput
   }
 
+  export type UserOnboardingNullableScalarRelationFilter = {
+    is?: UserOnboardingWhereInput | null
+    isNot?: UserOnboardingWhereInput | null
+  }
+
+  export type ProjectOnboardingListRelationFilter = {
+    every?: ProjectOnboardingWhereInput
+    some?: ProjectOnboardingWhereInput
+    none?: ProjectOnboardingWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -49302,6 +52518,10 @@ export namespace Prisma {
   }
 
   export type LoginEventOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ProjectOnboardingOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -49647,6 +52867,11 @@ export namespace Prisma {
     every?: ArtifactWhereInput
     some?: ArtifactWhereInput
     none?: ArtifactWhereInput
+  }
+
+  export type ProjectOnboardingNullableScalarRelationFilter = {
+    is?: ProjectOnboardingWhereInput | null
+    isNot?: ProjectOnboardingWhereInput | null
   }
 
   export type CanvasOrderByRelationAggregateInput = {
@@ -51007,6 +54232,110 @@ export namespace Prisma {
     sizeBytes?: SortOrder
   }
 
+  export type UserOnboardingCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    version?: SortOrder
+    currentStep?: SortOrder
+    profileCompletedAt?: SortOrder
+    needsReonboard?: SortOrder
+    profileData?: SortOrder
+    gamification?: SortOrder
+    completedMissions?: SortOrder
+    onboardingCompletedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserOnboardingMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    version?: SortOrder
+    currentStep?: SortOrder
+    profileCompletedAt?: SortOrder
+    needsReonboard?: SortOrder
+    onboardingCompletedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type UserOnboardingMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    version?: SortOrder
+    currentStep?: SortOrder
+    profileCompletedAt?: SortOrder
+    needsReonboard?: SortOrder
+    onboardingCompletedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProjectOnboardingCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+    currentStep?: SortOrder
+    pillar?: SortOrder
+    projectName?: SortOrder
+    projectVision?: SortOrder
+    answers?: SortOrder
+    audience?: SortOrder
+    budget?: SortOrder
+    extractedData?: SortOrder
+    qualityScore?: SortOrder
+    chatTurnsUsed?: SortOrder
+    genesisDraft?: SortOrder
+    completedMissions?: SortOrder
+    completedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProjectOnboardingAvgOrderByAggregateInput = {
+    qualityScore?: SortOrder
+    chatTurnsUsed?: SortOrder
+  }
+
+  export type ProjectOnboardingMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+    currentStep?: SortOrder
+    pillar?: SortOrder
+    projectName?: SortOrder
+    projectVision?: SortOrder
+    audience?: SortOrder
+    budget?: SortOrder
+    qualityScore?: SortOrder
+    chatTurnsUsed?: SortOrder
+    completedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProjectOnboardingMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+    currentStep?: SortOrder
+    pillar?: SortOrder
+    projectName?: SortOrder
+    projectVision?: SortOrder
+    audience?: SortOrder
+    budget?: SortOrder
+    qualityScore?: SortOrder
+    chatTurnsUsed?: SortOrder
+    completedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ProjectOnboardingSumOrderByAggregateInput = {
+    qualityScore?: SortOrder
+    chatTurnsUsed?: SortOrder
+  }
+
   export type AccountCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -51139,6 +54468,19 @@ export namespace Prisma {
     connect?: LoginEventWhereUniqueInput | LoginEventWhereUniqueInput[]
   }
 
+  export type UserOnboardingCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserOnboardingCreateWithoutUserInput, UserOnboardingUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserOnboardingCreateOrConnectWithoutUserInput
+    connect?: UserOnboardingWhereUniqueInput
+  }
+
+  export type ProjectOnboardingCreateNestedManyWithoutUserInput = {
+    create?: XOR<ProjectOnboardingCreateWithoutUserInput, ProjectOnboardingUncheckedCreateWithoutUserInput> | ProjectOnboardingCreateWithoutUserInput[] | ProjectOnboardingUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ProjectOnboardingCreateOrConnectWithoutUserInput | ProjectOnboardingCreateOrConnectWithoutUserInput[]
+    createMany?: ProjectOnboardingCreateManyUserInputEnvelope
+    connect?: ProjectOnboardingWhereUniqueInput | ProjectOnboardingWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -51269,6 +54611,19 @@ export namespace Prisma {
     connectOrCreate?: LoginEventCreateOrConnectWithoutUserInput | LoginEventCreateOrConnectWithoutUserInput[]
     createMany?: LoginEventCreateManyUserInputEnvelope
     connect?: LoginEventWhereUniqueInput | LoginEventWhereUniqueInput[]
+  }
+
+  export type UserOnboardingUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<UserOnboardingCreateWithoutUserInput, UserOnboardingUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserOnboardingCreateOrConnectWithoutUserInput
+    connect?: UserOnboardingWhereUniqueInput
+  }
+
+  export type ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<ProjectOnboardingCreateWithoutUserInput, ProjectOnboardingUncheckedCreateWithoutUserInput> | ProjectOnboardingCreateWithoutUserInput[] | ProjectOnboardingUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ProjectOnboardingCreateOrConnectWithoutUserInput | ProjectOnboardingCreateOrConnectWithoutUserInput[]
+    createMany?: ProjectOnboardingCreateManyUserInputEnvelope
+    connect?: ProjectOnboardingWhereUniqueInput | ProjectOnboardingWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -51553,6 +54908,30 @@ export namespace Prisma {
     deleteMany?: LoginEventScalarWhereInput | LoginEventScalarWhereInput[]
   }
 
+  export type UserOnboardingUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserOnboardingCreateWithoutUserInput, UserOnboardingUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserOnboardingCreateOrConnectWithoutUserInput
+    upsert?: UserOnboardingUpsertWithoutUserInput
+    disconnect?: UserOnboardingWhereInput | boolean
+    delete?: UserOnboardingWhereInput | boolean
+    connect?: UserOnboardingWhereUniqueInput
+    update?: XOR<XOR<UserOnboardingUpdateToOneWithWhereWithoutUserInput, UserOnboardingUpdateWithoutUserInput>, UserOnboardingUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ProjectOnboardingUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ProjectOnboardingCreateWithoutUserInput, ProjectOnboardingUncheckedCreateWithoutUserInput> | ProjectOnboardingCreateWithoutUserInput[] | ProjectOnboardingUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ProjectOnboardingCreateOrConnectWithoutUserInput | ProjectOnboardingCreateOrConnectWithoutUserInput[]
+    upsert?: ProjectOnboardingUpsertWithWhereUniqueWithoutUserInput | ProjectOnboardingUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ProjectOnboardingCreateManyUserInputEnvelope
+    set?: ProjectOnboardingWhereUniqueInput | ProjectOnboardingWhereUniqueInput[]
+    disconnect?: ProjectOnboardingWhereUniqueInput | ProjectOnboardingWhereUniqueInput[]
+    delete?: ProjectOnboardingWhereUniqueInput | ProjectOnboardingWhereUniqueInput[]
+    connect?: ProjectOnboardingWhereUniqueInput | ProjectOnboardingWhereUniqueInput[]
+    update?: ProjectOnboardingUpdateWithWhereUniqueWithoutUserInput | ProjectOnboardingUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ProjectOnboardingUpdateManyWithWhereWithoutUserInput | ProjectOnboardingUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ProjectOnboardingScalarWhereInput | ProjectOnboardingScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -51815,6 +55194,30 @@ export namespace Prisma {
     deleteMany?: LoginEventScalarWhereInput | LoginEventScalarWhereInput[]
   }
 
+  export type UserOnboardingUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<UserOnboardingCreateWithoutUserInput, UserOnboardingUncheckedCreateWithoutUserInput>
+    connectOrCreate?: UserOnboardingCreateOrConnectWithoutUserInput
+    upsert?: UserOnboardingUpsertWithoutUserInput
+    disconnect?: UserOnboardingWhereInput | boolean
+    delete?: UserOnboardingWhereInput | boolean
+    connect?: UserOnboardingWhereUniqueInput
+    update?: XOR<XOR<UserOnboardingUpdateToOneWithWhereWithoutUserInput, UserOnboardingUpdateWithoutUserInput>, UserOnboardingUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<ProjectOnboardingCreateWithoutUserInput, ProjectOnboardingUncheckedCreateWithoutUserInput> | ProjectOnboardingCreateWithoutUserInput[] | ProjectOnboardingUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: ProjectOnboardingCreateOrConnectWithoutUserInput | ProjectOnboardingCreateOrConnectWithoutUserInput[]
+    upsert?: ProjectOnboardingUpsertWithWhereUniqueWithoutUserInput | ProjectOnboardingUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: ProjectOnboardingCreateManyUserInputEnvelope
+    set?: ProjectOnboardingWhereUniqueInput | ProjectOnboardingWhereUniqueInput[]
+    disconnect?: ProjectOnboardingWhereUniqueInput | ProjectOnboardingWhereUniqueInput[]
+    delete?: ProjectOnboardingWhereUniqueInput | ProjectOnboardingWhereUniqueInput[]
+    connect?: ProjectOnboardingWhereUniqueInput | ProjectOnboardingWhereUniqueInput[]
+    update?: ProjectOnboardingUpdateWithWhereUniqueWithoutUserInput | ProjectOnboardingUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: ProjectOnboardingUpdateManyWithWhereWithoutUserInput | ProjectOnboardingUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: ProjectOnboardingScalarWhereInput | ProjectOnboardingScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutAccountsInput = {
     create?: XOR<UserCreateWithoutAccountsInput, UserUncheckedCreateWithoutAccountsInput>
     connectOrCreate?: UserCreateOrConnectWithoutAccountsInput
@@ -51926,6 +55329,12 @@ export namespace Prisma {
     connect?: CustomerBotChannelWhereUniqueInput | CustomerBotChannelWhereUniqueInput[]
   }
 
+  export type ProjectOnboardingCreateNestedOneWithoutProjectInput = {
+    create?: XOR<ProjectOnboardingCreateWithoutProjectInput, ProjectOnboardingUncheckedCreateWithoutProjectInput>
+    connectOrCreate?: ProjectOnboardingCreateOrConnectWithoutProjectInput
+    connect?: ProjectOnboardingWhereUniqueInput
+  }
+
   export type ProjectMemberUncheckedCreateNestedManyWithoutProjectInput = {
     create?: XOR<ProjectMemberCreateWithoutProjectInput, ProjectMemberUncheckedCreateWithoutProjectInput> | ProjectMemberCreateWithoutProjectInput[] | ProjectMemberUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ProjectMemberCreateOrConnectWithoutProjectInput | ProjectMemberCreateOrConnectWithoutProjectInput[]
@@ -51993,6 +55402,12 @@ export namespace Prisma {
     connectOrCreate?: CustomerBotChannelCreateOrConnectWithoutProjectInput | CustomerBotChannelCreateOrConnectWithoutProjectInput[]
     createMany?: CustomerBotChannelCreateManyProjectInputEnvelope
     connect?: CustomerBotChannelWhereUniqueInput | CustomerBotChannelWhereUniqueInput[]
+  }
+
+  export type ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput = {
+    create?: XOR<ProjectOnboardingCreateWithoutProjectInput, ProjectOnboardingUncheckedCreateWithoutProjectInput>
+    connectOrCreate?: ProjectOnboardingCreateOrConnectWithoutProjectInput
+    connect?: ProjectOnboardingWhereUniqueInput
   }
 
   export type UserUpdateOneRequiredWithoutProjectsNestedInput = {
@@ -52139,6 +55554,16 @@ export namespace Prisma {
     deleteMany?: CustomerBotChannelScalarWhereInput | CustomerBotChannelScalarWhereInput[]
   }
 
+  export type ProjectOnboardingUpdateOneWithoutProjectNestedInput = {
+    create?: XOR<ProjectOnboardingCreateWithoutProjectInput, ProjectOnboardingUncheckedCreateWithoutProjectInput>
+    connectOrCreate?: ProjectOnboardingCreateOrConnectWithoutProjectInput
+    upsert?: ProjectOnboardingUpsertWithoutProjectInput
+    disconnect?: ProjectOnboardingWhereInput | boolean
+    delete?: ProjectOnboardingWhereInput | boolean
+    connect?: ProjectOnboardingWhereUniqueInput
+    update?: XOR<XOR<ProjectOnboardingUpdateToOneWithWhereWithoutProjectInput, ProjectOnboardingUpdateWithoutProjectInput>, ProjectOnboardingUncheckedUpdateWithoutProjectInput>
+  }
+
   export type ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput = {
     create?: XOR<ProjectMemberCreateWithoutProjectInput, ProjectMemberUncheckedCreateWithoutProjectInput> | ProjectMemberCreateWithoutProjectInput[] | ProjectMemberUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ProjectMemberCreateOrConnectWithoutProjectInput | ProjectMemberCreateOrConnectWithoutProjectInput[]
@@ -52273,6 +55698,16 @@ export namespace Prisma {
     update?: CustomerBotChannelUpdateWithWhereUniqueWithoutProjectInput | CustomerBotChannelUpdateWithWhereUniqueWithoutProjectInput[]
     updateMany?: CustomerBotChannelUpdateManyWithWhereWithoutProjectInput | CustomerBotChannelUpdateManyWithWhereWithoutProjectInput[]
     deleteMany?: CustomerBotChannelScalarWhereInput | CustomerBotChannelScalarWhereInput[]
+  }
+
+  export type ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput = {
+    create?: XOR<ProjectOnboardingCreateWithoutProjectInput, ProjectOnboardingUncheckedCreateWithoutProjectInput>
+    connectOrCreate?: ProjectOnboardingCreateOrConnectWithoutProjectInput
+    upsert?: ProjectOnboardingUpsertWithoutProjectInput
+    disconnect?: ProjectOnboardingWhereInput | boolean
+    delete?: ProjectOnboardingWhereInput | boolean
+    connect?: ProjectOnboardingWhereUniqueInput
+    update?: XOR<XOR<ProjectOnboardingUpdateToOneWithWhereWithoutProjectInput, ProjectOnboardingUpdateWithoutProjectInput>, ProjectOnboardingUncheckedUpdateWithoutProjectInput>
   }
 
   export type UserCreateNestedOneWithoutSubscriptionsInput = {
@@ -53231,6 +56666,50 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDataExportRequestsInput, UserUpdateWithoutDataExportRequestsInput>, UserUncheckedUpdateWithoutDataExportRequestsInput>
   }
 
+  export type UserCreateNestedOneWithoutUserOnboardingInput = {
+    create?: XOR<UserCreateWithoutUserOnboardingInput, UserUncheckedCreateWithoutUserOnboardingInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUserOnboardingInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutUserOnboardingNestedInput = {
+    create?: XOR<UserCreateWithoutUserOnboardingInput, UserUncheckedCreateWithoutUserOnboardingInput>
+    connectOrCreate?: UserCreateOrConnectWithoutUserOnboardingInput
+    upsert?: UserUpsertWithoutUserOnboardingInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUserOnboardingInput, UserUpdateWithoutUserOnboardingInput>, UserUncheckedUpdateWithoutUserOnboardingInput>
+  }
+
+  export type UserCreateNestedOneWithoutProjectOnboardingsInput = {
+    create?: XOR<UserCreateWithoutProjectOnboardingsInput, UserUncheckedCreateWithoutProjectOnboardingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutProjectOnboardingsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ProjectCreateNestedOneWithoutProjectOnboardingInput = {
+    create?: XOR<ProjectCreateWithoutProjectOnboardingInput, ProjectUncheckedCreateWithoutProjectOnboardingInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutProjectOnboardingInput
+    connect?: ProjectWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutProjectOnboardingsNestedInput = {
+    create?: XOR<UserCreateWithoutProjectOnboardingsInput, UserUncheckedCreateWithoutProjectOnboardingsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutProjectOnboardingsInput
+    upsert?: UserUpsertWithoutProjectOnboardingsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutProjectOnboardingsInput, UserUpdateWithoutProjectOnboardingsInput>, UserUncheckedUpdateWithoutProjectOnboardingsInput>
+  }
+
+  export type ProjectUpdateOneWithoutProjectOnboardingNestedInput = {
+    create?: XOR<ProjectCreateWithoutProjectOnboardingInput, ProjectUncheckedCreateWithoutProjectOnboardingInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutProjectOnboardingInput
+    upsert?: ProjectUpsertWithoutProjectOnboardingInput
+    disconnect?: ProjectWhereInput | boolean
+    delete?: ProjectWhereInput | boolean
+    connect?: ProjectWhereUniqueInput
+    update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutProjectOnboardingInput, ProjectUpdateWithoutProjectOnboardingInput>, ProjectUncheckedUpdateWithoutProjectOnboardingInput>
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -53589,6 +57068,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutUserInput = {
@@ -53610,6 +57090,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutUserInput = {
@@ -54174,6 +57655,89 @@ export namespace Prisma {
 
   export type LoginEventCreateManyUserInputEnvelope = {
     data: LoginEventCreateManyUserInput | LoginEventCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserOnboardingCreateWithoutUserInput = {
+    id?: string
+    version?: string
+    currentStep?: string
+    profileCompletedAt?: Date | string | null
+    needsReonboard?: boolean
+    profileData?: NullableJsonNullValueInput | InputJsonValue
+    gamification?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    onboardingCompletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserOnboardingUncheckedCreateWithoutUserInput = {
+    id?: string
+    version?: string
+    currentStep?: string
+    profileCompletedAt?: Date | string | null
+    needsReonboard?: boolean
+    profileData?: NullableJsonNullValueInput | InputJsonValue
+    gamification?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    onboardingCompletedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type UserOnboardingCreateOrConnectWithoutUserInput = {
+    where: UserOnboardingWhereUniqueInput
+    create: XOR<UserOnboardingCreateWithoutUserInput, UserOnboardingUncheckedCreateWithoutUserInput>
+  }
+
+  export type ProjectOnboardingCreateWithoutUserInput = {
+    id?: string
+    currentStep?: string
+    pillar?: string | null
+    projectName?: string | null
+    projectVision?: string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: string | null
+    budget?: string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: number
+    chatTurnsUsed?: number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    project?: ProjectCreateNestedOneWithoutProjectOnboardingInput
+  }
+
+  export type ProjectOnboardingUncheckedCreateWithoutUserInput = {
+    id?: string
+    projectId?: string | null
+    currentStep?: string
+    pillar?: string | null
+    projectName?: string | null
+    projectVision?: string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: string | null
+    budget?: string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: number
+    chatTurnsUsed?: number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProjectOnboardingCreateOrConnectWithoutUserInput = {
+    where: ProjectOnboardingWhereUniqueInput
+    create: XOR<ProjectOnboardingCreateWithoutUserInput, ProjectOnboardingUncheckedCreateWithoutUserInput>
+  }
+
+  export type ProjectOnboardingCreateManyUserInputEnvelope = {
+    data: ProjectOnboardingCreateManyUserInput | ProjectOnboardingCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -54790,6 +58354,85 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"LoginEvent"> | Date | string
   }
 
+  export type UserOnboardingUpsertWithoutUserInput = {
+    update: XOR<UserOnboardingUpdateWithoutUserInput, UserOnboardingUncheckedUpdateWithoutUserInput>
+    create: XOR<UserOnboardingCreateWithoutUserInput, UserOnboardingUncheckedCreateWithoutUserInput>
+    where?: UserOnboardingWhereInput
+  }
+
+  export type UserOnboardingUpdateToOneWithWhereWithoutUserInput = {
+    where?: UserOnboardingWhereInput
+    data: XOR<UserOnboardingUpdateWithoutUserInput, UserOnboardingUncheckedUpdateWithoutUserInput>
+  }
+
+  export type UserOnboardingUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    version?: StringFieldUpdateOperationsInput | string
+    currentStep?: StringFieldUpdateOperationsInput | string
+    profileCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    needsReonboard?: BoolFieldUpdateOperationsInput | boolean
+    profileData?: NullableJsonNullValueInput | InputJsonValue
+    gamification?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    onboardingCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserOnboardingUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    version?: StringFieldUpdateOperationsInput | string
+    currentStep?: StringFieldUpdateOperationsInput | string
+    profileCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    needsReonboard?: BoolFieldUpdateOperationsInput | boolean
+    profileData?: NullableJsonNullValueInput | InputJsonValue
+    gamification?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    onboardingCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectOnboardingUpsertWithWhereUniqueWithoutUserInput = {
+    where: ProjectOnboardingWhereUniqueInput
+    update: XOR<ProjectOnboardingUpdateWithoutUserInput, ProjectOnboardingUncheckedUpdateWithoutUserInput>
+    create: XOR<ProjectOnboardingCreateWithoutUserInput, ProjectOnboardingUncheckedCreateWithoutUserInput>
+  }
+
+  export type ProjectOnboardingUpdateWithWhereUniqueWithoutUserInput = {
+    where: ProjectOnboardingWhereUniqueInput
+    data: XOR<ProjectOnboardingUpdateWithoutUserInput, ProjectOnboardingUncheckedUpdateWithoutUserInput>
+  }
+
+  export type ProjectOnboardingUpdateManyWithWhereWithoutUserInput = {
+    where: ProjectOnboardingScalarWhereInput
+    data: XOR<ProjectOnboardingUpdateManyMutationInput, ProjectOnboardingUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type ProjectOnboardingScalarWhereInput = {
+    AND?: ProjectOnboardingScalarWhereInput | ProjectOnboardingScalarWhereInput[]
+    OR?: ProjectOnboardingScalarWhereInput[]
+    NOT?: ProjectOnboardingScalarWhereInput | ProjectOnboardingScalarWhereInput[]
+    id?: StringFilter<"ProjectOnboarding"> | string
+    userId?: StringFilter<"ProjectOnboarding"> | string
+    projectId?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    currentStep?: StringFilter<"ProjectOnboarding"> | string
+    pillar?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    projectName?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    projectVision?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    answers?: JsonNullableFilter<"ProjectOnboarding">
+    audience?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    budget?: StringNullableFilter<"ProjectOnboarding"> | string | null
+    extractedData?: JsonNullableFilter<"ProjectOnboarding">
+    qualityScore?: FloatFilter<"ProjectOnboarding"> | number
+    chatTurnsUsed?: IntFilter<"ProjectOnboarding"> | number
+    genesisDraft?: JsonNullableFilter<"ProjectOnboarding">
+    completedMissions?: JsonNullableFilter<"ProjectOnboarding">
+    completedAt?: DateTimeNullableFilter<"ProjectOnboarding"> | Date | string | null
+    createdAt?: DateTimeFilter<"ProjectOnboarding"> | Date | string
+    updatedAt?: DateTimeFilter<"ProjectOnboarding"> | Date | string
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     supabaseUserId?: string | null
@@ -54830,6 +58473,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -54872,6 +58517,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -54930,6 +58577,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -54972,6 +58621,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -55014,6 +58665,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -55056,6 +58709,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -55114,6 +58769,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -55156,6 +58813,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutProjectsInput = {
@@ -55198,6 +58857,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProjectsInput = {
@@ -55240,6 +58901,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProjectsInput = {
@@ -55602,6 +59265,51 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ProjectOnboardingCreateWithoutProjectInput = {
+    id?: string
+    currentStep?: string
+    pillar?: string | null
+    projectName?: string | null
+    projectVision?: string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: string | null
+    budget?: string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: number
+    chatTurnsUsed?: number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutProjectOnboardingsInput
+  }
+
+  export type ProjectOnboardingUncheckedCreateWithoutProjectInput = {
+    id?: string
+    userId: string
+    currentStep?: string
+    pillar?: string | null
+    projectName?: string | null
+    projectVision?: string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: string | null
+    budget?: string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: number
+    chatTurnsUsed?: number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ProjectOnboardingCreateOrConnectWithoutProjectInput = {
+    where: ProjectOnboardingWhereUniqueInput
+    create: XOR<ProjectOnboardingCreateWithoutProjectInput, ProjectOnboardingUncheckedCreateWithoutProjectInput>
+  }
+
   export type UserUpsertWithoutProjectsInput = {
     update: XOR<UserUpdateWithoutProjectsInput, UserUncheckedUpdateWithoutProjectsInput>
     create: XOR<UserCreateWithoutProjectsInput, UserUncheckedCreateWithoutProjectsInput>
@@ -55653,6 +59361,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProjectsInput = {
@@ -55695,6 +59405,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectMemberUpsertWithWhereUniqueWithoutProjectInput = {
@@ -55921,6 +59633,57 @@ export namespace Prisma {
     data: XOR<CustomerBotChannelUpdateManyMutationInput, CustomerBotChannelUncheckedUpdateManyWithoutProjectInput>
   }
 
+  export type ProjectOnboardingUpsertWithoutProjectInput = {
+    update: XOR<ProjectOnboardingUpdateWithoutProjectInput, ProjectOnboardingUncheckedUpdateWithoutProjectInput>
+    create: XOR<ProjectOnboardingCreateWithoutProjectInput, ProjectOnboardingUncheckedCreateWithoutProjectInput>
+    where?: ProjectOnboardingWhereInput
+  }
+
+  export type ProjectOnboardingUpdateToOneWithWhereWithoutProjectInput = {
+    where?: ProjectOnboardingWhereInput
+    data: XOR<ProjectOnboardingUpdateWithoutProjectInput, ProjectOnboardingUncheckedUpdateWithoutProjectInput>
+  }
+
+  export type ProjectOnboardingUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    currentStep?: StringFieldUpdateOperationsInput | string
+    pillar?: NullableStringFieldUpdateOperationsInput | string | null
+    projectName?: NullableStringFieldUpdateOperationsInput | string | null
+    projectVision?: NullableStringFieldUpdateOperationsInput | string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: NullableStringFieldUpdateOperationsInput | string | null
+    budget?: NullableStringFieldUpdateOperationsInput | string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: FloatFieldUpdateOperationsInput | number
+    chatTurnsUsed?: IntFieldUpdateOperationsInput | number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutProjectOnboardingsNestedInput
+  }
+
+  export type ProjectOnboardingUncheckedUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    currentStep?: StringFieldUpdateOperationsInput | string
+    pillar?: NullableStringFieldUpdateOperationsInput | string | null
+    projectName?: NullableStringFieldUpdateOperationsInput | string | null
+    projectVision?: NullableStringFieldUpdateOperationsInput | string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: NullableStringFieldUpdateOperationsInput | string | null
+    budget?: NullableStringFieldUpdateOperationsInput | string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: FloatFieldUpdateOperationsInput | number
+    chatTurnsUsed?: IntFieldUpdateOperationsInput | number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateWithoutSubscriptionsInput = {
     id?: string
     supabaseUserId?: string | null
@@ -55961,6 +59724,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSubscriptionsInput = {
@@ -56003,6 +59768,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSubscriptionsInput = {
@@ -56061,6 +59828,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubscriptionsInput = {
@@ -56103,6 +59872,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutTransactionsInput = {
@@ -56145,6 +59916,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTransactionsInput = {
@@ -56187,6 +59960,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTransactionsInput = {
@@ -56245,6 +60020,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTransactionsInput = {
@@ -56287,6 +60064,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutMediaItemsInput = {
@@ -56329,6 +60108,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMediaItemsInput = {
@@ -56371,6 +60152,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMediaItemsInput = {
@@ -56429,6 +60212,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMediaItemsInput = {
@@ -56471,6 +60256,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutFeedbacksInput = {
@@ -56513,6 +60300,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFeedbacksInput = {
@@ -56555,6 +60344,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFeedbacksInput = {
@@ -56613,6 +60404,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFeedbacksInput = {
@@ -56655,6 +60448,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutProjectMembershipsInput = {
@@ -56697,6 +60492,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProjectMembershipsInput = {
@@ -56739,6 +60536,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProjectMembershipsInput = {
@@ -56765,6 +60564,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutMembersInput = {
@@ -56786,6 +60586,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutMembersInput = {
@@ -56844,6 +60645,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProjectMembershipsInput = {
@@ -56886,6 +60689,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutMembersInput = {
@@ -56918,6 +60723,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutMembersInput = {
@@ -56939,6 +60745,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectCreateWithoutCanvasesInput = {
@@ -56960,6 +60767,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutCanvasesInput = {
@@ -56981,6 +60789,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutCanvasesInput = {
@@ -57124,6 +60933,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutCanvasesInput = {
@@ -57145,6 +60955,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type CardUpsertWithWhereUniqueWithoutCanvasInput = {
@@ -57489,6 +61300,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserProfileInput = {
@@ -57531,6 +61344,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserProfileInput = {
@@ -57589,6 +61404,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserProfileInput = {
@@ -57631,6 +61448,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectCreateWithoutProjectMemoryInput = {
@@ -57652,6 +61471,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutProjectMemoryInput = {
@@ -57673,6 +61493,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutProjectMemoryInput = {
@@ -57710,6 +61531,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutProjectMemoryInput = {
@@ -57731,6 +61553,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type UserCreateWithoutChatConversationsInput = {
@@ -57773,6 +61596,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutChatConversationsInput = {
@@ -57815,6 +61640,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutChatConversationsInput = {
@@ -57841,6 +61668,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutChatConversationsInput = {
@@ -57862,6 +61690,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutChatConversationsInput = {
@@ -58026,6 +61855,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatConversationsInput = {
@@ -58068,6 +61899,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutChatConversationsInput = {
@@ -58100,6 +61933,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutChatConversationsInput = {
@@ -58121,6 +61955,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type ChatMessageUpsertWithWhereUniqueWithoutConversationInput = {
@@ -58521,6 +62356,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutArtifactsInput = {
@@ -58542,6 +62378,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutArtifactsInput = {
@@ -58618,6 +62455,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutArtifactsInput = {
@@ -58639,6 +62477,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type ChatConversationUpsertWithoutArtifactsInput = {
@@ -58726,6 +62565,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiActionLogsInput = {
@@ -58768,6 +62609,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiActionLogsInput = {
@@ -58794,6 +62637,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutAiActionLogsInput = {
@@ -58815,6 +62659,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutAiActionLogsInput = {
@@ -58912,6 +62757,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiActionLogsInput = {
@@ -58954,6 +62801,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutAiActionLogsInput = {
@@ -58986,6 +62835,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutAiActionLogsInput = {
@@ -59007,6 +62857,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type ChatConversationUpsertWithoutAiActionLogsInput = {
@@ -59094,6 +62945,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiInsightsInput = {
@@ -59136,6 +62989,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiInsightsInput = {
@@ -59162,6 +63017,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutAiInsightsInput = {
@@ -59183,6 +63039,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutAiInsightsInput = {
@@ -59241,6 +63098,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiInsightsInput = {
@@ -59283,6 +63142,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutAiInsightsInput = {
@@ -59315,6 +63176,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutAiInsightsInput = {
@@ -59336,6 +63198,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type UserCreateWithoutAiUsagesInput = {
@@ -59378,6 +63241,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiUsagesInput = {
@@ -59420,6 +63285,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiUsagesInput = {
@@ -59446,6 +63313,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogCreateNestedManyWithoutProjectInput
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutAiUsagesInput = {
@@ -59467,6 +63335,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutProjectInput
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutAiUsagesInput = {
@@ -59525,6 +63394,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiUsagesInput = {
@@ -59567,6 +63438,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutAiUsagesInput = {
@@ -59599,6 +63472,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUpdateManyWithoutProjectNestedInput
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutAiUsagesInput = {
@@ -59620,6 +63494,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutProjectNestedInput
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type UserCreateWithoutCustomerBotChannelsInput = {
@@ -59662,6 +63537,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCustomerBotChannelsInput = {
@@ -59704,6 +63581,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCustomerBotChannelsInput = {
@@ -59730,6 +63609,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogCreateNestedManyWithoutProjectInput
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutCustomerBotChannelsInput = {
@@ -59751,6 +63631,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutProjectInput
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutCustomerBotChannelsInput = {
@@ -59845,6 +63726,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCustomerBotChannelsInput = {
@@ -59887,6 +63770,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutCustomerBotChannelsInput = {
@@ -59919,6 +63804,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUpdateManyWithoutProjectNestedInput
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutCustomerBotChannelsInput = {
@@ -59940,6 +63826,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutProjectNestedInput
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type CustomerBotConversationUpsertWithWhereUniqueWithoutChannelInput = {
@@ -60185,6 +64072,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectUncheckedCreateWithoutScriptsInput = {
@@ -60206,6 +64094,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    projectOnboarding?: ProjectOnboardingUncheckedCreateNestedOneWithoutProjectInput
   }
 
   export type ProjectCreateOrConnectWithoutScriptsInput = {
@@ -60243,6 +64132,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutScriptsInput = {
@@ -60264,6 +64154,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type UserCreateWithoutUserSessionsInput = {
@@ -60306,6 +64197,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserSessionsInput = {
@@ -60348,6 +64241,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserSessionsInput = {
@@ -60406,6 +64301,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserSessionsInput = {
@@ -60448,6 +64345,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutLoginEventsInput = {
@@ -60490,6 +64389,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutLoginEventsInput = {
@@ -60532,6 +64433,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutLoginEventsInput = {
@@ -60590,6 +64493,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLoginEventsInput = {
@@ -60632,6 +64537,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutUserApiKeysInput = {
@@ -60674,6 +64581,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserApiKeysInput = {
@@ -60716,6 +64625,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserApiKeysInput = {
@@ -60774,6 +64685,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserApiKeysInput = {
@@ -60816,6 +64729,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutUserIntegrationsInput = {
@@ -60858,6 +64773,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserIntegrationsInput = {
@@ -60900,6 +64817,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserIntegrationsInput = {
@@ -60958,6 +64877,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserIntegrationsInput = {
@@ -61000,6 +64921,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutDataExportRequestsInput = {
@@ -61042,6 +64965,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDataExportRequestsInput = {
@@ -61084,6 +65009,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDataExportRequestsInput = {
@@ -61142,6 +65069,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDataExportRequestsInput = {
@@ -61184,6 +65113,496 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutUserOnboardingInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    projects?: ProjectCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberCreateNestedManyWithoutUserInput
+    userProfile?: UserProfileCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    projectOnboardings?: ProjectOnboardingCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutUserOnboardingInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemUncheckedCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+    userProfile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationUncheckedCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    projectOnboardings?: ProjectOnboardingUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutUserOnboardingInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutUserOnboardingInput, UserUncheckedCreateWithoutUserOnboardingInput>
+  }
+
+  export type UserUpsertWithoutUserOnboardingInput = {
+    update: XOR<UserUpdateWithoutUserOnboardingInput, UserUncheckedUpdateWithoutUserOnboardingInput>
+    create: XOR<UserCreateWithoutUserOnboardingInput, UserUncheckedCreateWithoutUserOnboardingInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutUserOnboardingInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutUserOnboardingInput, UserUncheckedUpdateWithoutUserOnboardingInput>
+  }
+
+  export type UserUpdateWithoutUserOnboardingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    projects?: ProjectUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUpdateManyWithoutUserNestedInput
+    userProfile?: UserProfileUpdateOneWithoutUserNestedInput
+    chatConversations?: ChatConversationUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutUserOnboardingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUncheckedUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+    userProfile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
+    chatConversations?: ChatConversationUncheckedUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    projectOnboardings?: ProjectOnboardingUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutProjectOnboardingsInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    projects?: ProjectCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberCreateNestedManyWithoutUserInput
+    userProfile?: UserProfileCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutProjectOnboardingsInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemUncheckedCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+    userProfile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationUncheckedCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    userOnboarding?: UserOnboardingUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutProjectOnboardingsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutProjectOnboardingsInput, UserUncheckedCreateWithoutProjectOnboardingsInput>
+  }
+
+  export type ProjectCreateWithoutProjectOnboardingInput = {
+    id?: string
+    projectName: string
+    tagline?: string | null
+    description?: string | null
+    data: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutProjectsInput
+    members?: ProjectMemberCreateNestedManyWithoutProjectInput
+    canvases?: CanvasCreateNestedManyWithoutProjectInput
+    scripts?: ScriptCreateNestedManyWithoutProjectInput
+    projectMemory?: ProjectMemoryCreateNestedOneWithoutProjectInput
+    chatConversations?: ChatConversationCreateNestedManyWithoutProjectInput
+    artifacts?: ArtifactCreateNestedManyWithoutProjectInput
+    aiActionLogs?: AiActionLogCreateNestedManyWithoutProjectInput
+    aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
+    aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
+    customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectUncheckedCreateWithoutProjectOnboardingInput = {
+    id?: string
+    userId: string
+    projectName: string
+    tagline?: string | null
+    description?: string | null
+    data: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    members?: ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
+    canvases?: CanvasUncheckedCreateNestedManyWithoutProjectInput
+    scripts?: ScriptUncheckedCreateNestedManyWithoutProjectInput
+    projectMemory?: ProjectMemoryUncheckedCreateNestedOneWithoutProjectInput
+    chatConversations?: ChatConversationUncheckedCreateNestedManyWithoutProjectInput
+    artifacts?: ArtifactUncheckedCreateNestedManyWithoutProjectInput
+    aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutProjectInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
+    aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
+    customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectCreateOrConnectWithoutProjectOnboardingInput = {
+    where: ProjectWhereUniqueInput
+    create: XOR<ProjectCreateWithoutProjectOnboardingInput, ProjectUncheckedCreateWithoutProjectOnboardingInput>
+  }
+
+  export type UserUpsertWithoutProjectOnboardingsInput = {
+    update: XOR<UserUpdateWithoutProjectOnboardingsInput, UserUncheckedUpdateWithoutProjectOnboardingsInput>
+    create: XOR<UserCreateWithoutProjectOnboardingsInput, UserUncheckedCreateWithoutProjectOnboardingsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutProjectOnboardingsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutProjectOnboardingsInput, UserUncheckedUpdateWithoutProjectOnboardingsInput>
+  }
+
+  export type UserUpdateWithoutProjectOnboardingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    projects?: ProjectUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUpdateManyWithoutUserNestedInput
+    userProfile?: UserProfileUpdateOneWithoutUserNestedInput
+    chatConversations?: ChatConversationUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutProjectOnboardingsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUncheckedUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+    userProfile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
+    chatConversations?: ChatConversationUncheckedUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    userOnboarding?: UserOnboardingUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type ProjectUpsertWithoutProjectOnboardingInput = {
+    update: XOR<ProjectUpdateWithoutProjectOnboardingInput, ProjectUncheckedUpdateWithoutProjectOnboardingInput>
+    create: XOR<ProjectCreateWithoutProjectOnboardingInput, ProjectUncheckedCreateWithoutProjectOnboardingInput>
+    where?: ProjectWhereInput
+  }
+
+  export type ProjectUpdateToOneWithWhereWithoutProjectOnboardingInput = {
+    where?: ProjectWhereInput
+    data: XOR<ProjectUpdateWithoutProjectOnboardingInput, ProjectUncheckedUpdateWithoutProjectOnboardingInput>
+  }
+
+  export type ProjectUpdateWithoutProjectOnboardingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectName?: StringFieldUpdateOperationsInput | string
+    tagline?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutProjectsNestedInput
+    members?: ProjectMemberUpdateManyWithoutProjectNestedInput
+    canvases?: CanvasUpdateManyWithoutProjectNestedInput
+    scripts?: ScriptUpdateManyWithoutProjectNestedInput
+    projectMemory?: ProjectMemoryUpdateOneWithoutProjectNestedInput
+    chatConversations?: ChatConversationUpdateManyWithoutProjectNestedInput
+    artifacts?: ArtifactUpdateManyWithoutProjectNestedInput
+    aiActionLogs?: AiActionLogUpdateManyWithoutProjectNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
+    aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
+    customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectUncheckedUpdateWithoutProjectOnboardingInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    projectName?: StringFieldUpdateOperationsInput | string
+    tagline?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    members?: ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
+    canvases?: CanvasUncheckedUpdateManyWithoutProjectNestedInput
+    scripts?: ScriptUncheckedUpdateManyWithoutProjectNestedInput
+    projectMemory?: ProjectMemoryUncheckedUpdateOneWithoutProjectNestedInput
+    chatConversations?: ChatConversationUncheckedUpdateManyWithoutProjectNestedInput
+    artifacts?: ArtifactUncheckedUpdateManyWithoutProjectNestedInput
+    aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutProjectNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
+    aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
+    customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -61398,6 +65817,26 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type ProjectOnboardingCreateManyUserInput = {
+    id?: string
+    projectId?: string | null
+    currentStep?: string
+    pillar?: string | null
+    projectName?: string | null
+    projectVision?: string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: string | null
+    budget?: string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: number
+    chatTurnsUsed?: number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type AccountUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     type?: StringFieldUpdateOperationsInput | string
@@ -61477,6 +65916,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateWithoutUserInput = {
@@ -61498,6 +65938,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    projectOnboarding?: ProjectOnboardingUncheckedUpdateOneWithoutProjectNestedInput
   }
 
   export type ProjectUncheckedUpdateManyWithoutUserInput = {
@@ -62060,6 +66501,66 @@ export namespace Prisma {
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     location?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectOnboardingUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    currentStep?: StringFieldUpdateOperationsInput | string
+    pillar?: NullableStringFieldUpdateOperationsInput | string | null
+    projectName?: NullableStringFieldUpdateOperationsInput | string | null
+    projectVision?: NullableStringFieldUpdateOperationsInput | string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: NullableStringFieldUpdateOperationsInput | string | null
+    budget?: NullableStringFieldUpdateOperationsInput | string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: FloatFieldUpdateOperationsInput | number
+    chatTurnsUsed?: IntFieldUpdateOperationsInput | number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    project?: ProjectUpdateOneWithoutProjectOnboardingNestedInput
+  }
+
+  export type ProjectOnboardingUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentStep?: StringFieldUpdateOperationsInput | string
+    pillar?: NullableStringFieldUpdateOperationsInput | string | null
+    projectName?: NullableStringFieldUpdateOperationsInput | string | null
+    projectVision?: NullableStringFieldUpdateOperationsInput | string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: NullableStringFieldUpdateOperationsInput | string | null
+    budget?: NullableStringFieldUpdateOperationsInput | string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: FloatFieldUpdateOperationsInput | number
+    chatTurnsUsed?: IntFieldUpdateOperationsInput | number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ProjectOnboardingUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentStep?: StringFieldUpdateOperationsInput | string
+    pillar?: NullableStringFieldUpdateOperationsInput | string | null
+    projectName?: NullableStringFieldUpdateOperationsInput | string | null
+    projectVision?: NullableStringFieldUpdateOperationsInput | string | null
+    answers?: NullableJsonNullValueInput | InputJsonValue
+    audience?: NullableStringFieldUpdateOperationsInput | string | null
+    budget?: NullableStringFieldUpdateOperationsInput | string | null
+    extractedData?: NullableJsonNullValueInput | InputJsonValue
+    qualityScore?: FloatFieldUpdateOperationsInput | number
+    chatTurnsUsed?: IntFieldUpdateOperationsInput | number
+    genesisDraft?: NullableJsonNullValueInput | InputJsonValue
+    completedMissions?: NullableJsonNullValueInput | InputJsonValue
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ProjectMemberCreateManyProjectInput = {

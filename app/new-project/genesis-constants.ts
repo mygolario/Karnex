@@ -13,6 +13,9 @@ import {
   Lightbulb,
   Hammer,
   TrendingUp,
+  DollarSign,
+  Target,
+  Palette,
 } from "lucide-react";
 
 export type ProjectType = "startup" | "traditional" | "creator";
@@ -78,6 +81,16 @@ export const PILLARS: Pillar[] = [
           { id: "growth", label: "توسعه و رشد", icon: TrendingUp },
         ],
       },
+      {
+        id: "revenue_model",
+        question: "مدل درآمد اصلی؟",
+        options: [
+          { id: "subscription", label: "اشتراک", icon: DollarSign },
+          { id: "marketplace", label: "کارمزد / بازار", icon: Users },
+          { id: "saas", label: "SaaS / B2B", icon: Code },
+          { id: "ads", label: "تبلیغات", icon: Target },
+        ],
+      },
     ],
   },
   {
@@ -103,6 +116,15 @@ export const PILLARS: Pillar[] = [
           { id: "physical", label: "فروشگاه فیزیکی", icon: Store },
           { id: "online", label: "فقط آنلاین", icon: Globe },
           { id: "hybrid", label: "ترکیبی", icon: MapPin },
+        ],
+      },
+      {
+        id: "geo",
+        question: "محدوده جغرافیایی؟",
+        options: [
+          { id: "local", label: "محلی / محله", icon: MapPin },
+          { id: "city", label: "شهر", icon: Store },
+          { id: "national", label: "سراسری", icon: Globe },
         ],
       },
     ],
@@ -133,6 +155,24 @@ export const PILLARS: Pillar[] = [
           { id: "tiktok", label: "تیک‌تاک", icon: Smartphone },
           { id: "aparat", label: "آپارات", icon: Video },
           { id: "podcast", label: "پادکست", icon: Mic },
+        ],
+      },
+      {
+        id: "content_style",
+        question: "سبک محتوا؟",
+        options: [
+          { id: "education", label: "آموزشی", icon: Lightbulb },
+          { id: "entertainment", label: "سرگرمی", icon: Video },
+          { id: "lifestyle", label: "سبک زندگی", icon: Palette },
+        ],
+      },
+      {
+        id: "monetization",
+        question: "مدل درآمد محتوا؟",
+        options: [
+          { id: "sponsorship", label: "اسپانسری", icon: DollarSign },
+          { id: "products", label: "محصول / دوره", icon: Store },
+          { id: "ads", label: "تبلیغات پلتفرم", icon: Target },
         ],
       },
     ],
