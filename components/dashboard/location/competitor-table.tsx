@@ -16,10 +16,12 @@ export function CompetitorTable() {
 
   if (!analysis?.competitorAnalysis) return null;
 
-  const { directCompetitors, saturationLevel, marketGap, competitorCount } = analysis.competitorAnalysis;
+  const { directCompetitors: rawCompetitors, saturationLevel, marketGap, competitorCount } = analysis.competitorAnalysis;
+  // Normalize — guard against stale data where directCompetitors might not be an array
+  const directCompetitors = Array.isArray(rawCompetitors) ? rawCompetitors : [];
 
   // Build radar chart data from first 4 competitors
-  const radarData = directCompetitors && directCompetitors.length > 0
+  const radarData = directCompetitors.length > 0
     ? ["product", "marketing", "price", "support"].map(axis => {
         const entry: any = { 
           axis: axis === "product" ? "محصول" : axis === "marketing" ? "بازاریابی" : axis === "price" ? "قیمت" : "پشتیبانی" 

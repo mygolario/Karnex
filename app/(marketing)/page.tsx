@@ -3,11 +3,21 @@ import dynamic from "next/dynamic";
 import { Navbar } from "@/components/shared/navbar";
 import { Footer } from "@/components/shared/footer";
 import { HeroSection } from "@/components/marketing/hero-section";
-import { StatsBar } from "@/components/marketing/stats-bar";
-import { PillarsSection } from "@/components/marketing/pillars-section";
-import { FeaturesSection } from "@/components/marketing/features-section";
 import { JsonLd } from "@/components/shared/json-ld";
 import { FAQ_ITEMS } from "@/lib/marketing/faq-data";
+
+const StatsBar = dynamic(
+  () => import("@/components/marketing/stats-bar").then((m) => m.StatsBar),
+  { loading: () => <div className="min-h-[100px]" /> }
+);
+const PillarsSection = dynamic(
+  () => import("@/components/marketing/pillars-section").then((m) => m.PillarsSection),
+  { loading: () => <div className="min-h-[400px]" /> }
+);
+const FeaturesSection = dynamic(
+  () => import("@/components/marketing/features-section").then((m) => m.FeaturesSection),
+  { loading: () => <div className="min-h-[400px]" /> }
+);
 
 const ProductShowcase = dynamic(
   () => import("@/components/marketing/product-showcase").then((m) => m.ProductShowcase),

@@ -434,9 +434,13 @@ function LocationPageContent() {
                   <div className="lg:col-span-7 h-[350px] lg:h-[420px]">
                     <InteractiveMap
                       center={analysis.coordinates || { lat: 35.6892, lon: 51.3890 }}
-                      competitors={analysis.competitorAnalysis?.directCompetitors
-                        ?.filter(c => c.coordinates?.lat && c.coordinates?.lon)
-                        .map(c => ({ name: c.name, lat: c.coordinates!.lat, lon: c.coordinates!.lon }))}
+                      competitors={
+                        Array.isArray(analysis.competitorAnalysis?.directCompetitors)
+                          ? analysis.competitorAnalysis!.directCompetitors!
+                              .filter(c => c.coordinates?.lat && c.coordinates?.lon)
+                              .map(c => ({ name: c.name, lat: c.coordinates!.lat, lon: c.coordinates!.lon }))
+                          : []
+                      }
                       radius={radius}
                       onPinDragEnd={handlePinDragEnd}
                     />

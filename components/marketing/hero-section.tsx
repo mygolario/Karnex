@@ -1,6 +1,5 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   Sparkles,
@@ -23,60 +22,34 @@ const trustAvatars = [
 ];
 
 export const HeroSection = () => {
-  const prefersReducedMotion = useReducedMotion();
-
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden pt-28 pb-16">
       {/* ═══ Background ═══ */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/30" />
 
-        {/* Animated mesh — desktop only */}
-        {!prefersReducedMotion && (
-          <>
-            <motion.div
-              animate={{
-                background: [
-                  "radial-gradient(circle at 20% 50%, hsl(330 81% 60% / 0.12) 0%, transparent 50%)",
-                  "radial-gradient(circle at 80% 50%, hsl(330 81% 60% / 0.12) 0%, transparent 50%)",
-                  "radial-gradient(circle at 20% 50%, hsl(330 81% 60% / 0.12) 0%, transparent 50%)",
-                ],
-              }}
-              transition={{ duration: 10, repeat: Infinity }}
-              className="absolute inset-0"
-            />
-            <motion.div
-              animate={{
-                background: [
-                  "radial-gradient(circle at 80% 30%, hsl(25 95% 53% / 0.08) 0%, transparent 50%)",
-                  "radial-gradient(circle at 20% 70%, hsl(25 95% 53% / 0.08) 0%, transparent 50%)",
-                  "radial-gradient(circle at 80% 30%, hsl(25 95% 53% / 0.08) 0%, transparent 50%)",
-                ],
-              }}
-              transition={{ duration: 12, repeat: Infinity }}
-              className="absolute inset-0"
-            />
-          </>
-        )}
+        {/* Static mesh — hardware-optimized (replaces expensive animated gradient mesh) */}
+        <div className="absolute inset-0 hidden lg:block opacity-75">
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "radial-gradient(circle at 20% 50%, hsl(330 81% 60% / 0.12) 0%, transparent 50%)",
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "radial-gradient(circle at 80% 30%, hsl(25 95% 53% / 0.08) 0%, transparent 50%)",
+            }}
+          />
+        </div>
 
         {/* Grid pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]" />
 
-        {/* Floating orbs */}
-        {!prefersReducedMotion && (
-          <>
-            <motion.div
-              animate={{ y: [0, -15, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-20 right-[15%] w-72 h-72 bg-primary/20 rounded-full blur-[100px]"
-            />
-            <motion.div
-              animate={{ y: [0, -15, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-              className="absolute bottom-40 left-[10%] w-96 h-96 bg-secondary/15 rounded-full blur-[120px]"
-            />
-          </>
-        )}
+        {/* Floating orbs with CSS animations */}
+        <div className="absolute top-20 right-[15%] w-72 h-72 bg-primary/20 rounded-full blur-[100px] animate-float" />
+        <div className="absolute bottom-40 left-[10%] w-96 h-96 bg-secondary/15 rounded-full blur-[120px] animate-float [animation-delay:2s]" />
       </div>
 
       <div className="container relative z-10 px-4 md:px-6">
@@ -84,55 +57,35 @@ export const HeroSection = () => {
           {/* ═══ Right column (text — first in RTL) ═══ */}
           <div className="text-center lg:text-start">
             {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mb-6"
-            >
+            <div className="mb-6 animate-fade-in-up">
               <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 backdrop-blur-sm">
                 <Sparkles className="w-4 h-4 text-primary animate-pulse" />
                 <span className="font-bold text-sm bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                   ایده با تو، مسیرش با کارنکس
                 </span>
               </div>
-            </motion.div>
+            </div>
 
             {/* Headline */}
-            <motion.h1
-              initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.15] mb-6"
-            >
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.15] mb-6 animate-fade-in-up [animation-delay:100ms] opacity-0">
               <span className="text-foreground">از ایده تا </span>
               <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
                 درآمد
               </span>
               <br />
               <span className="text-foreground">در یک پلتفرم</span>
-            </motion.h1>
+            </h1>
 
             {/* Subheadline */}
-            <motion.p
-              initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed"
-            >
+            <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed animate-fade-in-up [animation-delay:200ms] opacity-0">
               هم‌بنیان‌گذار هوشمند شما — مسیر اختصاصی برای{" "}
               <span className="text-startup font-bold">استارتاپ‌ها</span>،{" "}
               <span className="text-traditional font-bold">کسب‌وکارهای سنتی</span> و{" "}
               <span className="text-creator font-bold">تولیدکنندگان محتوا</span>.
-            </motion.p>
+            </p>
 
             {/* Dual CTAs */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8"
-            >
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8 animate-fade-in-up [animation-delay:300ms] opacity-0">
               <Link href="/signup">
                 <Button
                   size="xl"
@@ -154,15 +107,10 @@ export const HeroSection = () => {
                   چطور کار می‌کند؟
                 </Button>
               </Link>
-            </motion.div>
+            </div>
 
             {/* Trust line */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="flex items-center gap-4 justify-center lg:justify-start"
-            >
+            <div className="flex items-center gap-4 justify-center lg:justify-start animate-fade-in-up [animation-delay:400ms] opacity-0">
               {/* Avatar stack */}
               <div className="flex -space-x-3 space-x-reverse">
                 {trustAvatars.map((avatar, i) => (
@@ -186,16 +134,11 @@ export const HeroSection = () => {
                   مورد اعتماد <span className="font-bold text-foreground">۲,۰۰۰+</span> کارآفرین
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
 
           {/* ═══ Left column (dashboard mockup) ═══ */}
-          <motion.div
-            initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="relative hidden lg:block"
-          >
+          <div className="relative hidden lg:block animate-fade-in-up [animation-delay:500ms] opacity-0">
             {/* Glow behind mockup */}
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 blur-[80px] rounded-3xl" />
 
@@ -229,11 +172,9 @@ export const HeroSection = () => {
                     <span className="text-sm font-black text-primary">۶۸٪</span>
                   </div>
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: "68%" }}
-                      transition={{ duration: 1.5, delay: 0.8, ease: "easeOut" }}
-                      className="h-full rounded-full bg-gradient-to-r from-primary to-secondary"
+                    <div
+                      style={{ width: "68%" }}
+                      className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-[width] duration-[1500ms] delay-[800ms] ease-out"
                     />
                   </div>
                 </div>
@@ -273,45 +214,28 @@ export const HeroSection = () => {
             </div>
 
             {/* Floating badge — bottom right */}
-            {!prefersReducedMotion && (
-              <motion.div
-                animate={{ y: [0, -8, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                className="absolute -bottom-6 -end-6 bg-card border border-border rounded-2xl shadow-xl p-4 flex items-center gap-3"
-              >
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-emerald-500" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">رشد این هفته</p>
-                  <p className="text-sm font-black text-foreground">+۲۴٪ 🚀</p>
-                </div>
-              </motion.div>
-            )}
+            <div className="absolute -bottom-6 -end-6 bg-card border border-border rounded-2xl shadow-xl p-4 flex items-center gap-3 animate-float">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">رشد این هفته</p>
+                <p className="text-sm font-black text-foreground">+۲۴٪ 🚀</p>
+              </div>
+            </div>
 
             {/* Floating badge — top left */}
-            {!prefersReducedMotion && (
-              <motion.div
-                animate={{ y: [0, 8, 0] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
-                className="absolute -top-4 -start-4 bg-card border border-border rounded-2xl shadow-xl p-3 flex items-center gap-2"
-              >
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-primary" />
-                </div>
-                <span className="text-xs font-bold text-foreground">AI دستیار فعال</span>
-              </motion.div>
-            )}
-          </motion.div>
+            <div className="absolute -top-4 -start-4 bg-card border border-border rounded-2xl shadow-xl p-3 flex items-center gap-2 animate-float [animation-delay:1.5s]">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-xs font-bold text-foreground">AI دستیار فعال</span>
+            </div>
+          </div>
         </div>
 
         {/* Three Pillars — compact inline row */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="grid grid-cols-3 gap-3 max-w-2xl mx-auto mt-16 lg:hidden"
-        >
+        <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto mt-16 lg:hidden animate-fade-in-up [animation-delay:500ms] opacity-0">
           {[
             { icon: Rocket, title: "استارتاپ", color: "bg-startup" },
             { icon: Store, title: "سنتی", color: "bg-traditional" },
@@ -327,24 +251,15 @@ export const HeroSection = () => {
               <span className="text-sm font-bold text-foreground">{p.title}</span>
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
 
       {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-8 start-1/2 -translate-x-1/2 hidden md:block"
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex items-start justify-center p-1"
-        >
+      <div className="absolute bottom-8 start-1/2 -translate-x-1/2 hidden md:block animate-fade-in-up [animation-delay:1500ms] opacity-0">
+        <div className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex items-start justify-center p-1 animate-bounce-gentle">
           <div className="w-1.5 h-3 rounded-full bg-primary" />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </section>
   );
 };

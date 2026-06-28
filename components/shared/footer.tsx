@@ -149,6 +149,8 @@ export function Footer() {
                 src='https://trustseal.enamad.ir/logo.aspx?id=696845&Code=LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4'
                 alt='نماد اعتماد الکترونیکی'
                 style={{ cursor: 'pointer' }}
+                width={125}
+                height={125}
                 className="w-auto h-auto"
                 {...{ code: 'LOT5lQWpVVtKYHVJ1HCddyi9y8VA2MT4' } as Record<string, string>}
               />

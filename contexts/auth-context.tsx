@@ -147,6 +147,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const session = user ? { user } : null;
+  const isInitialLoading = loading || (loadingProfile && !userProfile);
 
   return (
     <AuthContext.Provider
@@ -154,7 +155,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         session,
         userProfile,
-        loading: loading || loadingProfile,
+        loading: isInitialLoading,
         refreshProfile,
         signOut,
         signIn,

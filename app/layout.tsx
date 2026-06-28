@@ -6,11 +6,9 @@ import { ProjectProvider } from '@/contexts/project-context';
 import { ThemeProvider } from '@/components/shared/theme-provider';
 import { JsonLd } from '@/components/shared/json-ld';
 import { NetworkStatus } from '@/components/shared/network-status';
-import { CookieBanner } from '@/components/shared/cookie-banner'; 
 import { GoogleAnalytics, PerformanceMonitoring } from '@/components/shared/analytics';
-import { WebVitalsReporter } from '@/components/shared/web-vitals-reporter';
 import { ToastProvider } from '@/components/ui/toast';
-import { ServiceWorkerRegister } from '@/components/pwa/service-worker-register';
+import { ClientHelpers } from '@/components/shared/client-helpers';
 
 export const metadata: Metadata = {
   title: {
@@ -142,13 +140,11 @@ export default function RootLayout({
           <AuthProvider>
               <ToastProvider>
                 <GoogleAnalytics />
-                <WebVitalsReporter />
                 <PerformanceMonitoring />
                 <ProjectProvider>
                   <NetworkStatus />
-                  <ServiceWorkerRegister />
+                  <ClientHelpers />
                   {children}
-                  <CookieBanner />
                 </ProjectProvider>
               </ToastProvider>
           </AuthProvider>
