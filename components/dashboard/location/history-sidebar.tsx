@@ -65,11 +65,31 @@ function HistorySidebarContent({ onClose }: { onClose: () => void }) {
               <span className="text-xs font-bold truncate">{item.address || item.city}</span>
             </div>
             <p className="text-[10px] text-muted-foreground">{formatDate(item.createdAt)}</p>
-            {item.score != null && (
-              <Badge variant="secondary" className="mt-1.5 text-[10px]">
-                امتیاز: {item.score}
-              </Badge>
-            )}
+            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              {item.score != null && (
+                <Badge variant="secondary" className="text-[10px]">
+                  امتیاز: {item.score}
+                </Badge>
+              )}
+              {item.verdict?.decision && (
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "text-[9px] font-bold px-1.5",
+                    item.verdict.decision === "go" && "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+                    item.verdict.decision === "caution" && "bg-amber-500/10 text-amber-400 border-amber-500/20",
+                    item.verdict.decision === "no-go" && "bg-rose-500/10 text-rose-400 border-rose-500/20",
+                  )}
+                >
+                  {item.verdict.decision === "go" ? "✓ برو" : item.verdict.decision === "caution" ? "⚠ احتیاط" : "✕ نرو"}
+                </Badge>
+              )}
+              {item.businessCategory && (
+                <span className="text-[9px] bg-violet-500/10 border border-violet-500/15 text-violet-400 px-1.5 py-0.5 rounded-full">
+                  {item.businessCategory}
+                </span>
+              )}
+            </div>
           </div>
           <div className="flex flex-col gap-1">
             {comparisonMode && (

@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { PILLARS } from "@/app/new-project/genesis-constants";
 import { useGenesisWizard } from "./genesis-wizard-context";
+import { suggestProjectNameAction } from "@/lib/ai-actions";
+import { Sparkles, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export function StepDetails() {
   const {
@@ -22,6 +26,8 @@ export function StepDetails() {
     advance,
     retreat,
   } = useGenesisWizard();
+  const [suggestingNames, setSuggestingNames] = useState(false);
+  const [nameSuggestions, setNameSuggestions] = useState<string[]>([]);
 
   const p = PILLARS.find((x) => x.id === pillar);
   if (!p) return null;
@@ -112,6 +118,36 @@ export function StepDetails() {
                   if (e.key === "Enter" && isCurrentValid) handleNext();
                 }}
               />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-1.5"
+                disabled={suggestingNames}
+                onClick={async () => {
+                  const idea = Object.values(answers).join(" ") || p.title;
+                  setSuggestingNames(true);
+                  const res = await suggestProjectNameAction(idea);
+                  setSuggestingNames(false);
+                  if (res.success && res.data?.names?.length) {
+                    setNameSuggestions(res.data.names);
+                  } else if (res.isLimitError) {
+                    toast.error("محدودیت AI");
+                  }
+                }}
+              >
+                {suggestingNames ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                پیشنهاد نام با AI
+              </Button>
+              {nameSuggestions.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {nameSuggestions.map((n) => (
+                    <Button key={n} type="button" variant="secondary" size="sm" onClick={() => setName(n)}>
+                      {n}
+                    </Button>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
 

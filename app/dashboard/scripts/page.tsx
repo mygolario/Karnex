@@ -308,42 +308,18 @@ export default function ScriptsPage() {
 
       const preferredTone = toneMapping[userPreferredTone] || "محاوره‌ای و دوستانه";
 
-      const templatePrompts: Record<string, string> = {
-        "viral-hook": "فرمت: قلاب بسیار جذاب و پرانرژی (۰-۵ ثانیه) -> قلاب مجدد -> ارائه ارزش اصلی -> پیچش غیرمنتظره -> دعوت به اقدام (CTA). تمرکز روی افزایش نرخ نگهداری مخاطب.",
-        "educational": "فرمت: طرح مسئله -> دغدغه‌مند کردن مخاطب -> راه‌حل گام به گام -> اشتباهات رایج -> دعوت به اقدام (CTA).",
-        "storytelling": "فرمت: توصیف شرایط اولیه (قبل) -> حادثه محرک -> چالش‌ها و کشمکش -> لحظه تحول و درک -> تغییر نهایی (بعد).",
-        "sales": "فرمت: جلب توجه -> ایجاد علاقه -> برانگیختن تمایل -> دعوت به اقدام مستقیم (فرمول AIDA).",
-      };
-
-      const selectedTemplatePrompt = templatePrompts[inputs.template] || templatePrompts["viral-hook"];
-
-      const prompt = `
-            Act as an expert Video Scriptwriter. Write a Persian script for a ${inputs.duration} video.
-            Topic: ${inputs.title}
-            Target Audience: ${inputs.audience || "General"}
-            Style/Template: ${selectedTemplatePrompt}
-            Brand Voice Tone (Personalized): ${preferredTone}
-
-            Output Guidelines:
-            1. Write in spoken, natural Persian (محاوره‌ای روان و صمیمی).
-            2. Include Visual Cues in brackets, e.g., [Zoom in], [Show B-Roll], [نمایش نمودار قیمت].
-            3. Structure clearly with timecodes (e.g. [0:00-0:05]).
-            4. Make the hook extremely catchy.
-            5. After the script, add a "راهنمای اجرا" (Execution Guide) section with at least 3 beginner tips:
-               - How to film it (camera angle, lighting)
-               - What tools/apps to use for editing (mention capcut or similar)
-               - How to post it for maximum reach
-            6. Keep the tone friendly and encouraging.
-      `;
-
       const response = await fetch("/api/ai-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          prompt, 
-          systemPrompt: "You are a professional YouTuber scriptwriter. Output ONLY the raw script text in Persian, formatted beautifully.",
-          activeProject: plan
-        })
+        body: JSON.stringify({
+          action: "script-writer",
+          title: inputs.title,
+          audience: inputs.audience || "عمومی",
+          duration: inputs.duration,
+          tone: preferredTone,
+          template: inputs.template,
+          activeProject: plan,
+        }),
       });
 
       if (response.status === 429) {
@@ -352,10 +328,17 @@ export default function ScriptsPage() {
       }
 
       const data = await response.json();
-      if (data.success && data.content) {
+      if (data.success && data.script) {
+        const script = data.script as { content?: string; executionGuide?: string; reasoning?: string };
+        const text = script.content
+          ? `${script.content}${script.executionGuide ? `\n\n---\nراهنمای اجرا:\n${script.executionGuide}` : ""}`
+          : String(data.content || "");
+        setEditorText(text);
+        setAvScenes(parseTextToScenes(text));
+        toast.success("سناریو با موفقیت توسط هوش مصنوعی تولید شد! 🪄");
+      } else if (data.success && data.content) {
         setEditorText(data.content);
         setAvScenes(parseTextToScenes(data.content));
-        // Keep current mode
         toast.success("سناریو با موفقیت توسط هوش مصنوعی تولید شد! 🪄");
       } else {
         toast.error("خطا در پاسخ هوش مصنوعی");

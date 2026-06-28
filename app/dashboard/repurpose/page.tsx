@@ -62,45 +62,27 @@ export default function RepurposePage() {
     setResults(null);
 
     try {
-      const prompt = `
-        I have a video about: "${inputs.topic}".
-        Reference URL: ${inputs.url}
-        Tone: ${inputs.tone}
-
-        Please repurpose this content into 4 distinct formats for a Persian audience.
-        Return ONLY a raw JSON object with these keys:
-        - twitterThread (a thread of 5 tweets, separated by double newlines)
-        - linkedinPost (professional, insightful, suitable for LinkedIn)
-        - instagramCaption (engaging, spacing, emojis, hashtags)
-        - videoScript (for a 60s short/reel: Hook -> Value -> Call to Action)
-
-        Ensure the content is high quality, native Persian, and perfectly formatted.
-      `;
-
       const response = await fetch("/api/ai-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          prompt, 
-          systemPrompt: "You are an expert Content Strategist. Output valid JSON only." 
-        })
+        body: JSON.stringify({
+          action: "repurpose-content",
+          topic: inputs.topic,
+          url: inputs.url,
+          tone: inputs.tone,
+          activeProject: plan,
+        }),
       });
 
       const data = await response.json();
 
       if (data.success && data.content) {
-        // Attempt to parse JSON. If it fails, we might need to clean the string.
-        let parsed: GeneratedContent;
-        try {
-            const cleanContent = data.content.replace(/```json/g, '').replace(/```/g, '').trim();
-            parsed = JSON.parse(cleanContent);
-            setResults(parsed);
-            setStep(2);
-            toast.success("محتوای شما با موفقیت تولید شد! 🎉");
-        } catch (e) {
-            console.error(e);
-            toast.error("خطا در پردازش پاسخ دستیار کارنکس. لطفا مجدد تلاش کنید.");
-        }
+        const parsed: GeneratedContent = typeof data.content === "string"
+          ? JSON.parse(data.content.replace(/```json/g, '').replace(/```/g, '').trim())
+          : data.content;
+        setResults(parsed);
+        setStep(2);
+        toast.success("محتوای شما با موفقیت تولید شد! 🎉");
       } else {
         toast.error("خطا در ارتباط با کارنکس");
       }

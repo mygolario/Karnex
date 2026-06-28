@@ -8,6 +8,16 @@ import chatAction from "./chat-action.json";
 import advisorChat from "./advisor-chat.json";
 import generatePlan from "./generate-plan.json";
 import copilotSystem from "./copilot-system.json";
+import analyzeLocation from "./analyze-location.json";
+import validateIdea from "./validate-idea.json";
+import generateGrowthPlan from "./generate-growth-plan.json";
+import generateFullCanvas from "./generate-full-canvas.json";
+import generateSectionCards from "./generate-section-cards.json";
+import generateContentIdeas from "./generate-content-ideas.json";
+import repurposeContent from "./repurpose-content.json";
+import scriptWriter from "./script-writer.json";
+import contentStrategy from "./content-strategy.json";
+import contentBrief from "./content-brief.json";
 
 export const Prompts = {
   suggestAudience,
@@ -19,7 +29,17 @@ export const Prompts = {
   chatAction,
   advisorChat,
   generatePlan,
-  copilotSystem
+  copilotSystem,
+  analyzeLocation,
+  validateIdea,
+  generateGrowthPlan,
+  generateFullCanvas,
+  generateSectionCards,
+  generateContentIdeas,
+  repurposeContent,
+  scriptWriter,
+  contentStrategy,
+  contentBrief,
 };
 
 export type PromptKey = keyof typeof Prompts;

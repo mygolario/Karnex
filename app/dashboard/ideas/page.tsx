@@ -15,6 +15,8 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
+import { ContentPipelineView } from "@/components/dashboard/creator/content-pipeline-view";
+import { AIReasoningPanel } from "@/components/ai-output";
 
 interface Idea {
   id: string;
@@ -32,6 +34,7 @@ export default function IdeasPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [lastReasoning, setLastReasoning] = useState<string | null>(null);
 
   // Check project type
   if (plan?.projectType !== "creator") {
@@ -59,23 +62,14 @@ export default function IdeasPage() {
 
     setIsGenerating(true);
     try {
-      const prompt = `Generate 3 creative content ideas about the topic: "${topic}" for Persian-speaking social media creators.
-      Return ONLY valid JSON array:
-      [
-        {
-          "title": "Catchy idea title in Persian",
-          "description": "Brief explanation in Persian of why this idea works and how to execute it",
-          "score": number between 75-98 representing viral potential,
-          "tags": ["tag1", "tag2", "tag3"] in Persian,
-          "platform": "instagram" | "youtube" | "twitter",
-          "isTrending": boolean
-        }
-      ]`;
-
       const res = await fetch("/api/ai-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, systemPrompt: "You are a viral content strategist for Persian social media. Return ONLY valid JSON." })
+        body: JSON.stringify({
+          action: "generate-content-ideas",
+          topic,
+          activeProject: plan,
+        }),
       });
 
       if (res.status === 429) {
@@ -84,14 +78,14 @@ export default function IdeasPage() {
       }
 
       const data = await res.json();
-      if (data.success && data.content) {
-        const cleaned = data.content.replace(/```json|```/g, "").trim();
-        const parsed: Omit<Idea, 'id'>[] = JSON.parse(cleaned);
-        const newIdeas: Idea[] = parsed.map((idea, i) => ({
+      if (data.success && data.ideas) {
+        const parsed = Array.isArray(data.ideas) ? data.ideas : data.ideas.ideas || [];
+        const newIdeas: Idea[] = parsed.map((idea: Omit<Idea, 'id'>, i: number) => ({
           ...idea,
           id: `idea-${Date.now()}-${i}`,
         }));
         setIdeas(newIdeas);
+        if (data.reasoning) setLastReasoning(data.reasoning);
         toast.success("ایده‌های جدید پیدا شد!");
       }
     } catch (e) {
@@ -118,6 +112,8 @@ export default function IdeasPage() {
           </div>
         </div>
       </div>
+
+      <ContentPipelineView />
 
       {/* Search Section */}
       <Card className="p-8 bg-gradient-to-br from-background to-muted/20 border-primary/10">
@@ -156,6 +152,12 @@ export default function IdeasPage() {
           </div>
         </div>
       </Card>
+
+      {lastReasoning && (
+        <div className="max-w-2xl mx-auto">
+          <AIReasoningPanel reasoning={lastReasoning} />
+        </div>
+      )}
 
       {/* Results Grid */}
       <AnimatePresence>

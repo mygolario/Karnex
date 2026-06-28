@@ -70,44 +70,16 @@ export function AIStrategyModal({ plan, onEventsGenerated }: AIStrategyModalProp
     }
     setIsLoading(true);
 
-    const goalDescriptions = {
-      growth: "Focus on viral trends, high-energy hooks, and shareable content. Goal: Reach new audiences.",
-      sales: "Focus on product benefits, social proof, testimonials, and clear CTAs. Goal: Conversion.",
-      trust: "Focus on behind-the-scenes, educational value, and personal stories. Goal: Deepen connection.",
-    };
-
-    const prompt = `Generate a ${durationWeeks}-week content calendar for a Persian content creator.
-
-strategy Goal: ${goal}
-Project: ${plan.projectName}
-Niche: ${plan.brandCanvas?.niche || "General"}
-Platforms to use: ${selectedPlatforms.join(", ")}
-
-Rules:
-- Distribute content across all selected platforms evenly
-- Each "title" should be descriptive and action-oriented in PERSIAN (not just a keyword)
-- Each "notes" should be 2 sentences explaining WHY and HOW to create it in simple Persian
-- Include practical tips for beginners in the notes
-- Tags should be Persian content topic labels (e.g., آموزشی, ترند, فروش, پشت‌صحنه)
-
-Return ONLY a valid JSON array:
-[
-  {
-    "title": "عنوان کامل فارسی",
-    "platform": "${selectedPlatforms.join(" | ")}",
-    "type": "post | reel | story | video | thread | short | episode | article",
-    "dayOffset": 1,
-    "notes": "توضیح حداقل ۲ جمله به فارسی",
-    "tags": ["تگ۱", "تگ۲"],
-    "priority": "high"
-  }
-]`;
-
     try {
       const response = await fetch("/api/ai-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, systemPrompt: "Return ONLY valid JSON. No markdown." }),
+        body: JSON.stringify({
+          action: "content-strategy",
+          platforms: selectedPlatforms.join(", "),
+          weeks: durationWeeks,
+          activeProject: plan,
+        }),
       });
 
       if (response.status === 429) {
@@ -116,9 +88,12 @@ Return ONLY a valid JSON array:
       }
 
       const data = await response.json();
-      if (data.success && data.content) {
-        const parsed = JSON.parse(data.content.replace(/```json|```/g, "").trim());
-        if (Array.isArray(parsed)) {
+      const parsed = Array.isArray(data.calendar)
+        ? data.calendar
+        : data.success && data.content
+          ? JSON.parse(data.content.replace(/```json|```/g, "").trim())
+          : null;
+      if (parsed && Array.isArray(parsed)) {
           const newEvents: ContentPost[] = parsed.map((item: any) => {
             const d = new Date();
             d.setDate(d.getDate() + (item.dayOffset || 1));
@@ -137,8 +112,9 @@ Return ONLY a valid JSON array:
           onEventsGenerated(newEvents);
           setIsOpen(false);
           toast.success(`${newEvents.length} ایده استراتژیک اضافه شد! 🚀`);
+        } else {
+          toast.error("فرمت پاسخ نامعتبر بود");
         }
-      }
     } catch {
       toast.error("خطا در تولید استراتژی. لطفاً دوباره امتحان کنید.");
     } finally {

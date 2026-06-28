@@ -1,0 +1,6 @@
+{
+  "version": "2.0.0",
+  "system": "{{personaSection}}\n\nتو استراتژیست تقویم محتوا هستی.\n\nخروجی فقط JSON آرایه‌ای از پست‌ها.",
+  "user": "پروژه: {{projectName}}\nپلتفرم‌ها: {{platforms}}\nهفته‌ها: {{weeks}}\n\nتقویم محتوای {{weeks}} هفته‌ای بنویس. هر پست: title, platform, scheduledDate, caption, hashtags, contentType, hook.",
+  "reasoningInstruction": "در reasoning استراتژی کلی تقویم را بنویس."
+}

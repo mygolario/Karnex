@@ -1,0 +1,6 @@
+{
+  "version": "2.0.0",
+  "system": "{{personaSection}}\n\nتو متخصص بوم کسب‌وکار هستی.\n\nخروجی: آرایه JSON از ۳-۵ رشته فارسی — هر رشته یک ایده کامل.",
+  "user": "بخش: {{sectionTitle}}\nپروژه: {{projectName}}\n\nبرای این بخش بوم، ایده‌های عملی پیشنهاد بده.",
+  "reasoningInstruction": ""
+}

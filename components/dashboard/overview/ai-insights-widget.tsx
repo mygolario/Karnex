@@ -57,15 +57,20 @@ export function AIInsightsWidget() {
   }, [refresh]);
 
   const active = insights.filter((i) => i.status !== "dismissed");
-  const current = active[currentIndex % (active.length || 1)];
+  const sorted = [...active].sort((a, b) => {
+    const p = { urgent: 0, warning: 1, info: 2 };
+    return (p[a.priority as keyof typeof p] ?? 2) - (p[b.priority as keyof typeof p] ?? 2);
+  });
+  const feed = sorted.slice(0, 5);
+  const current = feed[currentIndex % (feed.length || 1)];
 
   useEffect(() => {
-    if (active.length <= 1) return;
+    if (feed.length <= 1) return;
     const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % active.length);
+      setCurrentIndex((prev) => (prev + 1) % feed.length);
     }, 12000);
     return () => clearInterval(interval);
-  }, [active.length]);
+  }, [feed.length]);
 
   const dismiss = async (id: string) => {
     setInsights((prev) => prev.filter((i) => i.id !== id));
@@ -213,14 +218,35 @@ export function AIInsightsWidget() {
         </motion.div>
       </AnimatePresence>
 
-      {active.length > 1 && (
+      {feed.length > 1 && (
+        <div className="space-y-2 mt-4 max-h-48 overflow-y-auto">
+          {feed.map((ins) => (
+            <button
+              key={ins.id}
+              type="button"
+              onClick={() => apply(ins)}
+              className={cn(
+                "w-full text-right text-xs p-2 rounded-lg border transition-colors",
+                ins.priority === "urgent" && "border-rose-500/30 bg-rose-500/5",
+                ins.priority === "warning" && "border-amber-500/30 bg-amber-500/5",
+                ins.priority === "info" && "border-violet-500/20 bg-violet-500/5"
+              )}
+            >
+              <span className="font-semibold block">{ins.title}</span>
+              <span className="text-muted-foreground line-clamp-1">{ins.body}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {feed.length > 1 && (
         <div className="flex items-center justify-center gap-1.5 mt-4">
-          {active.map((_, i) => (
+          {feed.map((_, i) => (
             <div
               key={i}
               className={cn(
                 "h-1.5 rounded-full transition-all",
-                i === currentIndex % active.length
+                i === currentIndex % feed.length
                   ? "w-4 bg-primary"
                   : "w-1.5 bg-muted-foreground/30"
               )}

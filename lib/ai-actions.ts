@@ -189,9 +189,7 @@ export async function analyzeCompetitorsAction(data: { projectName: string, proj
                 SwotCompetitorsSchema,
                 1
             );
-            if (parsed && typeof parsed === 'object') {
-                delete (parsed as any).reasoning;
-            }
+            // Keep reasoning for UI display
             return { success: true, data: parsed };
         } catch (err) {
             console.warn("AI Validation failed for analyzeCompetitorsAction, using mock:", err);
@@ -317,9 +315,6 @@ export async function generateSmartCanvasAction(data: { idea: string, answers: R
                 SmartCanvasSchema,
                 1
             );
-            if (parsed && typeof parsed === 'object') {
-                delete (parsed as any).reasoning;
-            }
             return { success: true, data: parsed as any };
         } catch (err) {
             console.error("AI Validation failed for generateSmartCanvasAction:", err);

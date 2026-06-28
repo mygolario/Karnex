@@ -32,6 +32,7 @@ import { PLATFORMS, CONTENT_TYPES, STATUSES } from "./constants";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useProject } from "@/contexts/project-context";
 
 interface PostPanelProps {
   isOpen: boolean;
@@ -47,17 +48,28 @@ interface PostPanelProps {
 }
 
 // ── AI Helper Hook (calls API) ─────────────────────────────────────────────
-function useAIAction() {
+function useAIAction(activeProject?: Record<string, unknown>) {
   const [loading, setLoading] = useState(false);
-  const call = async (prompt: string, systemPrompt = "You are a helpful assistant. Respond in Persian (Farsi).") => {
+  const call = async (
+    requestType: string,
+    context: string,
+    requestInstructions: string
+  ) => {
     setLoading(true);
     try {
       const res = await fetch("/api/ai-generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, systemPrompt }),
+        body: JSON.stringify({
+          action: "content-brief",
+          requestType,
+          context,
+          requestInstructions,
+          activeProject,
+        }),
       });
       const data = await res.json();
+      if (data.success && data.result?.content) return data.result.content;
       return data.success ? data.content : null;
     } catch {
       return null;
@@ -256,10 +268,11 @@ export function PostPanel({
   onUpdateHashtagBank,
   projectNiche,
 }: PostPanelProps) {
-  const aiCaption = useAIAction();
-  const aiHooks = useAIAction();
-  const aiHashtags = useAIAction();
-  const aiRepurpose = useAIAction();
+  const { activeProject } = useProject();
+  const aiCaption = useAIAction(activeProject as unknown as Record<string, unknown> | undefined);
+  const aiHooks = useAIAction(activeProject as unknown as Record<string, unknown> | undefined);
+  const aiHashtags = useAIAction(activeProject as unknown as Record<string, unknown> | undefined);
+  const aiRepurpose = useAIAction(activeProject as unknown as Record<string, unknown> | undefined);
   const [hooks, setHooks] = useState<string[]>([]);
   const [repurposeResult, setRepurposeResult] = useState("");
 
@@ -267,41 +280,31 @@ export function PostPanel({
 
   const generateCaption = async () => {
     if (!formData.title) { toast.error("ابتدا عنوان را وارد کنید"); return; }
-    const prompt = `یک کپشن کامل و جذاب برای شبکه اجتماعی ${formData.platform} بنویس.
-عنوان محتوا: ${formData.title}
-نوع محتوا: ${formData.type}
-نیچ / حوزه: ${projectNiche || "عمومی"}
-یادداشت: ${formData.notes || "ندارد"}
-
-کپشن باید:
-- فارسی و صمیمی باشد
-- یک هوک قوی در اول داشته باشد
-- CTA واضح در آخر داشته باشد
-- طول مناسب برای ${formData.platform} باشد
-فقط متن کپشن را بنویس، بدون توضیح اضافه.`;
-    const result = await aiCaption.call(prompt);
+    const result = await aiCaption.call(
+      "caption",
+      formData.title,
+      `پلتفرم: ${formData.platform}, نوع: ${formData.type}, نیچ: ${projectNiche || "عمومی"}, یادداشت: ${formData.notes || "ندارد"}`
+    );
     if (result) onFormChange({ ...formData, caption: result });
   };
 
   const generateHooks = async () => {
     if (!formData.title) { toast.error("ابتدا عنوان را وارد کنید"); return; }
-    const prompt = `۳ هوک ویروسی برای این محتوا بنویس:
-عنوان: ${formData.title}
-پلتفرم: ${formData.platform}
-هر هوک باید یک جمله باشد که کنجکاوی ایجاد کند.
-فقط ۳ جمله بنویس، هر کدام در یک خط جداگانه. بدون شماره‌گذاری.`;
-    const result = await aiHooks.call(prompt);
+    const result = await aiHooks.call(
+      "hooks",
+      formData.title,
+      `پلتفرم: ${formData.platform} — ۳ هوک یک خطی`
+    );
     if (result) setHooks(result.split("\n").filter((l: string) => l.trim()).slice(0, 3));
   };
 
   const generateHashtags = async () => {
     if (!formData.title) { toast.error("ابتدا عنوان را وارد کنید"); return; }
-    const prompt = `۲۰ هشتگ مرتبط برای این پست ارائه بده:
-عنوان: ${formData.title}
-پلتفرم: ${formData.platform}
-نیچ: ${projectNiche || "عمومی"}
-فقط هشتگ‌ها را بدون # بنویس، هر کدام در یک خط. بدون توضیح اضافه.`;
-    const result = await aiHashtags.call(prompt);
+    const result = await aiHashtags.call(
+      "hashtags",
+      formData.title,
+      `پلتفرم: ${formData.platform}, نیچ: ${projectNiche || "عمومی"} — ۲۰ هشتگ`
+    );
     if (result) {
       const tags = result.split("\n").map((t: string) => t.trim().replace(/^#/, "")).filter((t: string) => t && !t.includes(" "));
       onFormChange({ ...formData, hashtags: tags });
@@ -310,12 +313,11 @@ export function PostPanel({
 
   const generateRepurpose = async () => {
     if (!formData.title) { toast.error("ابتدا عنوان را وارد کنید"); return; }
-    const prompt = `این ایده را برای ۳ پلتفرم مختلف بازتولید کن:
-ایده اصلی: ${formData.title}
-پلتفرم اصلی: ${formData.platform}
-
-برای هر پلتفرم (مثلاً اینستاگرام، یوتیوب، لینکدین) یک پیشنهاد کوتاه بنویس که چطور همین محتوا را با فرمت مناسب آن پلتفرم منتشر کنی.`;
-    const result = await aiRepurpose.call(prompt);
+    const result = await aiRepurpose.call(
+      "repurpose",
+      formData.title,
+      `پلتفرم اصلی: ${formData.platform} — پیشنهاد برای ۳ پلتفرم`
+    );
     if (result) setRepurposeResult(result);
   };
 

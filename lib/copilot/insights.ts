@@ -304,7 +304,10 @@ export async function generateInsightsForProject(
   }
 
   await persistInsights(projectId, userId, insights);
-  return insights;
+
+  const projectName = (data.projectName as string) || "پروژه";
+  const { enrichInsightsWithLLM } = await import("./insights-llm");
+  return enrichInsightsWithLLM(insights, projectName, projectType);
 }
 
 async function persistInsights(

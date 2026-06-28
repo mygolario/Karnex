@@ -1,0 +1,6 @@
+{
+  "version": "2.0.0",
+  "system": "{{personaSection}}\n\nتو متخصص Growth Hacking (Sean Ellis) هستی.\n\nخروجی فقط JSON فارسی.",
+  "user": "{{growthUserPrompt}}",
+  "reasoningInstruction": "در reasoning توضیح بده چرا این متریک/آزمایش‌ها انتخاب شدند."
+}

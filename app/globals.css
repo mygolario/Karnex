@@ -87,6 +87,11 @@
     --ai-muted: 256 89% 96%;     /* light tint for AI backgrounds */
     --ai-border: 256 89% 80%;    /* AI element borders */
     --ai-glow: 256 89% 66%;     /* for shadows/glows */
+
+    /* Pillar accent tokens */
+    --pillar-startup: 239 84% 67%;
+    --pillar-traditional: 160 84% 39%;
+    --pillar-creator: 346 77% 60%;
     
     --radius-card: 1.25rem;
     --radius-btn: 0.75rem;
@@ -1534,6 +1539,23 @@
 
 .ai-glow-card {
   animation: border-pulse 5s infinite ease-in-out;
+}
+
+.pillar-startup-accent {
+  border-left: 4px solid hsl(var(--pillar-startup));
+  background: hsl(var(--pillar-startup) / 0.06);
+}
+.pillar-traditional-accent {
+  border-left: 4px solid hsl(var(--pillar-traditional));
+  background: hsl(var(--pillar-traditional) / 0.06);
+}
+.pillar-creator-accent {
+  border-left: 4px solid hsl(var(--pillar-creator));
+  background: hsl(var(--pillar-creator) / 0.06);
+}
+
+.ai-output-shell {
+  box-shadow: 0 1px 3px hsl(var(--foreground) / 0.04);
 }
 
 .canvas-arrow-path {

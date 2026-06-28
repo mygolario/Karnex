@@ -30,7 +30,7 @@ interface MemoryData {
 
 export function CopilotRightPane({ onClose }: { onClose?: () => void }) {
   const { activeProject: plan } = useProject();
-  const { setArtifactCanvasOpen, selectedContexts, clearContexts, removeContext } = useCopilotStore();
+  const { setArtifactCanvasOpen, selectedContexts, clearContexts, removeContext, messages } = useCopilotStore();
   const [tab, setTab] = useState<Tab>("sources");
   const [memory, setMemory] = useState<MemoryData | null>(null);
   const [loadingMemory, setLoadingMemory] = useState(false);
@@ -86,15 +86,7 @@ export function CopilotRightPane({ onClose }: { onClose?: () => void }) {
       {/* Body */}
       <div className="flex-1 overflow-y-auto copilot-scroll p-4">
         {tab === "artifact" && (
-          <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
-            <div className="w-12 h-12 rounded-2xl ai-orb flex items-center justify-center mb-3">
-              <Sparkles size={22} className="text-white" />
-            </div>
-            <p className="text-sm font-medium text-foreground/80">پنل خروجی زنده</p>
-            <p className="text-xs mt-1 max-w-[220px]">
-              پیش‌نمایش زنده بوم، اسلاید، اسکریپت یا برنامه‌ای که دستیار می‌سازد اینجا نمایش داده می‌شود.
-            </p>
-          </div>
+          <ArtifactPane messages={messages} />
         )}
 
         {tab === "sources" && (
@@ -164,13 +156,67 @@ export function CopilotRightPane({ onClose }: { onClose?: () => void }) {
         )}
 
         {tab === "plan" && (
-          <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
-            <ListChecks size={28} className="mb-2 opacity-40" />
-            <p className="text-xs">برنامه‌های چندمرحله‌ای دستیار اینجا نمایش داده می‌شوند.</p>
-          </div>
+          <PlanPane messages={messages} />
         )}
       </div>
     </div>
+  );
+}
+
+function ArtifactPane({ messages }: { messages: import("@/lib/copilot/types").CopilotMessage[] }) {
+  const lastTool = [...messages].reverse().find((m) => m.toolCall?.status === "success");
+  if (!lastTool?.toolCall) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
+        <div className="w-12 h-12 rounded-2xl ai-orb flex items-center justify-center mb-3">
+          <Sparkles size={22} className="text-white" />
+        </div>
+        <p className="text-sm font-medium text-foreground/80">پنل خروجی زنده</p>
+        <p className="text-xs mt-1 max-w-[220px]">
+          پس از اجرای ابزار توسط Copilot، پیش‌نمایش تغییرات اینجا نمایش داده می‌شود.
+        </p>
+      </div>
+    );
+  }
+  const tc = lastTool.toolCall!;
+  const result = tc.result as Record<string, unknown> | undefined;
+  return (
+    <div className="space-y-3">
+      <div className="rounded-lg border bg-muted/30 p-3">
+        <p className="text-xs font-bold text-ai mb-1">{tc.name}</p>
+        <p className="text-xs text-muted-foreground">{lastTool.content?.slice(0, 200)}</p>
+      </div>
+      {result && (
+        <pre className="text-[10px] bg-muted/50 rounded-lg p-2 overflow-auto max-h-64 whitespace-pre-wrap">
+          {JSON.stringify(result, null, 2)}
+        </pre>
+      )}
+    </div>
+  );
+}
+
+function PlanPane({ messages }: { messages: import("@/lib/copilot/types").CopilotMessage[] }) {
+  const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant" && m.content);
+  const actionLines = lastAssistant?.content
+    ?.split("\n")
+    .filter((l) => l.includes("اقدام") || l.match(/^[\d\-•]/))
+    .slice(0, 5);
+  if (!actionLines?.length) {
+    return (
+      <div className="text-center py-6 text-muted-foreground">
+        <ListChecks size={28} className="mx-auto mb-2 opacity-40" />
+        <p className="text-xs">۳ اقدام بعدی پس از پاسخ مشاوره‌ای اینجا ظاهر می‌شود.</p>
+      </div>
+    );
+  }
+  return (
+    <ul className="space-y-2">
+      {actionLines.map((line, i) => (
+        <li key={i} className="text-xs p-2 rounded-lg bg-muted/40 border">
+          {line.replace(/^[\d\-•.\s]+/, "")}
+        </li>
+      ))}
+    </ul>
   );
 }
 

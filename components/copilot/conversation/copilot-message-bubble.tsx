@@ -56,9 +56,22 @@ export function CopilotMessageBubble({ message }: { message: CopilotMessage }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleFeedback = (type: "up" | "down") => {
+  const handleFeedback = async (type: "up" | "down") => {
     setFeedback(type);
-    // TODO: persist to AiFeedback table via API
+    try {
+      await fetch("/api/copilot/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messageId: message.id,
+          rating: type,
+          feature: "copilot",
+        }),
+      });
+      toast.success("بازخورد ثبت شد");
+    } catch {
+      toast.error("خطا در ثبت بازخورد");
+    }
   };
 
   const toolLabel = message.toolCall ? TOOL_LABELS[message.toolCall.name] || message.toolCall.name : "";

@@ -497,6 +497,7 @@ export interface LocationAnalysis {
     footfallDependency: "high" | "destination";
     priceTier: "budget" | "mid" | "premium";
     rentBudget?: number;
+    businessCategory?: string;
   };
   
   // Core Metrics
@@ -505,6 +506,67 @@ export interface LocationAnalysis {
   locationConfidence?: string;
   anchorLandmark?: string;
   
+  // NEW: AI Verdict — the single most important decision signal
+  verdict?: {
+    decision: "go" | "caution" | "no-go";
+    headline: string;
+    confidence: number;
+  };
+
+  // NEW: Business category (echoed for personalization)
+  businessCategory?: string;
+
+  // NEW: Location DNA personality archetype
+  locationDNA?: {
+    archetype: string;
+    archetypeIcon: string;
+    tags: string[];
+    story: string;
+  };
+
+  // NEW: Survival probability (category-specific)
+  survivalProbability?: {
+    score: number;
+    label: string;
+    categoryInsight: string;
+  };
+
+  // NEW: 12-month revenue projection (3 scenarios)
+  revenueProjection?: Array<{
+    month: number;
+    label: string;
+    pessimistic: number;
+    realistic: number;
+    optimistic: number;
+    milestone?: string;
+  }>;
+
+  // NEW: Street-level intelligence chips
+  streetIntelligence?: Array<{
+    type: "parking" | "direction" | "transit" | "visibility" | "construction" | "shade";
+    label: string;
+    value: string;
+    sentiment: "positive" | "neutral" | "negative";
+  }>;
+
+  // NEW: Smart alternative locations (if score is low)
+  alternatives?: Array<{
+    name: string;
+    estimatedScore: number;
+    reason: string;
+    distance: string;
+  }>;
+
+  // NEW: Opening readiness checklist (category-specific)
+  openingReadiness?: Array<{
+    id: string;
+    title: string;
+    desc: string;
+    category: "legal" | "financial" | "physical" | "marketing" | "operational";
+    isRequired: boolean;
+    estimatedDays?: number;
+  }>;
+
   metrics?: {
     footfallIndex: "High" | "Medium" | "Low";
     spendPower: "High" | "Medium" | "Low";

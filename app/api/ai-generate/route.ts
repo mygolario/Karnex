@@ -1,457 +1,346 @@
-import { NextResponse } from 'next/server';
-import { callOpenRouter, parseJsonFromAI } from '@/lib/openrouter';
-import { checkAILimit } from '@/lib/ai-limit-middleware';
+import { NextResponse } from "next/server";
+import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
+import { checkAILimit } from "@/lib/ai-limit-middleware";
+import { auth } from "@/lib/auth/session";
+import { resolveAssembledPrompt } from "@/lib/ai/prompt-service";
+import {
+  buildGenerateContext,
+  handleAnalyzeLocation,
+  handleContentBrief,
+  handleContentIdeas,
+  handleContentStrategy,
+  handleFullCanvas,
+  handleGrowthPlan,
+  handleRepurpose,
+  handleScriptWriter,
+  handleSectionCards,
+  handleValidateIdea,
+} from "@/lib/ai/generate-handlers";
 
-export const maxDuration = 60; // Allow 60 seconds for AI generation
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-// Canvas generation prompt template - explicit Persian
-const CANVAS_GENERATION_PROMPT = `ایده: {businessIdea}
-نام: {projectName}
+async function fetchOsmBlock(
+  city: string,
+  address: string,
+  radius: number,
+  activeProject: Record<string, unknown> | undefined
+) {
+  let osmData = "No real-time data available.";
+  let centerCoordinates = { lat: 35.6892, lon: 51.3890 };
+  const competitorsList: { name: string; lat: number; lon: number }[] = [];
 
-یک بوم کسب‌وکار ۹ بخشی به فارسی بنویس.
-فقط JSON خروجی بده، بدون توضیح:
+  const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address + ", " + city + ", Iran")}&format=json&limit=1`;
+  let geoData: { lat: string; lon: string }[] | null = null;
+  try {
+    const geoRes = await fetch(geoUrl, {
+      headers: { "User-Agent": "Karnex-App/1.0" },
+    });
+    if (geoRes.ok) geoData = await geoRes.json();
+  } catch (e) {
+    console.error("Geocoding failed:", e);
+  }
 
-{{
-  "keyPartners": "• شریک ۱\\n• شریک ۲\\n• شریک ۳",
-  "keyActivities": "• فعالیت ۱\\n• فعالیت ۲\\n• فعالیت ۳",
-  "keyResources": "• منبع ۱\\n• منبع ۲\\n• منبع ۳",
-  "uniqueValue": "• ارزش ۱\\n• ارزش ۲\\n• ارزش ۳",
-  "customerRelations": "• رابطه ۱\\n• رابطه ۲\\n• رابطه ۳",
-  "channels": "• کانال ۱\\n• کانال ۲\\n• کانال ۳",
-  "customerSegments": "• مشتری ۱\\n• مشتری ۲\\n• مشتری ۳",
-  "costStructure": "• هزینه ۱\\n• هزینه ۲\\n• هزینه ۳",
-  "revenueStream": "• درآمد ۱\\n• درآمد ۲\\n• درآمد ۳"
-}}`;
+  if (geoData?.length) {
+    const lat = parseFloat(geoData[0].lat);
+    const lon = parseFloat(geoData[0].lon);
+    centerCoordinates = { lat, lon };
+
+    let osmTag = 'amenity="cafe"';
+    const type = String(activeProject?.projectType || "").toLowerCase();
+    if (type.includes("rest") || type.includes("food"))
+      osmTag = 'amenity="restaurant"';
+    else if (type.includes("cloth") || type.includes("fash"))
+      osmTag = 'shop="clothes"';
+    else if (type.includes("super") || type.includes("grocer"))
+      osmTag = 'shop="supermarket"';
+
+    const query = `[out:json][timeout:25];(node[${osmTag}](around:${radius},${lat},${lon}););out center;`;
+    try {
+      const overpassRes = await fetch(
+        "https://overpass-api.de/api/interpreter",
+        { method: "POST", body: query }
+      );
+      if (overpassRes.ok) {
+        const overpassJson = await overpassRes.json();
+        overpassJson.elements?.forEach((el: Record<string, unknown>) => {
+          const tags = el.tags as Record<string, string> | undefined;
+          const name = tags?.["name:fa"] || tags?.name;
+          if (!name) return;
+          competitorsList.push({
+            name,
+            lat: (el.lat as number) || (el.center as { lat: number })?.lat || lat,
+            lon: (el.lon as number) || (el.center as { lon: number })?.lon || lon,
+          });
+        });
+        osmData = competitorsList
+          .slice(0, 8)
+          .map((c) => `- ${c.name} (${c.lat}, ${c.lon})`)
+          .join("\n");
+      }
+    } catch (e) {
+      console.error("OSM fetch error:", e);
+    }
+  }
+
+  return {
+    osmDataBlock: `[داده نقشه OSM]\nمختصات: ${centerCoordinates.lat}, ${centerCoordinates.lon}\nرقبا:\n${osmData}`,
+    centerCoordinates,
+  };
+}
 
 export async function POST(req: Request) {
   let rollback = async () => {};
   try {
-    // === AI Usage Limit Check ===
     const limitResult = await checkAILimit();
     if (limitResult.errorResponse) return limitResult.errorResponse;
     rollback = limitResult.rollback;
 
+    const session = await auth();
+    const userId = session?.user?.id;
+
     const body = await req.json();
-    const { action, prompt, systemPrompt, maxTokens = 2000, businessIdea, projectName, modelOverride, city, address, activeProject } = body;
+    const {
+      action,
+      prompt,
+      systemPrompt,
+      maxTokens = 2000,
+      businessIdea,
+      projectName,
+      modelOverride,
+      city,
+      address,
+      activeProject,
+      modifier,
+    } = body;
 
+    const genCtx = buildGenerateContext(activeProject, userId, modifier);
 
-    // Handle Competitor Search (OSM Integration) - MOVED TO TOP to prevent generic handler from catching it
-    if (action === 'analyze-location') {
-       const { radius = 500, priceTier = 'mid', footfallDependency = 'high', rentBudget = 0 } = body;
-       console.log("📍 Analyze Location Request:", { city, address, projectType: activeProject?.projectType, radius, priceTier, footfallDependency, rentBudget });
-       
-       // 1. Geocode
-       const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address + ', ' + city + ', Iran')}&format=json&limit=1`;
-       let geoData: any = null;
-       try {
-           const geoRes = await fetch(geoUrl, { headers: { 'User-Agent': 'Karnex-App/1.0' } });
-           if (geoRes.ok) {
-               geoData = await geoRes.json();
-           } else {
-               console.error("❌ Nominatim Geocoding API Error:", geoRes.status);
-           }
-       } catch (e) {
-           console.error("❌ Geocoding fetch failed:", e);
-       }
-       console.log("🌍 Geocoding Result:", geoData?.[0] ? "Found" : "Not Found");
-       
-       let osmData = "No real-time data available.";
-       let centerCoordinates = { lat: 35.6892, lon: 51.3890 }; // Fallback to Tehran coords
-       let competitorsList: any[] = [];
-       let transitList: any[] = [];
-       let anchorsList: any[] = [];
-       
-       if (geoData && geoData.length > 0) {
-          const lat = parseFloat(geoData[0].lat);
-          const lon = parseFloat(geoData[0].lon);
-          centerCoordinates = { lat, lon };
-          
-          // 2. Identify Category to Search
-          let osmTag = 'amenity="cafe"'; // default
-          const type = activeProject?.projectType?.toLowerCase() || '';
-          if (type.includes('rest') || type.includes('food')) osmTag = 'amenity="restaurant"';
-          else if (type.includes('cloth') || type.includes('fash')) osmTag = 'shop="clothes"';
-          else if (type.includes('super') || type.includes('grocer')) osmTag = 'shop="supermarket"';
-          else if (type.includes('tech') || type.includes('mobile')) osmTag = 'shop="mobile_phone"';
-          else if (type.includes('beau') || type.includes('salon')) osmTag = 'shop="beauty"';
+    if (action === "analyze-location") {
+      const {
+        radius = 500,
+        priceTier = "mid",
+        footfallDependency = "high",
+        rentBudget = 0,
+        businessCategory = "",
+      } = body;
 
-          // 3. Overpass Query
-          const query = `
-            [out:json][timeout:25];
-            (
-              node[${osmTag}](around:${radius},${lat},${lon});
-              way[${osmTag}](around:${radius},${lat},${lon});
-              relation[${osmTag}](around:${radius},${lat},${lon});
-              
-              node[railway=station](around:${radius},${lat},${lon});
-              node[amenity=bus_station](around:${radius},${lat},${lon});
-              node[shop=mall](around:${radius},${lat},${lon});
-              way[shop=mall](around:${radius},${lat},${lon});
-              node[amenity=university](around:${radius},${lat},${lon});
-              way[amenity=university](around:${radius},${lat},${lon});
-            );
-            out center;
-          `;
-          
-          try {
-              const overpassRes = await fetch("https://overpass-api.de/api/interpreter", {
-                  method: "POST",
-                  body: query
-              });
-              
-              if (overpassRes.ok) {
-                  const overpassJson = await overpassRes.json();
-                  if (overpassJson.elements) {
-                      overpassJson.elements.forEach((el: any) => {
-                          const name = el.tags?.['name:fa'] || el.tags?.name || el.tags?.operator;
-                          if (!name) return;
-                          
-                          const elLat = el.lat || el.center?.lat || lat;
-                          const elLon = el.lon || el.center?.lon || lon;
-                          
-                          const tagKey = osmTag.split('=')[0];
-                          const tagVal = osmTag.split('=')[1].replace(/"/g, '');
-                          
-                          const isCompetitor = el.tags?.[tagKey] === tagVal;
-                          const isTransit = el.tags?.railway === 'station' || el.tags?.amenity === 'bus_station';
-                          const isAnchor = el.tags?.shop === 'mall' || el.tags?.amenity === 'university';
-                          
-                          const item = {
-                              name,
-                              lat: elLat,
-                              lon: elLon,
-                              type: el.tags?.amenity || el.tags?.shop || el.tags?.railway || 'POI'
-                          };
-                          
-                          if (isCompetitor) {
-                              competitorsList.push(item);
-                          } else if (isTransit) {
-                              transitList.push(item);
-                          } else if (isAnchor) {
-                              anchorsList.push(item);
-                          }
-                      });
-                      
-                      const competitorDataStr = competitorsList.slice(0, 8).map(c => `- ${c.name} (موقعیت: ${c.lat}, ${c.lon})`).join('\n');
-                      const transitDataStr = transitList.slice(0, 5).map(t => `- ${t.name} (${t.type})`).join('\n');
-                      const anchorsDataStr = anchorsList.slice(0, 5).map(a => `- ${a.name} (${a.type})`).join('\n');
-                      
-                      osmData = `
-رقبا:
-${competitorDataStr || "رقیب مستقیمی در این محدوده پیدا نشد."}
+      const { osmDataBlock, centerCoordinates } = await fetchOsmBlock(
+        city,
+        address,
+        radius,
+        activeProject
+      );
 
-مراکز حمل و نقل نزدیک:
-${transitDataStr || "ایستگاه مترو یا اتوبوس مهمی نزدیک نیست."}
-
-مراکز جاذبه ترافیکی (شاپینگ سنترها/دانشگاه‌ها):
-${anchorsDataStr || "جاذبه ترافیکی عمده‌ای نزدیک نیست."}
-`;
-                  }
-              } else {
-                  console.error("❌ Overpass API Error:", overpassRes.status);
-              }
-          } catch (e) {
-              console.error("OSM Fetch Error:", e);
-          }
-       }
-
-       const enhancedPrompt = `
-        ${prompt}
-        
-        [IMPORTANT MAP DATA]
-        We fetched real-time POIs from OpenStreetMap for location coordinates (Lat: ${centerCoordinates.lat}, Lon: ${centerCoordinates.lon}) and radius ${radius} meters:
-        ${osmData}
-        
-        [PERSONALIZED BUSINESS CRITERIA]
-        - Footfall Dependency: ${footfallDependency === 'high' ? 'پاخورمحور (خیلی وابسته به تردد عابر)' : 'مقصدمحور (کشش محلی مهم‌تر است)'}
-        - Price Tier: ${priceTier === 'budget' ? 'اقتصادی و ارزان' : priceTier === 'mid' ? 'متوسط و میان‌رده' : 'لوکس و گران‌قیمت'}
-        - Monthly Rent Budget: ${rentBudget ? rentBudget.toLocaleString('fa-IR') + ' تومان' : 'ثبت نشده'}
-        
-        INSTRUCTIONS:
-        1. Calculate the 'score' (0-10) critical value taking into account how well the socioeconomic level of the location matches the business Price Tier and Footfall Dependency. For example:
-           - A premium store in a low spending power neighborhood should get a score under 5.0.
-           - A high footfall dependency store in a low traffic neighborhood should get a score under 5.0.
-        2. Ensure all fields from the OUTPUT FORMAT structure (including "demographics", "swot", "metrics", "riskBreakdown", etc.) are populated.
-        3. Place the competitors inside the "competitorAnalysis.directCompetitors" array. Include their name, distance (e.g. "۱۵۰ متر"), estimate their strengths/weaknesses, and assign realistic scores (0-10) for product, marketing, price, and support. Also populate the outer "competitorAnalysis" fields: "saturationLevel", "saturationPercentage" (number), "marketGap", and "competitorCount" (number).
-        4. Populate "hourlyFootfall" (at the top level of the JSON) as a 24-element array of numbers representing traffic index (0-100) per hour (from 00:00 to 23:00).
-        5. Populate "financialSim" (at the top level of the JSON) with:
-           - "breakEvenTransactions": number (number of daily transactions needed to break even).
-           - "rentToRevenueRatio": number (percentage of rent to estimated revenue, 0-100).
-           - "estimatedMonthlyRevenue": string (estimated monthly revenue range in Persian).
-        6. Populate "legalChecklist" (at the top level of the JSON) as an array of objects:
-           - [{ "title": "نام مجوز/مقررات", "desc": "توضیح کوتاه کاربردی", "isRequired": boolean }]
-        7. In "prioritizedRecommendations", ensure each recommendation has a unique "id" (string or number), "title", "desc", "urgency" ("فوری" | "مهم" | "پیشنهادی"), and "cost" ("کم‌هزینه" | "متوسط" | "سرمایه‌گذاری").
-        8. Output ONLY valid JSON in Persian. Ensure all text values are in Persian.
-        `;
-        
-        const result = await callOpenRouter(enhancedPrompt, {
-           systemPrompt: 'You are a GIS retail location strategy specialist. Return ONLY valid JSON in Persian.',
-           maxTokens: 8000,
-           temperature: 0.3,
-           modelOverride: modelOverride || 'google/gemini-3.5-flash'
-        });
-       
-        if (!result.success) {
-           console.error("❌ AI Generation Failed:", result.error);
-           await rollback();
-           return NextResponse.json({ error: result.error }, { status: 503 });
-        }
-    
-        try {
-            const json = parseJsonFromAI(result.content!);
-            
-            // Add geocoded coordinates to the final response
-            json.coordinates = centerCoordinates;
-            
-            return NextResponse.json({ success: true, analysis: json });
-        } catch (e) {
-            console.error("❌ JSON Parse Error (Location Analysis):", e);
-            console.error("Raw Content:", result.content);
-            await rollback();
-            return NextResponse.json({ error: 'Failed to parse location analysis' }, { status: 500 });
-        }
+      try {
+        const json = await handleAnalyzeLocation(
+          {
+            ...genCtx,
+            city,
+            address,
+            radius,
+            priceTier,
+            footfallDependency,
+            rentBudget,
+            businessCategory,
+            osmDataBlock,
+          },
+          modelOverride
+        );
+        json.coordinates = centerCoordinates;
+        return NextResponse.json({ success: true, analysis: json });
+      } catch (e) {
+        console.error("Location analysis error:", e);
+        await rollback();
+        return NextResponse.json(
+          { error: "Failed to parse location analysis" },
+          { status: 500 }
+        );
+      }
     }
 
-    // Handle full canvas generation
-    if (action === 'generate-full-canvas') {
+    if (action === "generate-full-canvas") {
       if (!businessIdea) {
-        return NextResponse.json({ error: 'Business idea is required' }, { status: 400 });
+        return NextResponse.json(
+          { error: "Business idea is required" },
+          { status: 400 }
+        );
       }
-
-      const canvasPrompt = CANVAS_GENERATION_PROMPT
-        .replace('{businessIdea}', businessIdea)
-        .replace('{projectName}', projectName || 'پروژه جدید');
-
-      const result = await callOpenRouter(canvasPrompt, {
-        systemPrompt: 'تو متخصص کسب‌وکار هستی. فقط JSON فارسی خروجی بده. توضیحات هر بخش را کامل و قابل فهم برای مبتدی بنویس - حداقل ۲ جمله در هر فیلد.',
-        maxTokens: 2000,
-        temperature: 0.5,
-        modelOverride
-      });
-
-      if (!result.success) {
-        await rollback();
-        return NextResponse.json({ error: result.error }, { status: 503 });
-      }
-
       try {
-        const canvas = parseJsonFromAI(result.content!);
-        return NextResponse.json({
-          success: true,
-          model: result.model,
-          canvas,
+        const canvas = await handleFullCanvas({
+          ...genCtx,
+          businessIdea,
         });
-      } catch (parseError) {
-        console.error('Failed to parse canvas JSON:', parseError);
+        return NextResponse.json({ success: true, canvas });
+      } catch (e) {
         await rollback();
-        return NextResponse.json({
-          success: false,
-          error: 'Failed to parse canvas response',
-          rawContent: result.content,
-        }, { status: 500 });
+        return NextResponse.json({ error: String(e) }, { status: 500 });
       }
     }
 
-    // Handle section card generation
-    if (action === 'generate-section-cards') {
-      const { prompt } = body;
-      if (!prompt) {
-        return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+    if (action === "generate-section-cards") {
+      const { sectionTitle } = body;
+      if (!sectionTitle) {
+        return NextResponse.json({ error: "sectionTitle required" }, { status: 400 });
       }
-
-      const result = await callOpenRouter(prompt, {
-        systemPrompt: 'تو متخصص کسب‌وکار هستی. فقط یک آرایه JSON از رشته‌ها خروجی بده - هر رشته یک ایده کوتاه. بدون توضیح اضافه. فرمت: ["ایده ۱", "ایده ۲", "ایده ۳"]',
-        maxTokens: 500,
-        temperature: 0.7,
-      });
-
-      if (!result.success) {
-        await rollback();
-        return NextResponse.json({ error: result.error }, { status: 503 });
-      }
-
       try {
-        const cards = parseJsonFromAI(result.content!);
+        const cards = await handleSectionCards({ ...genCtx, sectionTitle });
         return NextResponse.json({ success: true, cards });
-      } catch (parseError) {
-        const lines = result.content!.split('\n').filter((l: string) => l.trim().startsWith('•') || l.trim().startsWith('-')).map((l: string) => l.replace(/^[•\-]\s*/, '').trim()).filter(Boolean);
-        return NextResponse.json({ success: true, cards: lines.length > 0 ? lines : ['ایده پیشنهادی'] });
+      } catch {
+        await rollback();
+        return NextResponse.json({ success: true, cards: ["ایده پیشنهادی"] });
       }
     }
 
-    // Handle Pitch Deck Generation
-    if (action === 'generate-pitch-deck') {
-      const pitchPrompt = `
-      Create a 10-slide startup pitch deck structure based on:
-      Project Name: ${projectName}
-      Business Idea: ${businessIdea}
-
-      Slides to generate:
-      1. Title Slide (Tagline)
-      2. Problem (The Pain)
-      3. Solution (The Product)
-      4. Why Now? (Timing)
-      5. Market Size (TAM/SAM/SOM)
-      6. Competition (Unfair Advantage)
-      7. Business Model (Revenue)
-      8. Go-to-Market (Strategy)
-      9. Team (Founders)
-      10. Ask (Funding/Requirements)
-
-      For each slide, provide:
-      - title: Persian title (descriptive, not just a keyword)
-      - type: slide type id
-      - bullets: Array of 3-4 complete, explanatory Persian bullet points (not just keywords - each should be a full sentence that a beginner can understand).
-
-      Return ONLY valid JSON array of objects:
-      [
-        { "type": "title", "title": "عنوان", "bullets": ["..."] },
-        ...
-      ]
-      `;
-
-      const result = await callOpenRouter(pitchPrompt, {
-        systemPrompt: 'You are a Pitch Deck Expert. Return only valid JSON array.',
+    if (action === "generate-pitch-deck") {
+      const { system, user } = await resolveAssembledPrompt({
+        featureKey: "generatePitchDeck",
+        projectType: genCtx.projectType,
+        projectName: projectName || genCtx.projectName,
+        projectData: genCtx.projectData,
+        userId,
+        projectId: genCtx.projectId,
+        variables: {
+          idea: businessIdea || "",
+          projectContextBlock: "",
+          wizardAnswersBlock: "",
+        },
+      });
+      const result = await callOpenRouter(user, {
+        systemPrompt: system,
         maxTokens: 3000,
         temperature: 0.7,
       });
-
       if (!result.success) {
         await rollback();
         return NextResponse.json({ error: result.error }, { status: 503 });
       }
+      const slides = parseJsonFromAI(result.content!);
+      return NextResponse.json({ success: true, slides });
+    }
 
+    if (action === "validate-idea") {
       try {
-        const slides = parseJsonFromAI(result.content!);
-        return NextResponse.json({ success: true, slides });
+        const out = await handleValidateIdea({
+          ...genCtx,
+          businessIdea: businessIdea || "",
+        });
+        return NextResponse.json({ success: true, ...out });
       } catch (e) {
         await rollback();
-        return NextResponse.json({ error: 'Failed to parse slides' }, { status: 500 });
+        return NextResponse.json({ error: String(e) }, { status: 500 });
       }
     }
 
-    // Handle Idea Validation (Roast & Experiments)
-    if (action === 'validate-idea') {
-      const validationPrompt = `
-      Act as a brutal Y Combinator partner. Critically analyze this startup idea:
-      Project: ${projectName}
-      Description: ${businessIdea}
-
-      1. ROAST: Give a brutal but constructive critique in Persian. Identify the biggest weakness. Explain WHY it's a weakness in 2-3 sentences so beginners understand.
-      2. ASSUMPTIONS: List 6 core assumptions this business is making in Persian. Each assumption should be a complete sentence with brief explanation.
-      3. EXPERIMENTS: Suggest 3 cheap, fast ways to test the riskiest assumption in Persian. Each experiment should include step-by-step instructions that a beginner can follow. Include estimated cost and time for each.
-
-      Return ONLY valid JSON:
-      {
-        "critique": {
-          "score": 65,
-          "summary": "Brutal one-line summary in Persian.",
-          "strengths": ["Strength 1 in Persian"],
-          "weaknesses": ["Weakness 1 in Persian", "Weakness 2 in Persian"]
-        },
-        "assumptions": [
-          { "id": "1", "text": "Assumption 1 in Persian", "risk": "critical" },
-          { "id": "2", "text": "Assumption 2 in Persian", "risk": "critical" },
-          { "id": "3", "text": "Assumption 3 in Persian", "risk": "minor" },
-          { "id": "4", "text": "Assumption 4 in Persian", "risk": "minor" }
-        ],
-        "experiments": [
-          { "title": "Experiment Title in Persian", "steps": "Step 1, Step 2 in Persian...", "metric": "Success metric in Persian" },
-          ...
-        ]
+    if (action === "generate-growth-plan") {
+      const { planType, stage } = body;
+      try {
+        const data = await handleGrowthPlan({
+          ...genCtx,
+          planType,
+          stage,
+          businessIdea: businessIdea || "",
+        });
+        return NextResponse.json({ success: true, data });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
       }
-      `;
-
-      const result = await callOpenRouter(validationPrompt, {
-         systemPrompt: 'You are a cynical VC. Return ONLY JSON. ALL TEXT VALUES MUST BE IN PERSIAN (FARSI).',
-         temperature: 0.8,
-         maxTokens: 2000
-      });
-
-       if (!result.success) {
-         await rollback();
-         return NextResponse.json({ error: result.error }, { status: 503 });
-       }
-       
-       try {
-          const validationData = parseJsonFromAI(result.content!);
-          return NextResponse.json({ success: true, validation: validationData });
-       } catch (e) {
-          await rollback();
-          return NextResponse.json({ error: 'Failed to parse validation data' }, { status: 500 });
-       }
     }
-    
-    // Handle Growth Planning (Roshdnama 2.0)
-    if (action === 'generate-growth-plan') {
-       const { planType, stage } = body; // planType: 'north-star' | 'experiments'
-       
-       let growthPrompt = "";
-       
-       if (planType === 'north-star') {
-          growthPrompt = `
-          Analyze this startup to find its North Star Metric (NSM):
-          Project: ${projectName}
-          Description: ${businessIdea}
 
-          Return ONLY valid JSON in Persian:
-          {
-            "northStarMetric": "The single key metric (e.g., Weekly Active Paid Users) - explain in simple Persian what this means",
-            "why": "At least 2 sentences explaining why this metric matters for beginners",
-            "inputMetrics": [
-               { "name": "Input 1 (e.g., New Signups) - with brief explanation", "target": "Target value" },
-               { "name": "Input 2 (e.g., Retention %) - with brief explanation", "target": "Target value" },
-               { "name": "Input 3 - with brief explanation", "target": "Target value" }
-            ]
-          }`;
-       } else if (planType === 'experiments') {
-          growthPrompt = `
-          Suggest 3 Growth Hacking experiments for the "${stage || 'Acquisition'}" stage of the AAARRR funnel.
-          Project: ${projectName}
-          Description: ${businessIdea}
+    if (action === "generate-content-ideas") {
+      const { topic } = body;
+      try {
+        const ideas = await handleContentIdeas({ ...genCtx, topic });
+        return NextResponse.json({ success: true, ideas, reasoning: (ideas as { reasoning?: string }).reasoning });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
 
-          Return ONLY valid JSON in Persian:
-          [
-            {
-              "title": "Experiment Title (e.g., LinkedIn Viral Loop)",
-              "description": "Detailed execution plan - at least 3 sentences explaining HOW to do it step by step for a beginner",
-              "ice_score": 8,
-              "difficulty": "Easy/Medium/Hard"
-            },
-            ...
-          ]
-          `;
-       }
+    if (action === "repurpose-content") {
+      const { topic, url, tone = "professional" } = body;
+      try {
+        const content = await handleRepurpose({ ...genCtx, topic, url, tone });
+        return NextResponse.json({ success: true, content });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
 
-       const result = await callOpenRouter(growthPrompt, {
-         systemPrompt: 'You are a Growth Hacker like Sean Ellis. Return ONLY JSON in Persian.',
-         temperature: 0.8,
-         maxTokens: 1500
-      });
+    if (action === "script-writer") {
+      const { title, audience, duration, tone, template } = body;
+      try {
+        const script = await handleScriptWriter({
+          ...genCtx,
+          title,
+          audience,
+          duration,
+          tone,
+          template,
+        });
+        return NextResponse.json({ success: true, script });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
 
-       if (!result.success) {
-         await rollback();
-         return NextResponse.json({ error: result.error }, { status: 503 });
-       }
+    if (action === "content-brief") {
+      const { requestType, context, requestInstructions } = body;
+      try {
+        const result = await handleContentBrief({
+          ...genCtx,
+          requestType,
+          context,
+          requestInstructions,
+        });
+        return NextResponse.json({ success: true, result });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
 
-       try {
-         const growthData = parseJsonFromAI(result.content!);
-         return NextResponse.json({ success: true, data: growthData });
-       } catch (e) {
-         await rollback();
-         return NextResponse.json({ error: 'Failed to parse growth data' }, { status: 500 });
-       }
-     }
+    if (action === "content-strategy") {
+      const { platforms, weeks = 2 } = body;
+      try {
+        const calendar = await handleContentStrategy({
+          ...genCtx,
+          platforms,
+          weeks,
+        });
+        return NextResponse.json({ success: true, calendar });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
 
-    // Handle regular text generation
+    // Generic fallback — still use base prompt when featureKey provided
     if (!prompt) {
-      return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+      return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
+    }
+
+    let finalSystem = systemPrompt;
+    if (!finalSystem && body.featureKey) {
+      const assembled = await resolveAssembledPrompt({
+        featureKey: body.featureKey,
+        projectType: genCtx.projectType,
+        projectData: genCtx.projectData,
+        userId,
+        projectId: genCtx.projectId,
+        variables: body.variables || {},
+        modifier: modifier as any,
+      });
+      finalSystem = assembled.system;
     }
 
     const result = await callOpenRouter(`${prompt}\n\n(پاسخ فارسی بده)`, {
-      systemPrompt: systemPrompt || 'فقط به فارسی پاسخ بده.',
+      systemPrompt: finalSystem || "فقط به فارسی پاسخ بده.",
       maxTokens,
       temperature: 0.5,
       modelOverride,
@@ -467,10 +356,9 @@ ${anchorsDataStr || "جاذبه ترافیکی عمده‌ای نزدیک نیس
       model: result.model,
       content: result.content,
     });
-
   } catch (error) {
     console.error("AI Generate Error:", error);
     await rollback();
-    return NextResponse.json({ error: 'Failed to generate' }, { status: 500 });
+    return NextResponse.json({ error: "Failed to generate" }, { status: 500 });
   }
 }
