@@ -61,15 +61,6 @@ export const TOUR_REGISTRY: Record<string, TourDefinition> = {
         position: "top",
       },
       {
-        id: "missions-hint",
-        target: "setup-checklist",
-        title: "مرکز مأموریت",
-        description: "مأموریت‌ها و XP راه‌اندازی را از چک‌لیست و مرکز راهنما دنبال کنید.",
-        mood: "action",
-        position: "top",
-        personas: ["founder", "creator", "marketer", "general"],
-      },
-      {
         id: "help",
         target: "help-button",
         title: "مرکز راهنما",

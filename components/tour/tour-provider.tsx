@@ -6,8 +6,6 @@ import { useProject } from "@/contexts/project-context";
 import { useTourStore } from "@/lib/tour/store";
 import { TOUR_VERSION } from "@/lib/tour/registry";
 import { useTourGamification } from "@/hooks/use-tour-gamification";
-import { profileRoleToTourPersona } from "@/lib/onboarding/profile-schema";
-import type { TourPersona } from "@/lib/tour/types";
 
 interface TourProviderProps {
   children: React.ReactNode;
@@ -25,8 +23,6 @@ export function TourProvider({ children }: TourProviderProps) {
     setXpCallback,
     markWhatsNewSeen,
     showWelcome,
-    setPersona,
-    closeWelcome,
   } = useTourStore();
 
   const { awardTourXp } = useTourGamification();
@@ -37,23 +33,6 @@ export function TourProvider({ children }: TourProviderProps) {
     if (authLoading) return;
     initialize(userId);
   }, [userId, authLoading, initialize]);
-
-  useEffect(() => {
-    if (authLoading || !user?.id || !initialized) return;
-    fetch("/api/onboarding")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        const role = data?.user?.profileData?.role;
-        if (role && typeof role === "string") {
-          const persona = profileRoleToTourPersona(role) as TourPersona;
-          setPersona(persona);
-          if (data.user?.profileCompletedAt) {
-            closeWelcome();
-          }
-        }
-      })
-      .catch(() => {});
-  }, [user?.id, authLoading, initialized, setPersona, closeWelcome]);
 
   useEffect(() => {
     setXpCallback(awardTourXp);

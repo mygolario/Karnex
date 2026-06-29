@@ -69,10 +69,6 @@ model User {
   userIntegrations   UserIntegration[]
   dataExportRequests DataExportRequest[]
   loginEvents        LoginEvent[]
-
-  // Unified onboarding
-  userOnboarding     UserOnboarding?
-  projectOnboardings ProjectOnboarding[]
 }
 
 model Account {
@@ -140,7 +136,6 @@ model Project {
   aiInsights          AiInsight[]
   aiUsages            AiUsage[]
   customerBotChannels CustomerBotChannel[]
-  projectOnboarding   ProjectOnboarding?
 
   @@index([userId])
   @@index([createdAt])
@@ -710,55 +705,6 @@ model DataExportRequest {
 
   createdAt DateTime  @default(now())
   expiresAt DateTime?
-
-  @@index([userId])
-}
-
-// ====================================================================
-// UNIFIED ONBOARDING
-// ====================================================================
-
-model UserOnboarding {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  version               String    @default("3.0.0")
-  currentStep           String    @default("profile") // profile | genesis | reveal | missions | complete
-  profileCompletedAt    DateTime?
-  needsReonboard        Boolean   @default(true)
-  profileData           Json?
-  gamification          Json? // { xp, level, badges[], streak, lastActiveDate }
-  completedMissions     Json? // string[]
-  onboardingCompletedAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ProjectOnboarding {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  projectId String?  @unique
-  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
-
-  currentStep       String    @default("genesis") // genesis | reveal | missions | complete
-  pillar            String?
-  projectName       String?
-  projectVision     String?   @db.Text
-  answers           Json?
-  audience          String?
-  budget            String?
-  extractedData     Json?
-  qualityScore      Float     @default(0)
-  chatTurnsUsed     Int       @default(0)
-  genesisDraft      Json?
-  completedMissions Json?
-  completedAt       DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@index([userId])
 }

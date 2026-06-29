@@ -1,5 +1,13 @@
 type TourAnalyticsPayload = Record<string, string | number | boolean | undefined>;
 
+declare global {
+  interface Window {
+    posthog?: {
+      capture: (event: string, properties?: TourAnalyticsPayload) => void;
+    };
+  }
+}
+
 function capture(event: string, properties?: TourAnalyticsPayload) {
   if (typeof window === "undefined") return;
   try {

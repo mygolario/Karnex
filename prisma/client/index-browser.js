@@ -543,42 +543,6 @@ exports.Prisma.DataExportRequestScalarFieldEnum = {
   expiresAt: 'expiresAt'
 };
 
-exports.Prisma.UserOnboardingScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  version: 'version',
-  currentStep: 'currentStep',
-  profileCompletedAt: 'profileCompletedAt',
-  needsReonboard: 'needsReonboard',
-  profileData: 'profileData',
-  gamification: 'gamification',
-  completedMissions: 'completedMissions',
-  onboardingCompletedAt: 'onboardingCompletedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.ProjectOnboardingScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  projectId: 'projectId',
-  currentStep: 'currentStep',
-  pillar: 'pillar',
-  projectName: 'projectName',
-  projectVision: 'projectVision',
-  answers: 'answers',
-  audience: 'audience',
-  budget: 'budget',
-  extractedData: 'extractedData',
-  qualityScore: 'qualityScore',
-  chatTurnsUsed: 'chatTurnsUsed',
-  genesisDraft: 'genesisDraft',
-  completedMissions: 'completedMissions',
-  completedAt: 'completedAt',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -643,9 +607,7 @@ exports.Prisma.ModelName = {
   LoginEvent: 'LoginEvent',
   UserApiKey: 'UserApiKey',
   UserIntegration: 'UserIntegration',
-  DataExportRequest: 'DataExportRequest',
-  UserOnboarding: 'UserOnboarding',
-  ProjectOnboarding: 'ProjectOnboarding'
+  DataExportRequest: 'DataExportRequest'
 };
 
 /**

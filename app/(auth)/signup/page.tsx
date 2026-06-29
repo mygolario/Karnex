@@ -72,7 +72,7 @@ export default function SignupPage() {
         password,
         options: {
           data: { full_name: name, name },
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=/onboarding`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/new-project`,
         },
       });
 
@@ -81,7 +81,7 @@ export default function SignupPage() {
       if (data.session) {
         await fetch("/api/auth/sync", { method: "POST" });
         setSignedUp(true);
-        setTimeout(() => router.push("/onboarding"), 2500);
+        setTimeout(() => router.push("/new-project"), 2500);
       } else {
         setSignedUp(true);
         setError("");
@@ -108,7 +108,7 @@ export default function SignupPage() {
     setLoading(true);
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: getOAuthRedirectUrl("/onboarding") },
+      options: { redirectTo: getOAuthRedirectUrl("/new-project") },
     });
   };
 
