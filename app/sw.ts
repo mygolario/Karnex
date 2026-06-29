@@ -27,6 +27,15 @@ const serwist = new Serwist({
   },
   runtimeCaching: [
     {
+      matcher: ({ request }) => request.method === "POST",
+      handler: new NetworkOnly(),
+    },
+    {
+      matcher: ({ request, url }) =>
+        request.mode === "navigate" && !url.pathname.startsWith("/_next"),
+      handler: new NetworkOnly(),
+    },
+    {
       matcher: ({ url }) =>
         url.pathname.startsWith("/api/projects") ||
         url.pathname.startsWith("/api/user-data") ||
