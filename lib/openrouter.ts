@@ -104,6 +104,9 @@ export async function callOpenRouter(
         maxTokens?: number;
         temperature?: number;
         timeoutMs?: number;
+        maxAttempts?: number;
+        /** When true, only try modelOverride (or first TEXT_MODEL) — no fallback chain */
+        singleModel?: boolean;
         modelOverride?: string;
         responseFormat?: { type: 'json_object' };
     }
@@ -120,6 +123,8 @@ export async function callOpenRouter(
         maxTokens = 2000,
         temperature = 0.7,
         timeoutMs = 20000,
+        maxAttempts = 3,
+        singleModel = false,
         modelOverride,
         responseFormat
     } = options || {};
@@ -127,9 +132,11 @@ export async function callOpenRouter(
     let lastError: string | null = null;
     
     // Use override first, then fall back through the default model chain
-    const modelsToTry = modelOverride
-        ? [modelOverride, ...TEXT_MODELS.filter((m) => m !== modelOverride)]
-        : TEXT_MODELS;
+    const modelsToTry = singleModel
+        ? [modelOverride || TEXT_MODELS[0]]
+        : modelOverride
+          ? [modelOverride, ...TEXT_MODELS.filter((m) => m !== modelOverride)]
+          : TEXT_MODELS;
 
     for (const model of modelsToTry) {
         try {
@@ -200,7 +207,7 @@ export async function callOpenRouter(
                         clearTimeout(timeoutId);
                     }
                 },
-                3, // maxAttempts
+                maxAttempts,
                 1000, // baseDelayMs
                 isTransient
             );

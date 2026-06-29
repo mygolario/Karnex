@@ -9,7 +9,7 @@ const OVERPASS_HEADERS = {
   "Content-Type": "application/x-www-form-urlencoded",
 };
 
-async function overpassFetch(query: string, timeoutMs = 12000): Promise<Response> {
+async function overpassFetch(query: string, timeoutMs = 8000): Promise<Response> {
   return fetch("https://overpass-api.de/api/interpreter", {
     method: "POST",
     headers: OVERPASS_HEADERS,

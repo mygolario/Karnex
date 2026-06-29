@@ -290,11 +290,15 @@ export async function handleAnalyzeLocation(
 11. footfallTier: real|inferred|ai
 12. hourlyFootfall 24 عنصر`;
 
-  // Single-pass generation — multiPass (2x LLM) caused Vercel FUNCTION_INVOCATION_TIMEOUT on location analysis
+  // Single-pass, single-model — default 20s timeout + 3 retries burned the full 120s Vercel budget
   const result = await callOpenRouter(enhancedUser, {
     systemPrompt: system,
-    maxTokens: 6000,
+    maxTokens: 4500,
     temperature: 0.3,
+    timeoutMs: 85000,
+    maxAttempts: 1,
+    singleModel: true,
+    responseFormat: { type: "json_object" },
     modelOverride: modelOverride || "google/gemini-2.5-flash",
   });
 

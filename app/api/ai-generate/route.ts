@@ -78,6 +78,7 @@ export async function POST(req: Request) {
       // #region agent log
       fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'50a938'},body:JSON.stringify({sessionId:'50a938',location:'ai-generate/route.ts:osm-done',message:'OSM fetch completed',data:{osmMs:Date.now()-osmStart,competitors:osm.competitorsList.length,radius:osm.radius,elapsedMs:Date.now()-reqStart},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
       // #endregion
+      console.log("[analyze-location] osm-done", { osmMs: Date.now() - osmStart, elapsedMs: Date.now() - reqStart });
 
       const projectContextBlock = buildLocationProjectContextBlock(activeProject);
 
@@ -102,6 +103,7 @@ export async function POST(req: Request) {
         // #region agent log
         fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'50a938'},body:JSON.stringify({sessionId:'50a938',location:'ai-generate/route.ts:ai-done',message:'handleAnalyzeLocation completed',data:{aiMs:Date.now()-aiStart,totalMs:Date.now()-reqStart,hasVerdict:!!json?.verdict},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
         // #endregion
+        console.log("[analyze-location] ai-done", { aiMs: Date.now() - aiStart, totalMs: Date.now() - reqStart });
         json.coordinates = osm.centerCoordinates;
         json.osmMeta = {
           landmark: osm.landmark,
