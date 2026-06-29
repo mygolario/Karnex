@@ -126,8 +126,10 @@ export async function callOpenRouter(
 
     let lastError: string | null = null;
     
-    // Use override if provided, otherwise default list
-    const modelsToTry = modelOverride ? [modelOverride] : TEXT_MODELS;
+    // Use override first, then fall back through the default model chain
+    const modelsToTry = modelOverride
+        ? [modelOverride, ...TEXT_MODELS.filter((m) => m !== modelOverride)]
+        : TEXT_MODELS;
 
     for (const model of modelsToTry) {
         try {

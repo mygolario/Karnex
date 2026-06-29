@@ -1,12 +1,14 @@
 "use server";
 
+export const maxDuration = 300;
+
 import { auth } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
 import { checkProjectLimit, checkAIRequestLimit, incrementAIUsage } from "@/lib/usage-tracker";
 import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { getPrompt } from "@/lib/prompts/registry";
-import { callAIWithValidation, BusinessPlanSchema } from "@/lib/ai-validation";
+import { callAIWithValidation, BusinessPlanCoreSchema, RoadmapOnlySchema } from "@/lib/ai-validation";
 import fs from 'fs';
 import path from 'path';
 
@@ -289,6 +291,30 @@ function normalizeProjectPlan(plan: any): any {
   return plan;
 }
 
+function normalizeRoadmapOnly(parsed: unknown) {
+  const plan =
+    parsed && typeof parsed === "object"
+      ? (parsed as Record<string, unknown>)
+      : { roadmap: [] };
+  if (!Array.isArray(plan.roadmap)) {
+    plan.roadmap = [];
+  }
+  const roadmap = plan.roadmap as Array<Record<string, unknown>>;
+  while (roadmap.length < 16) {
+    roadmap.push({
+      phase: `هفته ${roadmap.length + 1}: فاز جدید`,
+      weekNumber: roadmap.length + 1,
+      theme: "",
+      icon: "",
+      steps: [],
+    });
+  }
+  if (roadmap.length > 16) {
+    plan.roadmap = roadmap.slice(0, 16);
+  }
+  return plan;
+}
+
 export async function generatePlanAction(data: any) {
     const { idea, audience, budget, projectType, genesisAnswers } = data;
     
@@ -320,18 +346,49 @@ export async function generatePlanAction(data: any) {
     });
 
     try {
-      const structuredPlan = await callAIWithValidation(
-        user,
+      const coreUser = `${user}\n\n⚠️ مرحله ۱: فقط overview، businessModelCanvas، brandKit، marketingStrategy و competitors را کامل تولید کن. فیلد roadmap را حتماً به صورت آرایه خالی [] برگردان.`;
+
+      const corePlan = await callAIWithValidation(
+        coreUser,
         {
           systemPrompt: system,
-          maxTokens: 16000,
-                    temperature: 0.6,
-                    timeoutMs: 45000,
-                    modelOverride: "google/gemini-3.5-flash",
+          maxTokens: 12000,
+          temperature: 0.6,
+          timeoutMs: 90000,
+          modelOverride: "google/gemini-3.5-flash",
         },
-        BusinessPlanSchema,
+        BusinessPlanCoreSchema,
         1
       );
+
+      const roadmapUser = `اطلاعات پروژه:
+- نوع پروژه: ${projectType}
+- ایده: ${idea}
+- نام پروژه: ${corePlan.projectName}
+- خلاصه: ${corePlan.overview}
+- پاسخ‌های تکمیلی:
+${formattedAnswers}
+
+فقط JSON با یک کلید roadmap تولید کن که دقیقاً ۱۶ فاز (هفته ۱ تا ۱۶) داشته باشد. همان قوانین گام‌ها، dependsOn، و بازبینی هفته‌های ۴، ۸، ۱۲ و ۱۶ از دستورالعمل اصلی پیروی کن.`;
+
+      const roadmapResult = await callAIWithValidation(
+        roadmapUser,
+        {
+          systemPrompt: system,
+          maxTokens: 32000,
+          temperature: 0.6,
+          timeoutMs: 120000,
+          modelOverride: "google/gemini-3.5-flash",
+        },
+        RoadmapOnlySchema,
+        2,
+        normalizeRoadmapOnly
+      );
+
+      const structuredPlan = {
+        ...corePlan,
+        roadmap: roadmapResult.roadmap,
+      };
 
       if (structuredPlan && typeof structuredPlan === 'object') {
         delete (structuredPlan as any).reasoning;

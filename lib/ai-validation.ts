@@ -158,6 +158,17 @@ export const BusinessPlanSchema = z.object({
   })).default([]),
 });
 
+export const BusinessPlanCoreSchema = BusinessPlanSchema.omit({ roadmap: true }).extend({
+  roadmap: z.array(RoadmapPhaseSchema).optional().default([]),
+});
+
+export const RoadmapOnlySchema = z.object({
+  roadmap: z.array(RoadmapPhaseSchema).default([]).refine(
+    (r) => r.length === 16,
+    { message: "نقشه راه باید دقیقاً ۱۶ فاز (هفته) داشته باشد" }
+  ),
+});
+
 // ============================================
 // 2. Recursive Self-Healing Retry Helper
 // ============================================
@@ -172,7 +183,8 @@ export async function callAIWithValidation<T>(
     modelOverride?: string;
   },
   schema: z.ZodSchema<T>,
-  retriesRemaining = 1
+  retriesRemaining = 1,
+  preprocess?: (parsed: unknown) => unknown
 ): Promise<T> {
   const result = await callOpenRouter(prompt, {
     ...options,
@@ -191,9 +203,13 @@ export async function callAIWithValidation<T>(
     if (retriesRemaining > 0) {
       console.warn("⚠️ JSON syntax parse failed, retrying auto-correction turn...");
       const correctionPrompt = `${prompt}\n\n⚠️ SYSTEM DIRECTION: Your previous response was not valid JSON: "${err.message}". Correct it and output strictly valid JSON conforming to the schema rules.`;
-      return callAIWithValidation(correctionPrompt, options, schema, retriesRemaining - 1);
+      return callAIWithValidation(correctionPrompt, options, schema, retriesRemaining - 1, preprocess);
     }
     throw err;
+  }
+
+  if (preprocess) {
+    parsed = preprocess(parsed);
   }
 
   const validation = schema.safeParse(parsed);
@@ -208,7 +224,7 @@ export async function callAIWithValidation<T>(
     const correctionPrompt = `${prompt}\n\n⚠️ SYSTEM DIRECTION: Your previous response failed structural validation with the following errors:
 ${errorDetails}
 Please fix the JSON output to strictly match the requested structure and return valid JSON.`;
-    return callAIWithValidation(correctionPrompt, options, schema, retriesRemaining - 1);
+    return callAIWithValidation(correctionPrompt, options, schema, retriesRemaining - 1, preprocess);
   }
 
   // Throw validation error if out of retries
