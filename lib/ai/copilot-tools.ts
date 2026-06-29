@@ -22,7 +22,7 @@ const PILLAR_TOOLS: Record<string, string[]> = {
   traditional: [
     "update_business_plan", "search_competitors", "update_swot_analysis", "save_memory",
     "update_step_status", "add_roadmap_step", "add_step_note", "add_canvas_card",
-    "toggle_permit",
+    "toggle_permit", "analyze_location", "compare_locations",
   ],
   creator: [
     "save_memory", "update_step_status", "add_roadmap_step", "add_step_note",
@@ -357,7 +357,46 @@ export const COPILOT_TOOLS = [
         required: ["permitTitle", "status"]
       }
     }
-  }
+  },
+  {
+    type: "function",
+    function: {
+      name: "analyze_location",
+      description:
+        "Run or summarize location analysis for a traditional business. Provide city, address, and business description.",
+      parameters: {
+        type: "object",
+        properties: {
+          city: { type: "string", description: "City name e.g. Tehran" },
+          address: { type: "string", description: "Neighborhood or street address" },
+          businessDescription: {
+            type: "string",
+            description: "Free-text business type e.g. specialty coffee shop",
+          },
+        },
+        required: ["city", "address", "businessDescription"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "compare_locations",
+      description:
+        "Compare saved location analyses by createdAt timestamps or summarize comparison for the user.",
+      parameters: {
+        type: "object",
+        properties: {
+          createdAtIds: {
+            type: "array",
+            items: { type: "string" },
+            description: "createdAt values from locationHistory to compare (max 3)",
+          },
+        },
+        required: ["createdAtIds"],
+      },
+    },
+  },
 ];
 
 // === Tool Executors ===
@@ -1043,3 +1082,56 @@ UNDO_REGISTRY["toggle_permit"] = async (projectId, payload) => {
     newPermits[idx] = { ...permits[idx], status: payload.previousStatus };
     await setProjectData(projectId, { ...data, permits: newPermits });
 };
+
+export async function executeAnalyzeLocation(
+    projectId: string,
+    args: { city: string; address: string; businessDescription: string },
+    userId?: string
+) {
+    if (!projectId) throw new Error("Project ID required");
+    const hasAccess = await checkProjectWriteAccess(projectId, userId);
+    if (!hasAccess) throw new Error("Unauthorized access to project");
+
+    return {
+        success: true,
+        message: `برای تحلیل «${args.address}» در ${args.city} به Location Analyzer بروید یا در UI دکمه تحلیل را بزنید.`,
+        redirectHint: "/dashboard/location",
+        params: args,
+    };
+}
+
+export async function executeCompareLocations(
+    projectId: string,
+    args: { createdAtIds: string[] },
+    userId?: string
+) {
+    if (!projectId) throw new Error("Project ID required");
+    const hasAccess = await checkProjectWriteAccess(projectId, userId);
+    if (!hasAccess) throw new Error("Unauthorized access to project");
+
+    const data = await getProjectData(projectId);
+    const history: any[] = Array.isArray(data.locationHistory) ? data.locationHistory : [];
+    const ids = (args.createdAtIds || []).slice(0, 3);
+    const selected = history.filter((h) => ids.includes(h.createdAt));
+
+    if (selected.length < 2) {
+        return {
+            success: true,
+            message: "حداقل ۲ تحلیل ذخیره‌شده برای مقایسه لازم است.",
+            comparison: [],
+        };
+    }
+
+    const rows = selected.map((a) => ({
+        address: a.address,
+        score: a.score,
+        verdict: a.verdict?.decision,
+        createdAt: a.createdAt,
+    }));
+
+    return {
+        success: true,
+        message: `مقایسه ${rows.length} مکان آماده است.`,
+        comparison: rows,
+    };
+}

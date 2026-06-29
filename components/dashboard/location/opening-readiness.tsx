@@ -1,7 +1,6 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
 import { useLocation } from "./location-context";
 import { cn } from "@/lib/utils";
 import {
@@ -48,8 +47,8 @@ const CATEGORY_CONFIG: Record<string, { icon: any; label: string; color: string;
 };
 
 export function OpeningReadiness() {
-  const { analysis } = useLocation();
-  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const { analysis, getReadinessChecked, toggleReadinessCheck } = useLocation();
+  const checked = getReadinessChecked();
 
   const items = analysis?.openingReadiness;
   const legacyItems = analysis?.legalChecklist;
@@ -67,12 +66,7 @@ export function OpeningReadiness() {
   if (!allItems || allItems.length === 0) return null;
 
   const toggle = (id: string) => {
-    setChecked(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    void toggleReadinessCheck(id);
   };
 
   const totalItems = allItems.length;

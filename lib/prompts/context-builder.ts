@@ -98,6 +98,10 @@ function buildLiveContext(
     ).length;
     if (permits.length > 0) lines.push(`- مجوزها: ${pending} در انتظار`);
     if (data.locationAnalysis) lines.push("- تحلیل مکان: موجود");
+    const loc = data.locationAnalysis as { score?: number; verdict?: { decision?: string } } | undefined;
+    if (loc?.score) {
+      lines.push(`- امتیاز مکان: ${loc.score}/10 (${loc.verdict?.decision || "—"})`);
+    }
   }
 
   if (projectType === "startup") {

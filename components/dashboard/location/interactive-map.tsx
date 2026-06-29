@@ -8,6 +8,8 @@ interface InteractiveMapProps {
   competitors?: Array<{ name: string; lat: number; lon: number }>;
   radius?: number;
   onPinDragEnd?: (lat: number, lon: number) => void;
+  mapStyle?: "light" | "dark" | "satellite";
+  showLayerToggle?: boolean;
 }
 
 // Load Leaflet dynamically from CDN to avoid Next.js SSR build errors
@@ -46,13 +48,29 @@ function loadLeaflet(callback: () => void) {
   }
 }
 
-export function InteractiveMap({ center, competitors = [], radius = 500, onPinDragEnd }: InteractiveMapProps) {
+export function InteractiveMap({
+  center,
+  competitors = [],
+  radius = 500,
+  onPinDragEnd,
+  mapStyle = "light",
+  showLayerToggle = false,
+}: InteractiveMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [activeStyle, setActiveStyle] = useState(mapStyle);
   const mapInstanceRef = useRef<any>(null);
+  const tileLayerRef = useRef<any>(null);
   const centerMarkerRef = useRef<any>(null);
   const competitorsGroupRef = useRef<any>(null);
   const circleRef = useRef<any>(null);
+
+  const tileUrls = {
+    light: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    dark: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    satellite:
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  };
 
   // Load Leaflet
   useEffect(() => {
@@ -72,12 +90,11 @@ export function InteractiveMap({ center, competitors = [], radius = 500, onPinDr
     if (!mapInstanceRef.current) {
       mapInstanceRef.current = L.map(mapContainerRef.current, {
         zoomControl: false,
-        attributionControl: false
+        attributionControl: false,
       }).setView([center.lat, center.lon], 15);
 
-      // Add dark tiles (CartoDB Dark Matter style or OpenStreetMap fallback)
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-        maxZoom: 20
+      tileLayerRef.current = L.tileLayer(tileUrls[activeStyle], {
+        maxZoom: 20,
       }).addTo(mapInstanceRef.current);
 
       L.control.zoom({ position: "bottomright" }).addTo(mapInstanceRef.current);
@@ -109,7 +126,7 @@ export function InteractiveMap({ center, competitors = [], radius = 500, onPinDr
     } else {
       centerMarkerRef.current = L.marker([center.lat, center.lon], {
         icon: shopIcon,
-        draggable: true
+        draggable: !!onPinDragEnd,
       }).addTo(map);
 
       // Handle Pin Dragging
@@ -165,6 +182,16 @@ export function InteractiveMap({ center, competitors = [], radius = 500, onPinDr
 
   }, [mapLoaded, center, competitors, radius, onPinDragEnd]);
 
+  useEffect(() => {
+    if (!mapLoaded || !mapInstanceRef.current || !tileLayerRef.current) return;
+    const L = (window as any).L;
+    if (!L) return;
+    mapInstanceRef.current.removeLayer(tileLayerRef.current);
+    tileLayerRef.current = L.tileLayer(tileUrls[activeStyle], { maxZoom: 20 }).addTo(
+      mapInstanceRef.current
+    );
+  }, [activeStyle, mapLoaded]);
+
   // Clean up on unmount
   useEffect(() => {
     return () => {
@@ -191,12 +218,33 @@ export function InteractiveMap({ center, competitors = [], radius = 500, onPinDr
       <div ref={mapContainerRef} className="w-full h-full min-h-[350px] z-0" />
 
       {/* Floating Instructions */}
-      <div className="absolute top-4 left-4 z-[400] bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/5 shadow-md pointer-events-none">
-        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground dir-rtl font-medium">
-          <MapPin size={12} className="text-violet-500 animate-pulse" />
-          <span>پین بنفش را برای جابجایی محل بکشید.</span>
+      {onPinDragEnd && (
+        <div className="absolute top-4 left-4 z-[400] bg-slate-900/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/5 shadow-md pointer-events-none">
+          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground dir-rtl font-medium">
+            <MapPin size={12} className="text-violet-500 animate-pulse" />
+            <span>پین را بکشید — تحلیل با تأیید شما انجام می‌شود.</span>
+          </div>
         </div>
-      </div>
+      )}
+
+      {showLayerToggle && (
+        <div className="absolute top-4 right-4 z-[400] flex gap-1">
+          {(["light", "dark", "satellite"] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setActiveStyle(s)}
+              className={`text-[9px] px-2 py-1 rounded-md border ${
+                activeStyle === s
+                  ? "bg-primary/20 border-primary/40 text-primary"
+                  : "bg-slate-900/80 border-white/10 text-muted-foreground"
+              }`}
+            >
+              {s === "light" ? "روشن" : s === "dark" ? "تیره" : "ماهواره"}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

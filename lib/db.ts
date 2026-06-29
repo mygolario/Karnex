@@ -486,6 +486,8 @@ export interface Customer {
 
 // --- Location Analyzer Structures ---
 
+export type LocationConfidenceLevel = "real" | "inferred" | "ai";
+
 export interface LocationAnalysis {
   id?: string;
   city: string;
@@ -494,10 +496,103 @@ export interface LocationAnalysis {
   
   // Custom user inputs for personalization
   inputs?: {
-    footfallDependency: "high" | "destination";
-    priceTier: "budget" | "mid" | "premium";
+    footfallDependency?: "high" | "destination";
+    priceTier?: "budget" | "mid" | "premium";
     rentBudget?: number;
     businessCategory?: string;
+    businessDescription?: string;
+  };
+
+  businessDescription?: string;
+  aiCategory?: { label: string; slug: string; confidence: number };
+
+  executiveSummary?: {
+    narrative: string;
+    evidenceLinks?: Array<{ tab: string; label: string }>;
+  };
+
+  fitScoreBreakdown?: Array<{
+    key: string;
+    label: string;
+    score: number;
+    confidence: LocationConfidenceLevel;
+    reason: string;
+  }>;
+
+  verdictDetails?: {
+    dealBreakers: string[];
+    topReasons: string[];
+  };
+
+  catchment?: {
+    radiusM: number;
+    poiDensity: number;
+    transitStops: number;
+    confidence: LocationConfidenceLevel;
+    summary?: string;
+  };
+
+  cohortFit?: {
+    score: number;
+    summary: string;
+    confidence: LocationConfidenceLevel;
+    tags?: string[];
+  };
+
+  seasonality?: Array<{ month: string; index: number; note?: string }>;
+
+  cannibalization?: {
+    hasOverlap: boolean;
+    distanceM?: number;
+    summary: string;
+    confidence?: LocationConfidenceLevel;
+  };
+
+  supplyChain?: {
+    score: number;
+    confidence: LocationConfidenceLevel;
+    items: Array<{ name: string; distance: string; relevance: string }>;
+  };
+
+  rentBenchmark?: {
+    min: number;
+    max: number;
+    median: number;
+    confidence: LocationConfidenceLevel;
+    negotiationTips: string[];
+  };
+
+  storefront?: {
+    photoDataUrl?: string;
+    visibilityAssessment?: string;
+    onSiteChecklist?: Array<{ id: string; label: string; checked: boolean }>;
+  };
+
+  footfallTier?: "real" | "inferred" | "ai";
+
+  osmMeta?: {
+    landmark?: string;
+    buildingTags?: string[];
+    mapillaryUrl?: string;
+    categorySlug?: string;
+  };
+
+  openingReadinessChecked?: string[];
+
+  financialLab?: {
+    monthlyPnL?: Array<{
+      month: number;
+      revenue: number;
+      cogs: number;
+      labor: number;
+      rent: number;
+      utilities: number;
+      marketing: number;
+      net: number;
+    }>;
+    roiPercent?: number;
+    paybackMonths?: number;
+    sensitivity?: { rentDelta: number; footfallDelta: number };
   };
   
   // Core Metrics
@@ -708,6 +803,7 @@ export interface BusinessPlan {
   campaigns?: Campaign[]; // NEW: Campaigns Data
   locationAnalysis?: LocationAnalysis; // NEW: Location Data
   locationHistory?: LocationAnalysis[]; // NEW: Location Analysis History
+  locationReadinessChecked?: Record<string, string[]>;
   subTasks?: SubTask[];
   createdAt: string;
   updatedAt?: string;

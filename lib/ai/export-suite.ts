@@ -35,15 +35,41 @@ function downloadText(content: string, filename: string, mime: string) {
 }
 
 export function locationReportToMarkdown(analysis: Record<string, unknown>): string {
-  const verdict = analysis.verdict as { headline?: string; decision?: string } | undefined;
+  const verdict = analysis.verdict as { headline?: string; decision?: string; confidence?: number } | undefined;
+  const vd = analysis.verdictDetails as { dealBreakers?: string[]; topReasons?: string[] } | undefined;
+  const exec = analysis.executiveSummary as { narrative?: string } | undefined;
   const lines = [
-    `# گزارش تحلیل مکان`,
+    `# گزارش تحلیل مکان — Karnex`,
     ``,
-    `## حکم نهایی: ${verdict?.decision ?? "—"}`,
+    `**شهر:** ${analysis.city ?? "—"} | **آدرس:** ${analysis.address ?? "—"}`,
+    ``,
+    `## حکم نهایی: ${verdict?.decision ?? "—"} (${verdict?.confidence ?? "—"}٪ اطمینان)`,
     verdict?.headline ?? "",
     ``,
     `## امتیاز: ${analysis.score ?? "—"}/10`,
     String(analysis.scoreReason ?? ""),
+    ``,
   ];
+
+  if (exec?.narrative) {
+    lines.push(`## خلاصه مدیریتی`, exec.narrative, ``);
+  }
+
+  if (vd?.topReasons?.length) {
+    lines.push(`### دلایل موافقت`, ...vd.topReasons.map((r) => `- ${r}`), ``);
+  }
+  if (vd?.dealBreakers?.length) {
+    lines.push(`### ریسک‌های جدی`, ...vd.dealBreakers.map((r) => `- ${r}`), ``);
+  }
+
+  const rb = analysis.rentBenchmark as { min?: number; max?: number; median?: number } | undefined;
+  if (rb?.median) {
+    lines.push(
+      `## بنچمارک اجاره`,
+      `محدوده: ${rb.min?.toLocaleString("fa-IR")} — ${rb.max?.toLocaleString("fa-IR")} تومان (میانه: ${rb.median?.toLocaleString("fa-IR")})`,
+      ``
+    );
+  }
+
   return lines.filter(Boolean).join("\n");
 }

@@ -80,7 +80,13 @@ export function SmartAlternatives() {
               <button
                 onClick={() => {
                   if (analysis.city) {
-                    analyzeLocation(analysis.city, alt.name);
+                    analyzeLocation(
+                      analysis.city,
+                      alt.name,
+                      analysis.businessDescription ||
+                        analysis.inputs?.businessDescription ||
+                        ""
+                    );
                   }
                 }}
                 className="mt-3 w-full flex items-center justify-center gap-1 text-[10px] font-semibold text-primary hover:text-primary/80 bg-primary/5 hover:bg-primary/10 border border-primary/10 hover:border-primary/20 rounded-lg py-1.5 transition-all"

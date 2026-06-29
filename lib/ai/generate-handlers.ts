@@ -238,7 +238,10 @@ export async function handleAnalyzeLocation(
     footfallDependency: string;
     rentBudget: number;
     businessCategory: string;
+    businessDescription?: string;
     osmDataBlock: string;
+    projectContextBlock?: string;
+    osmMeta?: Record<string, unknown>;
   },
   modelOverride?: string
 ) {
@@ -257,28 +260,35 @@ export async function handleAnalyzeLocation(
       city: ctx.city,
       address: ctx.address,
       projectName: ctx.projectName || "",
-      businessCategory: ctx.businessCategory || "General Retail",
+      businessCategory: ctx.businessCategory || "other",
+      businessDescription: ctx.businessDescription || ctx.businessCategory || "کسب‌وکار سنتی",
       priceTier: priceLabel,
       footfallDependency: footfallLabel,
       rentBudget: ctx.rentBudget
         ? `${ctx.rentBudget.toLocaleString("fa-IR")} تومان`
-        : "ثبت نشده",
+        : "استنتاج از پروژه",
       radius: ctx.radius,
       osmDataBlock: ctx.osmDataBlock,
+      projectContextBlock: ctx.projectContextBlock || "",
     },
     ctx
   );
 
   const enhancedUser = `${user}
 
-دستورالعمل‌های تکمیلی:
-1. score (0-10) با توجه به تطابق Price Tier و Footfall Dependency
-2. competitorAnalysis.directCompetitors از داده OSM
-3. hourlyFootfall آرایه ۲۴ عنصری
-4. financialSim با breakEvenTransactions, rentToRevenueRatio, estimatedMonthlyRevenue
-5. legalChecklist آرایه مجوزها
-6. prioritizedRecommendations با urgency و cost
-7. revenueProjection دقیقاً ۱۲ ماه`;
+دستورالعمل‌های تکمیلی v3:
+1. aiCategory از businessDescription
+2. executiveSummary.narrative ۴-۶ جمله با ارجاع به پروفایل پروژه
+3. verdictDetails: دقیقاً ۳ dealBreaker و ۳ topReason
+4. fitScoreBreakdown: footfall, rent, competition, customerMatch, accessibility — هر کدام score 0-10 + confidence + reason
+5. competitorAnalysis.directCompetitors از OSM
+6. catchment با radiusM=${ctx.radius}
+7. cohortFit با توجه به مخاطب پروژه
+8. seasonality ۱۲ ماه ایران
+9. rentBenchmark + negotiationTips
+10. financialLab با monthlyPnL 12 ماه
+11. footfallTier: real|inferred|ai
+12. hourlyFootfall 24 عنصر`;
 
   const { data } = await multiPassGenerate<Record<string, unknown>>(
     enhancedUser,

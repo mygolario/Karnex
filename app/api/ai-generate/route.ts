@@ -3,6 +3,11 @@ import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { auth } from "@/lib/auth/session";
 import { resolveAssembledPrompt } from "@/lib/ai/prompt-service";
+import { fetchLocationOsmData } from "@/lib/location/data-adapters/osm-adapter";
+import {
+  buildLocationProjectContextBlock,
+  computeCannibalization,
+} from "@/lib/location/project-context-block";
 import {
   buildGenerateContext,
   handleAnalyzeLocation,
@@ -20,75 +25,6 @@ import {
 export const maxDuration = 60;
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-async function fetchOsmBlock(
-  city: string,
-  address: string,
-  radius: number,
-  activeProject: Record<string, unknown> | undefined
-) {
-  let osmData = "No real-time data available.";
-  let centerCoordinates = { lat: 35.6892, lon: 51.3890 };
-  const competitorsList: { name: string; lat: number; lon: number }[] = [];
-
-  const geoUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address + ", " + city + ", Iran")}&format=json&limit=1`;
-  let geoData: { lat: string; lon: string }[] | null = null;
-  try {
-    const geoRes = await fetch(geoUrl, {
-      headers: { "User-Agent": "Karnex-App/1.0" },
-    });
-    if (geoRes.ok) geoData = await geoRes.json();
-  } catch (e) {
-    console.error("Geocoding failed:", e);
-  }
-
-  if (geoData?.length) {
-    const lat = parseFloat(geoData[0].lat);
-    const lon = parseFloat(geoData[0].lon);
-    centerCoordinates = { lat, lon };
-
-    let osmTag = 'amenity="cafe"';
-    const type = String(activeProject?.projectType || "").toLowerCase();
-    if (type.includes("rest") || type.includes("food"))
-      osmTag = 'amenity="restaurant"';
-    else if (type.includes("cloth") || type.includes("fash"))
-      osmTag = 'shop="clothes"';
-    else if (type.includes("super") || type.includes("grocer"))
-      osmTag = 'shop="supermarket"';
-
-    const query = `[out:json][timeout:25];(node[${osmTag}](around:${radius},${lat},${lon}););out center;`;
-    try {
-      const overpassRes = await fetch(
-        "https://overpass-api.de/api/interpreter",
-        { method: "POST", body: query }
-      );
-      if (overpassRes.ok) {
-        const overpassJson = await overpassRes.json();
-        overpassJson.elements?.forEach((el: Record<string, unknown>) => {
-          const tags = el.tags as Record<string, string> | undefined;
-          const name = tags?.["name:fa"] || tags?.name;
-          if (!name) return;
-          competitorsList.push({
-            name,
-            lat: (el.lat as number) || (el.center as { lat: number })?.lat || lat,
-            lon: (el.lon as number) || (el.center as { lon: number })?.lon || lon,
-          });
-        });
-        osmData = competitorsList
-          .slice(0, 8)
-          .map((c) => `- ${c.name} (${c.lat}, ${c.lon})`)
-          .join("\n");
-      }
-    } catch (e) {
-      console.error("OSM fetch error:", e);
-    }
-  }
-
-  return {
-    osmDataBlock: `[داده نقشه OSM]\nمختصات: ${centerCoordinates.lat}, ${centerCoordinates.lon}\nرقبا:\n${osmData}`,
-    centerCoordinates,
-  };
-}
 
 export async function POST(req: Request) {
   let rollback = async () => {};
@@ -119,19 +55,23 @@ export async function POST(req: Request) {
 
     if (action === "analyze-location") {
       const {
-        radius = 500,
+        radius: requestedRadius,
         priceTier = "mid",
         footfallDependency = "high",
         rentBudget = 0,
         businessCategory = "",
+        businessDescription = "",
       } = body;
 
-      const { osmDataBlock, centerCoordinates } = await fetchOsmBlock(
+      const osm = await fetchLocationOsmData({
         city,
         address,
-        radius,
-        activeProject
-      );
+        businessDescription: businessDescription || String(activeProject?.overview || ""),
+        businessCategory,
+        radius: requestedRadius,
+      });
+
+      const projectContextBlock = buildLocationProjectContextBlock(activeProject);
 
       try {
         const json = await handleAnalyzeLocation(
@@ -139,16 +79,40 @@ export async function POST(req: Request) {
             ...genCtx,
             city,
             address,
-            radius,
+            radius: osm.radius,
             priceTier,
             footfallDependency,
             rentBudget,
-            businessCategory,
-            osmDataBlock,
+            businessCategory: osm.categorySlug,
+            businessDescription: businessDescription || String(activeProject?.overview || ""),
+            osmDataBlock: osm.osmDataBlock,
+            projectContextBlock,
           },
           modelOverride
         );
-        json.coordinates = centerCoordinates;
+        json.coordinates = osm.centerCoordinates;
+        json.osmMeta = {
+          landmark: osm.landmark,
+          buildingTags: osm.buildingTags,
+          mapillaryUrl: osm.mapillaryUrl,
+          categorySlug: osm.categorySlug,
+        };
+        if (!json.catchment) {
+          json.catchment = {
+            radiusM: osm.radius,
+            poiDensity: osm.poiDensity,
+            transitStops: osm.transitStops,
+            confidence: "real",
+          };
+        }
+        const cann = computeCannibalization(
+          osm.centerCoordinates.lat,
+          osm.centerCoordinates.lon,
+          activeProject?.locationHistory as import("@/lib/db").LocationAnalysis[] | undefined
+        );
+        if (!json.cannibalization) {
+          json.cannibalization = { ...cann, confidence: "inferred" };
+        }
         return NextResponse.json({ success: true, analysis: json });
       } catch (e) {
         console.error("Location analysis error:", e);
@@ -158,6 +122,26 @@ export async function POST(req: Request) {
           { status: 500 }
         );
       }
+    }
+
+    if (action === "location-chat") {
+      const { locationAnalysis, prompt: userPrompt } = body;
+      if (!userPrompt) {
+        return NextResponse.json({ error: "prompt required" }, { status: 400 });
+      }
+      const system = `تو تحلیل‌گر مکان Karnex هستی. فقط بر اساس گزارش تحلیل و پروفایل پروژه پاسخ بده. فارسی، کوتاه و عملی.`;
+      const user = `گزارش تحلیل:\n${JSON.stringify(locationAnalysis || {}, null, 0).slice(0, 6000)}\n\nسؤال کاربر: ${userPrompt}`;
+      const result = await callOpenRouter(user, {
+        systemPrompt: system,
+        maxTokens: 800,
+        temperature: 0.4,
+        modelOverride: modelOverride || "google/gemini-2.5-flash",
+      });
+      if (!result.success) {
+        await rollback();
+        return NextResponse.json({ error: result.error }, { status: 500 });
+      }
+      return NextResponse.json({ success: true, content: result.content, reply: result.content });
     }
 
     if (action === "generate-full-canvas") {

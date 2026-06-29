@@ -26,6 +26,8 @@ import {
   executeMoveContentPost,
   executeCreateScript,
   executeTogglePermit,
+  executeAnalyzeLocation,
+  executeCompareLocations,
 } from '@/lib/ai/copilot-tools';
 import prisma from '@/lib/prisma';
 import { auth } from "@/lib/auth/session";
@@ -49,6 +51,8 @@ function getToolStatusMessage(name: string): string {
         case 'move_content_post': return 'تغییر وضعیت پست محتوا';
         case 'create_script': return 'ایجاد اسکریپت';
         case 'toggle_permit': return 'به‌روزرسانی وضعیت مجوز';
+        case 'analyze_location': return 'تحلیل موقعیت مکانی';
+        case 'compare_locations': return 'مقایسه مکان‌ها';
         default: return 'پردازش عملیات';
     }
 }
@@ -272,6 +276,10 @@ export async function POST(req: Request) {
                               actionResult = await executeCreateScript(projectId, args, userId, { conversationId });
                           } else if (fnName === 'toggle_permit') {
                               actionResult = await executeTogglePermit(projectId, args, userId, { conversationId });
+                          } else if (fnName === 'analyze_location') {
+                              actionResult = await executeAnalyzeLocation(projectId, args, userId);
+                          } else if (fnName === 'compare_locations') {
+                              actionResult = await executeCompareLocations(projectId, args, userId);
                           } else {
                               actionResult = { error: "Unknown tool" };
                           }
