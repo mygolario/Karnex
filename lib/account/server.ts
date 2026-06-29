@@ -273,10 +273,18 @@ export async function getGamificationSummary(userId: string) {
 }
 
 function rankForLevel(level: number): string {
-  if (level >= 25) return "استاد کارنکس";
-  if (level >= 15) return "استراتژیست";
-  if (level >= 10) return "راهنما";
-  if (level >= 5) return "کارآفرین فعال";
-  if (level >= 3) return "کاوشگر";
-  return "تازه‌کار";
+  // Use the roadmap theme rank titles for consistency
+  // Default project type since server-side doesn't have project context
+  try {
+    const { getRankTitle } = require("@/lib/roadmap/themes");
+    return getRankTitle(level, "default");
+  } catch {
+    // Fallback if themes not available
+    if (level >= 16) return "اسطوره";
+    if (level >= 12) return "رهبر";
+    if (level >= 8) return "افسانه‌ای";
+    if (level >= 5) return "حرفه‌ای";
+    if (level >= 3) return "کارشناس";
+    return "تازه‌کار";
+  }
 }

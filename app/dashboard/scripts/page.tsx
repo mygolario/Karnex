@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import refineTextPrompt from "@/lib/prompts/refine-text.json";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 
 // Rework components
@@ -370,7 +371,7 @@ export default function ScriptsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           prompt,
-          systemPrompt: "You are a helpful copywriter. Refine the Persian text as instructed and output only the refined text.",
+          systemPrompt: refineTextPrompt.system,
           activeProject: plan
         })
       });

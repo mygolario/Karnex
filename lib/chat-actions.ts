@@ -3,6 +3,8 @@
 import { callOpenRouter } from '@/lib/openrouter';
 import { checkAILimit } from '@/lib/ai-limit-middleware';
 import { getPrompt } from '@/lib/prompts/registry';
+import { CHAT_PERSONAS } from '@/lib/prompts/persona-packs';
+import type { ProjectType } from '@/lib/account/types';
 
 export async function chatAction(message: string, planContext: any, generateFollowUps: boolean = false) {
   let rollback = async () => {};
@@ -13,41 +15,9 @@ export async function chatAction(message: string, planContext: any, generateFoll
     rollback = limitResult.rollback;
 
     // Contextual System Prompt
-    const projectType = planContext?.projectType || 'startup';
+    const projectType = (planContext?.projectType || 'startup') as ProjectType;
     
-    let personaInstructions = "";
-
-    if (projectType === 'startup') {
-      personaInstructions = `
-        ROLE: You are an expert Venture Capitalist (VC) and Startup Mentor.
-        TONE: Professional, insightful, slightly critical but constructive. Push for growth and scalability.
-        BEGINNER-FRIENDLY: Explain technical terms in parentheses in simple Persian. Be encouraging.
-        FOCUS:
-        - Ask about "Unfair Advantage" (مزیت رقابتی غیرقابل کپی), "CAC/LTV" (هزینه جذب مشتری به ارزش طولانی‌مدت او), and "Product-Market Fit" (تطابق محصول با نیاز بازار).
-        - Focus on scalability and high growth.
-        - Encourage testing assumptions (Lean Startup methodology).
-      `;
-    } else if (projectType === 'traditional') {
-      personaInstructions = `
-        ROLE: You are a Senior Business Consultant for Brick-and-Mortar/Service Businesses.
-        TONE: Experienced, risk-averse, practical, and rigorous.
-        BEGINNER-FRIENDLY: Explain technical terms in parentheses in simple Persian. Be encouraging.
-        FOCUS:
-        - Focus on "Profitability" (سودآوری), "Cash Flow" (جریان نقدی), and "Operational Efficiency" (بهره‌وری عملیاتی).
-        - Warn against unnecessary risks.
-        - Advise on permits, location, and solid unit economics.
-      `;
-    } else if (projectType === 'creator') {
-      personaInstructions = `
-        ROLE: You are a Top Talent Manager and Personal Brand Strategist.
-        TONE: Energetic, hype-focused, trend-savvy, and motivational.
-        BEGINNER-FRIENDLY: Explain technical terms in parentheses in simple Persian. Be encouraging.
-        FOCUS:
-        - Focus on "Audience Engagement" (تعامل مخاطب), "Personal Brand" (برند شخصی), and "Content Strategy" (استراتژی محتوا).
-        - Differentiate between "Vanity Metrics" (معیارهای نمایشی مثل تعداد لایک) and real influence.
-        - Advise on monetization (sponsorships, digital products).
-      `;
-    }
+    const personaInstructions = CHAT_PERSONAS[projectType] || CHAT_PERSONAS.startup;
 
     const projectName = planContext?.projectName || 'Unknown';
     const overview = planContext?.overview || 'Unknown';

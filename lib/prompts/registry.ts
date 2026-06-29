@@ -18,6 +18,8 @@ import repurposeContent from "./repurpose-content.json";
 import scriptWriter from "./script-writer.json";
 import contentStrategy from "./content-strategy.json";
 import contentBrief from "./content-brief.json";
+import refineText from "./refine-text.json";
+import enhanceBio from "./enhance-bio.json";
 
 export const Prompts = {
   suggestAudience,
@@ -40,6 +42,8 @@ export const Prompts = {
   scriptWriter,
   contentStrategy,
   contentBrief,
+  refineText,
+  enhanceBio,
 };
 
 export type PromptKey = keyof typeof Prompts;

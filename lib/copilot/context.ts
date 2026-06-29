@@ -1,5 +1,6 @@
 import "server-only";
 import { getPrompt } from "@/lib/prompts/registry";
+import { COPILOT_PERSONAS, COPILOT_DEFAULT_PERSONA } from "@/lib/prompts/persona-packs";
 import type { CopilotMode, CopilotPersona } from "./types";
 
 /**
@@ -38,14 +39,12 @@ export interface BuiltCopilotContext {
   summary: Record<string, unknown>;
 }
 
-// --- Persona capability blocks ---
+// --- Persona capability blocks (single source of truth in persona-packs.ts) ---
 
-const PERSONA_SECTIONS: Record<CopilotPersona, string> = {
-  default: `شما در حالت «هم‌بنیان‌گذار استارتاپی» هستید. تمرکز روی اعتبارسنجی ایده، بوم مدل کسب‌وکار، پیچ‌دک و استراتژی رشد است.`,
-  startup: `شما در حالت «هم‌بنیان‌گذار استارتاپی» هستید. تمرکز روی اعتبارسنجی ایده، بوم مدل کسب‌وکار (Lean Canvas)، پیچ‌دک جذب سرمایه، تحلیل رقبا و رشد است.`,
-  traditional: `شما در حالت «مشاور کسب‌وکار سنتی» هستید. تمرکز روی تحلیل موقعیت، مجوزها، SWOT، شعب و سودآوری است. از ابزارهای پیچ‌دک استفاده نکنید.`,
-  creator: `شما در حالت «مشاور تولیدکننده محتوا» هستید. تمرکز روی تقویم محتوا، اسکریپت، ایده‌های وایرال، تعرفه اسپانسری و رشد کانال است. از ابزارهای پیچ‌دک و بوم استارتاپی استفاده نکنید مگر اینکه کاربر صراحتاً درخواست کرد.`,
-};
+function getCopilotPersona(persona: CopilotPersona): string {
+  if (persona === "default") return COPILOT_DEFAULT_PERSONA;
+  return COPILOT_PERSONAS[persona] || COPILOT_DEFAULT_PERSONA;
+}
 
 // --- Mode behaviour blocks ---
 
@@ -146,7 +145,7 @@ function buildPillarContext(data: Record<string, any>, projectType: string): str
 }
 
 export function buildCopilotContext(input: CopilotContextInput): BuiltCopilotContext {
-  const personaSection = PERSONA_SECTIONS[input.persona] || PERSONA_SECTIONS.default;
+  const personaSection = getCopilotPersona(input.persona);
   const modeSection = MODE_SECTIONS[input.mode] || MODE_SECTIONS.cofounder;
   const pillarContext =
     input.pillarBundleSection || buildPillarContext(input.projectData, input.projectType);

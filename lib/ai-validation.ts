@@ -118,10 +118,15 @@ export const RoadmapStepSchema = z.object({
   status: z.string().default('todo'),
   checklist: z.array(z.string()).default([]),
   tips: z.array(z.string()).default([]),
+  resources: z.array(z.string()).optional().default([]),
+  dependsOn: z.array(z.string()).optional().default([]),
 });
 
 export const RoadmapPhaseSchema = z.object({
   phase: z.string(),
+  weekNumber: z.number().int().min(1).max(16),
+  theme: z.string().optional().default(''),
+  icon: z.string().optional().default(''),
   steps: z.array(RoadmapStepSchema).default([]),
 });
 
@@ -139,7 +144,10 @@ export const BusinessPlanSchema = z.object({
   businessModelCanvas: BusinessModelCanvasSchema.optional(),
   leanCanvas: BusinessModelCanvasSchema.optional(),
   brandKit: BrandKitSchema.optional(),
-  roadmap: z.array(RoadmapPhaseSchema).default([]),
+  roadmap: z.array(RoadmapPhaseSchema).default([]).refine(
+    (r) => r.length === 16,
+    { message: "نقشه راه باید دقیقاً ۱۶ فاز (هفته) داشته باشد" }
+  ),
   marketingStrategy: z.array(MarketingStrategyItemSchema).default([]),
   competitors: z.array(z.object({
     name: z.string(),

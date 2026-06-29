@@ -53,6 +53,7 @@ export function GamificationHud({
         isOpen={showLevelUp}
         onClose={() => setShowLevelUp(false)}
         level={state.level}
+        projectType={projectType}
       />
 
       {/* HUD card */}

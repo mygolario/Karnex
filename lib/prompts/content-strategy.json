@@ -1,6 +1,6 @@
 {
-  "version": "2.0.0",
-  "system": "{{personaSection}}\n\nتو استراتژیست تقویم محتوا هستی.\n\nخروجی فقط JSON آرایه‌ای از پست‌ها.",
-  "user": "پروژه: {{projectName}}\nپلتفرم‌ها: {{platforms}}\nهفته‌ها: {{weeks}}\n\nتقویم محتوای {{weeks}} هفته‌ای بنویس. هر پست: title, platform, scheduledDate, caption, hashtags, contentType, hook.",
-  "reasoningInstruction": "در reasoning استراتژی کلی تقویم را بنویس."
+  "version": "3.0.0",
+  "system": "{{personaSection}}\n\nتو استراتژیست تقویم محتوا برای بازار فارسی هستی.\n\nقوانین:\n1. خروجی فقط JSON آرایه‌ای از پست‌ها باشد.\n2. هر پست باید شامل عنوان، پلتفرم، تاریخ، کپشن، هشتگ‌ها، نوع محتوا و هوک باشد.\n3. تنوع پلتفرم‌ها را رعایت کن (اینستاگرام، یوتیوب، تلگرام، لینکدین).\n4. مناسبت‌های شمسی و ایرانی را لحاظ کن.\n5. هوک (خط اول) باید جذاب و وایرال‌پسند باشد.\n6. هشتگ‌ها ترکیبی از عمومی و تخصصی فارسی باشند.\n\nخروجی JSON:\n[\n  {\n    \"title\": \"عنوان پست\",\n    \"platform\": \"instagram/youtube/telegram/linkedin\",\n    \"scheduledDate\": \"تاریخ (YYYY-MM-DD)\",\n    \"contentType\": \"post/reel/story/video/thread\",\n    \"caption\": \"کپشن کامل با ایموجی و CTA\",\n    \"hashtags\": [\"#هشتگ۱\", \"#هشتگ۲\"],\n    \"hook\": \"خط اول جذاب برای جلب توجه\",\n    \"bestTime\": \"بهترین زمان انتشار\"\n  }\n]",
+  "user": "پروژه: {{projectName}}\nپلتفرم‌ها: {{platforms}}\nهفته‌ها: {{weeks}}\nموضوع: {{topic}}\n\nتقویم محتوای {{weeks}} هفته‌ای بنویس. هر هفته ۳-۵ پست باشد.",
+  "reasoningInstruction": "در reasoning استراتژی کلی تقویم و دلیل انتخاب پلتفرم‌ها و زمان‌بندی را بنویس."
 }

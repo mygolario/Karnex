@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { getRankTitle } from "@/lib/roadmap/themes";
 
 interface Achievement {
   id: string;
@@ -219,7 +220,7 @@ export function KarnexScore({ className, compact = false }: KarnexScoreProps) {
                     {profile.level}
                   </div>
                   <div className="text-end">
-                    <div className="text-xs opacity-80 text-amber-200">سطح بنیان‌گذار</div>
+                    <div className="text-xs opacity-80 text-amber-200">سطح {getRankTitle(profile.level, plan?.projectType)}</div>
                     <div className="font-bold text-lg text-amber-100">{profile.totalXp} XP</div>
                   </div>
                 </div>

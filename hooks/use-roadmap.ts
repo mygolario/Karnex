@@ -10,7 +10,7 @@ import type {
   StepRuntimeStatus,
   BusinessPlan,
 } from "@/lib/db";
-import { traditionalCompliancePhase } from "@/lib/knowledge-base";
+
 import {
   StepStatus,
   StepDisplayState,
@@ -142,14 +142,10 @@ export function useRoadmap(): UseRoadmapReturn {
     setFilterState((prev) => ({ ...prev, ...f }));
   }, []);
 
-  // Compute roadmap dynamically (compliance phase is now data-driven)
+  // Roadmap: always 16 phases from AI, no runtime prepend needed
   const roadmap = useMemo(() => {
-    const baseRoadmap = (plan?.roadmap || []) as RoadmapPhase[];
-    if (plan?.projectType === "traditional") {
-      return [traditionalCompliancePhase, ...baseRoadmap];
-    }
-    return baseRoadmap;
-  }, [plan?.roadmap, plan?.projectType]);
+    return (plan?.roadmap || []) as RoadmapPhase[];
+  }, [plan?.roadmap]);
 
   // Flatten all steps with their phase for global lookups
   const flatSteps = useMemo(() => {
@@ -185,9 +181,10 @@ export function useRoadmap(): UseRoadmapReturn {
         );
         if (currentWeekIdx >= 0) {
           const phase = roadmap[currentWeekIdx];
-          setActiveWeek(
-            phase.weekNumber !== undefined ? phase.weekNumber : currentWeekIdx + 1
-          );
+          setActiveWeek(phase.weekNumber || currentWeekIdx + 1);
+        } else {
+          // All steps completed — show week 16
+          setActiveWeek(16);
         }
       }
     }

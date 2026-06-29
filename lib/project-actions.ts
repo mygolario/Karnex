@@ -200,37 +200,60 @@ function normalizeProjectPlan(plan: any): any {
     plan.brandKit.logoConcepts = [];
   }
 
-  // 4. Ensure roadmap
+  // 4. Ensure roadmap — exactly 16 phases with weekNumber 1-16
   if (!Array.isArray(plan.roadmap)) {
     plan.roadmap = [];
-  } else {
-    plan.roadmap = plan.roadmap.map((phase: any) => {
-      return {
-        phase: phase.phase || "فاز جدید",
-        steps: Array.isArray(phase.steps) ? phase.steps.map((step: any) => {
-          const stepTitle = typeof step === 'string' ? step : (step.title || "گام جدید");
-          const stepDesc = typeof step === 'object' ? (step.description || "") : "";
-          const stepHours = typeof step === 'object' ? (Number(step.estimatedHours) || 0) : 0;
-          const stepPriority = typeof step === 'object' ? (step.priority || "medium") : "medium";
-          const stepCategory = typeof step === 'object' ? (step.category || "general") : "general";
-          const stepStatus = typeof step === 'object' ? (step.status || "todo") : "todo";
-          const stepChecklist = typeof step === 'object' && Array.isArray(step.checklist) ? step.checklist : [];
-          const stepTips = typeof step === 'object' && Array.isArray(step.tips) ? step.tips : [];
-          
-          return {
-            title: stepTitle,
-            description: stepDesc,
-            estimatedHours: stepHours,
-            priority: stepPriority,
-            category: stepCategory,
-            status: stepStatus,
-            checklist: stepChecklist,
-            tips: stepTips
-          };
-        }) : []
-      };
+  }
+
+  // Pad to 16 if shorter, trim if longer
+  while (plan.roadmap.length < 16) {
+    plan.roadmap.push({
+      phase: `هفته ${plan.roadmap.length + 1}: فاز جدید`,
+      weekNumber: plan.roadmap.length + 1,
+      theme: "",
+      icon: "",
+      steps: [],
     });
   }
+  if (plan.roadmap.length > 16) {
+    plan.roadmap = plan.roadmap.slice(0, 16);
+  }
+
+  // Normalize each phase
+  plan.roadmap = plan.roadmap.map((phase: any, idx: number) => {
+    const weekNum = idx + 1;
+    return {
+      phase: phase.phase || `هفته ${weekNum}: فاز جدید`,
+      weekNumber: phase.weekNumber || weekNum,
+      theme: phase.theme || "",
+      icon: phase.icon || "",
+      steps: Array.isArray(phase.steps) ? phase.steps.map((step: any) => {
+        const stepTitle = typeof step === 'string' ? step : (step.title || "گام جدید");
+        const stepDesc = typeof step === 'object' ? (step.description || "") : "";
+        const stepHours = typeof step === 'object' ? (Number(step.estimatedHours) || 0) : 0;
+        const stepPriority = typeof step === 'object' ? (step.priority || "medium") : "medium";
+        const stepCategory = typeof step === 'object' ? (step.category || "general") : "general";
+        const stepStatus = typeof step === 'object' ? (step.status || "todo") : "todo";
+        const stepChecklist = typeof step === 'object' && Array.isArray(step.checklist) ? step.checklist : [];
+        const stepTips = typeof step === 'object' && Array.isArray(step.tips) ? step.tips : [];
+        const stepResources = typeof step === 'object' && Array.isArray(step.resources) ? step.resources : [];
+        const stepDeps = typeof step === 'object' && Array.isArray(step.dependsOn) ? step.dependsOn : [];
+        
+        return {
+          title: stepTitle,
+          description: stepDesc,
+          estimatedHours: stepHours,
+          priority: stepPriority,
+          category: stepCategory,
+          status: stepStatus,
+          checklist: stepChecklist,
+          tips: stepTips,
+          resources: stepResources,
+          dependsOn: stepDeps,
+        };
+      }) : []
+    };
+  });
 
   // 5. Ensure marketingStrategy
   if (!Array.isArray(plan.marketingStrategy)) {
@@ -301,7 +324,7 @@ export async function generatePlanAction(data: any) {
         user,
         {
           systemPrompt: system,
-          maxTokens: 8000,
+          maxTokens: 16000,
                     temperature: 0.6,
                     timeoutMs: 45000,
                     modelOverride: "google/gemini-3.5-flash",
