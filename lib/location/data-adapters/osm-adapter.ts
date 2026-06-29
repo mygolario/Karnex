@@ -4,6 +4,20 @@ import {
   suggestRadius,
 } from "../osm-tags";
 
+const OVERPASS_HEADERS = {
+  "User-Agent": "Karnex-App/1.0",
+  "Content-Type": "application/x-www-form-urlencoded",
+};
+
+async function overpassFetch(query: string, timeoutMs = 12000): Promise<Response> {
+  return fetch("https://overpass-api.de/api/interpreter", {
+    method: "POST",
+    headers: OVERPASS_HEADERS,
+    body: "data=" + encodeURIComponent(query),
+    signal: AbortSignal.timeout(timeoutMs),
+  });
+}
+
 export interface OsmFetchResult {
   osmDataBlock: string;
   centerCoordinates: { lat: number; lon: number };
@@ -24,6 +38,7 @@ export async function fetchLocationOsmData(params: {
   businessCategory?: string;
   radius?: number;
 }): Promise<OsmFetchResult> {
+  const fetchStart = Date.now();
   const categorySlug = inferCategoryFromText(
     params.businessDescription || "",
     params.businessCategory
@@ -48,10 +63,14 @@ export async function fetchLocationOsmData(params: {
   }> | null = null;
 
   try {
+    const geoStart = Date.now();
     const geoRes = await fetch(geoUrl, {
       headers: { "User-Agent": "Karnex-App/1.0" },
     });
     if (geoRes.ok) geoData = await geoRes.json();
+    // #region agent log
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'50a938'},body:JSON.stringify({sessionId:'50a938',location:'osm-adapter.ts:nominatim',message:'nominatim done',data:{geoMs:Date.now()-geoStart,found:!!geoData?.length},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
   } catch (e) {
     console.error("Geocoding failed:", e);
   }
@@ -66,11 +85,18 @@ export async function fetchLocationOsmData(params: {
       geoData[0].address?.road;
 
     const query = buildOverpassCompetitorQuery(lat, lon, radius, categorySlug);
+    const infraQuery = `[out:json][timeout:10];(node["highway"="bus_stop"](around:${radius},${lat},${lon});node["railway"="station"](around:${radius * 2},${lat},${lon});way["building"](around:80,${lat},${lon}););out tags center;`;
+
     try {
-      const overpassRes = await fetch("https://overpass-api.de/api/interpreter", {
-        method: "POST",
-        body: query,
-      });
+      const [overpassRes, infraRes] = await Promise.all([
+        overpassFetch(query),
+        overpassFetch(infraQuery),
+      ]);
+
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'50a938'},body:JSON.stringify({sessionId:'50a938',location:'osm-adapter.ts:overpass-parallel',message:'parallel overpass done',data:{competitorsStatus:overpassRes.status,infraStatus:infraRes.status,totalOsmMs:Date.now()-fetchStart},timestamp:Date.now(),hypothesisId:'H1',runId:'post-fix'})}).catch(()=>{});
+      // #endregion
+
       if (overpassRes.ok) {
         const overpassJson = await overpassRes.json();
         const seen = new Set<string>();
@@ -94,16 +120,7 @@ export async function fetchLocationOsmData(params: {
         });
         poiDensity = overpassJson.elements?.length ?? 0;
       }
-    } catch (e) {
-      console.error("OSM competitor fetch error:", e);
-    }
 
-    const infraQuery = `[out:json][timeout:20];(node["highway"="bus_stop"](around:${radius},${lat},${lon});node["railway"="station"](around:${radius * 2},${lat},${lon});way["building"](around:80,${lat},${lon}););out tags center;`;
-    try {
-      const infraRes = await fetch("https://overpass-api.de/api/interpreter", {
-        method: "POST",
-        body: infraQuery,
-      });
       if (infraRes.ok) {
         const infraJson = await infraRes.json();
         infraJson.elements?.forEach((el: Record<string, unknown>) => {
@@ -117,7 +134,7 @@ export async function fetchLocationOsmData(params: {
         });
       }
     } catch (e) {
-      console.error("OSM infra fetch error:", e);
+      console.error("OSM parallel fetch error:", e);
     }
   }
 

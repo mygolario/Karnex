@@ -290,16 +290,19 @@ export async function handleAnalyzeLocation(
 11. footfallTier: real|inferred|ai
 12. hourlyFootfall 24 عنصر`;
 
-  const { data } = await multiPassGenerate<Record<string, unknown>>(
-    enhancedUser,
-    system,
-    {
-      maxTokens: 8000,
-      temperature: 0.3,
-      modelOverride: modelOverride || "google/gemini-2.5-flash",
-    }
-  );
-  return data;
+  // Single-pass generation — multiPass (2x LLM) caused Vercel FUNCTION_INVOCATION_TIMEOUT on location analysis
+  const result = await callOpenRouter(enhancedUser, {
+    systemPrompt: system,
+    maxTokens: 6000,
+    temperature: 0.3,
+    modelOverride: modelOverride || "google/gemini-2.5-flash",
+  });
+
+  if (!result.success || !result.content) {
+    throw new Error(result.error || "Location analysis generation failed");
+  }
+
+  return parseJsonFromAI(result.content) as Record<string, unknown>;
 }
 
 export function buildGenerateContext(

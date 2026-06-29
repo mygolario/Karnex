@@ -67,7 +67,7 @@ export function buildOverpassCompetitorQuery(
       return `node[${tag}](around:${radius},${lat},${lon});`;
     })
     .join("");
-  return `[out:json][timeout:25];(${filters});out center;`;
+  return `[out:json][timeout:10];(${filters});out center;`;
 }
 
 export function suggestRadius(categorySlug: string): number {

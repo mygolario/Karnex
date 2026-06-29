@@ -14,6 +14,7 @@ export async function multiPassGenerate<T extends Record<string, unknown>>(
     critiqueInstruction?: string;
   } = {}
 ): Promise<{ data: T; reasoning?: string; passes: number }> {
+  const mpStart = Date.now();
   const draft = await callOpenRouter(userPrompt, {
     systemPrompt,
     maxTokens: options.maxTokens ?? 4000,
@@ -24,6 +25,9 @@ export async function multiPassGenerate<T extends Record<string, unknown>>(
   if (!draft.success || !draft.content) {
     throw new Error(draft.error || "Draft generation failed");
   }
+  // #region agent log
+  fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'50a938'},body:JSON.stringify({sessionId:'50a938',location:'multi-pass.ts:draft-done',message:'multiPass draft done',data:{draftMs:Date.now()-mpStart,draftLen:draft.content?.length??0},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+  // #endregion
 
   const critiquePrompt = `
 ${options.critiqueInstruction || "نقد کن: آیا خروجی شخصی‌سازی شده، واقع‌بینانه و کامل است؟"}
@@ -43,6 +47,9 @@ ${draft.content}
 
   const content = refined.success && refined.content ? refined.content : draft.content;
   const parsed = parseJsonFromAI(content) as T;
+  // #region agent log
+  fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'50a938'},body:JSON.stringify({sessionId:'50a938',location:'multi-pass.ts:refine-done',message:'multiPass refine done',data:{totalMpMs:Date.now()-mpStart,passes:refined.success?2:1},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+  // #endregion
   const reasoning =
     typeof parsed.reasoning === "string" ? parsed.reasoning : undefined;
 
