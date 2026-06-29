@@ -1,7 +1,5 @@
 "use server";
 
-export const maxDuration = 300;
-
 import { auth } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
 import { checkProjectLimit, checkAIRequestLimit, incrementAIUsage } from "@/lib/usage-tracker";
