@@ -9,6 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useCanvasStore } from "@/lib/canvas/store";
 import { useCanvasActions } from "./canvas-provider";
+import { useCanvasViewport } from "./canvas-viewport-context";
 import { getTemplate } from "@/lib/canvas/templates";
 import type { CanvasType } from "@/lib/canvas/types";
 
@@ -18,9 +19,7 @@ export function CanvasCommandPalette() {
   const setSearchQuery = useCanvasStore((s) => s.setSearchQuery);
   const setCanvasType = useCanvasStore((s) => s.setCanvasType);
   const addCard = useCanvasStore((s) => s.addCard);
-  const zoomIn = useCanvasStore((s) => s.zoomIn);
-  const zoomOut = useCanvasStore((s) => s.zoomOut);
-  const zoomReset = useCanvasStore((s) => s.zoomReset);
+  const { zoomIn, zoomOut, zoomReset } = useCanvasViewport();
   const setExportDialogOpen = useCanvasStore((s) => s.setExportDialogOpen);
   const setWizardOpen = useCanvasStore((s) => s.setWizardOpen);
   const canvasState = useCanvasStore((s) => s.canvasState);

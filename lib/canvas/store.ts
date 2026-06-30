@@ -32,6 +32,7 @@ export interface CanvasStoreState {
   selectedCardIds: string[];
   activeTool: ToolType;
   viewport: CanvasViewport;
+  scrollZoomEnabled: boolean;
   rightPanelOpen: boolean;
   rightPanelTab: RightPanelTab;
   leftToolbarOpen: boolean;
@@ -40,6 +41,7 @@ export interface CanvasStoreState {
   versions: CanvasVersionData[];
   lastSavedState: CanvasState | null;
   isInitialized: boolean;
+  canvasId: string | null;
   exportDialogOpen: boolean;
   commandPaletteOpen: boolean;
   wizardOpen: boolean;
@@ -60,6 +62,8 @@ export interface CanvasStoreState {
   setCanvasType: (type: CanvasType) => void;
   setCanvasName: (name: string) => void;
   addCard: (sectionId: string, content?: string, color?: CardColor, cardType?: CardType) => void;
+  addCardAtPosition: (sectionId: string, x: number, y: number, cardType?: CardType, color?: CardColor) => void;
+  updateCardMetadata: (sectionId: string, cardId: string, metadata: Record<string, unknown>) => void;
   updateCard: (sectionId: string, cardId: string, content: string) => void;
   updateCardColor: (sectionId: string, cardId: string, color: CardColor) => void;
   updateCardType: (sectionId: string, cardId: string, cardType: CardType) => void;
@@ -74,6 +78,7 @@ export interface CanvasStoreState {
   setLastSavedState: (state: CanvasState) => void;
   setActiveTool: (tool: ToolType) => void;
   setViewport: (viewport: Partial<CanvasViewport>) => void;
+  setScrollZoomEnabled: (enabled: boolean) => void;
   zoomIn: () => void;
   zoomOut: () => void;
   zoomReset: () => void;
@@ -95,6 +100,14 @@ export interface CanvasStoreState {
   resolveComment: (commentId: string) => void;
   setVersions: (versions: CanvasVersionData[]) => void;
   addVersion: (version: CanvasVersionData) => void;
+  setCanvasId: (id: string | null) => void;
+  loadFromPersisted: (
+    state: CanvasState,
+    canvasId: string,
+    canvasType: CanvasType,
+    connections?: CanvasConnection[],
+    viewMode?: CanvasViewMode
+  ) => void;
 
   // New Reworked Actions
   setViewMode: (mode: CanvasViewMode) => void;
@@ -105,8 +118,8 @@ export interface CanvasStoreState {
   moveCardToSection: (cardId: string, fromSectionId: string, toSectionId: string, x: number, y: number) => void;
 }
 
-const ZOOM_MIN = 0.25;
-const ZOOM_MAX = 2.5;
+const ZOOM_MIN = 0.1;
+const ZOOM_MAX = 4;
 const ZOOM_STEP = 0.15;
 
 interface LegacyCard {
@@ -189,6 +202,7 @@ export const useCanvasStore = create<CanvasStoreState>()(
       selectedCardIds: [],
       activeTool: "select",
       viewport: { zoom: 1, panX: 0, panY: 0 },
+      scrollZoomEnabled: false,
       rightPanelOpen: false,
       rightPanelTab: "properties",
       leftToolbarOpen: true,
@@ -197,6 +211,7 @@ export const useCanvasStore = create<CanvasStoreState>()(
       versions: [],
       lastSavedState: null,
       isInitialized: false,
+      canvasId: null,
       exportDialogOpen: false,
       commandPaletteOpen: false,
       wizardOpen: false,
@@ -215,7 +230,7 @@ export const useCanvasStore = create<CanvasStoreState>()(
           canvasState: state,
           canvasType: type,
           connections: canvasConnections || [],
-          viewMode: canvasViewMode || "grid",
+          viewMode: "grid",
           lastSavedState: JSON.parse(JSON.stringify(state)),
           isInitialized: true,
           saveStatus: "idle",
@@ -243,6 +258,7 @@ export const useCanvasStore = create<CanvasStoreState>()(
           cardType,
           color,
           order: 0,
+          metadata: cardType === "CHECKLIST" ? { items: [{ id: generateId(), text: "", done: false }] } : undefined,
         };
         const sectionCards = state[sectionId] || [];
         const newState = {
@@ -250,6 +266,46 @@ export const useCanvasStore = create<CanvasStoreState>()(
           [sectionId]: [newCard, ...sectionCards.map((c, i) => ({ ...c, order: i + 1 }))],
         };
         set({ canvasState: newState, saveStatus: "saving" });
+      },
+
+      addCardAtPosition: (sectionId, x, y, cardType = "NOTE", color = "yellow") => {
+        const state = get().canvasState;
+        const newCard: CardData = {
+          id: generateId(),
+          section: sectionId,
+          content: cardType === "SHAPE_RECT" || cardType === "SHAPE_CIRCLE" ? "" : "",
+          cardType,
+          color,
+          order: 0,
+          x,
+          y,
+          width: cardType === "SHAPE_CIRCLE" ? 120 : cardType === "SHAPE_RECT" ? 160 : 190,
+          height: cardType === "SHAPE_CIRCLE" ? 120 : cardType === "SHAPE_RECT" ? 100 : 96,
+          metadata: cardType === "CHECKLIST" ? { items: [{ id: generateId(), text: "", done: false }] } : cardType === "METRIC" ? { current: 0, target: 100, unit: "%" } : undefined,
+        };
+        const sectionCards = state[sectionId] || [];
+        set({
+          canvasState: {
+            ...state,
+            [sectionId]: [newCard, ...sectionCards.map((c, i) => ({ ...c, order: i + 1 }))],
+          },
+          saveStatus: "saving",
+          activeTool: "select",
+        });
+      },
+
+      updateCardMetadata: (sectionId, cardId, metadata) => {
+        const state = get().canvasState;
+        const sectionCards = state[sectionId] || [];
+        set({
+          canvasState: {
+            ...state,
+            [sectionId]: sectionCards.map((c) =>
+              c.id === cardId ? { ...c, metadata: { ...c.metadata, ...metadata } } : c
+            ),
+          },
+          saveStatus: "saving",
+        });
       },
 
       updateCard: (sectionId, cardId, content) => {
@@ -412,6 +468,8 @@ export const useCanvasStore = create<CanvasStoreState>()(
       setViewport: (viewport) =>
         set({ viewport: { ...get().viewport, ...viewport } }),
 
+      setScrollZoomEnabled: (enabled) => set({ scrollZoomEnabled: enabled }),
+
       zoomIn: () => {
         const z = get().viewport.zoom;
         const newZoom = Math.min(ZOOM_MAX, z + ZOOM_STEP);
@@ -464,9 +522,23 @@ export const useCanvasStore = create<CanvasStoreState>()(
 
       setVersions: (versions) => set({ versions }),
       addVersion: (version) => set({ versions: [version, ...get().versions] }),
+      setCanvasId: (id) => set({ canvasId: id }),
+
+      loadFromPersisted: (state, canvasId, canvasType, connections, _viewMode) => {
+        set({
+          canvasState: state,
+          canvasId,
+          canvasType,
+          connections: connections || [],
+          viewMode: "grid",
+          lastSavedState: JSON.parse(JSON.stringify(state)),
+          isInitialized: true,
+          saveStatus: "idle",
+        });
+      },
 
       // Reworked Actions
-      setViewMode: (mode) => set({ viewMode: mode, saveStatus: "saving" }),
+      setViewMode: () => set({ viewMode: "grid", saveStatus: "saving" }),
 
       addConnection: (fromId, toId, label, color) => {
         const connections = get().connections;

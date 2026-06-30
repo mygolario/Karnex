@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback, createContext, useContext } from "react";
-import { useCanvasStore } from "@/lib/canvas/store";
+import { useCanvasStore, migrateLegacyState } from "@/lib/canvas/store";
 import { useCanvasAutosave, useUndoRedo } from "@/lib/canvas/autosave";
 import { useProject } from "@/contexts/project-context";
 import { useAuth } from "@/contexts/auth-context";
@@ -9,6 +9,9 @@ import { toast } from "sonner";
 import { generateSmartCanvasAction } from "@/lib/ai-actions";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 import { canvasApi } from "@/lib/canvas/api";
+import { dbCardsToState, countCardsInState, parseCanvasLayout } from "@/lib/canvas/persistence";
+import { getDefaultCanvasType } from "@/lib/canvas/templates";
+import type { CanvasType } from "@/lib/canvas/types";
 
 export function CanvasProvider({ children }: { children: React.ReactNode }) {
   const { activeProject: plan } = useProject();
@@ -17,57 +20,167 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
   const { undo, redo, canUndo, canRedo } = useUndoRedo();
   const [showLimitModal, setShowLimitModal] = useState(false);
   const initRef = useRef(false);
+  const planIdRef = useRef<string | null>(null);
 
   const init = useCanvasStore((s) => s.init);
+  const loadFromPersisted = useCanvasStore((s) => s.loadFromPersisted);
   const setComments = useCanvasStore((s) => s.setComments);
+  const setVersions = useCanvasStore((s) => s.setVersions);
+  const setCanvasId = useCanvasStore((s) => s.setCanvasId);
 
-  const loadComments = useCallback(async () => {
+  const loadComments = useCallback(async (canvasId: string) => {
     if (!plan?.id) return;
     try {
-      const comments = await canvasApi.getComments(plan.id, "current");
+      const comments = await canvasApi.getComments(plan.id, canvasId);
       setComments(comments);
     } catch {
-      // Comments will load silently - no error toast to avoid noise
+      // Comments load silently
     }
   }, [plan?.id, setComments]);
 
-  const saveVersion = useCallback(async (name?: string) => {
+  const loadVersions = useCallback(async (canvasId: string) => {
     if (!plan?.id) return;
     try {
-      const version = await canvasApi.createVersion(plan.id, "current", name);
+      const versions = await canvasApi.getVersions(plan.id, canvasId);
+      setVersions(versions);
+    } catch {
+      // Versions load silently
+    }
+  }, [plan?.id, setVersions]);
+
+  const saveVersion = useCallback(async (name?: string) => {
+    const canvasId = useCanvasStore.getState().canvasId;
+    if (!plan?.id || !canvasId) return;
+    try {
+      await forceSave();
+      const version = await canvasApi.createVersion(plan.id, canvasId, name);
       useCanvasStore.getState().addVersion(version);
       toast.success("نسخه ذخیره شد");
     } catch {
       toast.error("خطا در ذخیره نسخه");
     }
+  }, [plan?.id, forceSave]);
+
+  const restoreVersion = useCallback(async (versionId: string) => {
+    const canvasId = useCanvasStore.getState().canvasId;
+    if (!plan?.id || !canvasId) return;
+    try {
+      const state = await canvasApi.restoreVersion(plan.id, canvasId, versionId);
+      useCanvasStore.getState().replaceCanvasState(state);
+      useCanvasStore.getState().setSaveStatus("saving");
+      toast.success("نسخه بازیابی شد");
+    } catch {
+      toast.error("خطا در بازیابی نسخه");
+    }
   }, [plan?.id]);
 
   useEffect(() => {
-    if (!plan || initRef.current) return;
-    initRef.current = true;
-    init(
-      plan.projectType,
-      plan.leanCanvas as unknown as Record<string, unknown>,
-      plan.brandCanvas as unknown as Record<string, unknown>,
-      (plan as any).canvasConnections,
-      (plan as any).canvasViewMode
-    );
+    if (!plan || !user) return;
+    if (planIdRef.current !== plan.id) {
+      initRef.current = false;
+      planIdRef.current = plan.id ?? null;
+    }
+    if (initRef.current) return;
 
-    const isBrand = plan.projectType === "creator";
-    const sourceData = (isBrand ? plan.brandCanvas : plan.leanCanvas) as unknown as Record<string, unknown> | undefined;
-    const hasData =
-      sourceData &&
-      Object.keys(sourceData).some((k) => {
-        const v = (sourceData as Record<string, unknown>)[k];
-        return Array.isArray(v) ? v.length > 0 : typeof v === "string" && v.length > 0;
-      });
+    let cancelled = false;
 
-    if (!hasData && (plan.overview || plan.description)) {
-      setTimeout(() => autoFillCanvas(), 500);
+    async function bootstrap() {
+      if (!plan?.id) return;
+
+      const canvasType = getDefaultCanvasType(plan.projectType) as CanvasType;
+      const isBrand = plan.projectType === "creator";
+      const legacySource = (isBrand ? plan.brandCanvas : plan.leanCanvas) as Record<string, unknown> | undefined;
+      const legacyConnections = (plan as { canvasConnections?: unknown }).canvasConnections;
+      const legacyViewMode = (plan as { canvasViewMode?: "grid" | "freeform" }).canvasViewMode;
+
+      try {
+        const { canvas } = await canvasApi.ensureCanvas(plan.id!, {
+          projectType: plan.projectType,
+          type: canvasType,
+        });
+
+        if (cancelled) return;
+
+        const layout = parseCanvasLayout(canvas.layout);
+        const dbState = dbCardsToState(canvas.cards || []);
+        const hasDbCards = countCardsInState(dbState) > 0;
+
+        setCanvasId(canvas.id);
+
+        if (hasDbCards) {
+          loadFromPersisted(
+            dbState,
+            canvas.id,
+            (canvas.type as CanvasType) || canvasType,
+            layout.connections ?? (Array.isArray(legacyConnections) ? legacyConnections : []),
+            layout.viewMode ?? legacyViewMode ?? "grid"
+          );
+        } else {
+          init(
+            plan.projectType,
+            plan.leanCanvas as unknown as Record<string, unknown>,
+            plan.brandCanvas as unknown as Record<string, unknown>,
+            legacyConnections as Parameters<typeof init>[3],
+            legacyViewMode
+          );
+          setCanvasId(canvas.id);
+
+          const migratedState = useCanvasStore.getState().canvasState;
+          if (countCardsInState(migratedState) > 0) {
+            await canvasApi.syncState(
+              plan.id!,
+              canvas.id,
+              migratedState,
+              useCanvasStore.getState().connections,
+              useCanvasStore.getState().viewMode
+            );
+          }
+        }
+
+        setVersions(
+          (canvas.versions || []).map((v: { id: string; canvasId: string; name: string | null; snapshot: unknown; createdBy: string | null; createdAt: string }) => ({
+            id: v.id,
+            canvasId: v.canvasId,
+            name: v.name || undefined,
+            snapshot: v.snapshot as Record<string, import("@/lib/canvas/types").CardData[]>,
+            createdBy: v.createdBy || undefined,
+            createdAt: v.createdAt,
+          }))
+        );
+
+        await loadComments(canvas.id);
+        initRef.current = true;
+
+        const sourceData = legacySource;
+        const hasLegacyData =
+          sourceData &&
+          Object.keys(sourceData).some((k) => {
+            const v = sourceData[k];
+            return Array.isArray(v) ? v.length > 0 : typeof v === "string" && v.length > 0;
+          });
+
+        if (!hasDbCards && !hasLegacyData && (plan.overview || plan.description)) {
+          setTimeout(() => autoFillCanvas(), 500);
+        }
+      } catch (err) {
+        console.error("Canvas bootstrap failed:", err);
+        init(
+          plan.projectType,
+          plan.leanCanvas as unknown as Record<string, unknown>,
+          plan.brandCanvas as unknown as Record<string, unknown>,
+          legacyConnections as Parameters<typeof init>[3],
+          legacyViewMode
+        );
+        initRef.current = true;
+      }
     }
 
-    loadComments();
-  }, [plan]);
+    bootstrap();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [plan, user, init, loadFromPersisted, setCanvasId, setVersions, loadComments]);
 
   const autoFillCanvas = async () => {
     if (!plan) return;
@@ -178,6 +291,8 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
         handleSmartWizardComplete,
         saveVersion,
         loadComments,
+        restoreVersion,
+        loadVersions,
       }}
     >
       {children}
@@ -196,7 +311,9 @@ interface CanvasProviderValue {
   autoFillCanvas: () => Promise<void>;
   handleSmartWizardComplete: (answers: Record<string, string>) => Promise<void>;
   saveVersion: (name?: string) => Promise<void>;
-  loadComments: () => Promise<void>;
+  loadComments: (canvasId: string) => Promise<void>;
+  restoreVersion: (versionId: string) => Promise<void>;
+  loadVersions: (canvasId: string) => Promise<void>;
 }
 
 const CanvasProviderContext = createContext<CanvasProviderValue | null>(null);
@@ -206,3 +323,5 @@ export function useCanvasActions() {
   if (!ctx) throw new Error("useCanvasActions must be used within CanvasProvider");
   return ctx;
 }
+
+export { migrateLegacyState };

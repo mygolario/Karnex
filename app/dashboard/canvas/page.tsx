@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useProject } from "@/contexts/project-context";
 import { CanvasProvider } from "@/components/dashboard/canvas/canvas-provider";
 import { CanvasTopBar } from "@/components/dashboard/canvas/canvas-topbar";
@@ -11,9 +11,10 @@ import { CanvasMinimap } from "@/components/dashboard/canvas/canvas-minimap";
 import { CanvasCommandPalette } from "@/components/dashboard/canvas/canvas-command-palette";
 import { CanvasExportDialog } from "@/components/dashboard/canvas/canvas-export-dialog";
 import { CanvasWizard } from "@/components/dashboard/canvas/canvas-wizard";
-import { Loader2, ZoomIn, ZoomOut, Maximize2, PanelRightOpen } from "lucide-react";
+import { Loader2, ZoomIn, ZoomOut, Maximize2, PanelRightOpen, Mouse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCanvasStore } from "@/lib/canvas/store";
+import { CanvasViewportProvider, useCanvasViewport } from "@/components/dashboard/canvas/canvas-viewport-context";
 import { PageTourHelp } from "@/components/tour/page-tour-help";
 import { useImmersivePage } from "@/hooks/use-immersive-page";
 import { useIsMobile } from "@/hooks/use-is-mobile";
@@ -32,32 +33,43 @@ export default function CanvasPage() {
 
   return (
     <CanvasProvider>
-      <CanvasPageContent />
+      <CanvasViewportProvider>
+        <CanvasPageContent />
+      </CanvasViewportProvider>
     </CanvasProvider>
   );
 }
 
 function ZoomControls({ mobile }: { mobile?: boolean }) {
-  const zoomIn = useCanvasStore((s) => s.zoomIn);
-  const zoomOut = useCanvasStore((s) => s.zoomOut);
-  const zoomReset = useCanvasStore((s) => s.zoomReset);
+  const { zoomIn, zoomOut, zoomReset } = useCanvasViewport();
   const viewport = useCanvasStore((s) => s.viewport);
+  const scrollZoomEnabled = useCanvasStore((s) => s.scrollZoomEnabled);
+  const setScrollZoomEnabled = useCanvasStore((s) => s.setScrollZoomEnabled);
 
   return (
     <div className={cn(
       "absolute z-20 flex gap-1 bg-background/90 backdrop-blur-xl border border-border rounded-xl p-1 shadow-lg canvas-export-exclude",
       mobile ? "bottom-3 end-3 flex-row items-center" : "bottom-3 start-3 flex-col"
     )}>
-      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomIn} title="Zoom In (+)">
+      <Button
+        variant={scrollZoomEnabled ? "secondary" : "ghost"}
+        size="icon"
+        className="h-8 w-8 mobile-touch-target"
+        onClick={() => setScrollZoomEnabled(!scrollZoomEnabled)}
+        title={scrollZoomEnabled ? "غیرفعال کردن زوم با اسکرول" : "فعال کردن زوم با اسکرول"}
+      >
+        <Mouse size={15} />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomIn} title="بزرگ‌نمایی (+)">
         <ZoomIn size={15} />
       </Button>
       <div className="text-center text-[10px] font-bold text-muted-foreground tabular-nums py-0.5 px-1">
         {Math.round(viewport.zoom * 100)}%
       </div>
-      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomOut} title="Zoom Out (-)">
+      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomOut} title="کوچک‌نمایی (-)">
         <ZoomOut size={15} />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomReset} title="Reset (0)">
+      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomReset} title="بازنشانی نما (0)">
         <Maximize2 size={15} />
       </Button>
     </div>
@@ -85,9 +97,21 @@ function MobilePanelToggle() {
 }
 
 function CanvasPageContent() {
+  // #region agent log
+  useEffect(() => {
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b69372'},body:JSON.stringify({sessionId:'b69372',location:'canvas/page.tsx:CanvasPageContent',message:'CanvasPageContent mounted',data:{},timestamp:Date.now(),hypothesisId:'H5'})}).catch(()=>{});
+  }, []);
+  // #endregion
   const boardRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const viewMode = useCanvasStore((s) => s.viewMode);
   useImmersivePage(isMobile);
+
+  useEffect(() => {
+    if (viewMode === "freeform") {
+      useCanvasStore.setState({ viewMode: "grid" });
+    }
+  }, [viewMode]);
 
   return (
     <div

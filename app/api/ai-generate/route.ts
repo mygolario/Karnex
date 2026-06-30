@@ -16,6 +16,8 @@ import {
   handleContentStrategy,
   handleFullCanvas,
   handleGrowthPlan,
+  handleCanvasCritique,
+  handlePitchSlideAI,
   handleRepurpose,
   handleScriptWriter,
   handleSectionCards,
@@ -129,13 +131,14 @@ export async function POST(req: Request) {
         }
         return NextResponse.json({ success: true, analysis: json });
       } catch (e) {
+        const detail = e instanceof Error ? e.message : String(e);
         // #region agent log
-        fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'50a938'},body:JSON.stringify({sessionId:'50a938',location:'ai-generate/route.ts:analyze-location-error',message:'analyze-location failed',data:{error:String(e),totalMs:Date.now()-reqStart},timestamp:Date.now(),hypothesisId:'H3'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3355b'},body:JSON.stringify({sessionId:'c3355b',location:'ai-generate/route.ts:analyze-location-error',message:'analyze-location failed',data:{error:detail,totalMs:Date.now()-reqStart},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
         // #endregion
-        console.error("Location analysis error:", e);
+        console.error("[analyze-location] failed", { error: detail, totalMs: Date.now() - reqStart });
         await rollback();
         return NextResponse.json(
-          { error: "Failed to parse location analysis" },
+          { error: "Failed to parse location analysis", detail },
           { status: 500 }
         );
       }
@@ -315,6 +318,34 @@ export async function POST(req: Request) {
           weeks,
         });
         return NextResponse.json({ success: true, calendar });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
+
+    if (action === "generate-canvas-critique") {
+      const { canvasSummary } = body;
+      if (!canvasSummary) {
+        return NextResponse.json({ error: "canvasSummary required" }, { status: 400 });
+      }
+      try {
+        const critique = await handleCanvasCritique({ ...genCtx, canvasSummary });
+        return NextResponse.json({ success: true, critique });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
+
+    if (action === "pitch-slide-ai") {
+      const { slideContent, mode } = body;
+      if (!slideContent || !mode) {
+        return NextResponse.json({ error: "slideContent and mode required" }, { status: 400 });
+      }
+      try {
+        const result = await handlePitchSlideAI({ ...genCtx, slideContent, mode });
+        return NextResponse.json({ success: true, result });
       } catch (e) {
         await rollback();
         return NextResponse.json({ error: String(e) }, { status: 500 });

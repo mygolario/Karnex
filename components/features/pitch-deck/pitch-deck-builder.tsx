@@ -7,6 +7,7 @@ import { useProject } from "@/contexts/project-context";
 import { PitchDeckSlide, savePitchDeck } from "@/lib/db";
 import { StoryWizard } from "./story-wizard";
 import { DeckPreview } from "./deck-preview";
+import { PitchDeckAiSidebar } from "./ai-sidebar";
 import { SlideVisualizer } from "./slide-templates";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -36,6 +37,21 @@ import { useIsMobile } from "@/hooks/use-is-mobile";
 import { cn } from "@/lib/utils";
 
 type MobileEditPanel = "slides" | "editor" | "preview";
+
+const convertPersianArabicDigits = (val: any): string => {
+  if (typeof val === 'symbol') return '';
+  if (typeof val === 'number') return String(val);
+  if (!val) return '';
+  const pMap = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  const aMap = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  let str = String(val);
+  for (let i = 0; i < 10; i++) {
+    str = str.replace(new RegExp(pMap[i], 'g'), String(i))
+             .replace(new RegExp(aMap[i], 'g'), String(i));
+  }
+  return str;
+};
+
 
 export function PitchDeckBuilder() {
   const { user } = useAuth();
@@ -92,7 +108,7 @@ export function PitchDeckBuilder() {
   // Keyboard navigation in Presentation mode
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!isPlaying) return;
+      if (!isPlaying || !slides.length) return;
       if (e.key === "ArrowLeft") {
         setPresenterSlideIndex(prev => Math.min(slides.length - 1, prev + 1));
       } else if (e.key === "ArrowRight") {
@@ -235,11 +251,13 @@ export function PitchDeckBuilder() {
   };
 
   const updateCurrentSlide = (field: keyof PitchDeckSlide, value: any) => {
+    if (!slides.length || currentSlideIndex === -1 || !slides[currentSlideIndex]) return;
     const updated = slides.map((s, i) => i === currentSlideIndex ? { ...s, [field]: value } : s);
     setSlides(updated);
   };
 
   const updateMetadataField = (key: string, value: any) => {
+    if (!slides.length || currentSlideIndex === -1 || !slides[currentSlideIndex]) return;
     const slide = slides[currentSlideIndex];
     const updatedMeta = { ...(slide.metadata || {}), [key]: value };
     updateCurrentSlide('metadata', updatedMeta);
@@ -247,6 +265,7 @@ export function PitchDeckBuilder() {
 
   // Reordering & slide operations
   const moveSlide = (index: number, direction: 'up' | 'down') => {
+    if (!slides.length) return;
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= slides.length) return;
     
@@ -264,6 +283,7 @@ export function PitchDeckBuilder() {
   };
 
   const duplicateSlide = (index: number) => {
+    if (!slides.length || index < 0 || index >= slides.length) return;
     const slideToDuplicate = slides[index];
     const newSlide: PitchDeckSlide = {
       ...slideToDuplicate,
@@ -278,12 +298,14 @@ export function PitchDeckBuilder() {
   };
 
   const toggleHideSlide = (index: number) => {
+    if (!slides.length || index < 0 || index >= slides.length) return;
     const reordered = slides.map((s, i) => i === index ? { ...s, isHidden: !s.isHidden } : s);
     setSlides(reordered);
     toast.info(reordered[index].isHidden ? "اسلاید در ارائه پنهان شد" : "اسلاید فعال شد");
   };
 
   const handleDeleteSlide = (index: number) => {
+    if (!slides.length || index < 0 || index >= slides.length) return;
     const newSlides = slides.filter((_, i) => i !== index);
     setSlides(newSlides);
     if (currentSlideIndex >= newSlides.length) {
@@ -334,7 +356,7 @@ export function PitchDeckBuilder() {
           fontFace: 'Arial'
         });
 
-        let textContent = slide.bullets.map(b => ({ 
+        let textContent = (slide.bullets ?? []).map(b => ({ 
           text: b, 
           options: { 
             rtlMode: true, 
@@ -363,6 +385,7 @@ export function PitchDeckBuilder() {
   };
 
   const addMetadataArrayItem = (arrayName: string, defaultValue: any) => {
+    if (!slides.length || currentSlideIndex === -1 || !slides[currentSlideIndex]) return;
     const slide = slides[currentSlideIndex];
     const list = [...(slide.metadata?.[arrayName] || [])];
     list.push(defaultValue);
@@ -417,7 +440,7 @@ export function PitchDeckBuilder() {
 
   // --- Play Presentation Mode Modal ---
   if (isPlaying) {
-    const playSlide = slides[presenterSlideIndex];
+    const playSlide = slides.length > 0 ? slides[presenterSlideIndex] : undefined;
     return (
       <div className="fixed inset-0 bg-slate-950 z-[9999] flex flex-col justify-between p-6 overflow-hidden">
         <div className="flex justify-between items-center border-b border-white/10 pb-4">
@@ -435,7 +458,9 @@ export function PitchDeckBuilder() {
 
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="w-full max-w-5xl aspect-[1.777] bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative">
-            <SlideVisualizer slide={playSlide} index={presenterSlideIndex} total={slides.length} projectName={activeProject?.projectName || ''} />
+            {playSlide && (
+              <SlideVisualizer slide={playSlide} index={presenterSlideIndex} total={slides.length} projectName={activeProject?.projectName || ''} />
+            )}
           </div>
         </div>
 
@@ -444,7 +469,7 @@ export function PitchDeckBuilder() {
             variant="outline" 
             className="rounded-xl border-white/10 text-white hover:bg-slate-900"
             onClick={() => setPresenterSlideIndex(prev => Math.max(0, prev - 1))}
-            disabled={presenterSlideIndex === 0}
+            disabled={slides.length === 0 || presenterSlideIndex === 0}
           >
             قبلی
           </Button>
@@ -461,7 +486,7 @@ export function PitchDeckBuilder() {
             variant="outline" 
             className="rounded-xl border-white/10 text-white hover:bg-slate-900"
             onClick={() => setPresenterSlideIndex(prev => Math.min(slides.length - 1, prev + 1))}
-            disabled={presenterSlideIndex === slides.length - 1}
+            disabled={slides.length === 0 || presenterSlideIndex === slides.length - 1}
           >
             بعدی
           </Button>
@@ -514,7 +539,13 @@ export function PitchDeckBuilder() {
             <Button variant="outline" size="sm" onClick={handleLocalSync} className="h-10 border-white/5 bg-slate-900 text-slate-300 hover:text-white rounded-xl">
               <RefreshCw size={14} className="me-2" /> همگام‌سازی از بوم و رقبا
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setIsPlaying(true)} className="h-10 border-white/5 bg-slate-900 text-cyan-400 hover:text-cyan-300 rounded-xl">
+            <Button variant="outline" size="sm" onClick={() => {
+              sessionStorage.setItem("pitch-deck-present", JSON.stringify({ slides, projectName: activeProject?.projectName }));
+              window.open("/dashboard/pitch-deck/present", "_blank", "noopener,noreferrer");
+            }} className="h-10 border-white/5 bg-slate-900 text-cyan-400 hover:text-cyan-300 rounded-xl" disabled={slides.length === 0}>
+              <Play size={14} className="me-2 fill-cyan-400/20" /> کابین پرزنتر
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setIsPlaying(true)} className="h-10 border-white/5 bg-slate-900 text-cyan-400 hover:text-cyan-300 rounded-xl" disabled={slides.length === 0}>
               <Play size={14} className="me-2 fill-cyan-400/20" /> اجرای ارائه (پرزنت)
             </Button>
             <Button variant="outline" size="sm" onClick={handleExportPDF} className="h-10 border-white/5 bg-slate-900 text-slate-300 hover:text-white rounded-xl">
@@ -608,19 +639,33 @@ export function PitchDeckBuilder() {
 
           {/* Center/Right: Live 16:9 Canvas Stage (9 cols) */}
           <div className={cn(
-            "lg:col-span-9 flex flex-col gap-4 overflow-hidden",
+            "lg:col-span-7 flex flex-col gap-4 overflow-hidden",
             isMobile && mobileEditPanel === "slides" && "hidden"
           )}>
-            
-            <div className={cn(
-              "flex-1 bg-slate-900/20 border border-white/5 rounded-2xl p-4 flex items-center justify-center relative overflow-hidden group min-h-[300px]",
-              isMobile && mobileEditPanel !== "preview" && "hidden"
-            )}>
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 pointer-events-none" />
-              <div className="w-full max-w-3xl aspect-[1.777] bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative transform transition-transform group-hover:scale-[1.005] duration-500">
-                <SlideVisualizer slide={currentSlide} index={currentSlideIndex} total={slides.length} projectName={activeProject?.projectName || ''} />
+            {slides.length === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center bg-slate-900/40 border border-white/5 rounded-2xl p-8 text-center min-h-[400px]">
+                <div className="w-16 h-16 rounded-2xl bg-slate-800/80 border border-white/5 flex items-center justify-center mb-4 text-slate-500">
+                  <Play size={24} className="opacity-40" />
+                </div>
+                <p className="text-slate-300 font-bold mb-2">اسلایدی برای ویرایش وجود ندارد. یک اسلاید جدید ایجاد کنید.</p>
+                <Button 
+                  onClick={() => handleEditSlide(-1)} 
+                  className="bg-cyan-500 hover:bg-cyan-600 text-slate-950 font-bold rounded-xl mt-2"
+                >
+                  <Plus size={16} className="me-1" /> ایجاد اسلاید جدید
+                </Button>
               </div>
-            </div>
+            ) : (
+              <>
+                <div className={cn(
+                  "flex-1 bg-slate-900/20 border border-white/5 rounded-2xl p-4 flex items-center justify-center relative overflow-hidden group min-h-[300px]",
+                  isMobile && mobileEditPanel !== "preview" && "hidden"
+                )}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-violet-500/5 pointer-events-none" />
+                  <div className="w-full max-w-3xl aspect-[1.777] bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl relative transform transition-transform group-hover:scale-[1.005] duration-500">
+                    <SlideVisualizer slide={currentSlide} index={currentSlideIndex} total={slides.length} projectName={activeProject?.projectName || ''} />
+                  </div>
+                </div>
 
             <div className={cn(
               "grid md:grid-cols-2 gap-4",
@@ -643,13 +688,14 @@ export function PitchDeckBuilder() {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-cyan-400 uppercase tracking-widest block">نکات کلیدی (لیست گلوله‌ای)</label>
                   <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                    {currentSlide?.bullets.map((bullet, i) => (
+                    {(currentSlide?.bullets || []).map((bullet, i) => (
                       <div key={i} className="flex gap-2 items-center">
                         <span className="text-xs text-slate-500 font-mono w-4">{i + 1}</span>
                         <Input 
                           value={bullet}
                           onChange={e => {
-                            const newBullets = [...currentSlide.bullets];
+                            if (!currentSlide) return;
+                            const newBullets = [...(currentSlide.bullets || [])];
                             newBullets[i] = e.target.value;
                             updateCurrentSlide('bullets', newBullets);
                           }}
@@ -658,7 +704,8 @@ export function PitchDeckBuilder() {
                         />
                         <button 
                           onClick={() => {
-                            const newBullets = currentSlide.bullets.filter((_, idx) => idx !== i);
+                            if (!currentSlide) return;
+                            const newBullets = (currentSlide.bullets || []).filter((_, idx) => idx !== i);
                             updateCurrentSlide('bullets', newBullets);
                           }} 
                           className="text-slate-500 hover:text-rose-500 transition-colors p-1"
@@ -670,7 +717,10 @@ export function PitchDeckBuilder() {
                   </div>
                   <Button 
                     variant="ghost" 
-                    onClick={() => updateCurrentSlide('bullets', [...currentSlide.bullets, ""])} 
+                    onClick={() => {
+                      if (!currentSlide) return;
+                      updateCurrentSlide('bullets', [...(currentSlide.bullets || []), ""]);
+                    }} 
                     className="w-full h-9 border border-dashed border-white/10 rounded-xl hover:bg-white/5 text-xs text-slate-400 hover:text-cyan-400 mt-2"
                   >
                     <Plus size={12} className="me-1" /> افزودن نکته جدید
@@ -680,24 +730,58 @@ export function PitchDeckBuilder() {
 
               {/* Metadata panel */}
               <Card className="bg-slate-900/60 border border-white/5 p-5 rounded-2xl flex flex-col space-y-4">
-                <div>
-                  <label className="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-1.5 block">قالب ساختاری اسلاید</label>
-                  <select 
-                    value={currentSlide?.type || 'generic'}
-                    onChange={e => updateCurrentSlide('type', e.target.value)}
-                    className="w-full h-10 px-3 bg-slate-950 border border-white/10 text-white text-xs rounded-xl focus:border-cyan-500/40"
-                  >
-                    <option value="title">عنوان (Title)</option>
-                    <option value="problem">بیان مشکل (Problem)</option>
-                    <option value="solution">راهکار پیشنهادی (Solution)</option>
-                    <option value="market">اندازه بازار (TAM/SAM/SOM)</option>
-                    <option value="business_model">مدل کسب‌وکار (Revenue Model)</option>
-                    <option value="competition">موقعیت رقبا (Competition)</option>
-                    <option value="roadmap">نقشه راه (Roadmap/Timeline)</option>
-                    <option value="team">معرفی تیم (Team)</option>
-                    <option value="ask">درخواست سرمایه (Ask)</option>
-                    <option value="generic">اسلاید ساده (Generic Bullet)</option>
-                  </select>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-1.5 block">قالب ساختاری اسلاید</label>
+                    <select 
+                      value={currentSlide?.type || 'generic'}
+                      onChange={e => updateCurrentSlide('type', e.target.value)}
+                      className="w-full h-10 px-3 bg-slate-950 border border-white/10 text-white text-xs rounded-xl focus:border-cyan-500/40"
+                    >
+                      <option value="title">عنوان (Title)</option>
+                      <option value="problem">بیان مشکل (Problem)</option>
+                      <option value="solution">راهکار پیشنهادی (Solution)</option>
+                      <option value="market">اندازه بازار (TAM/SAM/SOM)</option>
+                      <option value="business_model">مدل کسب‌وکار (Revenue Model)</option>
+                      <option value="competition">موقعیت رقبا (Competition)</option>
+                      <option value="roadmap">نقشه راه (Roadmap/Timeline)</option>
+                      <option value="team">معرفی تیم (Team)</option>
+                      <option value="ask">درخواست سرمایه (Ask)</option>
+                      <option value="generic">اسلاید ساده (Generic Bullet)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-1.5 block">پوسته اسلاید (Theme)</label>
+                    <div className="flex gap-2">
+                      <select 
+                        value={currentSlide?.metadata?.theme || 'midnight_cyan'}
+                        onChange={e => updateMetadataField('theme', e.target.value)}
+                        className="flex-1 h-10 px-3 bg-slate-950 border border-white/10 text-white text-xs rounded-xl focus:border-cyan-500/40"
+                      >
+                        <option value="midnight_cyan">Midnight Cyan (پیش‌فرض)</option>
+                        <option value="amethyst_glow">Amethyst Glow (بنفش)</option>
+                        <option value="sleek_slate">Sleek Slate (سبز/خاکستری)</option>
+                      </select>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => {
+                          const themeToApply = currentSlide?.metadata?.theme || 'midnight_cyan';
+                          const updated = slides.map(s => ({
+                            ...s,
+                            metadata: { ...(s.metadata || {}), theme: themeToApply }
+                          }));
+                          setSlides(updated);
+                          toast.success("پوسته انتخاب شده بر روی تمام اسلایدها اعمال شد");
+                        }}
+                        className="border-white/10 bg-slate-950 text-slate-300 hover:text-white rounded-xl text-xs h-10 px-3 hover:bg-slate-900 shrink-0"
+                        title="اعمال به کل اسلایدها"
+                      >
+                        اعمال به همه
+                      </Button>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto max-h-[160px] space-y-3 pr-1 text-xs">
@@ -705,9 +789,24 @@ export function PitchDeckBuilder() {
                     <div className="space-y-2">
                       <span className="text-[10px] font-bold text-slate-400 block mb-1">تنظیمات اندازه بازار:</span>
                       <div className="grid grid-cols-3 gap-2">
-                        <Input placeholder="TAM" value={currentSlide.metadata?.tam || ''} onChange={e => updateMetadataField('tam', e.target.value)} className="bg-slate-950 border-white/10 text-xs h-8 rounded-lg" />
-                        <Input placeholder="SAM" value={currentSlide.metadata?.sam || ''} onChange={e => updateMetadataField('sam', e.target.value)} className="bg-slate-950 border-white/10 text-xs h-8 rounded-lg" />
-                        <Input placeholder="SOM" value={currentSlide.metadata?.som || ''} onChange={e => updateMetadataField('som', e.target.value)} className="bg-slate-950 border-white/10 text-xs h-8 rounded-lg" />
+                        <Input placeholder="TAM" value={currentSlide.metadata?.tam || ''} onChange={e => {
+                          const val = e.target.value;
+                          const cleaned = convertPersianArabicDigits(val).replace(/,/g, '');
+                          const parsed = parseFloat(cleaned);
+                          updateMetadataField('tam', isNaN(parsed) ? val : parsed);
+                        }} className="bg-slate-950 border-white/10 text-xs h-8 rounded-lg" />
+                        <Input placeholder="SAM" value={currentSlide.metadata?.sam || ''} onChange={e => {
+                          const val = e.target.value;
+                          const cleaned = convertPersianArabicDigits(val).replace(/,/g, '');
+                          const parsed = parseFloat(cleaned);
+                          updateMetadataField('sam', isNaN(parsed) ? val : parsed);
+                        }} className="bg-slate-950 border-white/10 text-xs h-8 rounded-lg" />
+                        <Input placeholder="SOM" value={currentSlide.metadata?.som || ''} onChange={e => {
+                          const val = e.target.value;
+                          const cleaned = convertPersianArabicDigits(val).replace(/,/g, '');
+                          const parsed = parseFloat(cleaned);
+                          updateMetadataField('som', isNaN(parsed) ? val : parsed);
+                        }} className="bg-slate-950 border-white/10 text-xs h-8 rounded-lg" />
                       </div>
                       <Input placeholder="توضیح بازار TAM" value={currentSlide.metadata?.tamDesc || ''} onChange={e => updateMetadataField('tamDesc', e.target.value)} className="bg-slate-950 border-white/10 text-xs h-8 rounded-lg mt-1" />
                       <Input placeholder="توضیح بازار SAM" value={currentSlide.metadata?.samDesc || ''} onChange={e => updateMetadataField('samDesc', e.target.value)} className="bg-slate-950 border-white/10 text-xs h-8 rounded-lg mt-1" />
@@ -721,6 +820,49 @@ export function PitchDeckBuilder() {
                       <Input placeholder="مبلغ درخواستی" value={currentSlide.metadata?.amount || ''} onChange={e => updateMetadataField('amount', e.target.value)} className="bg-slate-950 border-white/10 text-xs h-8 rounded-lg" />
                       <Input placeholder="مدت بقای مالی (Runway)" value={currentSlide.metadata?.runway || ''} onChange={e => updateMetadataField('runway', e.target.value)} className="bg-slate-950 border-white/10 text-xs h-8 rounded-lg" />
                       <Input placeholder="محل مصرف بودجه" value={currentSlide.metadata?.use || ''} onChange={e => updateMetadataField('use', e.target.value)} className="bg-slate-950 border-white/10 text-xs h-8 rounded-lg" />
+                      
+                      <div className="border-t border-white/5 pt-2 mt-2">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="text-[10px] font-bold text-slate-400">تخصیص بودجه:</span>
+                          <Button variant="ghost" size="icon" className="w-5 h-5 text-cyan-400" onClick={() => addMetadataArrayItem('budget', { category: 'دسته جدید', amount: 0, percentage: 0 })}>
+                            <Plus size={12} />
+                          </Button>
+                        </div>
+                        {(currentSlide.metadata?.budget || []).map((b: any, idx: number) => (
+                          <div key={idx} className="flex gap-1 items-center mb-1">
+                            <Input placeholder="دسته‌بندی" value={b.category || ''} onChange={e => {
+                              const budget = [...(currentSlide.metadata?.budget || [])];
+                              budget[idx] = { ...budget[idx], category: e.target.value };
+                              updateMetadataField('budget', budget);
+                            }} className="bg-slate-950 border-white/10 text-[10px] h-7 rounded-lg flex-[2]" />
+                            
+                            <Input placeholder="مبلغ" value={b.amount !== undefined ? b.amount : ''} onChange={e => {
+                              const budget = [...(currentSlide.metadata?.budget || [])];
+                              const val = e.target.value;
+                              const cleaned = convertPersianArabicDigits(val).replace(/,/g, '');
+                              const parsed = parseFloat(cleaned);
+                              budget[idx] = { ...budget[idx], amount: isNaN(parsed) ? val : parsed };
+                              updateMetadataField('budget', budget);
+                            }} className="bg-slate-950 border-white/10 text-[10px] h-7 rounded-lg flex-1" />
+
+                            <Input placeholder="درصد" value={b.percentage !== undefined ? b.percentage : ''} onChange={e => {
+                              const budget = [...(currentSlide.metadata?.budget || [])];
+                              const val = e.target.value;
+                              const cleaned = convertPersianArabicDigits(val).replace(/,/g, '');
+                              const parsed = parseFloat(cleaned);
+                              budget[idx] = { ...budget[idx], percentage: isNaN(parsed) ? val : parsed };
+                              updateMetadataField('budget', budget);
+                            }} className="bg-slate-950 border-white/10 text-[10px] h-7 rounded-lg flex-[0.8]" />
+
+                            <button onClick={() => {
+                              const budget = (currentSlide.metadata?.budget || []).filter((_: any, i: number) => i !== idx);
+                              updateMetadataField('budget', budget);
+                            }} className="text-slate-500 hover:text-rose-500">
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
 
@@ -831,25 +973,28 @@ export function PitchDeckBuilder() {
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-slate-400">معرفی اعضا:</span>
-                        <Button variant="ghost" size="icon" className="w-5 h-5 text-cyan-400" onClick={() => addMetadataArrayItem('members', { name: 'عضو جدید', role: 'نقش او' })}>
+                        <Button variant="ghost" size="icon" className="w-5 h-5 text-cyan-400" onClick={() => {
+                          const existingTeam = currentSlide.metadata?.team || currentSlide.metadata?.members || [];
+                          updateMetadataField('team', [...existingTeam, { name: 'عضو جدید', role: 'نقش او' }]);
+                        }}>
                           <Plus size={12} />
                         </Button>
                       </div>
-                      {(currentSlide.metadata?.members || []).map((m: any, idx: number) => (
+                      {(currentSlide.metadata?.team || currentSlide.metadata?.members || []).map((m: any, idx: number) => (
                         <div key={idx} className="flex gap-1.5 items-center">
                           <Input placeholder="نام فرد" value={m.name || ''} onChange={e => {
-                            const members = [...(currentSlide.metadata?.members || [])];
-                            members[idx] = { ...members[idx], name: e.target.value };
-                            updateMetadataField('members', members);
+                            const team = [...(currentSlide.metadata?.team || currentSlide.metadata?.members || [])];
+                            team[idx] = { ...team[idx], name: e.target.value };
+                            updateMetadataField('team', team);
                           }} className="bg-slate-950 border-white/10 text-[10px] h-7 rounded-lg flex-1" />
                           <Input placeholder="تخصص/سمت" value={m.role || ''} onChange={e => {
-                            const members = [...(currentSlide.metadata?.members || [])];
-                            members[idx] = { ...members[idx], role: e.target.value };
-                            updateMetadataField('members', members);
+                            const team = [...(currentSlide.metadata?.team || currentSlide.metadata?.members || [])];
+                            team[idx] = { ...team[idx], role: e.target.value };
+                            updateMetadataField('team', team);
                           }} className="bg-slate-950 border-white/10 text-[10px] h-7 rounded-lg flex-1" />
                           <button onClick={() => {
-                            const members = (currentSlide.metadata?.members || []).filter((_: any, i: number) => i !== idx);
-                            updateMetadataField('members', members);
+                            const team = (currentSlide.metadata?.team || currentSlide.metadata?.members || []).filter((_: any, i: number) => i !== idx);
+                            updateMetadataField('team', team);
                           }} className="text-slate-500 hover:text-rose-500">
                             <Trash2 size={12} />
                           </button>
@@ -867,7 +1012,25 @@ export function PitchDeckBuilder() {
               </Card>
 
             </div>
+            </>
+            )}
           </div>
+
+          {!isMobile && (
+            <PitchDeckAiSidebar
+              slide={currentSlide}
+              className="lg:col-span-2 hidden lg:flex rounded-2xl border border-white/5"
+              onApplyText={(text) => {
+                const lines = text.split("\n").filter(Boolean);
+                if (lines.length > 1) {
+                  updateCurrentSlide("title", lines[0]);
+                  updateCurrentSlide("bullets", lines.slice(1));
+                } else if (lines[0]) {
+                  updateCurrentSlide("bullets", [lines[0]]);
+                }
+              }}
+            />
+          )}
 
         </div>
 

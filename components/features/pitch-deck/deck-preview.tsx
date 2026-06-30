@@ -2,6 +2,7 @@
 
 import { PageTourHelp } from "@/components/tour/page-tour-help";
 import { PitchDeckSlide } from "@/lib/db";
+import { SlideThemes } from "./slide-templates";
 import { useProject } from "@/contexts/project-context";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
@@ -53,143 +54,153 @@ export function DeckPreview({ slides, onEditSlide, onDeleteSlide, onRegenerate, 
   // Render a visual miniature representation of the slide layout type
   const renderMiniature = (slide: PitchDeckSlide) => {
     const title = slide.title || "بدون عنوان";
+    const themeKey = slide.metadata?.theme || 'midnight_cyan';
+    const activeTheme = SlideThemes[themeKey as keyof typeof SlideThemes] || SlideThemes.midnight_cyan;
+
     switch (slide.type) {
       case "title":
         return (
-          <div className="w-full h-full bg-slate-950 flex flex-col items-center justify-center p-3 text-center border-b border-cyan-500/20">
-            <Zap className="w-5 h-5 text-cyan-400 mb-1" />
+          <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center border-b" style={{ backgroundColor: activeTheme.bg, borderColor: activeTheme.border }}>
+            <Zap className="w-5 h-5 mb-1 animate-pulse" style={{ color: activeTheme.primary }} />
             <h4 className="text-[10px] font-extrabold text-white truncate w-full">{title}</h4>
-            <span className="text-[8px] text-cyan-400 mt-1 opacity-70">ارائه استارتاپ</span>
+            <span className="text-[8px] mt-1 opacity-70" style={{ color: activeTheme.primary }}>ارائه استارتاپ</span>
           </div>
         );
       case "problem":
         return (
-          <div className="w-full h-full bg-slate-950 p-3 flex flex-col justify-between border-b border-rose-500/20">
+          <div className="w-full h-full p-3 flex flex-col justify-between border-b" style={{ backgroundColor: activeTheme.bg, borderColor: 'rgba(239, 68, 68, 0.2)' }}>
             <div className="flex justify-between items-center">
               <span className="text-[8px] text-rose-400 font-bold uppercase">چالش</span>
               <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
             </div>
             <h4 className="text-[9px] font-bold text-slate-200 truncate">{title}</h4>
             <div className="space-y-1">
-              <div className="h-1 w-full bg-slate-900 rounded" />
-              <div className="h-1 w-4/5 bg-slate-900 rounded" />
+              <div className="h-1 w-full rounded" style={{ backgroundColor: activeTheme.card }} />
+              <div className="h-1 w-4/5 rounded" style={{ backgroundColor: activeTheme.card }} />
             </div>
           </div>
         );
       case "solution":
         return (
-          <div className="w-full h-full bg-slate-950 p-3 flex flex-col justify-between border-b border-emerald-500/20">
+          <div className="w-full h-full p-3 flex flex-col justify-between border-b" style={{ backgroundColor: activeTheme.bg, borderColor: 'rgba(16, 185, 129, 0.2)' }}>
             <div className="flex justify-between items-center">
               <span className="text-[8px] text-emerald-400 font-bold uppercase">راهکار</span>
               <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
             </div>
             <h4 className="text-[9px] font-bold text-slate-200 truncate">{title}</h4>
             <div className="space-y-1">
-              <div className="h-1 w-full bg-slate-900 rounded" />
-              <div className="h-1 w-4/5 bg-slate-900 rounded" />
+              <div className="h-1 w-full rounded" style={{ backgroundColor: activeTheme.card }} />
+              <div className="h-1 w-4/5 rounded" style={{ backgroundColor: activeTheme.card }} />
             </div>
           </div>
         );
       case "market":
       case "market_size":
         return (
-          <div className="w-full h-full bg-slate-950 p-3 flex flex-col justify-between border-b border-cyan-500/20">
+          <div className="w-full h-full p-3 flex flex-col justify-between border-b" style={{ backgroundColor: activeTheme.bg, borderColor: activeTheme.border }}>
             <div className="flex justify-between items-center">
-              <span className="text-[8px] text-cyan-400 font-bold uppercase">بازار</span>
-              <TrendingUp className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-[8px] font-bold uppercase" style={{ color: activeTheme.primary }}>بازار</span>
+              <TrendingUp className="w-3.5 h-3.5" style={{ color: activeTheme.primary }} />
             </div>
-            <div className="grid grid-cols-3 gap-1 my-1">
-              <div className="bg-slate-900 rounded p-1 text-center"><div className="h-1 w-full bg-cyan-500/20 rounded mb-0.5" /><span className="text-[6px] text-white">TAM</span></div>
-              <div className="bg-slate-900 rounded p-1 text-center"><div className="h-1 w-full bg-cyan-500/40 rounded mb-0.5" /><span className="text-[6px] text-cyan-300">SAM</span></div>
-              <div className="bg-slate-900 rounded p-1 text-center"><div className="h-1 w-full bg-cyan-500/60 rounded mb-0.5" /><span className="text-[6px] text-cyan-200">SOM</span></div>
+            <div className="flex items-center justify-center gap-1 my-1">
+              <div className="w-6 h-6 rounded-full border flex items-center justify-center text-[5px]" style={{ borderColor: activeTheme.border, backgroundColor: 'rgba(255,255,255,0.02)' }}>
+                <div className="w-4 h-4 rounded-full border flex items-center justify-center text-[5px]" style={{ borderColor: activeTheme.secondary, backgroundColor: activeTheme.badgeBg }}>
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: activeTheme.primary }} />
+                </div>
+              </div>
             </div>
             <h4 className="text-[8px] font-bold text-slate-400 truncate">{title}</h4>
           </div>
         );
       case "business_model":
         return (
-          <div className="w-full h-full bg-slate-950 p-3 flex flex-col justify-between border-b border-violet-500/20">
+          <div className="w-full h-full p-3 flex flex-col justify-between border-b" style={{ backgroundColor: activeTheme.bg, borderColor: activeTheme.border }}>
             <div className="flex justify-between items-center">
-              <span className="text-[8px] text-violet-400 font-bold uppercase">درآمدزایی</span>
-              <DollarSign className="w-3.5 h-3.5 text-violet-400" />
+              <span className="text-[8px] font-bold uppercase" style={{ color: activeTheme.secondary }}>درآمدزایی</span>
+              <DollarSign className="w-3.5 h-3.5" style={{ color: activeTheme.secondary }} />
             </div>
             <div className="flex gap-1.5 justify-center">
-              <span className="w-4 h-4 rounded bg-violet-500/10 border border-violet-500/20" />
-              <span className="w-4 h-4 rounded bg-violet-500/10 border border-violet-500/20" />
-              <span className="w-4 h-4 rounded bg-violet-500/10 border border-violet-500/20" />
+              <span className="w-4 h-4 rounded border" style={{ backgroundColor: activeTheme.badgeBg, borderColor: activeTheme.border }} />
+              <span className="w-4 h-4 rounded border" style={{ backgroundColor: activeTheme.badgeBg, borderColor: activeTheme.border }} />
+              <span className="w-4 h-4 rounded border" style={{ backgroundColor: activeTheme.badgeBg, borderColor: activeTheme.border }} />
             </div>
             <h4 className="text-[8px] font-bold text-slate-400 truncate">{title}</h4>
           </div>
         );
       case "competition":
         return (
-          <div className="w-full h-full bg-slate-950 p-3 flex flex-col justify-between border-b border-fuchsia-500/20">
+          <div className="w-full h-full p-3 flex flex-col justify-between border-b" style={{ backgroundColor: activeTheme.bg, borderColor: activeTheme.border }}>
             <div className="flex justify-between items-center">
-              <span className="text-[8px] text-fuchsia-400 font-bold uppercase">رقبا</span>
-              <Layers className="w-3.5 h-3.5 text-fuchsia-400" />
+              <span className="text-[8px] font-bold uppercase" style={{ color: activeTheme.secondary }}>رقبا</span>
+              <Layers className="w-3.5 h-3.5" style={{ color: activeTheme.secondary }} />
             </div>
-            <div className="space-y-0.5 my-1">
-              <div className="grid grid-cols-3 gap-1 bg-slate-900 p-0.5 rounded"><span className="text-[6px] text-white">ما</span><span className="text-[6px] text-emerald-400">✓</span><span className="text-[6px] text-emerald-400">✓</span></div>
-              <div className="grid grid-cols-3 gap-1 bg-slate-900/40 p-0.5 rounded"><span className="text-[6px] text-slate-400">رقیب</span><span className="text-[6px] text-rose-500">✗</span><span className="text-[6px] text-emerald-400">✓</span></div>
+            <div className="grid grid-cols-2 gap-1 my-0.5">
+              <div className="h-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded" />
+              <div className="h-2.5 bg-rose-500/10 border border-rose-500/20 rounded" />
+              <div className="h-2.5 bg-cyan-500/10 border border-cyan-500/20 rounded" />
+              <div className="h-2.5 bg-amber-500/10 border border-amber-500/20 rounded" />
             </div>
             <h4 className="text-[8px] font-bold text-slate-400 truncate">{title}</h4>
           </div>
         );
       case "roadmap":
         return (
-          <div className="w-full h-full bg-slate-950 p-3 flex flex-col justify-between border-b border-cyan-500/20">
+          <div className="w-full h-full p-3 flex flex-col justify-between border-b" style={{ backgroundColor: activeTheme.bg, borderColor: activeTheme.border }}>
             <div className="flex justify-between items-center">
-              <span className="text-[8px] text-cyan-400 font-bold uppercase">مسیر زمان‌بندی</span>
-              <Milestone className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="text-[8px] text-cyan-400 font-bold uppercase" style={{ color: activeTheme.primary }}>مسیر زمان‌بندی</span>
+              <Milestone className="w-3.5 h-3.5" style={{ color: activeTheme.primary }} />
             </div>
-            <div className="flex items-center gap-1 my-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-              <div className="h-0.5 bg-slate-800 flex-1" />
-              <span className="w-1.5 h-1.5 rounded-full bg-violet-600" />
-              <div className="h-0.5 bg-slate-800 flex-1" />
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-700" />
+            <div className="flex items-center gap-1 my-1.5 relative">
+              <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2" style={{ backgroundColor: activeTheme.primary, opacity: 0.3 }} />
+              <span className="w-1.5 h-1.5 rounded-full z-10" style={{ backgroundColor: activeTheme.primary }} />
+              <div className="flex-1" />
+              <span className="w-1.5 h-1.5 rounded-full z-10" style={{ backgroundColor: activeTheme.secondary }} />
+              <div className="flex-1" />
+              <span className="w-1.5 h-1.5 rounded-full z-10" style={{ backgroundColor: activeTheme.primary }} />
             </div>
             <h4 className="text-[8px] font-bold text-slate-400 truncate">{title}</h4>
           </div>
         );
       case "team":
         return (
-          <div className="w-full h-full bg-slate-950 p-3 flex flex-col justify-between border-b border-indigo-500/20">
+          <div className="w-full h-full p-3 flex flex-col justify-between border-b" style={{ backgroundColor: activeTheme.bg, borderColor: activeTheme.border }}>
             <div className="flex justify-between items-center">
-              <span className="text-[8px] text-indigo-400 font-bold uppercase">تیم قهرمان</span>
-              <Users className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="text-[8px] font-bold uppercase" style={{ color: activeTheme.primary }}>تیم قهرمان</span>
+              <Users className="w-3.5 h-3.5" style={{ color: activeTheme.primary }} />
             </div>
             <div className="flex gap-1.5 justify-center my-1">
-              <div className="w-4.5 h-4.5 rounded-full bg-indigo-500/10 border border-indigo-500/20" />
-              <div className="w-4.5 h-4.5 rounded-full bg-indigo-500/10 border border-indigo-500/20" />
+              <div className="w-4 h-4 rounded-full" style={{ background: `linear-gradient(135deg, ${activeTheme.primary}, ${activeTheme.secondary})` }} />
+              <div className="w-4 h-4 rounded-full" style={{ background: `linear-gradient(135deg, ${activeTheme.primary}, ${activeTheme.secondary})` }} />
+              <div className="w-4 h-4 rounded-full" style={{ background: `linear-gradient(135deg, ${activeTheme.primary}, ${activeTheme.secondary})` }} />
             </div>
             <h4 className="text-[8px] font-bold text-slate-400 truncate">{title}</h4>
           </div>
         );
       case "ask":
         return (
-          <div className="w-full h-full bg-slate-950 p-3 flex flex-col justify-between border-b border-amber-500/20">
+          <div className="w-full h-full p-3 flex flex-col justify-between border-b" style={{ backgroundColor: activeTheme.bg, borderColor: activeTheme.border }}>
             <div className="flex justify-between items-center">
-              <span className="text-[8px] text-amber-400 font-bold uppercase">جذب سرمایه</span>
-              <DollarSign className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[8px] font-bold uppercase" style={{ color: activeTheme.primary }}>جذب سرمایه</span>
+              <DollarSign className="w-3.5 h-3.5" style={{ color: activeTheme.primary }} />
             </div>
-            <div className="text-center">
-              <span className="text-[10px] font-extrabold text-amber-400">سرمایه‌گذاری</span>
+            <div className="space-y-1 my-0.5">
+              <div className="h-1 bg-cyan-500 rounded-full w-4/5" />
+              <div className="h-1 bg-violet-500 rounded-full w-3/5" />
             </div>
             <h4 className="text-[8px] font-bold text-slate-400 truncate">{title}</h4>
           </div>
         );
       default:
         return (
-          <div className="w-full h-full bg-slate-950 p-3 flex flex-col justify-between border-b border-white/10">
+          <div className="w-full h-full p-3 flex flex-col justify-between border-b" style={{ backgroundColor: activeTheme.bg, borderColor: activeTheme.border }}>
             <div className="flex justify-between items-center">
               <span className="text-[8px] text-slate-400 font-bold uppercase">اسلاید ساده</span>
               <Zap className="w-3.5 h-3.5 text-slate-500" />
             </div>
             <h4 className="text-[9px] font-bold text-slate-200 truncate">{title}</h4>
             <div className="space-y-1">
-              <div className="h-1 w-full bg-slate-900 rounded" />
-              <div className="h-1 w-full bg-slate-900 rounded" />
+              <div className="h-1 w-full rounded" style={{ backgroundColor: activeTheme.card }} />
+              <div className="h-1 w-full rounded" style={{ backgroundColor: activeTheme.card }} />
             </div>
           </div>
         );

@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { dbCardsToState, stateToSyncPayload } from "@/lib/canvas/persistence";
+import type { CanvasState } from "@/lib/canvas/types";
 
 async function verifyWriteAccess(projectId: string, userId: string) {
   const project = await prisma.project.findFirst({
@@ -97,6 +99,102 @@ export async function POST(
     return NextResponse.json({ card });
   } catch (error) {
     console.error("Card POST error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ projectId: string; canvasId: string }> }
+) {
+  try {
+    const session = await auth();
+    if (!session || !session.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { projectId, canvasId } = await params;
+    const body = await req.json();
+    const {
+      state,
+      layout,
+    } = body as {
+      state: CanvasState;
+      layout?: { connections?: unknown[]; viewMode?: string };
+    };
+
+    if (!(await verifyWriteAccess(projectId, session.user.id))) {
+      return NextResponse.json({ error: "No write access" }, { status: 403 });
+    }
+
+    const canvas = await prisma.canvas.findFirst({
+      where: { id: canvasId, projectId },
+      select: { id: true },
+    });
+    if (!canvas) {
+      return NextResponse.json({ error: "Canvas not found" }, { status: 404 });
+    }
+
+    const syncCards = stateToSyncPayload(state);
+    const incomingIds = new Set(syncCards.map((c) => c.id));
+
+    const existing = await prisma.card.findMany({
+      where: { canvasId },
+      select: { id: true },
+    });
+    const toDelete = existing.filter((e) => !incomingIds.has(e.id)).map((e) => e.id);
+
+    await prisma.$transaction(async (tx) => {
+      if (toDelete.length > 0) {
+        await tx.card.deleteMany({ where: { id: { in: toDelete }, canvasId } });
+      }
+
+      for (const card of syncCards) {
+        await tx.card.upsert({
+          where: { id: card.id },
+          create: {
+            id: card.id,
+            canvasId,
+            section: card.section,
+            content: card.content,
+            cardType: card.cardType,
+            color: card.color,
+            order: card.order,
+            x: card.x,
+            y: card.y,
+            width: card.width,
+            height: card.height,
+            metadata: card.metadata ? (card.metadata as object) : undefined,
+            createdBy: session.user!.id,
+            updatedBy: session.user!.id,
+          },
+          update: {
+            section: card.section,
+            content: card.content,
+            cardType: card.cardType,
+            color: card.color,
+            order: card.order,
+            x: card.x,
+            y: card.y,
+            width: card.width,
+            height: card.height,
+            metadata: card.metadata ? (card.metadata as object) : undefined,
+            updatedBy: session.user!.id,
+          },
+        });
+      }
+
+      if (layout !== undefined) {
+        await tx.canvas.update({
+          where: { id: canvasId },
+          data: { layout: layout as object },
+        });
+      }
+    });
+
+    return NextResponse.json({ success: true, synced: syncCards.length, deleted: toDelete.length });
+  } catch (error) {
+    console.error("Cards PUT sync error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

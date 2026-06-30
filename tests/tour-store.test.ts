@@ -1,14 +1,29 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { useTourStore } from "@/lib/tour/store";
+import { defaultPersistedState } from "@/lib/tour/migration";
 
 describe("Tour Store", () => {
   beforeEach(() => {
     // Clear localStorage before each test
     localStorage.clear();
-    
-    // Reset store state
-    const store = useTourStore.getState();
-    store.initialize("test-user");
+
+    // Reset store state fully (initialize alone doesn't clear isOpen/engine)
+    useTourStore.setState({
+      userId: "guest",
+      initialized: false,
+      persisted: defaultPersistedState(),
+      engine: null,
+      isOpen: false,
+      showWelcome: false,
+      showCelebration: false,
+      celebration: null,
+      beaconsEnabled: true,
+      stepContext: { persona: "general" },
+      pendingXpCallback: null,
+    });
+
+    // Initialize for test-user
+    useTourStore.getState().initialize("test-user");
   });
 
   it("should initialize with default values", () => {
@@ -26,7 +41,7 @@ describe("Tour Store", () => {
     const started = store.startTour("dashboard", 0, true);
     expect(started).toBe(true);
     
-    let activeState = useTourStore.getState();
+    const activeState = useTourStore.getState();
     expect(activeState.isOpen).toBe(true);
     expect(activeState.engine?.tourId).toBe("dashboard");
 
@@ -64,19 +79,79 @@ describe("Tour Store", () => {
     const started = store.startTour("dashboard", 0, true);
     expect(started).toBe(true);
     
-    let currentState = useTourStore.getState();
+    const currentState = useTourStore.getState();
     expect(currentState.engine?.stepIndex).toBe(0);
 
     // Call nextStep
     currentState.nextStep();
-    let nextState = useTourStore.getState();
+    const nextState = useTourStore.getState();
     expect(nextState.engine?.stepIndex).toBe(1);
     expect(nextState.persisted.activeStepIndex).toBe(1);
 
     // Call prevStep
     nextState.prevStep();
-    let prevState = useTourStore.getState();
+    const prevState = useTourStore.getState();
     expect(prevState.engine?.stepIndex).toBe(0);
     expect(prevState.persisted.activeStepIndex).toBe(0);
+  });
+
+  it("should not start a skipped tour without force", () => {
+    const store = useTourStore.getState();
+
+    store.skipTourById("roadmap");
+
+    const started = store.startTour("roadmap");
+    expect(started).toBe(false);
+
+    const state = useTourStore.getState();
+    expect(state.isOpen).toBe(false);
+    expect(state.engine).toBeNull();
+  });
+
+  it("should start a skipped tour with force=true", () => {
+    const store = useTourStore.getState();
+
+    store.skipTourById("roadmap");
+
+    const started = store.startTour("roadmap", 0, true);
+    expect(started).toBe(true);
+
+    const state = useTourStore.getState();
+    expect(state.isOpen).toBe(true);
+    expect(state.engine?.tourId).toBe("roadmap");
+  });
+
+  it("should not start a completed tour without force", () => {
+    const store = useTourStore.getState();
+
+    store.startTour("canvas", 0, true);
+    store.endTour(true);
+
+    const startedAgain = store.startTour("canvas");
+    expect(startedAgain).toBe(false);
+  });
+
+  it("hasSeenTour should return true for skipped tours", () => {
+    const store = useTourStore.getState();
+
+    store.skipTourById("scripts");
+
+    const state = useTourStore.getState();
+    expect(state.hasSeenTour("scripts")).toBe(true);
+  });
+
+  it("skipTourById should clear active engine if it matches", () => {
+    const store = useTourStore.getState();
+
+    store.startTour("dashboard", 0, true);
+    expect(useTourStore.getState().isOpen).toBe(true);
+
+    store.skipTourById("dashboard");
+
+    const state = useTourStore.getState();
+    expect(state.isOpen).toBe(false);
+    expect(state.engine).toBeNull();
+    expect(state.persisted.activeTourId).toBeNull();
+    expect(state.persisted.skippedTours).toContain("dashboard");
   });
 });

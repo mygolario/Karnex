@@ -89,10 +89,33 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const Comp = asChild ? Slot : "button";
-    
+    const mergedClassName = cn(buttonVariants({ variant, size, rounded }), className);
+
+    if (asChild) {
+      const childArray = React.Children.toArray(children);
+      const firstChild = childArray[0];
+      const isFragmentChild =
+        React.isValidElement(firstChild) &&
+        (firstChild.type === React.Fragment || firstChild.type === Symbol.for("react.fragment"));
+      // #region agent log
+      if (isFragmentChild) {
+        fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b69372'},body:JSON.stringify({sessionId:'b69372',location:'button.tsx:asChild',message:'Button asChild with Fragment child',data:{childCount:childArray.length,variant:String(variant)},timestamp:Date.now(),hypothesisId:'H3,H4'})}).catch(()=>{});
+      }
+      // #endregion
+      return (
+        <Comp
+          className={mergedClassName}
+          ref={ref}
+          {...props}
+        >
+          {children}
+        </Comp>
+      );
+    }
+
     return (
       <Comp
-        className={cn(buttonVariants({ variant, size, rounded, className }))}
+        className={mergedClassName}
         ref={ref}
         disabled={disabled || loading}
         {...props}

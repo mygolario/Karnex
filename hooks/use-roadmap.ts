@@ -167,7 +167,8 @@ export function useRoadmap(): UseRoadmapReturn {
   // Sync state from plan
   useEffect(() => {
     if (plan) {
-      setCompletedSteps(plan.completedSteps || []);
+      const steps = plan.completedSteps || [];
+      setCompletedSteps(steps);
       setStepStatuses(plan.stepStatuses || {});
 
       if (roadmap && roadmap.length > 0) {
@@ -368,18 +369,28 @@ export function useRoadmap(): UseRoadmapReturn {
       step: string | RoadmapStep,
       meta: { dueDate?: string; assignee?: string; notes?: string }
     ) => {
-      if (!plan) return;
+      if (!plan) {
+        // #region agent log
+        fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'use-roadmap.ts:updateStepMeta',message:'early return no plan',data:{meta},timestamp:Date.now(),hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
+        return;
+      }
       const stepName = getStepTitle(step);
+      let matchCount = 0;
       const newRoadmap = roadmap.map((phase) => ({
         ...phase,
         steps: phase.steps.map((s) => {
           const obj = typeof s === "string" ? { title: s } : (s as RoadmapStep);
           if (obj.title === stepName) {
+            matchCount++;
             return { ...obj, ...meta };
           }
-          return obj;
+          return s;
         }),
       })) as RoadmapPhase[];
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'use-roadmap.ts:updateStepMeta',message:'updating step meta',data:{stepName,meta,matchCount,roadmapPhases:roadmap.length},timestamp:Date.now(),hypothesisId:'C'})}).catch(()=>{});
+      // #endregion
       updateActiveProject({ roadmap: newRoadmap });
     },
     [plan, roadmap, getStepTitle, updateActiveProject]
@@ -431,7 +442,7 @@ export function useRoadmap(): UseRoadmapReturn {
 
   // Top Priority Steps: unlocked, not completed, prioritized (high priority first)
   const topPrioritySteps = useMemo(() => {
-    return flatSteps
+    const result = flatSteps
       .map((x) => x.step)
       .filter((step) => getStepStatus(step) !== "done" && isStepUnlocked(step))
       .sort((a, b) => {
@@ -440,6 +451,12 @@ export function useRoadmap(): UseRoadmapReturn {
         return pB - pA;
       })
       .slice(0, 3);
+    // #region agent log
+    const keys = result.map((s, i) => s.id ?? `missing-${i}`);
+    const duplicateKeys = keys.filter((k, i) => keys.indexOf(k) !== i);
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b9e3e7'},body:JSON.stringify({sessionId:'b9e3e7',location:'use-roadmap.ts:topPrioritySteps',message:'topPrioritySteps key analysis',data:{count:result.length,ids:result.map(s=>s.id??null),titles:result.map(s=>s.title),missingIdCount:result.filter(s=>!s.id).length,duplicateKeys},timestamp:Date.now(),hypothesisId:'A,B'})}).catch(()=>{});
+    // #endregion
+    return result;
   }, [flatSteps, getStepStatus, isStepUnlocked]);
 
   // Sprint Steps: select first 3-5 incomplete steps in current week/phases
@@ -473,6 +490,9 @@ export function useRoadmap(): UseRoadmapReturn {
         { projectName: plan?.projectName, projectType: plan?.projectType },
         false
       );
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0aaf34'},body:JSON.stringify({sessionId:'0aaf34',location:'use-roadmap.ts:generateBriefing',message:'briefing API result',data:{success:result?.success,hasReply:!!result?.reply,error:result?.error,replyLen:result?.reply?.length??0},timestamp:Date.now(),hypothesisId:'F'})}).catch(()=>{});
+      // #endregion
       if (result.success && result.reply) {
         setAiInsight(result.reply);
         return result.reply;

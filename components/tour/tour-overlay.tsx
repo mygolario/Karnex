@@ -266,7 +266,7 @@ export function TourOverlay() {
         isInteractiveWaiting={engine.isInteractiveWaiting}
         onNext={handleNext}
         onPrev={prevStep}
-        onSkip={nextStep}
+        onSkip={handleSkipTour}
         onSkipTour={handleSkipTour}
         onJumpToStep={jumpToStep}
       />

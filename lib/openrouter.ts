@@ -47,6 +47,7 @@ export interface OpenRouterResponse {
     success: boolean;
     content?: string;
     model?: string;
+    finishReason?: string;
     error?: string;
 }
 
@@ -140,7 +141,7 @@ export async function callOpenRouter(
 
     for (const model of modelsToTry) {
         try {
-            const content = await withRetry(
+            const result = await withRetry(
                 async (attempt) => {
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -198,11 +199,12 @@ export async function callOpenRouter(
                         }
 
                         const data = await response.json();
-                        const text = data.choices?.[0]?.message?.content;
+                        const choice = data.choices?.[0];
+                        const text = choice?.message?.content;
                         if (!text) {
                             throw new Error("Empty response");
                         }
-                        return text;
+                        return { text, finishReason: choice?.finish_reason as string | undefined };
                     } finally {
                         clearTimeout(timeoutId);
                     }
@@ -212,7 +214,7 @@ export async function callOpenRouter(
                 isTransient
             );
 
-            return { success: true, content, model };
+            return { success: true, content: result.text, model, finishReason: result.finishReason };
 
         } catch (error: any) {
             if (error.name === "AbortError" || error.message?.includes("Timeout") || error.message?.includes("timeout")) {
@@ -229,6 +231,40 @@ export async function callOpenRouter(
 }
 
 /**
+ * Close unbalanced braces/brackets when the model hits max_tokens mid-JSON.
+ */
+function repairTruncatedJson(jsonStr: string): string {
+    let s = jsonStr.trim();
+    s = s.replace(/,\s*"[^"]*"?\s*:\s*"[^"]*$/m, "");
+    s = s.replace(/,\s*"[^"]*"?\s*:\s*[^,\}\]]*$/m, "");
+    s = s.replace(/,\s*$/m, "");
+
+    const stack: string[] = [];
+    let inString = false;
+    let escape = false;
+    for (const ch of s) {
+        if (escape) {
+            escape = false;
+            continue;
+        }
+        if (ch === "\\" && inString) {
+            escape = true;
+            continue;
+        }
+        if (ch === '"') {
+            inString = !inString;
+            continue;
+        }
+        if (inString) continue;
+        if (ch === "{") stack.push("}");
+        else if (ch === "[") stack.push("]");
+        else if (ch === "}" || ch === "]") stack.pop();
+    }
+    if (inString) s += '"';
+    return s + stack.reverse().join("");
+}
+
+/**
  * Parse JSON from AI response (handles markdown code blocks and raw text)
  */
 export function parseJsonFromAI(content: string): any {
@@ -239,46 +275,30 @@ export function parseJsonFromAI(content: string): any {
     const codeBlockMatch = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/i);
     if (codeBlockMatch) {
         jsonStr = codeBlockMatch[1].trim();
-    } 
-
-    // 2. Try parsing directly
-    try {
-        return JSON.parse(jsonStr);
-    } catch (e) {
-        // 3. Fallback: Find first '{' or '[' and last '}' or ']'
-        const firstBrace = jsonStr.indexOf('{');
-        const firstBracket = jsonStr.indexOf('[');
-        const lastBrace = jsonStr.lastIndexOf('}');
-        const lastBracket = jsonStr.lastIndexOf(']');
-        
-        let start = -1;
-        if (firstBrace !== -1 && firstBracket !== -1) {
-            start = Math.min(firstBrace, firstBracket);
-        } else if (firstBrace !== -1) {
-            start = firstBrace;
-        } else if (firstBracket !== -1) {
-            start = firstBracket;
-        }
-
-        let end = -1;
-        if (lastBrace !== -1 && lastBracket !== -1) {
-            end = Math.max(lastBrace, lastBracket);
-        } else if (lastBrace !== -1) {
-            end = lastBrace;
-        } else if (lastBracket !== -1) {
-            end = lastBracket;
-        }
-        
-        if (start !== -1 && end !== -1 && end > start) {
-            const potentialJson = jsonStr.substring(start, end + 1);
-            try {
-                return JSON.parse(potentialJson);
-            } catch (innerE) {
-                throw e; // Throw original error for now
-            }
-        }
-        throw e;
     }
+
+    const attempts = [
+        jsonStr,
+        (() => {
+            const firstBrace = jsonStr.indexOf("{");
+            const lastBrace = jsonStr.lastIndexOf("}");
+            if (firstBrace !== -1 && lastBrace > firstBrace) {
+                return jsonStr.substring(firstBrace, lastBrace + 1);
+            }
+            return jsonStr;
+        })(),
+        repairTruncatedJson(jsonStr),
+    ];
+
+    let lastError: unknown;
+    for (const candidate of attempts) {
+        try {
+            return JSON.parse(candidate);
+        } catch (e) {
+            lastError = e;
+        }
+    }
+    throw lastError;
 }
 
 // === Copilot Agentic Chat ===

@@ -16,6 +16,9 @@ export default function DashboardError({
   useEffect(() => {
     Sentry.captureException(error);
     console.error("[Dashboard Error]", error);
+    // #region agent log
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b69372'},body:JSON.stringify({sessionId:'b69372',location:'error.tsx:useEffect',message:'DashboardError caught',data:{errorMessage:error.message,errorName:error.name,digest:error.digest},timestamp:Date.now(),hypothesisId:'H1,H5'})}).catch(()=>{});
+    // #endregion
   }, [error]);
 
   return (
@@ -43,12 +46,12 @@ export default function DashboardError({
             <RefreshCw className="w-4 h-4" />
             تلاش مجدد
           </Button>
-          <Button variant="outline" asChild>
-            <Link href="/dashboard" className="gap-2 flex items-center">
+          <Link href="/dashboard">
+            <Button variant="outline" className="gap-2">
               <Home className="w-4 h-4" />
               داشبورد
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </div>
 
         {process.env.NODE_ENV === "development" && error.message && (

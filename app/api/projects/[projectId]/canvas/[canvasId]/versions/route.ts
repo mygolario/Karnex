@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { dbCardsToState } from "@/lib/canvas/persistence";
 
 async function verifyAccess(projectId: string, userId: string, requireWrite: boolean) {
   const project = await prisma.project.findFirst({
@@ -160,7 +161,16 @@ export async function PATCH(
 
     await Promise.all(createPromises);
 
-    return NextResponse.json({ success: true, restoredFrom: versionId });
+    const restoredCards = await prisma.card.findMany({
+      where: { canvasId },
+      orderBy: [{ section: "asc" }, { order: "asc" }],
+    });
+
+    return NextResponse.json({
+      success: true,
+      restoredFrom: versionId,
+      state: dbCardsToState(restoredCards),
+    });
   } catch (error) {
     console.error("Version restore error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

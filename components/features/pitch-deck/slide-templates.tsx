@@ -19,6 +19,81 @@ import {
   X
 } from "lucide-react";
 
+const convertPersianArabicDigits = (val: any): string => {
+  if (typeof val === 'symbol') return '';
+  if (typeof val === 'number') return String(val);
+  if (!val) return '';
+  const pMap = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+  const aMap = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  let str = String(val);
+  for (let i = 0; i < 10; i++) {
+    str = str.replace(new RegExp(pMap[i], 'g'), String(i))
+             .replace(new RegExp(aMap[i], 'g'), String(i));
+  }
+  return str;
+};
+
+const safeString = (val: any): string => {
+  if (typeof val === 'symbol') return '';
+  if (val === null || val === undefined) return '';
+  if (typeof val === 'object') {
+    try {
+      return JSON.stringify(val);
+    } catch {
+      return '';
+    }
+  }
+  return String(val);
+};
+
+const parseNum = (val: any): number => {
+  if (typeof val === 'symbol') return 0;
+  if (typeof val === 'number') return val;
+  if (!val) return 0;
+  const cleaned = convertPersianArabicDigits(val).replace(/,/g, '');
+  const cleanStr = cleaned.replace(/[^0-9.-]/g, '');
+  const parsed = parseFloat(cleanStr);
+  return isNaN(parsed) ? 0 : parsed;
+};
+
+
+export const SlideThemes = {
+
+  midnight_cyan: {
+    bg: "#020617",
+    card: "rgba(15, 23, 42, 0.6)",
+    border: "rgba(34, 211, 238, 0.15)",
+    primary: "#22D3EE",
+    secondary: "#60A5FA",
+    glow1: "rgba(6, 182, 212, 0.12)",
+    glow2: "rgba(109, 40, 217, 0.08)",
+    accentGradient: "linear-gradient(to right, #22D3EE, #4F46E5, #D946EF)",
+    badgeBg: "rgba(34, 211, 238, 0.1)",
+  },
+  amethyst_glow: {
+    bg: "#09090B",
+    card: "rgba(24, 24, 27, 0.6)",
+    border: "rgba(168, 85, 247, 0.15)",
+    primary: "#C084FC",
+    secondary: "#F472B6",
+    glow1: "rgba(168, 85, 247, 0.15)",
+    glow2: "rgba(236, 72, 153, 0.08)",
+    accentGradient: "linear-gradient(to right, #A855F7, #EC4899, #F43F5E)",
+    badgeBg: "rgba(192, 132, 252, 0.1)",
+  },
+  sleek_slate: {
+    bg: "#0B0F10",
+    card: "rgba(30, 30, 30, 0.6)",
+    border: "rgba(52, 211, 153, 0.15)",
+    primary: "#34D399",
+    secondary: "#94A3B8",
+    glow1: "rgba(52, 211, 153, 0.08)",
+    glow2: "rgba(148, 163, 184, 0.05)",
+    accentGradient: "linear-gradient(to right, #34D399, #64748B, #CBD5E1)",
+    badgeBg: "rgba(52, 211, 153, 0.1)",
+  }
+};
+
 interface SlideTemplatesProps {
   slide: PitchDeckSlide;
   index: number;
@@ -57,19 +132,49 @@ export function SlideVisualizer({ slide, index, total, projectName, isExport = f
     }
   };
 
+  const themeKey = slide.metadata?.theme || 'midnight_cyan';
+  const activeTheme = SlideThemes[themeKey as keyof typeof SlideThemes] || SlideThemes.midnight_cyan;
+
   return (
-    <div className={`w-full h-full p-8 md:p-10 flex flex-col relative overflow-hidden bg-slate-950 text-white select-none`}>
+    <div 
+      className="w-full h-full p-8 md:p-10 flex flex-col relative overflow-hidden text-white select-none transition-all duration-300"
+      style={{
+        backgroundColor: activeTheme.bg,
+        borderColor: activeTheme.border,
+        ['--theme-bg' as any]: activeTheme.bg,
+        ['--theme-card' as any]: activeTheme.card,
+        ['--theme-border' as any]: activeTheme.border,
+        ['--theme-primary' as any]: activeTheme.primary,
+        ['--theme-secondary' as any]: activeTheme.secondary,
+        ['--theme-glow1' as any]: activeTheme.glow1,
+        ['--theme-glow2' as any]: activeTheme.glow2,
+        ['--theme-accent' as any]: activeTheme.accentGradient,
+        ['--theme-badge-bg' as any]: activeTheme.badgeBg,
+      }}
+    >
       {/* Glow Effects */}
-      <div className="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-cyan-500/10 blur-[100px] pointer-events-none" />
-      <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-violet-600/10 blur-[100px] pointer-events-none" />
+      <div 
+        className="absolute -top-24 -left-24 w-72 h-72 rounded-full blur-[100px] pointer-events-none transition-all duration-500" 
+        style={{ backgroundColor: 'var(--theme-glow1)' }}
+      />
+      <div 
+        className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full blur-[100px] pointer-events-none transition-all duration-500" 
+        style={{ backgroundColor: 'var(--theme-glow2)' }}
+      />
       
       {/* Header */}
-      <div className="flex justify-between items-center mb-6 border-b border-white/10 pb-3 relative z-10">
+      <div 
+        className="flex justify-between items-center mb-6 border-b pb-3 relative z-10"
+        style={{ borderColor: 'var(--theme-border)' }}
+      >
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse" />
-          <span className="text-xs font-black tracking-widest text-cyan-400 uppercase font-mono">{projectName || "KARNEX"}</span>
+          <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--theme-primary)' }} />
+          <span className="text-xs font-black tracking-widest uppercase font-mono" style={{ color: 'var(--theme-primary)' }}>{projectName || "KARNEX"}</span>
         </div>
-        <span className="text-xs font-mono text-slate-400 bg-slate-900 border border-white/5 px-2 py-0.5 rounded-full">
+        <span 
+          className="text-xs font-mono bg-slate-900/60 border px-2 py-0.5 rounded-full"
+          style={{ borderColor: 'var(--theme-border)', color: 'var(--theme-secondary)' }}
+        >
           اسلاید {index + 1} از {total}
         </span>
       </div>
@@ -80,7 +185,10 @@ export function SlideVisualizer({ slide, index, total, projectName, isExport = f
       </div>
 
       {/* Footer Accent Line */}
-      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-violet-600 to-fuchsia-500 opacity-60" />
+      <div 
+        className="absolute bottom-0 left-0 w-full h-1 opacity-80 transition-all duration-500" 
+        style={{ backgroundImage: 'var(--theme-accent)' }}
+      />
     </div>
   );
 }
@@ -99,15 +207,15 @@ function TitleLayout({ slide }: { slide: PitchDeckSlide }) {
         <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-violet-300 tracking-tight leading-tight">
           {slide.title}
         </h1>
-        {slide.bullets.length > 0 && (
+        {(slide.bullets || []).length > 0 && (
           <p className="text-base text-cyan-400 font-medium">
-            {slide.bullets[0]}
+            {(slide.bullets || [])[0]}
           </p>
         )}
       </div>
-      {slide.bullets.length > 1 && (
+      {(slide.bullets || []).length > 1 && (
         <div className="flex flex-wrap justify-center gap-3 mt-2 max-w-lg">
-          {slide.bullets.slice(1).map((b, i) => (
+          {(slide.bullets || []).slice(1).map((b, i) => (
             <span key={i} className="text-xs bg-slate-900/80 border border-white/5 px-3 py-1.5 rounded-xl text-slate-300">
               {b}
             </span>
@@ -128,7 +236,7 @@ function ProblemLayout({ slide }: { slide: PitchDeckSlide }) {
           {slide.title}
         </h2>
         <div className="space-y-3">
-          {slide.bullets.map((b, i) => (
+          {(slide.bullets || []).map((b, i) => (
             <div key={i} className="flex gap-3 items-start bg-slate-900/40 border border-white/5 p-3 rounded-2xl">
               <span className="w-6 h-6 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center text-xs font-mono font-bold shrink-0 mt-0.5">
                 {i + 1}
@@ -160,7 +268,7 @@ function SolutionLayout({ slide }: { slide: PitchDeckSlide }) {
           {slide.title}
         </h2>
         <div className="space-y-3">
-          {slide.bullets.map((b, i) => (
+          {(slide.bullets || []).map((b, i) => (
             <div key={i} className="flex gap-3 items-start bg-slate-900/40 border border-white/5 p-3 rounded-2xl">
               <span className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs font-mono font-bold shrink-0 mt-0.5">
                 {i + 1}
@@ -185,51 +293,135 @@ function SolutionLayout({ slide }: { slide: PitchDeckSlide }) {
 // 4. Market TAM/SAM/SOM Layout
 function MarketLayout({ slide }: { slide: PitchDeckSlide }) {
   const metadata = slide.metadata || {};
-  const tam = metadata.tam || "داده عددی ندارد";
-  const sam = metadata.sam || "داده عددی ندارد";
-  const som = metadata.som || "داده عددی ندارد";
-  const tamDesc = metadata.tamDesc || "کل بازار در دسترس (TAM)";
-  const samDesc = metadata.samDesc || "بازار قابل دسترسی (SAM)";
-  const somDesc = metadata.somDesc || "سهم بازار هدف ما (SOM)";
+  const [hoveredCircle, setHoveredCircle] = React.useState<'tam' | 'sam' | 'som' | null>(null);
+
+  const tamVal = parseNum(metadata.tam);
+  const samVal = parseNum(metadata.sam);
+  const somVal = parseNum(metadata.som);
+
+  const formatValue = (val: any): string => {
+    if (typeof val === 'symbol') return '';
+    if (val === null || val === undefined || val === '') return 'نامشخص';
+    const cleaned = convertPersianArabicDigits(val).replace(/,/g, '');
+    const num = Number(cleaned);
+    if (!isNaN(num)) {
+      return num.toLocaleString('fa-IR');
+    }
+    return String(val);
+  };
+
+  const formattedTam = formatValue(metadata.tam);
+  const formattedSam = formatValue(metadata.sam);
+  const formattedSom = formatValue(metadata.som);
+
+  const hasVals = tamVal > 0 && samVal > 0 && somVal > 0;
+  const t = hasVals ? tamVal : 100;
+  const s = hasVals ? samVal : 60;
+  const o = hasVals ? somVal : 20;
+
+  const rTam = 120;
+  const rSam = Math.max(45, Math.min(rTam - 20, rTam * Math.sqrt(s / t)));
+  const rSom = Math.max(20, Math.min(rSam - 15, rTam * Math.sqrt(o / t)));
 
   return (
-    <div className="space-y-5" dir="rtl">
-      <h2 className="text-2xl font-black text-cyan-400 flex items-center gap-2">
-        <TrendingUp className="w-6 h-6" />
-        {slide.title}
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        
-        {/* TAM */}
-        <div className="relative group overflow-hidden bg-slate-900/60 border border-white/5 p-5 rounded-2xl flex flex-col justify-between">
-          <div className="absolute inset-0 bg-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="space-y-1">
-            <span className="text-xs text-cyan-400 font-bold uppercase tracking-wider">TAM - کل بازار</span>
-            <h3 className="text-2xl font-black text-white">{tam}</h3>
+    <div className="grid md:grid-cols-12 gap-6 items-center" dir="rtl">
+      {/* Cards list */}
+      <div className="md:col-span-7 space-y-3">
+        <h2 className="text-2xl font-black mb-3" style={{ color: 'var(--theme-primary)' }}>{slide.title}</h2>
+        <div className="space-y-2">
+          {/* TAM Card */}
+          <div 
+            className={`p-3.5 rounded-xl border transition-all duration-300 ${
+              hoveredCircle === 'tam' 
+                ? 'bg-[var(--theme-card)] border-[var(--theme-primary)] scale-[1.01] shadow-lg shadow-[var(--theme-glow1)]' 
+                : 'bg-[var(--theme-card)]/50 border-[var(--theme-border)]'
+            }`}
+            onMouseEnter={() => setHoveredCircle('tam')}
+            onMouseLeave={() => setHoveredCircle(null)}
+          >
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold text-slate-400">TAM - کل بازار در دسترس</span>
+              <span className="text-base font-black text-white font-mono">{formattedTam} ریال</span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">{metadata.tamDesc || 'حجم کلی تقاضا در این بازار هدف'}</p>
           </div>
-          <p className="text-xs text-slate-400 mt-3">{tamDesc}</p>
-        </div>
 
-        {/* SAM */}
-        <div className="relative group overflow-hidden bg-slate-900/60 border border-cyan-500/30 p-5 rounded-2xl flex flex-col justify-between">
-          <div className="absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-          <div className="space-y-1">
-            <span className="text-xs text-cyan-400 font-bold uppercase tracking-wider">SAM - بازار در دسترس</span>
-            <h3 className="text-2xl font-black text-cyan-300">{sam}</h3>
+          {/* SAM Card */}
+          <div 
+            className={`p-3.5 rounded-xl border transition-all duration-300 ${
+              hoveredCircle === 'sam' 
+                ? 'bg-[var(--theme-card)] border-[var(--theme-secondary)] scale-[1.01] shadow-lg' 
+                : 'bg-[var(--theme-card)]/50 border-[var(--theme-border)]'
+            }`}
+            onMouseEnter={() => setHoveredCircle('sam')}
+            onMouseLeave={() => setHoveredCircle(null)}
+          >
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold" style={{ color: 'var(--theme-secondary)' }}>SAM - بازار قابل دسترسی</span>
+              <span className="text-base font-black font-mono" style={{ color: 'var(--theme-secondary)' }}>{formattedSam} ریال</span>
+            </div>
+            <p className="text-[11px] text-slate-400 mt-1">{metadata.samDesc || 'بخش قابل آدرس‌دهی و متناسب با کانال‌های توزیع ما'}</p>
           </div>
-          <p className="text-xs text-slate-300 mt-3">{samDesc}</p>
-        </div>
 
-        {/* SOM */}
-        <div className="relative group overflow-hidden bg-gradient-to-br from-cyan-950/40 to-slate-900 border-2 border-cyan-400 p-5 rounded-2xl flex flex-col justify-between">
-          <div className="absolute inset-0 bg-cyan-500/5 pointer-events-none" />
-          <div className="space-y-1">
-            <span className="text-xs text-cyan-300 font-bold uppercase tracking-wider">SOM - سهم هدف اولیه</span>
-            <h3 className="text-2xl font-black text-cyan-200">{som}</h3>
+          {/* SOM Card */}
+          <div 
+            className={`p-3.5 rounded-xl border transition-all duration-300 ${
+              hoveredCircle === 'som' 
+                ? 'bg-[var(--theme-card)] border-[var(--theme-primary)] scale-[1.01] shadow-lg shadow-[var(--theme-glow1)]' 
+                : 'bg-[var(--theme-card)]/50 border-[var(--theme-border)]'
+            }`}
+            onMouseEnter={() => setHoveredCircle('som')}
+            onMouseLeave={() => setHoveredCircle(null)}
+          >
+            <div className="flex justify-between items-center">
+              <span className="text-xs font-bold" style={{ color: 'var(--theme-primary)' }}>SOM - سهم بازار هدف اولیه</span>
+              <span className="text-base font-black font-mono" style={{ color: 'var(--theme-primary)' }}>{formattedSom} ریال</span>
+            </div>
+            <p className="text-[11px] text-slate-300 mt-1">{metadata.somDesc || 'سهمی از بازار که در ۱ تا ۳ سال اول کسب می‌کنیم'}</p>
           </div>
-          <p className="text-xs text-slate-200 mt-3">{somDesc}</p>
         </div>
+      </div>
 
+      {/* SVG Concentric visualization */}
+      <div className="md:col-span-5 flex justify-center relative">
+        <svg width="260" height="260" viewBox="0 0 260 260" className="drop-shadow-2xl">
+          {/* TAM Outer Circle */}
+          <circle 
+            cx="130" cy="130" r={rTam} 
+            className="transition-all duration-300 stroke-2 cursor-pointer" 
+            style={{ 
+              stroke: hoveredCircle === 'tam' ? 'var(--theme-primary)' : 'rgba(255,255,255,0.1)',
+              fill: hoveredCircle === 'tam' ? 'var(--theme-glow1)' : 'transparent'
+            }}
+            onMouseEnter={() => setHoveredCircle('tam')}
+            onMouseLeave={() => setHoveredCircle(null)}
+          />
+          {/* SAM Middle Circle */}
+          <circle 
+            cx="130" cy="130" r={rSam} 
+            className="transition-all duration-300 stroke-2 cursor-pointer" 
+            style={{ 
+              stroke: hoveredCircle === 'sam' ? 'var(--theme-secondary)' : 'var(--theme-border)',
+              fill: hoveredCircle === 'sam' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)'
+            }}
+            onMouseEnter={() => setHoveredCircle('sam')}
+            onMouseLeave={() => setHoveredCircle(null)}
+          />
+          {/* SOM Inner Circle */}
+          <circle 
+            cx="130" cy="130" r={rSom} 
+            className="transition-all duration-300 stroke-2 cursor-pointer animate-pulse" 
+            style={{ 
+              stroke: 'var(--theme-primary)',
+              fill: hoveredCircle === 'som' ? 'var(--theme-badge-bg)' : 'rgba(34, 211, 238, 0.12)'
+            }}
+            onMouseEnter={() => setHoveredCircle('som')}
+            onMouseLeave={() => setHoveredCircle(null)}
+          />
+
+          {/* Value overlays */}
+          <text x="130" y="134" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold" className="pointer-events-none font-mono">SOM</text>
+        </svg>
       </div>
     </div>
   );
@@ -238,7 +430,9 @@ function MarketLayout({ slide }: { slide: PitchDeckSlide }) {
 // 5. Business Model Layout
 function BusinessModelLayout({ slide }: { slide: PitchDeckSlide }) {
   const metadata = slide.metadata || {};
-  const models = metadata.models || [];
+  const rawModels = metadata.models;
+  const modelsList = Array.isArray(rawModels) ? rawModels : [];
+  const models = modelsList.filter(Boolean);
 
   return (
     <div className="space-y-4" dir="rtl">
@@ -249,21 +443,25 @@ function BusinessModelLayout({ slide }: { slide: PitchDeckSlide }) {
       
       {models.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {models.slice(0, 3).map((m: any, i: number) => (
-            <div key={i} className="bg-slate-900/60 border border-white/5 p-4 rounded-2xl hover:border-violet-500/30 transition-all flex flex-col justify-between">
-              <div className="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center mb-3">
-                <DollarSign className="w-4 h-4" />
+          {models.slice(0, 3).map((m: any, i: number) => {
+            const mTitle = safeString(m && typeof m === 'object' ? m.title : '');
+            const mDesc = safeString(m && typeof m === 'object' ? m.desc : '');
+            return (
+              <div key={i} className="bg-slate-900/60 border border-white/5 p-4 rounded-2xl hover:border-violet-500/30 transition-all flex flex-col justify-between">
+                <div className="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center mb-3">
+                  <DollarSign className="w-4 h-4" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-white">{mTitle}</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">{mDesc}</p>
+                </div>
               </div>
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold text-white">{m.title}</h4>
-                <p className="text-xs text-slate-400 leading-relaxed">{m.desc}</p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {slide.bullets.map((b, i) => (
+          {(slide.bullets || []).map((b, i) => (
             <div key={i} className="bg-slate-900/60 border border-white/5 p-4 rounded-2xl flex flex-col justify-between">
               <div className="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center mb-3">
                 <DollarSign className="w-4 h-4" />
@@ -280,38 +478,86 @@ function BusinessModelLayout({ slide }: { slide: PitchDeckSlide }) {
 // 6. Competition Layout
 function CompetitionLayout({ slide }: { slide: PitchDeckSlide }) {
   const metadata = slide.metadata || {};
-  const competitors = metadata.competitors || [];
+  const rawComps = metadata.competitors;
+  const compsList = Array.isArray(rawComps) ? rawComps : [];
+  const competitors = compsList.filter(Boolean);
 
   return (
     <div className="space-y-4" dir="rtl">
-      <h2 className="text-2xl font-black text-fuchsia-400 flex items-center gap-2">
-        <Layers className="w-6 h-6 text-fuchsia-400" />
+      <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: 'var(--theme-primary)' }}>
+        <Layers className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
         {slide.title}
       </h2>
 
       {competitors.length > 0 ? (
-        <div className="bg-slate-900/40 border border-white/5 rounded-2xl overflow-hidden">
-          <div className="grid grid-cols-12 bg-slate-900 border-b border-white/10 p-3 text-xs font-bold text-slate-400">
-            <div className="col-span-4">رقیب</div>
-            <div className="col-span-4 text-emerald-400">نقاط قوت (مزیت)</div>
-            <div className="col-span-4 text-rose-400">نقاط ضعف (شکاف)</div>
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* S - Strengths */}
+          <div className="bg-[var(--theme-card)] border border-emerald-500/20 p-4 rounded-2xl space-y-2">
+            <h4 className="text-xs font-black text-emerald-400 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              نقاط قوت ما (Strengths)
+            </h4>
+            <ul className="list-disc list-inside text-xs text-slate-300 space-y-1 pr-2">
+              {(slide.bullets || []).slice(0, 3).map((b, idx) => <li key={idx}>{b}</li>)}
+              {(slide.bullets || []).length === 0 && <li>مزیت انحصاری در سرعت و مقیاس کاربری</li>}
+            </ul>
           </div>
-          <div className="divide-y divide-white/5">
-            {competitors.map((c: any, i: number) => (
-              <div key={i} className="grid grid-cols-12 p-3 text-xs md:text-sm items-center hover:bg-slate-900/20">
-                <div className="col-span-4 font-bold text-white">{c.name}</div>
-                <div className="col-span-4 text-slate-300 pl-2">{c.strength}</div>
-                <div className="col-span-4 text-slate-400 pl-2">{c.weakness}</div>
-              </div>
-            ))}
+
+          {/* W - Weaknesses */}
+          <div className="bg-[var(--theme-card)] border border-rose-500/20 p-4 rounded-2xl space-y-2">
+            <h4 className="text-xs font-black text-rose-400 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-500" />
+              ضعف رقیبان و شکاف‌ها (Weaknesses)
+            </h4>
+            <div className="space-y-1.5 pr-2">
+              {competitors.slice(0, 3).map((c: any, idx: number) => {
+                const cName = safeString(c && typeof c === 'object' ? c.name : '');
+                const cWeakness = safeString(c && typeof c === 'object' ? (c.weakness || c.weaknesses) : '');
+                return (
+                  <div key={idx} className="text-xs text-slate-300">
+                    <strong className="text-white">{cName}:</strong> {cWeakness}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* O - Opportunities */}
+          <div className="bg-[var(--theme-card)] border border-cyan-500/20 p-4 rounded-2xl space-y-2">
+            <h4 className="text-xs font-black text-cyan-400 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-cyan-500" />
+              فرصت‌های رشد بازار (Opportunities)
+            </h4>
+            <p className="text-xs text-slate-300 leading-relaxed pr-2">
+              تمرکز روی سهم بازار آزاد شده به خاطر عدم انطباق رقبا با قوانین بومی و نبود خدمات پشتیبانی اختصاصی در ایران.
+            </p>
+          </div>
+
+          {/* T - Threats */}
+          <div className="bg-[var(--theme-card)] border border-amber-500/20 p-4 rounded-2xl space-y-2">
+            <h4 className="text-xs font-black text-amber-400 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              تهدیدها و قوت رقبا (Threats)
+            </h4>
+            <div className="space-y-1.5 pr-2">
+              {competitors.slice(0, 3).map((c: any, idx: number) => {
+                const cName = safeString(c && typeof c === 'object' ? c.name : '');
+                const cStrength = safeString(c && typeof c === 'object' ? (c.strength || c.strengths) : '');
+                return (
+                  <div key={idx} className="text-xs text-slate-300">
+                    <strong className="text-white">{cName}:</strong> {cStrength}
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       ) : (
         <div className="grid md:grid-cols-3 gap-4">
-          {slide.bullets.map((b, i) => (
-            <div key={i} className="bg-slate-900/40 border border-white/5 p-4 rounded-2xl flex gap-3 items-start">
-              <span className="w-2 h-2 rounded-full bg-fuchsia-500 mt-2 shrink-0" />
-              <p className="text-xs text-slate-300 leading-relaxed">{b}</p>
+          {(slide.bullets ?? []).map((b, i) => (
+            <div key={i} className="bg-[var(--theme-card)] border p-4 rounded-2xl flex gap-3 items-start" style={{ borderColor: 'var(--theme-border)' }}>
+              <span className="w-2 h-2 rounded-full bg-[var(--theme-primary)] mt-2 shrink-0" />
+              <p className="text-xs text-slate-300 leading-relaxed font-semibold">{b}</p>
             </div>
           ))}
         </div>
@@ -323,36 +569,58 @@ function CompetitionLayout({ slide }: { slide: PitchDeckSlide }) {
 // 7. Roadmap Timeline Layout
 function RoadmapLayout({ slide }: { slide: PitchDeckSlide }) {
   const metadata = slide.metadata || {};
-  const phases = metadata.phases || [];
+  const rawPhases = metadata.phases;
+  const phasesList = Array.isArray(rawPhases) ? rawPhases : [];
+  const phases = phasesList.filter(Boolean);
 
   return (
-    <div className="space-y-5" dir="rtl">
-      <h2 className="text-2xl font-black text-cyan-400 flex items-center gap-2">
-        <Milestone className="w-6 h-6" />
+    <div className="space-y-4" dir="rtl">
+      <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: 'var(--theme-primary)' }}>
+        <Milestone className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
         {slide.title}
       </h2>
 
       {phases.length > 0 ? (
-        <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-4 py-4">
-          {/* Connector line for desktop */}
-          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-cyan-500 to-violet-600 hidden md:block z-0 -translate-y-4" />
+        <div className="relative flex flex-col md:flex-row justify-between gap-4 py-8">
+          {/* Connector line */}
+          <div className="absolute top-[35px] left-8 right-8 h-0.5 hidden md:block opacity-35" style={{ backgroundColor: 'var(--theme-primary)' }} />
           
-          {phases.slice(0, 3).map((p: any, i: number) => (
-            <div key={i} className="relative z-10 w-full md:w-[30%] bg-slate-900 border border-white/10 p-4 rounded-2xl shadow-xl flex flex-col space-y-2 hover:border-cyan-500/40 transition-colors">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] bg-cyan-500/10 text-cyan-300 px-2 py-0.5 rounded-full font-bold">{p.phase}</span>
-                <span className="text-[10px] text-slate-400 font-mono">{p.date}</span>
+          {phases.slice(0, 5).map((p: any, i: number) => {
+            const pPhase = safeString(p && typeof p === 'object' ? p.phase : '');
+            const pDate = safeString(p && typeof p === 'object' ? p.date : '');
+            const pTitle = safeString(p && typeof p === 'object' ? p.title : '');
+            return (
+              <div key={i} className="relative z-10 flex-1 flex flex-col items-center">
+                {/* Timeline dot */}
+                <div 
+                  className="w-5 h-5 rounded-full border-4 mb-3 z-20 flex items-center justify-center transition-all duration-300"
+                  style={{ 
+                    backgroundColor: 'var(--theme-bg)',
+                    borderColor: 'var(--theme-primary)'
+                  }}
+                />
+                
+                {/* Content card */}
+                <div 
+                  className="w-full bg-[var(--theme-card)] border p-4 rounded-2xl flex flex-col space-y-2 hover:scale-[1.02] transition-transform duration-300"
+                  style={{ borderColor: 'var(--theme-border)' }}
+                >
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-black uppercase" style={{ backgroundColor: 'var(--theme-badge-bg)', color: 'var(--theme-primary)' }}>{pPhase}</span>
+                    <span className="text-[10px] text-slate-400 font-mono font-semibold">{pDate}</span>
+                  </div>
+                  <h4 className="text-xs font-bold text-white leading-relaxed">{pTitle}</h4>
+                </div>
               </div>
-              <h4 className="text-sm font-bold text-white">{p.title}</h4>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
-        <div className="space-y-3">
-          {slide.bullets.map((b, i) => (
-            <div key={i} className="flex gap-3 items-center bg-slate-900/40 border border-white/5 p-3 rounded-2xl">
-              <span className="text-xs font-bold text-cyan-400 shrink-0">گام {i + 1}:</span>
-              <p className="text-sm text-slate-300 font-medium">{b}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {(slide.bullets || []).map((b, i) => (
+            <div key={i} className="bg-[var(--theme-card)] border p-4 rounded-2xl flex gap-3 items-start" style={{ borderColor: 'var(--theme-border)' }}>
+              <span className="w-6 h-6 rounded-lg bg-[var(--theme-badge-bg)] flex items-center justify-center text-xs font-bold shrink-0 mt-0.5" style={{ color: 'var(--theme-primary)' }}>{i+1}</span>
+              <p className="text-xs text-slate-300 leading-relaxed font-semibold">{b}</p>
             </div>
           ))}
         </div>
@@ -364,27 +632,64 @@ function RoadmapLayout({ slide }: { slide: PitchDeckSlide }) {
 // 8. Team Layout
 function TeamLayout({ slide }: { slide: PitchDeckSlide }) {
   const metadata = slide.metadata || {};
-  const members = metadata.members || [];
+  const rawTeam = metadata.team || metadata.members || [];
+  const teamList = Array.isArray(rawTeam) ? rawTeam : [];
+  const team = teamList.filter(Boolean);
+
+  const getRoleBadgeStyle = (role: any) => {
+    const r = String(role || '').toLowerCase();
+    if (r.includes('founder') || r.includes('ceo') || r.includes('بنیان') || r.includes('مدیر')) {
+      return { border: 'rgba(16, 185, 129, 0.2)', bg: 'rgba(16, 185, 129, 0.1)', text: '#10b981' }; // Emerald
+    }
+    if (r.includes('cto') || r.includes('tech') || r.includes('فنی') || r.includes('برنامه')) {
+      return { border: 'rgba(6, 182, 212, 0.2)', bg: 'rgba(6, 182, 212, 0.1)', text: '#06b6d4' }; // Cyan
+    }
+    if (r.includes('cmo') || r.includes('growth') || r.includes('بازار') || r.includes('رشد')) {
+      return { border: 'rgba(245, 158, 11, 0.2)', bg: 'rgba(245, 158, 11, 0.1)', text: '#f59e0b' }; // Amber
+    }
+    return { border: 'var(--theme-border)', bg: 'var(--theme-badge-bg)', text: 'var(--theme-primary)' };
+  };
 
   return (
     <div className="space-y-4" dir="rtl">
-      <h2 className="text-2xl font-black text-indigo-400 flex items-center gap-2">
-        <Users className="w-6 h-6 text-indigo-400" />
+      <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: 'var(--theme-primary)' }}>
+        <Users className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
         {slide.title}
       </h2>
 
-      {members.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {members.slice(0, 3).map((m: any, i: number) => {
-            const initials = m.name ? m.name.split(' ').map((n: string) => n[0]).join('') : '?';
+      {team.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {team.slice(0, 6).map((m: any, i: number) => {
+            const mName = safeString(m && typeof m === 'object' ? m.name : '');
+            const mRole = safeString(m && typeof m === 'object' ? m.role : '');
+            const initials = mName ? mName.split(' ').map((n: string) => n[0]).join('') : '?';
+            const badgeStyle = getRoleBadgeStyle(mRole);
             return (
-              <div key={i} className="bg-slate-900 border border-white/5 p-4 rounded-2xl flex items-center gap-3.5">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-lg shadow-indigo-500/20">
-                  {initials}
+              <div 
+                key={i} 
+                className="bg-[var(--theme-card)] border p-4 rounded-2xl flex items-center gap-3 hover:scale-[1.01] transition-transform duration-300"
+                style={{ borderColor: 'var(--theme-border)' }}
+              >
+                <div 
+                  className="w-12 h-12 rounded-xl text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-lg"
+                  style={{ 
+                    background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-secondary))',
+                  }}
+                >
+                  {safeString(m.initials) || initials}
                 </div>
-                <div className="space-y-0.5 overflow-hidden">
-                  <h4 className="text-sm font-bold text-white truncate">{m.name}</h4>
-                  <p className="text-xs text-indigo-300 font-medium truncate">{m.role}</p>
+                <div className="space-y-1 overflow-hidden flex-1 text-right">
+                  <h4 className="text-xs font-bold text-white truncate">{mName}</h4>
+                  <span 
+                    className="inline-block text-[9px] font-black px-2 py-0.5 rounded-full border"
+                    style={{ 
+                      backgroundColor: badgeStyle.bg,
+                      color: badgeStyle.text,
+                      borderColor: badgeStyle.border
+                    }}
+                  >
+                    {mRole}
+                  </span>
                 </div>
               </div>
             );
@@ -392,9 +697,9 @@ function TeamLayout({ slide }: { slide: PitchDeckSlide }) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {slide.bullets.map((b, i) => (
-            <div key={i} className="bg-slate-900/60 border border-white/5 p-4 rounded-xl flex gap-3 items-center">
-              <div className="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center shrink-0">
+          {(slide.bullets || []).map((b, i) => (
+            <div key={i} className="bg-[var(--theme-card)] border p-4 rounded-xl flex gap-3 items-center" style={{ borderColor: 'var(--theme-border)' }}>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--theme-badge-bg)', color: 'var(--theme-primary)' }}>
                 <Users className="w-5 h-5" />
               </div>
               <p className="text-xs text-slate-300 leading-relaxed font-semibold">{b}</p>
@@ -409,39 +714,70 @@ function TeamLayout({ slide }: { slide: PitchDeckSlide }) {
 // 9. Ask / Funding Layout
 function AskLayout({ slide }: { slide: PitchDeckSlide }) {
   const metadata = slide.metadata || {};
-  const amount = metadata.amount || "نامشخص";
-  const runway = metadata.runway || "نامشخص";
-  const use = metadata.use || "توسعه محصول و مارکتینگ";
+  const amount = safeString(metadata.amount || "نامشخص");
+  const runway = safeString(metadata.runway || "نامشخص");
+  const use = safeString(metadata.use || "توسعه محصول و مارکتینگ");
+  
+  // Budget breakdown metadata mapping
+  const rawBudget = metadata.budget;
+  const budgetList = Array.isArray(rawBudget) ? rawBudget : [];
+  const budget = budgetList.length > 0 ? budgetList.filter(Boolean) : [
+    { category: "توسعه محصول و تحقیق و توسعه", percentage: 45 },
+    { category: "مارکتینگ و جذب مشتری", percentage: 35 },
+    { category: "عملیات و تیم اداری", percentage: 20 }
+  ];
+
+  const colors = ["bg-cyan-500", "bg-violet-500", "bg-emerald-500", "bg-amber-500"];
 
   return (
     <div className="grid md:grid-cols-12 gap-6 items-center" dir="rtl">
-      <div className="md:col-span-6 space-y-4">
-        <h2 className="text-2xl font-black text-amber-400 flex items-center gap-2">
-          <DollarSign className="w-6 h-6 text-amber-500" />
+      {/* Left: General Funding Ask */}
+      <div className="md:col-span-5 space-y-3">
+        <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: 'var(--theme-primary)' }}>
+          <DollarSign className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
           {slide.title}
         </h2>
-        <div className="space-y-3">
-          <div className="bg-slate-900 border border-white/5 p-4 rounded-2xl flex flex-col justify-center">
-            <span className="text-xs text-slate-400 font-bold mb-1">مبلغ سرمایه درخواستی</span>
-            <span className="text-2xl font-black text-amber-400">{amount}</span>
+        <div className="bg-[var(--theme-card)] border p-4 rounded-2xl space-y-3" style={{ borderColor: 'var(--theme-border)' }}>
+          <div>
+            <span className="text-[10px] text-slate-400 font-bold block mb-1">سرمایه مورد نیاز</span>
+            <span className="text-xl md:text-2xl font-black" style={{ color: 'var(--theme-primary)' }}>{amount}</span>
           </div>
-          <div className="bg-slate-900 border border-white/5 p-4 rounded-2xl flex flex-col justify-center">
-            <span className="text-xs text-slate-400 font-bold mb-1">طول دوره مصرف (Runway)</span>
-            <span className="text-lg font-bold text-white">{runway}</span>
+          <div>
+            <span className="text-[10px] text-slate-400 font-bold block mb-1">مدت زمان بقا (Runway)</span>
+            <span className="text-sm font-bold text-white">{runway}</span>
           </div>
         </div>
       </div>
-      
-      <div className="md:col-span-6 space-y-3">
-        <div className="bg-slate-900/60 border border-amber-500/20 p-5 rounded-2xl space-y-2">
-          <h4 className="text-xs text-amber-400 font-bold uppercase tracking-wider">محل مصرف سرمایه</h4>
-          <p className="text-xs md:text-sm text-slate-200 leading-relaxed font-semibold">{use}</p>
-        </div>
-        {slide.bullets.length > 0 && (
-          <div className="p-3 bg-slate-950 border border-white/5 rounded-xl text-center">
-            <p className="text-xs text-slate-400 italic">{slide.bullets[0]}</p>
+
+      {/* Right: Sleek Budget Progress Allocation Card */}
+      <div className="md:col-span-7">
+        <div className="bg-[var(--theme-card)] border p-5 rounded-2xl space-y-4" style={{ borderColor: 'var(--theme-border)' }}>
+          <h4 className="text-xs font-black text-white pb-2 border-b" style={{ borderColor: 'var(--theme-border)' }}>توزیع تخصیص منابع بودجه</h4>
+          <div className="space-y-3.5">
+            {budget.map((b: any, idx: number) => {
+              const barColor = colors[idx % colors.length];
+              const bCategory = safeString(b && typeof b === 'object' ? b.category : '');
+              const bPercentageVal = parseNum(b && typeof b === 'object' ? b.percentage : 0);
+              const barWidth = Math.max(0, Math.min(100, bPercentageVal));
+
+              return (
+                <div key={idx} className="space-y-1">
+                  <div className="flex justify-between items-center text-xs font-semibold">
+                    <span className="text-slate-300">{bCategory}</span>
+                    <span className="font-mono" style={{ color: 'var(--theme-primary)' }}>{bPercentageVal}%</span>
+                  </div>
+                  {/* Progress bar container */}
+                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${barColor} rounded-full transition-all duration-500`}
+                      style={{ width: `${barWidth}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
@@ -456,7 +792,7 @@ function GenericLayout({ slide }: { slide: PitchDeckSlide }) {
         {slide.title}
       </h2>
       <div className="space-y-3">
-        {slide.bullets.map((b, i) => (
+        {(slide.bullets || []).map((b, i) => (
           <div key={i} className="flex gap-3 items-start bg-slate-900/40 border border-white/5 p-3 rounded-2xl">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-2.5 shrink-0" />
             <p className="text-sm md:text-base leading-relaxed text-slate-300 font-semibold">{b}</p>

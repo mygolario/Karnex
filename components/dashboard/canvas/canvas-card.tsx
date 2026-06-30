@@ -6,15 +6,18 @@ import { CSS } from "@dnd-kit/utilities";
 import { cn } from "@/lib/utils";
 import {
   X, GripVertical, MoreVertical, Sparkles, Copy, Trash2,
-  CheckSquare, Link2, BarChart3, Vote, StickyNote, type LucideIcon,
+  CheckSquare, Link2, BarChart3, Vote, StickyNote, Square, Circle,
+  Plus, Upload, type LucideIcon,
 } from "lucide-react";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
   DropdownMenuSeparator, DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
-import type { CardData, CardColor, CardType } from "@/lib/canvas/types";
+import type { CardData, CardColor, CardType, ChecklistItem } from "@/lib/canvas/types";
 import { CARD_COLOR_VARIANTS } from "@/lib/canvas/color-variants";
 import { useCanvasStore } from "@/lib/canvas/store";
+import { useProject } from "@/contexts/project-context";
+import { toast } from "sonner";
 
 interface CanvasCardProps {
   card: CardData;
@@ -26,13 +29,15 @@ interface CanvasCardProps {
   searchQuery?: string;
 }
 
-const CARD_TYPE_ICONS: Record<CardType, LucideIcon> = {
+const CARD_TYPE_ICONS: Record<string, LucideIcon> = {
   NOTE: StickyNote,
   CHECKLIST: CheckSquare,
   IMAGE: Link2,
   LINK: Link2,
   METRIC: BarChart3,
   VOTE: Vote,
+  SHAPE_RECT: Square,
+  SHAPE_CIRCLE: Circle,
 };
 
 const COLOR_OPTIONS: CardColor[] = [
@@ -73,6 +78,7 @@ export function CanvasCard({
 
   const updateCardColor = useCanvasStore((s) => s.updateCardColor);
   const updateCardType = useCanvasStore((s) => s.updateCardType);
+  const updateCardMetadata = useCanvasStore((s) => s.updateCardMetadata);
   const duplicateCard = useCanvasStore((s) => s.duplicateCard);
   const selectedCardIds = useCanvasStore((s) => s.selectedCardIds);
   const toggleCardSelection = useCanvasStore((s) => s.toggleCardSelection);
@@ -148,6 +154,7 @@ export function CanvasCard({
 
   return (
     <div
+      data-card-id={card.id}
       ref={(node) => { setNodeRef(node); cardRef.current = node; }}
       style={{
         ...style,
@@ -157,6 +164,7 @@ export function CanvasCard({
       } as React.CSSProperties}
       className={cn(
         "group relative flex flex-col rounded-xl border shadow-sm transition-all duration-200 no-pan",
+        "bg-background/80 backdrop-blur-xl",
         "bg-gradient-to-br",
         variant.bg, variant.border, variant.text,
         variant.darkBg, variant.darkText, variant.darkBorder,
@@ -165,11 +173,12 @@ export function CanvasCard({
         isOverlay
           ? "cursor-grabbing shadow-2xl rotate-2 scale-105 z-50 opacity-95 ring-2 ring-black/10"
           : "hover:shadow-lg hover:-translate-y-0.5 hover:rotate-0",
-        isSelected && "ring-2 ring-primary ring-offset-1 ring-offset-background",
+        isSelected && "ring-2 ring-indigo-500 ring-offset-1 ring-offset-background shadow-[0_0_20px_var(--glow-color)]",
         matchesSearch && "ring-2 ring-amber-400",
         isEditing && "ring-2 ring-primary shadow-lg rotate-0",
         card.isAIGenerated && "ai-glow-card",
-        "cyber-pastel-card"
+        card.cardType === "SHAPE_CIRCLE" && "rounded-full",
+        "cyber-pastel-card border-border/50"
       )}
       onClick={(e) => {
         if (e.shiftKey) {
@@ -259,19 +268,16 @@ export function CanvasCard({
         </DropdownMenu>
       </div>
 
-      <textarea
-        ref={textareaRef}
-        value={card.content}
-        onChange={(e) => onUpdate(card.id, e.target.value)}
-        onFocus={() => setIsEditing(true)}
-        onBlur={() => setIsEditing(false)}
-        onClick={(e) => e.stopPropagation()}
-        placeholder="بنویسید..."
-        className={cn(
-          "w-full bg-transparent resize-none border-none focus:ring-0 text-sm leading-relaxed px-2.5 pb-2.5 pt-0.5 outline-none flex-1",
-          "placeholder:text-black/20 dark:placeholder:text-white/20 font-medium no-scrollbar"
-        )}
-        spellCheck={false}
+      <CardBody
+        card={card}
+        sectionId={sectionId}
+        isEditing={isEditing}
+        isOverlay={isOverlay}
+        textareaRef={textareaRef}
+        onUpdate={onUpdate}
+        onFocusEdit={() => setIsEditing(true)}
+        onBlurEdit={() => setIsEditing(false)}
+        updateCardMetadata={updateCardMetadata}
       />
 
       {isEditing && !isOverlay && (
@@ -287,27 +293,236 @@ export function CanvasCard({
       {viewMode === "freeform" && activeTool === "arrow" && (
         <>
           <div
-            className="connection-handle absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-crosshair no-drag"
+            className="connection-handle absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-crosshair no-drag w-3 h-3 rounded-full bg-indigo-500 border-2 border-white shadow-md opacity-80 hover:opacity-100 hover:scale-125 transition-all"
             data-card-id={card.id}
             data-handle-pos="top"
           />
           <div
-            className="connection-handle absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 cursor-crosshair no-drag"
+            className="connection-handle absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 cursor-crosshair no-drag w-3 h-3 rounded-full bg-indigo-500 border-2 border-white shadow-md opacity-80 hover:opacity-100 hover:scale-125 transition-all"
             data-card-id={card.id}
             data-handle-pos="bottom"
           />
           <div
-            className="connection-handle absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-crosshair no-drag"
+            className="connection-handle absolute left-0 top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-crosshair no-drag w-3 h-3 rounded-full bg-violet-500 border-2 border-white shadow-md opacity-80 hover:opacity-100 hover:scale-125 transition-all"
             data-card-id={card.id}
             data-handle-pos="left"
           />
           <div
-            className="connection-handle absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 cursor-crosshair no-drag"
+            className="connection-handle absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 cursor-crosshair no-drag w-3 h-3 rounded-full bg-violet-500 border-2 border-white shadow-md opacity-80 hover:opacity-100 hover:scale-125 transition-all"
             data-card-id={card.id}
             data-handle-pos="right"
           />
         </>
       )}
     </div>
+  );
+}
+
+function CardBody({
+  card,
+  sectionId,
+  isEditing,
+  isOverlay,
+  textareaRef,
+  onUpdate,
+  onFocusEdit,
+  onBlurEdit,
+  updateCardMetadata,
+}: {
+  card: CardData;
+  sectionId: string;
+  isEditing: boolean;
+  isOverlay?: boolean;
+  textareaRef: React.RefObject<HTMLTextAreaElement | null>;
+  onUpdate: (id: string, content: string) => void;
+  onFocusEdit: () => void;
+  onBlurEdit: () => void;
+  updateCardMetadata: (sectionId: string, cardId: string, metadata: Record<string, unknown>) => void;
+}) {
+  const { activeProject: plan } = useProject();
+  const items = (card.metadata?.items as ChecklistItem[] | undefined) ?? [];
+  const metricCurrent = Number(card.metadata?.current ?? 0);
+  const metricTarget = Number(card.metadata?.target ?? 100);
+  const metricUnit = String(card.metadata?.unit ?? "%");
+  const linkUrl = String(card.metadata?.url ?? card.content ?? "");
+  const imageUrl = String(card.metadata?.url ?? "");
+
+  if (card.cardType === "SHAPE_RECT" || card.cardType === "SHAPE_CIRCLE") {
+    return (
+      <div className="flex-1 flex items-center justify-center p-2 opacity-60">
+        {card.cardType === "SHAPE_RECT" ? <Square size={24} /> : <Circle size={24} />}
+      </div>
+    );
+  }
+
+  if (card.cardType === "CHECKLIST") {
+    const toggleItem = (itemId: string) => {
+      const updated = items.map((it) =>
+        it.id === itemId ? { ...it, done: !it.done } : it
+      );
+      updateCardMetadata(sectionId, card.id, { items: updated });
+    };
+    const addItem = () => {
+      updateCardMetadata(sectionId, card.id, {
+        items: [...items, { id: `item-${Date.now()}`, text: "", done: false }],
+      });
+    };
+    return (
+      <div className="flex-1 px-2.5 pb-2.5 space-y-1 overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
+        {items.map((item) => (
+          <label key={item.id} className="flex items-start gap-2 text-xs cursor-pointer">
+            <input
+              type="checkbox"
+              checked={item.done}
+              onChange={() => toggleItem(item.id)}
+              className="mt-0.5 rounded"
+            />
+            <input
+              value={item.text}
+              onChange={(e) => {
+                const updated = items.map((it) =>
+                  it.id === item.id ? { ...it, text: e.target.value } : it
+                );
+                updateCardMetadata(sectionId, card.id, { items: updated });
+              }}
+              className="flex-1 bg-transparent border-none outline-none text-sm"
+              placeholder="آیتم..."
+            />
+          </label>
+        ))}
+        <button type="button" onClick={addItem} className="flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground">
+          <Plus size={10} /> افزودن
+        </button>
+        {items.filter((it) => it.text.trim()).map((item) => (
+          <button
+            key={`promote-${item.id}`}
+            type="button"
+            className="text-[10px] text-primary hover:underline block"
+            onClick={async () => {
+              if (!plan?.id || item.roadmapStepId) return;
+              const res = await fetch(`/api/projects/${plan.id}/canvas/promote-task`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  cardId: card.id,
+                  sectionId,
+                  itemId: item.id,
+                  taskTitle: item.text,
+                }),
+              });
+              if (res.ok) {
+                const data = await res.json();
+                const updated = items.map((it) =>
+                  it.id === item.id ? { ...it, roadmapStepId: data.task.id } : it
+                );
+                updateCardMetadata(sectionId, card.id, { items: updated });
+                toast.success("به نقشه راه اضافه شد");
+              }
+            }}
+          >
+            {item.roadmapStepId ? "✓ در نقشه راه" : "+ افزودن به نقشه راه"}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  if (card.cardType === "METRIC") {
+    const pct = metricTarget > 0 ? Math.min(100, Math.round((metricCurrent / metricTarget) * 100)) : 0;
+    return (
+      <div className="flex-1 px-2.5 pb-2.5 space-y-2" onClick={(e) => e.stopPropagation()}>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={metricCurrent}
+            onChange={(e) => updateCardMetadata(sectionId, card.id, { current: Number(e.target.value) })}
+            className="w-16 text-xs bg-muted/50 rounded px-1 py-0.5 border border-border/50"
+          />
+          <span className="text-xs text-muted-foreground self-center">/</span>
+          <input
+            type="number"
+            value={metricTarget}
+            onChange={(e) => updateCardMetadata(sectionId, card.id, { target: Number(e.target.value) })}
+            className="w-16 text-xs bg-muted/50 rounded px-1 py-0.5 border border-border/50"
+          />
+          <span className="text-xs text-muted-foreground self-center">{metricUnit}</span>
+        </div>
+        <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-indigo-500 to-violet-500 transition-all" style={{ width: `${pct}%` }} />
+        </div>
+        <input
+          value={card.content}
+          onChange={(e) => onUpdate(card.id, e.target.value)}
+          placeholder="نام KPI..."
+          className="w-full text-xs bg-transparent border-none outline-none"
+        />
+      </div>
+    );
+  }
+
+  if (card.cardType === "LINK") {
+    return (
+      <div className="flex-1 px-2.5 pb-2.5 space-y-2" onClick={(e) => e.stopPropagation()}>
+        <input
+          value={linkUrl}
+          onChange={(e) => {
+            updateCardMetadata(sectionId, card.id, { url: e.target.value });
+            onUpdate(card.id, e.target.value);
+          }}
+          placeholder="https://..."
+          className="w-full text-xs bg-muted/50 rounded px-2 py-1 border border-border/50"
+          dir="ltr"
+        />
+        {linkUrl.startsWith("http") && (
+          <a href={linkUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary truncate block">
+            {linkUrl}
+          </a>
+        )}
+      </div>
+    );
+  }
+
+  if (card.cardType === "IMAGE") {
+    const handleUpload = async (file: File) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("folder", "canvas");
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      if (res.ok) {
+        const data = await res.json();
+        updateCardMetadata(sectionId, card.id, { url: data.url, fileName: data.fileName });
+      }
+    };
+    return (
+      <div className="flex-1 px-2.5 pb-2.5" onClick={(e) => e.stopPropagation()}>
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={imageUrl} alt="" className="w-full h-24 object-cover rounded-lg" />
+        ) : (
+          <label className="flex flex-col items-center justify-center h-24 border border-dashed border-border/50 rounded-lg cursor-pointer hover:bg-muted/30">
+            <Upload size={16} className="text-muted-foreground mb-1" />
+            <span className="text-[10px] text-muted-foreground">آپلود تصویر</span>
+            <input type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files?.[0] && handleUpload(e.target.files[0])} />
+          </label>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <textarea
+      ref={textareaRef as React.RefObject<HTMLTextAreaElement>}
+      value={card.content}
+      onChange={(e) => onUpdate(card.id, e.target.value)}
+      onFocus={onFocusEdit}
+      onBlur={onBlurEdit}
+      onClick={(e) => e.stopPropagation()}
+      placeholder="بنویسید..."
+      className={cn(
+        "w-full bg-transparent resize-none border-none focus:ring-0 text-sm leading-relaxed px-2.5 pb-2.5 pt-0.5 outline-none flex-1",
+        "placeholder:text-black/20 dark:placeholder:text-white/20 font-medium no-scrollbar"
+      )}
+      spellCheck={false}
+    />
   );
 }

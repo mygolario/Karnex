@@ -2,7 +2,7 @@
 
 import {
   MousePointer2, StickyNote, Type, Pen, ArrowRight, Eraser,
-  Image, Sparkles, ChevronRight, ChevronLeft,
+  Image, Sparkles, ChevronRight, ChevronLeft, Square, Circle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,8 @@ import { useState } from "react";
 const TOOLS: { id: ToolType; icon: LucideIcon; label: string; shortcut?: string; freeformOnly?: boolean }[] = [
   { id: "select", icon: MousePointer2, label: "انتخاب", shortcut: "V" },
   { id: "sticky", icon: StickyNote, label: "یادداشت", shortcut: "N" },
+  { id: "shape_rect", icon: Square, label: "مستطیل", freeformOnly: true },
+  { id: "shape_circle", icon: Circle, label: "دایره", freeformOnly: true },
   { id: "text", icon: Type, label: "متن", shortcut: "T", freeformOnly: true },
   { id: "pen", icon: Pen, label: "قلم", shortcut: "P", freeformOnly: true },
   { id: "arrow", icon: ArrowRight, label: "اتصال", shortcut: "A", freeformOnly: true },

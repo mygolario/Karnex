@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import {
   Loader2, LayoutGrid, Sparkles, Download, Share2, Undo2, Redo2,
-  ChevronDown, Check, CloudOff, AlertCircle, Search, Network, type LucideIcon,
+  ChevronDown, Check, CloudOff, AlertCircle, Search, type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,14 +18,22 @@ import { getCompletenessScore } from "@/lib/canvas/completeness";
 import type { CanvasType } from "@/lib/canvas/types";
 import { toPersianDigits } from "@/lib/utils";
 import { CanvasPresentMode } from "./canvas-present-mode";
+import { useProject } from "@/contexts/project-context";
+import { toast } from "sonner";
+
+// #region agent log
+fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b69372'},body:JSON.stringify({sessionId:'b69372',location:'canvas-topbar.tsx:module',message:'canvas-topbar module evaluated',data:{hasNetworkImport:false,version:'no-network-import'},timestamp:Date.now(),hypothesisId:'H1,H2'})}).catch(()=>{});
+// #endregion
 
 export function CanvasTopBar() {
+  // #region agent log
+  fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b69372'},body:JSON.stringify({sessionId:'b69372',location:'canvas-topbar.tsx:CanvasTopBar',message:'CanvasTopBar render',data:{},timestamp:Date.now(),hypothesisId:'H5'})}).catch(()=>{});
+  // #endregion
+  const { activeProject: plan } = useProject();
   const { saveStatus, undo, redo, canUndo, canRedo } = useCanvasActions();
   const canvasState = useCanvasStore((s) => s.canvasState);
   const canvasType = useCanvasStore((s) => s.canvasType);
   const canvasName = useCanvasStore((s) => s.canvasName);
-  const viewMode = useCanvasStore((s) => s.viewMode);
-  const setViewMode = useCanvasStore((s) => s.setViewMode);
   const setCanvasName = useCanvasStore((s) => s.setCanvasName);
   const setCanvasType = useCanvasStore((s) => s.setCanvasType);
   const setExportDialogOpen = useCanvasStore((s) => s.setExportDialogOpen);
@@ -51,6 +59,24 @@ export function CanvasTopBar() {
 
   const status = saveStatusDisplay[saveStatus] || saveStatusDisplay.idle;
   const StatusIcon = status.icon;
+
+  const handleShare = async () => {
+    if (!plan?.id) return;
+    try {
+      const res = await fetch(`/api/projects/${plan.id}/share`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: "canvas" }),
+      });
+      const data = await res.json();
+      if (data.url) {
+        await navigator.clipboard.writeText(data.url);
+        toast.success("لینک اشتراک‌گذاری کپی شد");
+      }
+    } catch {
+      toast.error("خطا در ایجاد لینک اشتراک");
+    }
+  };
 
   return (
     <div className="sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-2.5 border-b border-border bg-background/80 backdrop-blur-xl canvas-export-exclude" data-tour-id="canvas-header">
@@ -122,34 +148,6 @@ export function CanvasTopBar() {
         </div>
       </div>
 
-      {/* View mode toggle */}
-      <div className="flex items-center bg-muted/75 p-0.5 rounded-lg border border-border/80 shadow-sm canvas-export-exclude">
-        <button
-          onClick={() => setViewMode("grid")}
-          className={cn(
-            "flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold transition-all duration-200",
-            viewMode === "grid"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <LayoutGrid size={13} />
-          نمای شبکه‌ای
-        </button>
-        <button
-          onClick={() => setViewMode("freeform")}
-          className={cn(
-            "flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold transition-all duration-200",
-            viewMode === "freeform"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-        >
-          <Network size={13} />
-          نمای آزاد
-        </button>
-      </div>
-
       <div className="flex items-center gap-1.5">
         <div className={cn("flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-md transition-all", status.color)}>
           <StatusIcon size={12} className={cn(saveStatus === "saving" && "animate-spin")} />
@@ -200,7 +198,7 @@ export function CanvasTopBar() {
           <Download size={15} />
         </Button>
 
-        <Button variant="ghost" size="icon" className="h-8 w-8" title="Share">
+        <Button variant="ghost" size="icon" className="h-8 w-8" title="Share" onClick={handleShare}>
           <Share2 size={15} />
         </Button>
       </div>

@@ -7,16 +7,18 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { cn, toPersianDigits } from "@/lib/utils";
 import { PILLARS } from "@/app/new-project/genesis-constants";
+import type { Pillar } from "@/app/new-project/genesis-constants";
 import { useGenesisWizard } from "./genesis-wizard-context";
 import { suggestProjectNameAction } from "@/lib/ai-actions";
 import { Sparkles, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { toast } from "sonner";
 
 export function StepDetails() {
   const {
     pillar,
     projectName,
+    projectVision,
     answers,
     activeSubStep,
     setName,
@@ -29,11 +31,50 @@ export function StepDetails() {
   const [suggestingNames, setSuggestingNames] = useState(false);
   const [nameSuggestions, setNameSuggestions] = useState<string[]>([]);
 
+  // Build a rich, human-readable context string for the AI name suggestion.
+  const buildIdeaContext = useCallback(
+    (pillarDef: Pillar): string => {
+      const parts: string[] = [];
+
+      parts.push(`دسته کسب‌وکار: ${pillarDef.title}`);
+      parts.push(`شرح: ${pillarDef.description}`);
+
+      if (projectName.trim()) {
+        parts.push(`نام فعلی کاربر: ${projectName.trim()}`);
+      }
+
+      if (projectVision.trim()) {
+        parts.push(`چشم‌انداز پروژه: ${projectVision.trim()}`);
+      }
+
+      const answeredLabels: string[] = [];
+      for (const q of pillarDef.questions) {
+        const optId = answers[q.id];
+        if (!optId) continue;
+        const opt = q.options.find((o) => o.id === optId);
+        if (opt) {
+          answeredLabels.push(`${q.question}: ${opt.label}`);
+        }
+      }
+      if (answeredLabels.length > 0) {
+        parts.push(`جزئیات: ${answeredLabels.join("، ")}`);
+      }
+
+      if (pillarDef.projectPlaceholder) {
+        parts.push(`سبک نام‌های مرجع: ${pillarDef.projectPlaceholder}`);
+      }
+
+      return parts.join("\n");
+    },
+    [projectName, projectVision, answers]
+  );
+
   const p = PILLARS.find((x) => x.id === pillar);
   if (!p) return null;
 
   const coreQuestions = p.questions || [];
   const totalSubSteps = coreQuestions.length + 1; // name + questions (vision is its own phase)
+  const canSuggestNames = projectName.trim().length >= 2;
 
   // Determine validity of the current sub-step.
   let isCurrentValid = false;
@@ -110,7 +151,10 @@ export function StepDetails() {
               <Input
                 id="projectName"
                 value={projectName}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setNameSuggestions([]);
+                }}
                 placeholder={p.projectPlaceholder}
                 className="h-14 text-lg bg-card/50 border-border/50 focus:border-brand-primary/50 transition-all font-medium"
                 autoFocus
@@ -123,22 +167,42 @@ export function StepDetails() {
                 variant="outline"
                 size="sm"
                 className="gap-1.5"
-                disabled={suggestingNames}
+                disabled={suggestingNames || !canSuggestNames}
                 onClick={async () => {
-                  const idea = Object.values(answers).join(" ") || p.title;
+                  const idea = buildIdeaContext(p);
+                  if (!idea) return;
+                  // #region agent log
+                  fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e3898a'},body:JSON.stringify({sessionId:'e3898a',location:'step-details.tsx:onClick',message:'suggest-name click',data:{projectName:projectName.trim(),ideaLength:idea.length,ideaPreview:idea.slice(0,200),pillar:p.id,runId:'post-fix'},timestamp:Date.now(),hypothesisId:'H3-H4'})}).catch(()=>{});
+                  // #endregion
                   setSuggestingNames(true);
+                  setNameSuggestions([]);
                   const res = await suggestProjectNameAction(idea);
                   setSuggestingNames(false);
+                  // #region agent log
+                  fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e3898a'},body:JSON.stringify({sessionId:'e3898a',location:'step-details.tsx:onClick:response',message:'suggest-name response',data:{success:res.success,names:res.data?.names,isLimitError:res.isLimitError,error:res.error,runId:'post-fix'},timestamp:Date.now(),hypothesisId:'H1-H5'})}).catch(()=>{});
+                  // #endregion
                   if (res.success && res.data?.names?.length) {
                     setNameSuggestions(res.data.names);
                   } else if (res.isLimitError) {
                     toast.error("محدودیت AI");
+                  } else {
+                    toast.error("پیشنهاد نام ممکن نشد. دوباره تلاش کنید.");
                   }
                 }}
               >
                 {suggestingNames ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                 پیشنهاد نام با AI
               </Button>
+              {!canSuggestNames && !suggestingNames && (
+                <p className="text-xs text-muted-foreground">
+                  برای پیشنهاد نام، حداقل ۲ حرف از ایده یا نام اولیه برند خود را وارد کنید.
+                </p>
+              )}
+              {canSuggestNames && !nameSuggestions.length && !suggestingNames && (
+                <p className="text-xs text-muted-foreground">
+                  AI بر اساس نام و نوع کسب‌وکار شما، نام‌های مرتبط پیشنهاد می‌دهد.
+                </p>
+              )}
               {nameSuggestions.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {nameSuggestions.map((n) => (

@@ -9,6 +9,7 @@ import {
 import { sortableKeyboardCoordinates, SortableContext, rectSortingStrategy } from "@dnd-kit/sortable";
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
 import { useCanvasStore } from "@/lib/canvas/store";
+import { CANVAS_ZOOM, useCanvasViewport } from "./canvas-viewport-context";
 import { CanvasSection } from "./canvas-section";
 import { CanvasCard } from "./canvas-card";
 import { getTemplate } from "@/lib/canvas/templates";
@@ -120,6 +121,7 @@ export function CanvasBoard({ boardRef }: CanvasBoardProps) {
   const canvasState = useCanvasStore((s) => s.canvasState);
   const canvasType = useCanvasStore((s) => s.canvasType);
   const addCard = useCanvasStore((s) => s.addCard);
+  const addCardAtPosition = useCanvasStore((s) => s.addCardAtPosition);
   const updateCard = useCanvasStore((s) => s.updateCard);
   const deleteCard = useCanvasStore((s) => s.deleteCard);
   const moveCard = useCanvasStore((s) => s.moveCard);
@@ -128,9 +130,8 @@ export function CanvasBoard({ boardRef }: CanvasBoardProps) {
   const searchQuery = useCanvasStore((s) => s.searchQuery);
   const viewport = useCanvasStore((s) => s.viewport);
   const setViewport = useCanvasStore((s) => s.setViewport);
-  const zoomIn = useCanvasStore((s) => s.zoomIn);
-  const zoomOut = useCanvasStore((s) => s.zoomOut);
-  const zoomReset = useCanvasStore((s) => s.zoomReset);
+  const scrollZoomEnabled = useCanvasStore((s) => s.scrollZoomEnabled);
+  const { registerTransform, zoomIn, zoomOut, zoomReset } = useCanvasViewport();
 
   // Reworked States & Actions
   const viewMode = useCanvasStore((s) => s.viewMode);
@@ -157,6 +158,8 @@ export function CanvasBoard({ boardRef }: CanvasBoardProps) {
     currentX: number;
     currentY: number;
   } | null>(null);
+
+  const panningDisabled = isDragging || activeTool !== "select" || connDrag !== null;
 
   const template = getTemplate(canvasType);
 
@@ -335,6 +338,41 @@ export function CanvasBoard({ boardRef }: CanvasBoardProps) {
     }
   }, [template, addAICards]);
 
+  const handleBoardClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (viewMode !== "freeform") return;
+    const target = e.target as HTMLElement;
+    if (target.closest(".cyber-pastel-card") || target.closest(".connection-handle") || target.closest("button")) return;
+
+    const toolMap: Record<string, { type: import("@/lib/canvas/types").CardType; color?: import("@/lib/canvas/types").CardColor }> = {
+      sticky: { type: "NOTE", color: "yellow" },
+      shape_rect: { type: "SHAPE_RECT", color: "indigo" },
+      shape_circle: { type: "SHAPE_CIRCLE", color: "violet" },
+      image: { type: "IMAGE", color: "cyan" },
+      text: { type: "NOTE", color: "blue" },
+    };
+
+    const toolConfig = toolMap[activeTool];
+    if (!toolConfig) return;
+
+    const container = document.getElementById("bmc-canvas-content");
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
+    const zoom = viewport.zoom;
+    const x = (e.clientX - rect.left) / zoom;
+    const y = (e.clientY - rect.top) / zoom;
+
+    let targetSection = template.sections[0]?.id;
+    for (const [sectionId, zone] of Object.entries(sectionZonesRef.current)) {
+      if (x >= zone.x && x <= zone.x + zone.w && y >= zone.y && y <= zone.y + zone.h) {
+        targetSection = sectionId;
+        break;
+      }
+    }
+    if (!targetSection) return;
+
+    addCardAtPosition(targetSection, x, y, toolConfig.type, toolConfig.color);
+  };
+
   // Connection drag event listeners
   const handleMouseDown = (e: React.MouseEvent) => {
     if (activeTool !== "arrow" || viewMode !== "freeform") return;
@@ -444,16 +482,30 @@ export function CanvasBoard({ boardRef }: CanvasBoardProps) {
         <TransformWrapper
           ref={transformRef}
           initialScale={viewport.zoom}
-          minScale={0.25}
-          maxScale={2.5}
+          minScale={CANVAS_ZOOM.MIN}
+          maxScale={CANVAS_ZOOM.MAX}
           centerOnInit={false}
           disablePadding={true}
-          wheel={{ step: 0.08, wheelDisabled: false }}
+          onInit={(ref) => registerTransform(ref)}
+          wheel={{
+            step: CANVAS_ZOOM.WHEEL_STEP,
+            wheelDisabled: !scrollZoomEnabled,
+          }}
+          smooth
+          zoomAnimation={{
+            disabled: false,
+            animationTime: CANVAS_ZOOM.ANIMATION_MS,
+          }}
           doubleClick={{ disabled: true }}
           panning={{
             velocityDisabled: true,
             excluded: ["no-pan", "canvas-card-inner", "textarea", "button", "connection-handle"],
-            disabled: isDragging || activeTool !== "select" || connDrag !== null
+            disabled: panningDisabled,
+          }}
+          trackPadPanning={{
+            disabled: scrollZoomEnabled,
+            velocityDisabled: true,
+            excluded: ["no-pan", "canvas-card-inner", "textarea", "button", "connection-handle"],
           }}
           onZoom={(ref) => setViewport({ zoom: ref.state.scale })}
           onPanning={(ref) => setViewport({ panX: ref.state.positionX, panY: ref.state.positionY })}
@@ -473,6 +525,7 @@ export function CanvasBoard({ boardRef }: CanvasBoardProps) {
               onMouseUp={handleMouseUp}
               id="bmc-canvas-content"
               data-tour-id="canvas-board"
+              onClick={handleBoardClick}
               className={cn(
                 "relative min-w-[1250px] min-h-[920px]",
                 viewMode === "freeform" && "canvas-grid-bg"

@@ -20,7 +20,8 @@ export const SuggestAudienceSchema = z.object({
 });
 
 export const SuggestNameSchema = z.object({
-  names: z.array(z.string()).default([]),
+  reasoning: z.string().optional(),
+  names: z.array(z.string().min(1)).min(3),
 });
 
 export const BreakTaskSchema = z.object({

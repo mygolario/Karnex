@@ -40,6 +40,8 @@ export function CanvasRightPanel() {
   const canvasState = useCanvasStore((s) => s.canvasState);
   const canvasType = useCanvasStore((s) => s.canvasType);
   const comments = useCanvasStore((s) => s.comments);
+  const versions = useCanvasStore((s) => s.versions);
+  const canvasId = useCanvasStore((s) => s.canvasId);
   const addComment = useCanvasStore((s) => s.addComment);
   const resolveComment = useCanvasStore((s) => s.resolveComment);
   const updateCardColor = useCanvasStore((s) => s.updateCardColor);
@@ -47,7 +49,7 @@ export function CanvasRightPanel() {
   const deleteCard = useCanvasStore((s) => s.deleteCard);
   const duplicateCard = useCanvasStore((s) => s.duplicateCard);
 
-  const { undo, redo, canUndo, canRedo, saveVersion } = useCanvasActions();
+  const { undo, redo, canUndo, canRedo, saveVersion, restoreVersion } = useCanvasActions();
   const { activeProject: plan } = useProject();
   const [newComment, setNewComment] = useState("");
 
@@ -66,6 +68,31 @@ export function CanvasRightPanel() {
   const template = getTemplate(canvasType);
   const completeness = getCompletenessScore(canvasState, canvasType);
 
+  const [critiqueResult, setCritiqueResult] = useState<{
+    summary?: string;
+    recommendations?: string[];
+    score?: number;
+  } | null>(null);
+  const [critiqueLoading, setCritiqueLoading] = useState(false);
+
+  const runCanvasCritique = async () => {
+    setCritiqueLoading(true);
+    try {
+      const summary = Object.entries(canvasState)
+        .map(([section, cards]) => `${section}: ${cards.map((c) => c.content).filter(Boolean).join("; ")}`)
+        .join("\n");
+      const res = await fetch("/api/ai-generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "generate-canvas-critique", canvasSummary: summary }),
+      });
+      const data = await res.json();
+      if (data.success) setCritiqueResult(data.critique);
+    } finally {
+      setCritiqueLoading(false);
+    }
+  };
+
   if (!isMobile && !rightPanelOpen) return null;
 
   const handleAddComment = async () => {
@@ -74,7 +101,7 @@ export function CanvasRightPanel() {
 
     const tempComment = {
       id: `comment-${Date.now()}`,
-      canvasId: "current",
+      canvasId: canvasId || "",
       cardId: cardId || null,
       authorId: "me",
       authorName: "شما",
@@ -87,7 +114,8 @@ export function CanvasRightPanel() {
     setNewComment("");
 
     try {
-      const saved = await canvasApi.addComment(plan.id, "current", newComment.trim(), cardId);
+      if (!canvasId) return;
+      const saved = await canvasApi.addComment(plan.id, canvasId, newComment.trim(), cardId);
       useCanvasStore.setState({
         comments: useCanvasStore.getState().comments.map((c) => (c.id === tempComment.id ? saved : c)),
       });
@@ -276,6 +304,30 @@ export function CanvasRightPanel() {
               <History size={12} /> ذخیره نسخه فعلی
             </Button>
 
+            {versions.length > 0 && (
+              <div className="space-y-2 pt-2">
+                <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">نسخه‌های ذخیره‌شده</h4>
+                {versions.map((version) => (
+                  <div key={version.id} className="flex items-center justify-between p-2 rounded-lg border border-border bg-card">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium truncate">{version.name || "نسخه بدون نام"}</p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {new Date(version.createdAt).toLocaleString("fa-IR")}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-xs h-7 shrink-0"
+                      onClick={() => restoreVersion(version.id)}
+                    >
+                      بازیابی
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div className="pt-2">
               <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-2">امتیاز کامل بودن</h4>
               <div className="space-y-1.5">
@@ -322,9 +374,9 @@ export function CanvasRightPanel() {
                 <Sparkles size={14} className="text-purple-500" />
                 راهنمای هوشمند بوم
               </Button>
-              <Button variant="outline" className="w-full justify-start text-xs h-9">
+              <Button variant="outline" className="w-full justify-start text-xs h-9" onClick={runCanvasCritique} disabled={critiqueLoading}>
                 <Sparkles size={14} className="text-blue-500" />
-                تحلیل و نقد بوم
+                {critiqueLoading ? "در حال تحلیل..." : "تحلیل و نقد بوم"}
               </Button>
               <Button variant="outline" className="w-full justify-start text-xs h-9">
                 <Sparkles size={14} className="text-green-500" />
@@ -335,6 +387,15 @@ export function CanvasRightPanel() {
                 چینش خودکار کارت‌ها
               </Button>
             </div>
+
+            {critiqueResult && (
+              <div className="p-3 rounded-lg bg-muted space-y-2 text-xs">
+                {critiqueResult.summary && <p>{String(critiqueResult.summary)}</p>}
+                {Array.isArray(critiqueResult.recommendations) && (critiqueResult.recommendations as string[]).map((r, i) => (
+                  <p key={i} className="text-muted-foreground">• {r}</p>
+                ))}
+              </div>
+            )}
 
             <div className="p-3 rounded-lg bg-muted">
               <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide mb-2">تحلیل سریع</h4>

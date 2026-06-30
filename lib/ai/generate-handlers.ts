@@ -1,6 +1,7 @@
 import "server-only";
 import { resolveAssembledPrompt, SCRIPT_TEMPLATE_INSTRUCTIONS } from "@/lib/ai/prompt-service";
 import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
+import { normalizeLocationAnalysis } from "@/lib/location/normalize-analysis";
 import { multiPassGenerate } from "@/lib/ai/multi-pass";
 import type { PromptKey } from "@/lib/prompts/registry";
 
@@ -288,25 +289,94 @@ export async function handleAnalyzeLocation(
 9. rentBenchmark + negotiationTips
 10. financialLab با monthlyPnL 12 ماه
 11. footfallTier: real|inferred|ai
-12. hourlyFootfall 24 عنصر`;
+12. hourlyFootfall 24 عنصر
+13. متن‌ها را مختصر نگه دار — JSON باید کامل و معتبر باشد.`;
 
-  // Single-pass, single-model — default 20s timeout + 3 retries burned the full 120s Vercel budget
-  const result = await callOpenRouter(enhancedUser, {
+  const callOpts = {
     systemPrompt: system,
-    maxTokens: 4500,
+    maxTokens: 8192,
     temperature: 0.3,
-    timeoutMs: 85000,
+    timeoutMs: 52000,
     maxAttempts: 1,
-    singleModel: true,
-    responseFormat: { type: "json_object" },
+    responseFormat: { type: "json_object" as const },
     modelOverride: modelOverride || "google/gemini-2.5-flash",
-  });
+  };
 
-  if (!result.success || !result.content) {
-    throw new Error(result.error || "Location analysis generation failed");
+  const modelsToTry = [
+    callOpts.modelOverride!,
+    "google/gemini-2.5-flash-lite",
+  ].filter((m, i, arr) => arr.indexOf(m) === i);
+
+  let lastError = "Location analysis generation failed";
+  for (const model of modelsToTry) {
+    const result = await callOpenRouter(enhancedUser, { ...callOpts, modelOverride: model });
+
+    if (!result.success || !result.content) {
+      lastError = result.error || lastError;
+      console.warn("[analyze-location] model failed", { model, error: result.error });
+      continue;
+    }
+
+    if (result.finishReason === "length") {
+      console.warn("[analyze-location] response truncated", { model, finishReason: result.finishReason });
+    }
+
+    try {
+      const parsed = parseJsonFromAI(result.content) as Record<string, unknown>;
+      return normalizeLocationAnalysis(parsed, {
+        city: ctx.city,
+        address: ctx.address,
+        businessDescription: ctx.businessDescription,
+        radius: ctx.radius,
+      });
+    } catch (parseErr) {
+      lastError = `JSON parse failed (${model}): ${String(parseErr)}`;
+      console.error("[analyze-location] parse failed", {
+        model,
+        finishReason: result.finishReason,
+        preview: result.content.slice(0, 240),
+        error: String(parseErr),
+      });
+    }
   }
 
-  return parseJsonFromAI(result.content) as Record<string, unknown>;
+  throw new Error(lastError);
+}
+
+export async function handleCanvasCritique(
+  ctx: GenerateContext & { canvasSummary: string }
+) {
+  const system = `You are a business strategy expert. Analyze the canvas and respond in Persian JSON:
+{ "score": number 0-100, "summary": string, "strengths": string[], "weaknesses": string[], "recommendations": string[] }`;
+  const user = `Analyze this business canvas for project "${ctx.projectName}":\n${ctx.canvasSummary}`;
+  const result = await callOpenRouter(user, {
+    systemPrompt: system,
+    maxTokens: 1500,
+    temperature: 0.4,
+  });
+  if (!result.success) throw new Error(result.error);
+  return parseJsonFromAI(result.content!);
+}
+
+export async function handlePitchSlideAI(
+  ctx: GenerateContext & { slideContent: string; mode: "rewrite" | "lengthen" | "shorten" | "translate_fa" | "translate_en" | "scorecard" }
+) {
+  const modePrompts: Record<string, string> = {
+    rewrite: "Rewrite professionally in Persian. Return JSON: { \"text\": string }",
+    lengthen: "Expand with more detail in Persian. Return JSON: { \"text\": string }",
+    shorten: "Shorten while keeping key points in Persian. Return JSON: { \"text\": string }",
+    translate_fa: "Translate to Persian. Return JSON: { \"text\": string }",
+    translate_en: "Translate to English. Return JSON: { \"text\": string }",
+    scorecard: "Investor readiness scorecard in Persian. Return JSON: { \"score\": number, \"tips\": string[], \"summary\": string }",
+  };
+  const system = modePrompts[ctx.mode] || modePrompts.rewrite;
+  const result = await callOpenRouter(ctx.slideContent, {
+    systemPrompt: system,
+    maxTokens: 1200,
+    temperature: 0.5,
+  });
+  if (!result.success) throw new Error(result.error);
+  return parseJsonFromAI(result.content!);
 }
 
 export function buildGenerateContext(

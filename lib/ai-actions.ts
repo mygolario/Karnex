@@ -83,16 +83,27 @@ export async function suggestProjectNameAction(idea: string): Promise<ActionResp
         user,
         { systemPrompt: system, maxTokens: 800, temperature: 0.7, timeoutMs: 20000 },
         SuggestNameSchema,
-        1
+        2
       );
+      const names = (parsed.names || []).map((n) => n.trim()).filter(Boolean).slice(0, 6);
+      if (names.length < 3) {
+        throw new Error(`AI returned insufficient names (${names.length})`);
+      }
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e3898a'},body:JSON.stringify({sessionId:'e3898a',location:'ai-actions.ts:suggestProjectNameAction',message:'AI success',data:{source:'ai',names,ideaPreview:idea.slice(0,200)},timestamp:Date.now(),hypothesisId:'H1-H5'})}).catch(()=>{});
+      // #endregion
       return {
         success: true,
-        data: { names: (parsed.names || []).slice(0, 6) }
+        data: { names }
       };
     } catch (err) {
       console.warn("AI Validation failed for suggestProjectNameAction, using fallback:", err);
       await rollback();
-      return { success: true, data: { names: generateFallbackNames(idea) } };
+      const fallbackNames = generateFallbackNames(idea);
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e3898a'},body:JSON.stringify({sessionId:'e3898a',location:'ai-actions.ts:suggestProjectNameAction',message:'AI fallback',data:{source:'fallback',names:fallbackNames,error:String(err),ideaPreview:idea.slice(0,200)},timestamp:Date.now(),hypothesisId:'H1-H2'})}).catch(()=>{});
+      // #endregion
+      return { success: true, data: { names: fallbackNames } };
     }
 
   } catch (error) {
@@ -102,13 +113,81 @@ export async function suggestProjectNameAction(idea: string): Promise<ActionResp
   }
 }
 
+function extractContextLine(idea: string, prefix: string): string {
+  const line = idea.split("\n").find((l) => l.startsWith(prefix));
+  if (!line) return "";
+  return line.slice(prefix.length).replace(/^:\s*/, "").trim();
+}
+
+const GENERIC_STOP_WORDS = new Set([
+  "کسب‌وکار", "سنتی", "استارتاپ", "تولید", "محتوا", "دسته", "شرح",
+  "جزئیات", "سبک", "مرجع", "فعلی", "کاربر", "پروژه", "چشم‌انداز",
+  "مثلاً", "ارزش", "واقعی", "دنیای", "تمرکز", "ساخت", "برند", "نام",
+]);
+
 function generateFallbackNames(idea: string): string[] {
-  const words = idea.split(/\s+/).filter(w => w.length > 2);
-  const baseWord = words[0] || "پروژه";
-  const suffixes = ["پلاس", "نو", "یار", "لند", "باز", "مارکت"];
-  return suffixes.map((suffix, i) =>
-    i < 3 ? `${baseWord} ${suffix}` : `${baseWord}${suffix}`
-  );
+  const userName = extractContextLine(idea, "نام فعلی کاربر");
+  const vision = extractContextLine(idea, "چشم‌انداز پروژه");
+  const details = extractContextLine(idea, "جزئیات");
+
+  const suggestions: string[] = [];
+  const seen = new Set<string>();
+
+  const add = (name: string) => {
+    const cleaned = name.trim().replace(/\s+/g, " ");
+    if (cleaned.length >= 2 && !seen.has(cleaned)) {
+      seen.add(cleaned);
+      suggestions.push(cleaned);
+    }
+  };
+
+  if (userName) {
+    const words = userName.split(/\s+/).filter(Boolean);
+    const [w1, w2] = words;
+    add(userName);
+    if (w1 && w2) {
+      add(`${w2} ${w1}`);
+      add(`${w1}‌${w2}`);
+      add(`${w1}${w2}`);
+      add(`نو ${w1}`);
+      add(`${w1}ی`);
+      add(`${w2}ی`);
+    } else if (w1) {
+      add(`${w1}ی`);
+      add(`نو ${w1}`);
+      add(`${w1}‌پلاس`);
+      add(`${w1}کده`);
+      add(`${w1}‌ک`);
+      add(`${w1}‌گاه`);
+    }
+  }
+
+  const textPool = [vision, details].filter(Boolean).join(" ");
+  const keywords = textPool
+    .split(/[\s\n،.:]+/)
+    .map((w) => w.replace(/[^\p{L}\p{N}‌]/gu, ""))
+    .filter((w) => w.length > 2 && !GENERIC_STOP_WORDS.has(w));
+
+  for (const kw of keywords.slice(0, 4)) {
+    add(`${kw}ی`);
+    add(`نو ${kw}`);
+  }
+
+  if (suggestions.length < 3) {
+    const seed = keywords[0] || "برند";
+    add(`${seed}ی`);
+    add(`نو ${seed}`);
+    add(`${seed}‌پلاس`);
+    add(`${seed}کده`);
+    add(`${seed}‌ک`);
+    add(`${seed}‌گاه`);
+  }
+
+  const result = suggestions.slice(0, 6);
+  // #region agent log
+  fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e3898a'},body:JSON.stringify({sessionId:'e3898a',location:'ai-actions.ts:generateFallbackNames',message:'fallback generated',data:{userName,result},timestamp:Date.now(),hypothesisId:'H2',runId:'post-fix'})}).catch(()=>{});
+  // #endregion
+  return result;
 }
 
 // === Break Task ===

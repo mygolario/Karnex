@@ -97,7 +97,9 @@ export const JalaliDatePicker = React.forwardRef<HTMLButtonElement, JalaliDatePi
       const formattedMonth = month < 10 ? `0${month}` : `${month}`;
       const formattedDay = day < 10 ? `0${day}` : `${day}`;
       const dateStr = `${year}/${formattedMonth}/${formattedDay}`;
-      
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'date-picker.tsx:handleSelectDay',message:'day clicked',data:{day,dateStr,hasOnChange:!!onChange,currentValue:value},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
+      // #endregion
       if (onChange) {
         onChange(dateStr);
       }
@@ -134,7 +136,12 @@ export const JalaliDatePicker = React.forwardRef<HTMLButtonElement, JalaliDatePi
       : "";
 
     return (
-      <PopoverPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverPrimitive.Root modal open={isOpen} onOpenChange={(open) => {
+        // #region agent log
+        fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'date-picker.tsx:onOpenChange',message:'popover open change',data:{open,disabled},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
+        // #endregion
+        setIsOpen(open);
+      }}>
         <PopoverPrimitive.Trigger asChild>
           <button
             ref={ref}
@@ -159,7 +166,7 @@ export const JalaliDatePicker = React.forwardRef<HTMLButtonElement, JalaliDatePi
           <PopoverPrimitive.Content
             align="start"
             sideOffset={4}
-            className="z-50 w-72 rounded-card border border-glass-premium-border bg-glass-premium backdrop-blur-premium shadow-glass-premium p-4 animate-in fade-in-0 zoom-in-95 font-sans"
+            className="z-[200] w-72 rounded-card border border-glass-premium-border bg-glass-premium backdrop-blur-premium shadow-glass-premium p-4 animate-in fade-in-0 zoom-in-95 font-sans"
             dir="rtl"
           >
             {/* Header / Selectors */}

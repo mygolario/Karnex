@@ -191,13 +191,20 @@ export function useGamification(
 
   // Load on mount / user change
   useEffect(() => {
-    setState(loadState(userId));
+    const loaded = loadState(userId);
+    setState(loaded);
     setPrevCompleted(completedCount);
+    // #region agent log
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0aaf34'},body:JSON.stringify({sessionId:'0aaf34',location:'use-gamification.ts:mount',message:'gamification mount',data:{userId,completedCount,loadedLevel:loaded.level,loadedXp:loaded.totalXp,prevCompletedSet:completedCount},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
   // Detect new completions and award XP
   useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0aaf34'},body:JSON.stringify({sessionId:'0aaf34',location:'use-gamification.ts:completion-check',message:'completion check',data:{completedCount,prevCompleted,willAward:completedCount>prevCompleted,gained:completedCount-prevCompleted},timestamp:Date.now(),hypothesisId:'A,C'})}).catch(()=>{});
+    // #endregion
     if (completedCount > prevCompleted) {
       const gained = completedCount - prevCompleted;
       awardXp(gained * XP_PER_STEP, "تکمیل گام نقشه راه");
@@ -227,7 +234,12 @@ export function useGamification(
         const newTotal = prev.totalXp + amount;
         const newLevel = Math.floor(newTotal / XP_PER_LEVEL) + 1;
         const leveledUp = newLevel > prev.level;
-        if (leveledUp) setShowLevelUp(true);
+        if (leveledUp) {
+          // #region agent log
+          fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0aaf34'},body:JSON.stringify({sessionId:'0aaf34',location:'use-gamification.ts:awardXp',message:'level up triggered',data:{prevLevel:prev.level,newLevel,amount,reason,newTotal},timestamp:Date.now(),hypothesisId:'D'})}).catch(()=>{});
+          // #endregion
+          setShowLevelUp(true);
+        }
 
         const event: XpEvent = {
           xp: amount,

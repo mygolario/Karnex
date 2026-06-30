@@ -188,7 +188,14 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (!response.ok) {
-        throw new Error(await response.text());
+        const errBody = await response.text();
+        let detail = errBody;
+        try {
+          detail = JSON.parse(errBody).detail || JSON.parse(errBody).error || errBody;
+        } catch {
+          /* raw text */
+        }
+        throw new Error(typeof detail === "string" ? detail : JSON.stringify(detail));
       }
 
       const data = await response.json();

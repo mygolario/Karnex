@@ -10,7 +10,14 @@ export interface CanvasConnection {
   color?: string;
 }
 
-export type CardType = "NOTE" | "CHECKLIST" | "IMAGE" | "LINK" | "METRIC" | "VOTE";
+export type CardType = "NOTE" | "CHECKLIST" | "IMAGE" | "LINK" | "METRIC" | "VOTE" | "SHAPE_RECT" | "SHAPE_CIRCLE";
+
+export interface ChecklistItem {
+  id: string;
+  text: string;
+  done: boolean;
+  roadmapStepId?: string;
+}
 
 export type CardColor =
   | "yellow"
@@ -40,6 +47,7 @@ export interface CardData {
   height?: number;
   tags?: string[];
   isAIGenerated?: boolean;
+  metadata?: Record<string, unknown>;
   createdBy?: string;
   updatedBy?: string;
   createdAt?: string;
@@ -106,6 +114,8 @@ export type ToolType =
   | "arrow"
   | "eraser"
   | "image"
-  | "ai";
+  | "ai"
+  | "shape_rect"
+  | "shape_circle";
 
 export type RightPanelTab = "properties" | "comments" | "history" | "ai";

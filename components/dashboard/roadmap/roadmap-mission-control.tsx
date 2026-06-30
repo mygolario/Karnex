@@ -189,7 +189,11 @@ export function RoadmapMissionControl({
               </p>
             ) : (
               <ol className="flex flex-col gap-2">
-                {topPrioritySteps.slice(0, 3).map((step, idx) => (
+                {topPrioritySteps.slice(0, 3).map((step, idx) => {
+                  // #region agent log
+                  fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b9e3e7'},body:JSON.stringify({sessionId:'b9e3e7',location:'roadmap-mission-control.tsx:priority-map',message:'topPrioritySteps list item key audit',data:{idx,stepId:step.id??null,stepTitle:step.title,resolvedKey:step.id??null,hasId:Boolean(step.id)},timestamp:Date.now(),hypothesisId:'A'})}).catch(()=>{});
+                  // #endregion
+                  return (
                   <li
                     key={step.id}
                     className="flex items-center gap-3 cursor-pointer group rounded-md px-2 py-1.5 hover:bg-muted/60 transition-colors"
@@ -206,7 +210,8 @@ export function RoadmapMissionControl({
                     </span>
                     <ArrowRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                   </li>
-                ))}
+                  );
+                })}
               </ol>
             )}
           </Card>

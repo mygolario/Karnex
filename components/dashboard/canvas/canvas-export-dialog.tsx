@@ -116,9 +116,15 @@ export function CanvasExportDialog() {
 
           <Button className="w-full" onClick={handleExport} disabled={exporting}>
             {exporting ? (
-              <><Loader2 size={16} className="animate-spin" /> در حال ساخت...</>
+              <span className="inline-flex items-center gap-2">
+                <Loader2 size={16} className="animate-spin" />
+                در حال ساخت...
+              </span>
             ) : (
-              <><Download size={16} /> دانلود</>
+              <span className="inline-flex items-center gap-2">
+                <Download size={16} />
+                دانلود
+              </span>
             )}
           </Button>
         </div>

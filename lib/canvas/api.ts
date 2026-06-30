@@ -7,7 +7,15 @@ import type {
   CanvasVersionData,
   CanvasType,
   CanvasViewport,
+  CanvasConnection,
+  CanvasViewMode,
 } from "./types";
+import {
+  buildCanvasLayout,
+  dbCardsToState,
+  parseCanvasLayout,
+  stateToSyncPayload,
+} from "./persistence";
 
 const API_BASE = "/api/projects";
 
@@ -23,6 +31,7 @@ interface CanvasRow {
 }
 
 interface CanvasDetail extends CanvasRow {
+  layout?: unknown;
   cards: CardRow[];
   comments: CommentRow[];
   versions: VersionRow[];
@@ -70,7 +79,8 @@ interface VersionRow {
 }
 
 function cardRowToData(row: CardRow): CardData {
-  const metadata = row.metadata as { tags?: string[]; isAIGenerated?: boolean } | null;
+  const metadata = row.metadata as { tags?: string[]; isAIGenerated?: boolean } & Record<string, unknown> | null;
+  const { tags, isAIGenerated, ...restMeta } = metadata || {};
   return {
     id: row.id,
     section: row.section,
@@ -82,8 +92,9 @@ function cardRowToData(row: CardRow): CardData {
     y: row.y ?? undefined,
     width: row.width ?? undefined,
     height: row.height ?? undefined,
-    tags: metadata?.tags,
-    isAIGenerated: metadata?.isAIGenerated,
+    tags: tags as string[] | undefined,
+    isAIGenerated: Boolean(isAIGenerated),
+    metadata: restMeta && Object.keys(restMeta).length > 0 ? restMeta : undefined,
     createdBy: row.createdBy ?? undefined,
     updatedBy: row.updatedBy ?? undefined,
     createdAt: row.createdAt,
@@ -117,30 +128,22 @@ function versionRowToData(row: VersionRow): CanvasVersionData {
   };
 }
 
-function stateToCardRows(state: CanvasState): Array<Omit<CardRow, "id" | "canvasId" | "createdAt" | "updatedAt">> {
-  const rows: Array<Omit<CardRow, "id" | "canvasId" | "createdAt" | "updatedAt">> = [];
-  for (const [section, cards] of Object.entries(state)) {
-    for (const card of cards) {
-      rows.push({
-        section,
-        order: card.order,
-        x: card.x ?? null,
-        y: card.y ?? null,
-        width: card.width ?? null,
-        height: card.height ?? null,
-        content: card.content,
-        cardType: card.cardType,
-        color: card.color,
-        metadata: { tags: card.tags, isAIGenerated: card.isAIGenerated },
-        createdBy: card.createdBy ?? null,
-        updatedBy: card.updatedBy ?? null,
-      });
-    }
-  }
-  return rows;
-}
-
 export const canvasApi = {
+  async ensureCanvas(
+    projectId: string,
+    opts?: { projectType?: string; name?: string; type?: CanvasType }
+  ): Promise<{ canvas: CanvasDetail; created: boolean }> {
+    const res = await fetch(`${API_BASE}/${projectId}/canvas`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(opts ?? {}),
+    });
+    if (!res.ok) throw new Error("Failed to ensure canvas");
+    const data = await res.json();
+    return { canvas: data.canvas as CanvasDetail, created: Boolean(data.created) };
+  },
+
   async listCanvases(projectId: string): Promise<CanvasRow[]> {
     const res = await fetch(`${API_BASE}/${projectId}/canvas`, { credentials: "include" });
     if (!res.ok) throw new Error("Failed to list canvases");
@@ -196,14 +199,27 @@ export const canvasApi = {
     });
   },
 
-  async saveCards(projectId: string, canvasId: string, state: CanvasState): Promise<void> {
-    const cardRows = stateToCardRows(state).map((r, i) => ({ ...r, id: `temp-${i}`, ...r }));
-    await fetch(`${API_BASE}/${projectId}/canvas/${canvasId}/cards`, {
-      method: "PATCH",
+  async syncState(
+    projectId: string,
+    canvasId: string,
+    state: CanvasState,
+    connections: CanvasConnection[],
+    viewMode: CanvasViewMode
+  ): Promise<void> {
+    const res = await fetch(`${API_BASE}/${projectId}/canvas/${canvasId}/cards`, {
+      method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ cards: cardRows }),
+      body: JSON.stringify({
+        state,
+        layout: buildCanvasLayout(connections, viewMode),
+      }),
     });
+    if (!res.ok) throw new Error("Failed to sync canvas state");
+  },
+
+  async saveCards(projectId: string, canvasId: string, state: CanvasState): Promise<void> {
+    await this.syncState(projectId, canvasId, state, [], "grid");
   },
 
   async addCard(projectId: string, canvasId: string, card: Omit<CardData, "id">): Promise<CardData> {
@@ -279,12 +295,15 @@ export const canvasApi = {
     return versionRowToData(data.version as VersionRow);
   },
 
-  async restoreVersion(projectId: string, canvasId: string, versionId: string): Promise<void> {
-    await fetch(`${API_BASE}/${projectId}/canvas/${canvasId}/versions`, {
+  async restoreVersion(projectId: string, canvasId: string, versionId: string): Promise<CanvasState> {
+    const res = await fetch(`${API_BASE}/${projectId}/canvas/${canvasId}/versions`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({ versionId }),
     });
+    if (!res.ok) throw new Error("Failed to restore version");
+    const data = await res.json();
+    return data.state as CanvasState;
   },
 };

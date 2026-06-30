@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useRoadmap } from "@/hooks/use-roadmap";
 import { useProject } from "@/contexts/project-context";
@@ -112,6 +112,19 @@ export default function RoadmapPage() {
   const [selectedPhase, setSelectedPhase] = useState<RoadmapPhase | null>(null);
   const [isBreakingTask, setIsBreakingTask] = useState(false);
   const confettiRef = useRef(false);
+
+  // Keep slide-over in sync with persisted roadmap (dueDate, notes, etc.)
+  const liveSelectedStep = useMemo(() => {
+    if (!selectedStep) return null;
+    for (const phase of roadmap) {
+      for (const s of phase.steps) {
+        const obj =
+          typeof s === "string" ? ({ title: s } as RoadmapStep) : (s as RoadmapStep);
+        if (obj.title === selectedStep.title) return obj;
+      }
+    }
+    return selectedStep;
+  }, [selectedStep, roadmap]);
 
   // Phase Completion Celebration States
   const [celebrationOpen, setCelebrationOpen] = useState(false);
@@ -270,6 +283,9 @@ export default function RoadmapPage() {
 
   const handleSetDueDate = useCallback(
     (date: string) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'roadmap/page.tsx:handleSetDueDate',message:'due date selected',data:{date,selectedStepTitle:selectedStep?.title,selectedStepDueDate:selectedStep?.dueDate},timestamp:Date.now(),hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
       if (selectedStep) updateStepMeta(selectedStep, { dueDate: date });
     },
     [selectedStep, updateStepMeta]
@@ -277,13 +293,16 @@ export default function RoadmapPage() {
 
   const handleSaveNotes = useCallback(
     (notes: string) => {
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'roadmap/page.tsx:handleSaveNotes',message:'save notes called',data:{notesLen:notes.length,selectedStepTitle:selectedStep?.title,selectedStepNotesLen:selectedStep?.notes?.length??0},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
+      // #endregion
       if (selectedStep) updateStepMeta(selectedStep, { notes });
     },
     [selectedStep, updateStepMeta]
   );
 
   const stepSubTasks = (plan?.subTasks as SubTask[] | undefined)?.filter(
-    (s) => s.parentStep === selectedStep?.title
+    (s) => s.parentStep === liveSelectedStep?.title
   ) ?? [];
 
   // Loading state
@@ -315,11 +334,11 @@ export default function RoadmapPage() {
     );
   }
 
-  const selectedStatus = selectedStep
-    ? getStepStatus(selectedStep)
+  const selectedStatus = liveSelectedStep
+    ? getStepStatus(liveSelectedStep)
     : "todo";
-  const selectedUnlocked = selectedStep
-    ? isStepUnlocked(selectedStep)
+  const selectedUnlocked = liveSelectedStep
+    ? isStepUnlocked(liveSelectedStep)
     : true;
 
   const displayRoadmap =
@@ -520,7 +539,7 @@ export default function RoadmapPage() {
 
       {/* Step Detail Slide-over */}
       <StepSlideOver
-        step={selectedStep}
+        step={liveSelectedStep}
         phaseName={selectedPhase?.phase ?? ""}
         weekNumber={selectedPhase?.weekNumber}
         isOpen={slideOpen}
@@ -528,7 +547,7 @@ export default function RoadmapPage() {
         status={selectedStatus}
         isUnlocked={selectedUnlocked}
         onUpdateStatus={(status, meta) =>
-          selectedStep && handleUpdateStatus(selectedStep, status, meta)
+          liveSelectedStep && handleUpdateStatus(liveSelectedStep, status, meta)
         }
         subTasks={stepSubTasks}
         onSubTaskToggle={handleSubTaskToggle}

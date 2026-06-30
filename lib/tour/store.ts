@@ -77,6 +77,9 @@ export const useTourStore = create<TourStore>((set, get) => ({
 
   initialize: (userId) => {
     const persisted = loadPersistedState(userId);
+    // #region agent log
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'176184'},body:JSON.stringify({sessionId:'176184',location:'store.ts:initialize',message:'initialize called',data:{userId,skippedTours:persisted.skippedTours,completedTours:persisted.completedTours,hasSeenWelcome:persisted.hasSeenWelcome,activeTourId:persisted.activeTourId},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+    // #endregion
     set({
       userId,
       persisted,
@@ -103,9 +106,20 @@ export const useTourStore = create<TourStore>((set, get) => ({
   setXpCallback: (cb) => set({ pendingXpCallback: cb }),
 
   startTour: (tourId, stepIndex, force = false) => {
-    const { stepContext, persisted } = get();
+    const { stepContext, persisted, userId } = get();
     const tour = getTourWithDynamic(tourId);
     if (!tour) return false;
+
+    const isSkipped = persisted.skippedTours?.includes(tourId);
+    const isCompleted = persisted.completedTours.includes(tourId);
+
+    // #region agent log
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'176184'},body:JSON.stringify({sessionId:'176184',location:'store.ts:startTour',message:'startTour attempt',data:{tourId,force,stepIndex,userId,isSkipped,isCompleted,skippedTours:persisted.skippedTours,willBlock:!force&&(isSkipped||isCompleted)&&stepIndex===undefined},timestamp:Date.now(),hypothesisId:'H1,H3,H4'})}).catch(()=>{});
+    // #endregion
+
+    if (!force && (isSkipped || isCompleted) && stepIndex === undefined) {
+      return false;
+    }
 
     const resumeIndex =
       stepIndex ??
@@ -113,10 +127,6 @@ export const useTourStore = create<TourStore>((set, get) => ({
 
     const engine = createEngineState(tourId, stepContext, resumeIndex);
     if (!engine) return false;
-
-    if (!force && persisted.completedTours.includes(tourId) && stepIndex === undefined) {
-      // allow replay explicitly via force
-    }
 
     const nextPersisted = persist(get, {
       activeTourId: tourId,
@@ -178,7 +188,10 @@ export const useTourStore = create<TourStore>((set, get) => ({
   },
 
   skipTour: () => {
-    const { engine, persisted } = get();
+    const { engine, persisted, userId } = get();
+    // #region agent log
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'176184'},body:JSON.stringify({sessionId:'176184',location:'store.ts:skipTour',message:'skipTour called',data:{userId,hasEngine:!!engine,tourId:engine?.tourId??null,skippedBefore:persisted.skippedTours},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
     if (!engine) return;
     const skippedTours = persisted.skippedTours || [];
     const nextSkipped = skippedTours.includes(engine.tourId)
@@ -189,17 +202,25 @@ export const useTourStore = create<TourStore>((set, get) => ({
       activeStepIndex: 0,
       skippedTours: nextSkipped,
     });
+    // #region agent log
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'176184'},body:JSON.stringify({sessionId:'176184',location:'store.ts:skipTour:after',message:'skipTour persisted',data:{userId,tourId:engine.tourId,skippedAfter:nextPersisted.skippedTours,storageKey:`karnex-tour-v2_${userId}`},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
+    // #endregion
     set({ engine: null, isOpen: false, persisted: nextPersisted });
   },
 
   skipTourById: (tourId) => {
-    const { persisted } = get();
+    const { persisted, engine } = get();
     const skippedTours = persisted.skippedTours || [];
     if (skippedTours.includes(tourId)) return;
+    const isActive = engine?.tourId === tourId;
     const nextPersisted = persist(get, {
       skippedTours: [...skippedTours, tourId],
+      ...(isActive ? { activeTourId: null, activeStepIndex: 0 } : {}),
     });
-    set({ persisted: nextPersisted });
+    set({
+      persisted: nextPersisted,
+      ...(isActive ? { engine: null, isOpen: false } : {}),
+    });
   },
 
   nextStep: () => {
@@ -292,7 +313,9 @@ export const useTourStore = create<TourStore>((set, get) => ({
     set({ persisted });
   },
 
-  hasSeenTour: (tourId) => get().persisted.completedTours.includes(tourId),
+  hasSeenTour: (tourId) =>
+    get().persisted.completedTours.includes(tourId) ||
+    (get().persisted.skippedTours ?? []).includes(tourId),
   hasCompletedChecklistItem: (itemId) =>
     get().persisted.completedChecklistItems.includes(itemId),
 }));

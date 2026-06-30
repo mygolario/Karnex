@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   Clock,
   Flag,
@@ -39,6 +39,7 @@ import { JalaliDatePicker } from "@/components/ui/date-picker";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { cn, toPersianDigits } from "@/lib/utils";
+import { toast } from "sonner";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 import {
   STATUS_CONFIG,
@@ -105,6 +106,12 @@ export function StepSlideOver({
   const [isResolvingBlock, setIsResolvingBlock] = useState(false);
   const [blockResolution, setBlockResolution] = useState<string | null>(null);
   const [showBlockedForm, setShowBlockedForm] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && step) {
+      setNotes(step.notes || "");
+    }
+  }, [isOpen, step?.title, step?.notes]);
 
   const statusCfg = STATUS_CONFIG[status];
   const catCfg = step ? getCategoryConfig(step.category) : null;
@@ -175,10 +182,14 @@ export function StepSlideOver({
   };
 
   const handleSaveNotes = async () => {
+    // #region agent log
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'step-slide-over.tsx:handleSaveNotes',message:'save notes click',data:{hasOnSaveNotes:!!onSaveNotes,notesLen:notes.length,stepTitle:step?.title,stepNotesLen:step?.notes?.length??0},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
     if (!onSaveNotes) return;
     setIsSavingNotes(true);
     await new Promise((r) => setTimeout(r, 300));
     onSaveNotes(notes);
+    toast.success("یادداشت ذخیره شد");
     setIsSavingNotes(false);
   };
 

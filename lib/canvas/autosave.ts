@@ -5,6 +5,7 @@ import type { CanvasState } from "./types";
 import { useProject } from "@/contexts/project-context";
 import { useAuth } from "@/contexts/auth-context";
 import { savePlanToCloud } from "@/lib/db";
+import { canvasApi } from "./api";
 import { toast } from "sonner";
 
 const AUTOSAVE_DEBOUNCE_MS = 800;
@@ -24,6 +25,7 @@ function stateToLegacyFormat(
       width: c.width,
       height: c.height,
       cardType: c.cardType,
+      metadata: c.metadata,
     }));
   }
   return result;
@@ -40,22 +42,23 @@ export function useCanvasAutosave() {
     async (state: CanvasState, type: string) => {
       if (!plan || !user) return;
 
+      const canvasId = useCanvasStore.getState().canvasId;
       const fieldName = type === "BRAND" ? "brandCanvas" : "leanCanvas";
       const updateData = stateToLegacyFormat(state);
       const connections = useCanvasStore.getState().connections;
       const viewMode = useCanvasStore.getState().viewMode;
 
       if (typeof window !== "undefined" && !navigator.onLine) {
-        updateActiveProject({ 
+        updateActiveProject({
           [fieldName]: updateData,
           canvasConnections: connections,
-          canvasViewMode: viewMode
+          canvasViewMode: viewMode,
         });
         const { addUpdateProjectToQueue } = await import("@/lib/offline-sync");
-        addUpdateProjectToQueue(user.id!, plan.id!, { 
+        addUpdateProjectToQueue(user.id!, plan.id!, {
           [fieldName]: updateData,
           canvasConnections: connections,
-          canvasViewMode: viewMode
+          canvasViewMode: viewMode,
         });
         useCanvasStore.getState().setSaveStatus("offline");
         return;
@@ -64,15 +67,24 @@ export function useCanvasAutosave() {
       useCanvasStore.getState().setSaveStatus("saving");
 
       try {
-        await savePlanToCloud(user.id!, { 
+        if (canvasId) {
+          await canvasApi.syncState(plan.id!, canvasId, state, connections, viewMode);
+        }
+
+        await savePlanToCloud(
+          user.id!,
+          {
+            [fieldName]: updateData,
+            canvasConnections: connections,
+            canvasViewMode: viewMode,
+          },
+          true,
+          plan.id!
+        );
+        updateActiveProject({
           [fieldName]: updateData,
           canvasConnections: connections,
-          canvasViewMode: viewMode
-        }, true, plan.id!);
-        updateActiveProject({ 
-          [fieldName]: updateData,
-          canvasConnections: connections,
-          canvasViewMode: viewMode
+          canvasViewMode: viewMode,
         });
         useCanvasStore.getState().setSaveStatus("saved");
         useCanvasStore.getState().setLastSavedState(JSON.parse(JSON.stringify(state)));
@@ -128,6 +140,8 @@ export function useCanvasAutosave() {
     useCanvasStore((s) => s.canvasState),
     useCanvasStore((s) => s.canvasType),
     useCanvasStore((s) => s.saveStatus),
+    useCanvasStore((s) => s.connections),
+    useCanvasStore((s) => s.viewMode),
     plan,
     doSave,
   ]);
