@@ -16,7 +16,8 @@ const serwist = new Serwist({
   precacheEntries: self.__WB_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
-  navigationPreload: true,
+  // navigationPreload + NetworkOnly navigate caused no-response on dashboard reloads.
+  navigationPreload: false,
   fallbacks: {
     entries: [
       {
@@ -31,16 +32,12 @@ const serwist = new Serwist({
       handler: new NetworkOnly(),
     },
     {
-      matcher: ({ request, url }) =>
-        request.mode === "navigate" && !url.pathname.startsWith("/_next"),
-      handler: new NetworkOnly(),
-    },
-    {
       matcher: ({ url }) =>
         url.pathname.startsWith("/api/projects") ||
         url.pathname.startsWith("/api/user-data") ||
         url.pathname.startsWith("/api/copilot") ||
-        url.pathname.startsWith("/api/user"),
+        url.pathname.startsWith("/api/user") ||
+        url.pathname.startsWith("/api/ai-generate"),
       handler: new NetworkOnly(),
     },
     ...defaultCache,

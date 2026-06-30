@@ -40,6 +40,7 @@ import { useImmersivePage } from "@/hooks/use-immersive-page";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { DEMO_LOCATION_ANALYSES } from "@/lib/location/demo-analyses";
 import { exportLocationPdf } from "@/lib/location/pdf-export";
+import { readLocationSession, writeLocationSession } from "@/lib/location/session-state";
 import { toast } from "sonner";
 
 const TAB_ITEMS = [
@@ -62,6 +63,9 @@ const LOADING_STEPS = [
 
 export function LocationWorkspace() {
   const { activeProject } = useProject();
+  const projectId = activeProject?.id;
+  const sessionSeed = projectId ? readLocationSession(projectId) : null;
+
   const {
     analysis,
     loading,
@@ -76,11 +80,13 @@ export function LocationWorkspace() {
   const isMobile = useIsMobile();
   useImmersivePage(isMobile);
 
-  const [city, setCity] = useState("Tehran");
-  const [address, setAddress] = useState("");
-  const [businessDescription, setBusinessDescription] = useState("");
+  const [city, setCity] = useState(sessionSeed?.city ?? "Tehran");
+  const [address, setAddress] = useState(sessionSeed?.address ?? "");
+  const [businessDescription, setBusinessDescription] = useState(
+    sessionSeed?.businessDescription ?? ""
+  );
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(sessionSeed?.activeTab ?? "overview");
   const [chatOpen, setChatOpen] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
   const [radius] = useState(500);
@@ -96,6 +102,16 @@ export function LocationWorkspace() {
       setBusinessDescription(activeProject.overview.slice(0, 120));
     }
   }, [analysis, activeProject?.overview]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    writeLocationSession(projectId, {
+      city,
+      address,
+      businessDescription,
+      activeTab,
+    });
+  }, [projectId, city, address, businessDescription, activeTab]);
 
   useEffect(() => {
     if (!loading) return;

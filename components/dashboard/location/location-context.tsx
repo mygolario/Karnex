@@ -1,10 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useProject } from "@/contexts/project-context";
 import { LocationAnalysis } from "@/lib/db";
 import { toast } from "sonner";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
+import {
+  readLocationSession,
+  writeLocationSession,
+  clearLocationDraft,
+} from "@/lib/location/session-state";
 
 interface LocationContextType {
   analysis: LocationAnalysis | null;
@@ -52,28 +57,58 @@ const DEFAULT_CHECKLIST = [
 
 export function LocationProvider({ children }: { children: React.ReactNode }) {
   const { activeProject, updateActiveProject } = useProject();
-  const [analysis, setAnalysis] = useState<LocationAnalysis | null>(null);
+  const projectId = activeProject?.id;
+
+  const sessionSeed = projectId ? readLocationSession(projectId) : null;
+
+  const [analysis, setAnalysis] = useState<LocationAnalysis | null>(() => {
+    if (activeProject?.locationAnalysis) return activeProject.locationAnalysis;
+    return sessionSeed?.draftAnalysis ?? null;
+  });
   const [loading, setLoading] = useState(false);
-  const [history, setHistory] = useState<LocationAnalysis[]>([]);
+  const [history, setHistory] = useState<LocationAnalysis[]>(
+    () => activeProject?.locationHistory ?? []
+  );
   const [comparisonItems, setComparisonItems] = useState<LocationAnalysis[]>([]);
   const [comparisonMode, setComparisonMode] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [pendingPin, setPendingPin] = useState<{ lat: number; lon: number } | null>(null);
   const [lastSearch, setLastSearch] = useState({
-    city: "Tehran",
-    address: "",
-    businessDescription: "",
+    city: sessionSeed?.city ?? "Tehran",
+    address: sessionSeed?.address ?? "",
+    businessDescription: sessionSeed?.businessDescription ?? "",
     options: {} as Record<string, unknown>,
   });
+  const hydratedProjectRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (activeProject?.locationAnalysis) {
-      setAnalysis(activeProject.locationAnalysis);
+    if (!activeProject?.id) return;
+
+    if (hydratedProjectRef.current !== activeProject.id) {
+      hydratedProjectRef.current = activeProject.id;
+      const session = readLocationSession(activeProject.id);
+      if (activeProject.locationAnalysis) {
+        setAnalysis(activeProject.locationAnalysis);
+      } else if (session?.draftAnalysis) {
+        setAnalysis(session.draftAnalysis);
+      }
+      if (activeProject.locationHistory?.length) {
+        setHistory(activeProject.locationHistory);
+      }
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3355b'},body:JSON.stringify({sessionId:'c3355b',location:'location-context.tsx:hydrate',message:'hydrated location state',data:{projectId:activeProject.id,fromCloud:!!activeProject.locationAnalysis,fromSession:!!session?.draftAnalysis,historyCount:activeProject.locationHistory?.length??0},timestamp:Date.now(),hypothesisId:'H3'})}).catch(()=>{});
+      // #endregion
+      return;
     }
-    if (activeProject?.locationHistory) {
+
+    if (activeProject.locationAnalysis) {
+      setAnalysis(activeProject.locationAnalysis);
+      if (projectId) clearLocationDraft(projectId);
+    }
+    if (activeProject.locationHistory) {
       setHistory(activeProject.locationHistory);
     }
-  }, [activeProject]);
+  }, [activeProject, projectId]);
 
   const persistAnalysis = useCallback(
     async (data: LocationAnalysis, silent?: boolean) => {
@@ -116,6 +151,9 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   ) => {
     setLoading(true);
     setLastSearch({ city, address, businessDescription, options });
+    // #region agent log
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3355b'},body:JSON.stringify({sessionId:'c3355b',location:'location-context.tsx:analyze-start',message:'analyzeLocation started',data:{city,hasAddress:!!address.trim()},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
+    // #endregion
     try {
       const inferredRent =
         options.rentBudget ||
@@ -189,8 +227,14 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       };
 
       await persistAnalysis(analysisData);
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3355b'},body:JSON.stringify({sessionId:'c3355b',location:'location-context.tsx:analyze-done',message:'analyzeLocation succeeded',data:{score:analysisData.score},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
+      // #endregion
     } catch (error) {
       console.error(error);
+      // #region agent log
+      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3355b'},body:JSON.stringify({sessionId:'c3355b',location:'location-context.tsx:analyze-error',message:'analyzeLocation failed',data:{error:String(error)},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
+      // #endregion
       toast.error("خطا در تحلیل مکان");
     } finally {
       setLoading(false);
@@ -200,7 +244,19 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   const loadFromHistory = (item: LocationAnalysis) => setAnalysis(item);
 
   const loadDemoAnalysis = (demo: LocationAnalysis) => {
-    setAnalysis({ ...demo, createdAt: demo.createdAt || new Date().toISOString() });
+    const next = { ...demo, createdAt: demo.createdAt || new Date().toISOString() };
+    setAnalysis(next);
+    if (projectId) {
+      const session = readLocationSession(projectId);
+      writeLocationSession(projectId, {
+        city: session?.city ?? demo.city ?? "Tehran",
+        address: session?.address ?? demo.address ?? "",
+        businessDescription:
+          session?.businessDescription ?? demo.businessDescription ?? "",
+        activeTab: session?.activeTab ?? "overview",
+        draftAnalysis: next,
+      });
+    }
     toast.info("پیش‌نمایش نمونه — برای ذخیره تحلیل واقعی اجرا کنید");
   };
 

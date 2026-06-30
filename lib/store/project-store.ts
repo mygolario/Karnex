@@ -17,7 +17,7 @@ interface ProjectState {
   setActiveProject: (project: BusinessPlan | null) => void;
   setLoading: (loading: boolean) => void;
 
-  refreshProjects: (userId?: string) => Promise<void>;
+  refreshProjects: (userId?: string, options?: { silent?: boolean }) => Promise<void>;
   createNewProject: (userId: string, planData: Record<string, unknown>) => Promise<string>;
   switchProject: (projectId: string) => Promise<void>;
   updateActiveProject: (userId: string, updates: Partial<BusinessPlan>) => Promise<void>;
@@ -32,12 +32,18 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   setActiveProject: (activeProject) => set({ activeProject }),
   setLoading: (loading) => set({ loading }),
 
-  refreshProjects: async (userId) => {
+  refreshProjects: async (userId, options) => {
     if (!userId) {
       set({ projects: [], activeProject: null, loading: false });
       return;
     }
-    set({ loading: true });
+    const silent = options?.silent === true;
+    if (!silent) {
+      set({ loading: true });
+    }
+    // #region agent log
+    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3355b'},body:JSON.stringify({sessionId:'c3355b',location:'project-store.ts:refreshProjects-start',message:'refreshProjects called',data:{silent,hadActiveProject:!!get().activeProject?.id},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
+    // #endregion
     try {
       const res = await fetch("/api/projects", { cache: "no-store" })
         .then((r) => r.json())
