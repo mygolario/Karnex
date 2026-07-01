@@ -55,10 +55,12 @@ async function testZibal() {
 
 async function testResend() {
   console.log("\n--- Testing Resend Email Sending ---");
+  const { getVerificationTemplate } = await import("@/lib/email-templates");
+  const emailHtml = getVerificationTemplate("853194");
   const success = await sendEmail({
     to: TEST_EMAIL,
-    subject: "Karnex Integration Test",
-    htmlContent: "<h1>Integration Works!</h1><p>This is a test email from the Karnex agent verification process using Resend.</p>",
+    subject: "Karnex Integration Test - New Template",
+    htmlContent: emailHtml,
     templateName: 'verification', 
     name: "Karnex Admin"
   });

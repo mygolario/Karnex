@@ -538,21 +538,22 @@ export async function inviteMemberAction(projectId: string, email: string, role:
     // Send email notification using Brevo
     try {
         const { sendEmail } = await import("@/lib/email");
+        const { getInvitationTemplate } = await import("@/lib/email-templates");
         const roleLabel = role === 'admin' ? 'مدیر' : role === 'editor' ? 'ویرایش‌گر' : 'بیننده';
+        const senderName = session?.user?.name || session?.user?.email || "کاربر کارنکس";
+        
+        const emailHtml = getInvitationTemplate(
+            senderName,
+            project.projectName,
+            roleLabel,
+            "https://www.karnex.ir/dashboard"
+        );
+
         await sendEmail({
             to: email,
             subject: `دعوت به همکاری در پروژه ${project.projectName} - کارنکس`,
             templateName: 'invitation',
-            htmlContent: `
-                <div dir="rtl" style="font-family: Tahoma, sans-serif; padding: 20px; line-height: 1.8;">
-                    <h2>همکاری در کارنکس</h2>
-                    <p>سلام،</p>
-                    <p>کاربر <strong>${session?.user?.name || session?.user?.email || "کاربر کارنکس"}</strong> شما را به عنوان <strong>${roleLabel}</strong> به پروژه <strong>${project.projectName}</strong> دعوت کرده است.</p>
-                    <p>برای مشاهده و همکاری در پروژه، لطفا به پنل کاربری خود در کارنکس مراجعه کنید.</p>
-                    <hr />
-                    <a href="https://www.karnex.ir/dashboard" style="background-color: #3b82f6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">ورود به پیشخوان کارنکس</a>
-                </div>
-            `
+            htmlContent: emailHtml
         });
     } catch (emailErr) {
         console.error("Failed to send email invite notification:", emailErr);
