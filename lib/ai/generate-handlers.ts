@@ -243,6 +243,7 @@ export async function handleAnalyzeLocation(
     osmDataBlock: string;
     projectContextBlock?: string;
     osmMeta?: Record<string, unknown>;
+    storefrontPhoto?: string;
   },
   modelOverride?: string
 ) {
@@ -275,7 +276,7 @@ export async function handleAnalyzeLocation(
     ctx
   );
 
-  const enhancedUser = `${user}
+  let enhancedUser = `${user}
 
 دستورالعمل‌های تکمیلی v3:
 1. aiCategory از businessDescription
@@ -290,7 +291,17 @@ export async function handleAnalyzeLocation(
 10. financialLab با monthlyPnL 12 ماه
 11. footfallTier: real|inferred|ai
 12. hourlyFootfall 24 عنصر
-13. متن‌ها را مختصر نگه دار — JSON باید کامل و معتبر باشد.`;
+13. alternatives: هر کدام شامل name, estimatedScore, reason, distance, coordinates (شامل lat, lon در فاصله ۱ تا ۳ کیلومتری) باشند.
+14. متن‌ها را مختصر نگه دار — JSON باید کامل و معتبر باشد.`;
+
+  if (ctx.storefrontPhoto) {
+    enhancedUser += `
+
+توجه ویژه: کاربر تصویری از ویترین/نمای بیرونی این مکان ارسال کرده است. تصویر پیوست‌شده را تحلیل کن و بخش storefront را به صورت زیر پر کن:
+- storefront.photoDataUrl را دقیقاً برابر همان رشته base64 ورودی قرار بده.
+- storefront.visibilityAssessment را بر اساس دید تابلو، وضعیت نما، موانع عابران پیاده و سطح دسترسی فیزیکی تصویر تحلیل فنی کن (۲-۳ جمله فارسی).
+- فیلد fitScoreBreakdown برای accessibility و همچنین امتیاز کل را بر اساس موانع دیده شده در تصویر (پله، سطح ناصاف، نبود رمپ و...) به‌روزرسانی کن.`;
+  }
 
   const callOpts = {
     systemPrompt: system,
@@ -300,6 +311,7 @@ export async function handleAnalyzeLocation(
     maxAttempts: 1,
     responseFormat: { type: "json_object" as const },
     modelOverride: modelOverride || TIER_LOCATION,
+    imageUrl: ctx.storefrontPhoto,
   };
 
   const modelsToTry = [

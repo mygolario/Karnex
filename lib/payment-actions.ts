@@ -97,6 +97,21 @@ export async function verifyPaymentAction(trackId: string, orderId?: string): Pr
             cardPan: verifyResult.cardNumber,
         });
 
+        // Trigger In-App Notification
+        try {
+            const { createNotification } = await import("@/lib/notifications");
+            const refNumberStr = verifyResult.refNumber?.toString() || trackId;
+            await createNotification(userId, {
+                type: "success",
+                title: "فعال‌سازی اشتراک 💳",
+                message: `اشتراک ${plan.name} شما با موفقیت فعال شد. کد پیگیری: ${refNumberStr}`,
+                action: { label: "حساب کاربری", href: "/dashboard/account" },
+                category: "billing"
+            });
+        } catch (inAppErr) {
+            console.error("Failed to send payment verification in-app notification:", inAppErr);
+        }
+
         try {
             if (tx.user?.email) {
                 const emailHtml = getActivationEmailTemplate({

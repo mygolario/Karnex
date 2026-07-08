@@ -577,6 +577,17 @@ exports.Prisma.KbChunkScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  type: 'type',
+  title: 'title',
+  message: 'message',
+  read: 'read',
+  createdAt: 'createdAt',
+  action: 'action'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -643,7 +654,8 @@ exports.Prisma.ModelName = {
   UserApiKey: 'UserApiKey',
   UserIntegration: 'UserIntegration',
   DataExportRequest: 'DataExportRequest',
-  KbChunk: 'KbChunk'
+  KbChunk: 'KbChunk',
+  Notification: 'Notification'
 };
 
 /**

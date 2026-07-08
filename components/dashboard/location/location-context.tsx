@@ -30,6 +30,7 @@ interface LocationContextType {
       footfallDependency?: string;
       rentBudget?: number;
       businessCategory?: string;
+      storefrontPhoto?: string;
     }
   ) => Promise<void>;
   loadFromHistory: (item: LocationAnalysis) => void;
@@ -148,6 +149,7 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
       footfallDependency?: string;
       rentBudget?: number;
       businessCategory?: string;
+      storefrontPhoto?: string;
     } = {}
   ) => {
     setLoading(true);
@@ -179,7 +181,8 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
           rentBudget: inferredRent,
           businessCategory: options.businessCategory || "",
           businessDescription: businessDescription || activeProject?.overview || "",
-          modelOverride: "google/gemini-2.5-flash",
+          modelOverride: "google/gemini-3.5-flash",
+          storefrontPhoto: options.storefrontPhoto || activeProject?.locationAnalysis?.storefront?.photoDataUrl || "",
         }),
       });
 
@@ -226,7 +229,8 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
         },
         storefront: {
           ...parsedData.storefront,
-          onSiteChecklist: DEFAULT_CHECKLIST.map((c) => ({
+          photoDataUrl: options.storefrontPhoto || parsedData.storefront?.photoDataUrl || activeProject?.locationAnalysis?.storefront?.photoDataUrl || "",
+          onSiteChecklist: parsedData.storefront?.onSiteChecklist || activeProject?.locationAnalysis?.storefront?.onSiteChecklist || DEFAULT_CHECKLIST.map((c) => ({
             ...c,
             checked: false,
           })),
@@ -350,16 +354,27 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateStorefrontPhoto = async (dataUrl: string) => {
-    await patchAnalysis({
-      storefront: {
-        ...analysis?.storefront,
-        photoDataUrl: dataUrl,
-        visibilityAssessment:
-          analysis?.storefront?.visibilityAssessment ||
-          "عکس آپلود شد — برای ارزیابی دقیق‌تر visibility تحلیل مجدد بگیرید.",
-      },
-    });
-    toast.success("عکس ویترین ذخیره شد");
+    if (!analysis) return;
+    toast.info("در حال تحلیل هوشمند تصویر ویترین...");
+    try {
+      await analyzeLocation(
+        analysis.city,
+        analysis.address,
+        analysis.businessDescription || "",
+        {
+          radius: analysis.catchment?.radiusM,
+          priceTier: analysis.inputs?.priceTier,
+          footfallDependency: analysis.inputs?.footfallDependency,
+          rentBudget: analysis.inputs?.rentBudget,
+          businessCategory: analysis.businessCategory,
+          storefrontPhoto: dataUrl
+        }
+      );
+      toast.success("تحلیل تصویر ویترین با موفقیت انجام شد");
+    } catch (err) {
+      console.error(err);
+      toast.error("خطا در تحلیل تصویر ویترین");
+    }
   };
 
   const toggleOnSiteCheck = async (id: string) => {

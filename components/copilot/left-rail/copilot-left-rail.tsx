@@ -3,6 +3,7 @@
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { useCopilotStore } from "@/lib/copilot/store";
+import { useTourStore } from "@/lib/tour/store";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -216,7 +217,13 @@ export function CopilotLeftRail({ onNavigate }: CopilotLeftRailProps) {
           </div>
           <span className="font-bold text-sm">دستیار کارنکس</span>
         </div>
-        <Button variant="ghost" size="icon-sm" className="text-muted-foreground">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground"
+          onClick={() => useTourStore.getState().startTour("copilot", 0, true)}
+          title="راهنمای دستیار"
+        >
           <HelpCircle size={15} />
         </Button>
       </div>

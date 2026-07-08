@@ -201,11 +201,16 @@ export function TourOverlay() {
   );
 
   const maskId = "karnex-tour-spotlight-mask";
+  const clipPathStyle = spotlightRect && step.type === "interactive"
+    ? {
+        clipPath: `polygon(evenodd, 0% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, ${spotlightRect.x}px ${spotlightRect.y}px, ${spotlightRect.x + spotlightRect.w}px ${spotlightRect.y}px, ${spotlightRect.x + spotlightRect.w}px ${spotlightRect.y + spotlightRect.h}px, ${spotlightRect.x}px ${spotlightRect.y + spotlightRect.h}px, ${spotlightRect.x}px ${spotlightRect.y}px)`
+      }
+    : undefined;
 
   return createPortal(
     <div className="fixed inset-0 z-[10000] pointer-events-none" dir="rtl" aria-hidden={false}>
       {/* SVG overlay with cutout — dark-mode aware dim + subtle blur backdrop */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-auto backdrop-blur-[2px]">
+      <svg className={`absolute inset-0 w-full h-full backdrop-blur-[2px] ${step.type === "interactive" ? "pointer-events-none" : "pointer-events-auto"}`}>
         <defs>
           <mask id={maskId}>
             <rect x="0" y="0" width="100%" height="100%" fill="white" />
@@ -254,6 +259,7 @@ export function TourOverlay() {
       {/* Click blocker */}
       <div
         className="absolute inset-0 pointer-events-auto"
+        style={clipPathStyle}
         onClick={(e) => e.stopPropagation()}
       />
 

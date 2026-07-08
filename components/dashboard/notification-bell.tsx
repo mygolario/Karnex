@@ -97,24 +97,79 @@ export function NotificationBell({ notifications: initialNotifications, classNam
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch("/api/notifications");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.notifications) {
+          const mapped = data.notifications.map((n: any) => ({
+            ...n,
+            timestamp: new Date(n.createdAt)
+          }));
+          setNotifications(mapped);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  };
+
   useEffect(() => {
-    setNotifications(initialNotifications || getDefaultNotifications());
+    if (initialNotifications) {
+      setNotifications(initialNotifications);
+      return;
+    }
+
+    fetchNotifications();
+
+    // Poll every 60 seconds
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => clearInterval(interval);
   }, [initialNotifications]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const markAsRead = (id: string) => {
+  const markAsRead = async (id: string) => {
+    // Optimistic UI update
     setNotifications(prev => 
       prev.map(n => n.id === id ? { ...n, read: true } : n)
     );
+    try {
+      await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "markAsRead", id }),
+      });
+    } catch (err) {
+      console.error("Failed to mark notification as read on server:", err);
+    }
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
+    // Optimistic UI update
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    try {
+      await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "markAllAsRead" }),
+      });
+    } catch (err) {
+      console.error("Failed to mark all notifications as read on server:", err);
+    }
   };
 
-  const removeNotification = (id: string) => {
+  const removeNotification = async (id: string) => {
+    // Optimistic UI update
     setNotifications(prev => prev.filter(n => n.id !== id));
+    try {
+      await fetch(`/api/notifications?id=${id}`, {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.error("Failed to delete notification on server:", err);
+    }
   };
 
   const formatTime = (date: Date): string => {

@@ -560,6 +560,20 @@ export async function inviteMemberAction(projectId: string, email: string, role:
         const { getInvitationTemplate } = await import("@/lib/email-templates");
         const roleLabel = role === 'admin' ? 'مدیر' : role === 'editor' ? 'ویرایش‌گر' : 'بیننده';
         const senderName = session?.user?.name || session?.user?.email || "کاربر کارنکس";
+
+        // Create In-App Notification
+        try {
+            const { createNotification } = await import("@/lib/notifications");
+            await createNotification(targetUser.id, {
+                type: "info",
+                title: "دعوت به همکاری 👥",
+                message: `شما توسط ${senderName} به پروژه ${project.projectName} به عنوان ${roleLabel} دعوت شده‌اید.`,
+                action: { label: "مشاهده پروژه", href: "/dashboard/overview" },
+                category: "roadmap"
+            });
+        } catch (inAppErr) {
+            console.error("Failed to send in-app invite notification:", inAppErr);
+        }
         
         const emailHtml = getInvitationTemplate(
             senderName,

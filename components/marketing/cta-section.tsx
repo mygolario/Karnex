@@ -99,7 +99,7 @@ export const CTASection = () => {
                 size="xl"
                 variant="outline"
                 rounded="lg"
-                className="font-bold border-white/20 text-white hover:bg-white/10 hover:border-white/40 gap-2 h-[3.5rem]"
+                className="font-bold border-white/20 text-white bg-transparent hover:bg-white/10 hover:border-white/40 gap-2 h-[3.5rem]"
               >
                 صحبت با تیم فروش
               </Button>

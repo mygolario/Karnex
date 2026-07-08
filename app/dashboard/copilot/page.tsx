@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { PageTourHelp } from "@/components/tour/page-tour-help";
 import { Loader2 } from "lucide-react";
 
 const CopilotWorkspace = dynamic(
@@ -17,12 +16,5 @@ const CopilotWorkspace = dynamic(
 );
 
 export default function CopilotPage() {
-  return (
-    <div className="relative">
-      <div className="absolute top-2 start-2 z-20">
-        <PageTourHelp tourId="copilot" />
-      </div>
-      <CopilotWorkspace />
-    </div>
-  );
+  return <CopilotWorkspace />;
 }

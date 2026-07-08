@@ -94,6 +94,11 @@ export type CanvasVersion = $Result.DefaultSelection<Prisma.$CanvasVersionPayloa
  */
 export type UserProfile = $Result.DefaultSelection<Prisma.$UserProfilePayload>
 /**
+ * Model TourProgress
+ * 
+ */
+export type TourProgress = $Result.DefaultSelection<Prisma.$TourProgressPayload>
+/**
  * Model ProjectMemory
  * 
  */
@@ -185,6 +190,11 @@ export type DataExportRequest = $Result.DefaultSelection<Prisma.$DataExportReque
  * (Prisma represents it as Unsupported until first-class vector support lands).
  */
 export type KbChunk = $Result.DefaultSelection<Prisma.$KbChunkPayload>
+/**
+ * Model Notification
+ * 
+ */
+export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -464,6 +474,16 @@ export class PrismaClient<
   get userProfile(): Prisma.UserProfileDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.tourProgress`: Exposes CRUD operations for the **TourProgress** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TourProgresses
+    * const tourProgresses = await prisma.tourProgress.findMany()
+    * ```
+    */
+  get tourProgress(): Prisma.TourProgressDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.projectMemory`: Exposes CRUD operations for the **ProjectMemory** model.
     * Example usage:
     * ```ts
@@ -642,6 +662,16 @@ export class PrismaClient<
     * ```
     */
   get kbChunk(): Prisma.KbChunkDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.notification`: Exposes CRUD operations for the **Notification** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Notifications
+    * const notifications = await prisma.notification.findMany()
+    * ```
+    */
+  get notification(): Prisma.NotificationDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1092,6 +1122,7 @@ export namespace Prisma {
     Comment: 'Comment',
     CanvasVersion: 'CanvasVersion',
     UserProfile: 'UserProfile',
+    TourProgress: 'TourProgress',
     ProjectMemory: 'ProjectMemory',
     ChatConversation: 'ChatConversation',
     ChatMessage: 'ChatMessage',
@@ -1109,7 +1140,8 @@ export namespace Prisma {
     UserApiKey: 'UserApiKey',
     UserIntegration: 'UserIntegration',
     DataExportRequest: 'DataExportRequest',
-    KbChunk: 'KbChunk'
+    KbChunk: 'KbChunk',
+    Notification: 'Notification'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1125,7 +1157,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "subscription" | "transaction" | "mediaItem" | "systemLog" | "feedback" | "projectMember" | "canvas" | "card" | "comment" | "canvasVersion" | "userProfile" | "projectMemory" | "chatConversation" | "chatMessage" | "aiFeedback" | "artifact" | "aiActionLog" | "aiInsight" | "aiUsage" | "customerBotChannel" | "customerBotConversation" | "customerBotMessage" | "script" | "userSession" | "loginEvent" | "userApiKey" | "userIntegration" | "dataExportRequest" | "kbChunk"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "subscription" | "transaction" | "mediaItem" | "systemLog" | "feedback" | "projectMember" | "canvas" | "card" | "comment" | "canvasVersion" | "userProfile" | "tourProgress" | "projectMemory" | "chatConversation" | "chatMessage" | "aiFeedback" | "artifact" | "aiActionLog" | "aiInsight" | "aiUsage" | "customerBotChannel" | "customerBotConversation" | "customerBotMessage" | "script" | "userSession" | "loginEvent" | "userApiKey" | "userIntegration" | "dataExportRequest" | "kbChunk" | "notification"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2310,6 +2342,80 @@ export namespace Prisma {
           count: {
             args: Prisma.UserProfileCountArgs<ExtArgs>
             result: $Utils.Optional<UserProfileCountAggregateOutputType> | number
+          }
+        }
+      }
+      TourProgress: {
+        payload: Prisma.$TourProgressPayload<ExtArgs>
+        fields: Prisma.TourProgressFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TourProgressFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TourProgressFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          findFirst: {
+            args: Prisma.TourProgressFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TourProgressFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          findMany: {
+            args: Prisma.TourProgressFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>[]
+          }
+          create: {
+            args: Prisma.TourProgressCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          createMany: {
+            args: Prisma.TourProgressCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TourProgressCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>[]
+          }
+          delete: {
+            args: Prisma.TourProgressDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          update: {
+            args: Prisma.TourProgressUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          deleteMany: {
+            args: Prisma.TourProgressDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TourProgressUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.TourProgressUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>[]
+          }
+          upsert: {
+            args: Prisma.TourProgressUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          aggregate: {
+            args: Prisma.TourProgressAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTourProgress>
+          }
+          groupBy: {
+            args: Prisma.TourProgressGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TourProgressGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TourProgressCountArgs<ExtArgs>
+            result: $Utils.Optional<TourProgressCountAggregateOutputType> | number
           }
         }
       }
@@ -3645,6 +3751,80 @@ export namespace Prisma {
           }
         }
       }
+      Notification: {
+        payload: Prisma.$NotificationPayload<ExtArgs>
+        fields: Prisma.NotificationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NotificationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NotificationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          findFirst: {
+            args: Prisma.NotificationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NotificationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          findMany: {
+            args: Prisma.NotificationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+          }
+          create: {
+            args: Prisma.NotificationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          createMany: {
+            args: Prisma.NotificationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.NotificationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+          }
+          delete: {
+            args: Prisma.NotificationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          update: {
+            args: Prisma.NotificationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          deleteMany: {
+            args: Prisma.NotificationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NotificationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.NotificationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>[]
+          }
+          upsert: {
+            args: Prisma.NotificationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationPayload>
+          }
+          aggregate: {
+            args: Prisma.NotificationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNotification>
+          }
+          groupBy: {
+            args: Prisma.NotificationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NotificationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.NotificationCountArgs<ExtArgs>
+            result: $Utils.Optional<NotificationCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3769,6 +3949,7 @@ export namespace Prisma {
     comment?: CommentOmit
     canvasVersion?: CanvasVersionOmit
     userProfile?: UserProfileOmit
+    tourProgress?: TourProgressOmit
     projectMemory?: ProjectMemoryOmit
     chatConversation?: ChatConversationOmit
     chatMessage?: ChatMessageOmit
@@ -3787,6 +3968,7 @@ export namespace Prisma {
     userIntegration?: UserIntegrationOmit
     dataExportRequest?: DataExportRequestOmit
     kbChunk?: KbChunkOmit
+    notification?: NotificationOmit
   }
 
   /* Types for Logging */
@@ -3885,6 +4067,7 @@ export namespace Prisma {
     userIntegrations: number
     dataExportRequests: number
     loginEvents: number
+    notifications: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3906,6 +4089,7 @@ export namespace Prisma {
     userIntegrations?: boolean | UserCountOutputTypeCountUserIntegrationsArgs
     dataExportRequests?: boolean | UserCountOutputTypeCountDataExportRequestsArgs
     loginEvents?: boolean | UserCountOutputTypeCountLoginEventsArgs
+    notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
   }
 
   // Custom InputTypes
@@ -4043,6 +4227,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountLoginEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: LoginEventWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
   }
 
 
@@ -4643,6 +4834,8 @@ export namespace Prisma {
     userIntegrations?: boolean | User$userIntegrationsArgs<ExtArgs>
     dataExportRequests?: boolean | User$dataExportRequestsArgs<ExtArgs>
     loginEvents?: boolean | User$loginEventsArgs<ExtArgs>
+    tourProgress?: boolean | User$tourProgressArgs<ExtArgs>
+    notifications?: boolean | User$notificationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -4739,6 +4932,8 @@ export namespace Prisma {
     userIntegrations?: boolean | User$userIntegrationsArgs<ExtArgs>
     dataExportRequests?: boolean | User$dataExportRequestsArgs<ExtArgs>
     loginEvents?: boolean | User$loginEventsArgs<ExtArgs>
+    tourProgress?: boolean | User$tourProgressArgs<ExtArgs>
+    notifications?: boolean | User$notificationsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -4766,6 +4961,8 @@ export namespace Prisma {
       userIntegrations: Prisma.$UserIntegrationPayload<ExtArgs>[]
       dataExportRequests: Prisma.$DataExportRequestPayload<ExtArgs>[]
       loginEvents: Prisma.$LoginEventPayload<ExtArgs>[]
+      tourProgress: Prisma.$TourProgressPayload<ExtArgs> | null
+      notifications: Prisma.$NotificationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5202,6 +5399,8 @@ export namespace Prisma {
     userIntegrations<T extends User$userIntegrationsArgs<ExtArgs> = {}>(args?: Subset<T, User$userIntegrationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserIntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dataExportRequests<T extends User$dataExportRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$dataExportRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DataExportRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     loginEvents<T extends User$loginEventsArgs<ExtArgs> = {}>(args?: Subset<T, User$loginEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LoginEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tourProgress<T extends User$tourProgressArgs<ExtArgs> = {}>(args?: Subset<T, User$tourProgressArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6088,6 +6287,49 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LoginEventScalarFieldEnum | LoginEventScalarFieldEnum[]
+  }
+
+  /**
+   * User.tourProgress
+   */
+  export type User$tourProgressArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    where?: TourProgressWhereInput
+  }
+
+  /**
+   * User.notifications
+   */
+  export type User$notificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    cursor?: NotificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
   }
 
   /**
@@ -23102,6 +23344,1285 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserProfileInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TourProgress
+   */
+
+  export type AggregateTourProgress = {
+    _count: TourProgressCountAggregateOutputType | null
+    _avg: TourProgressAvgAggregateOutputType | null
+    _sum: TourProgressSumAggregateOutputType | null
+    _min: TourProgressMinAggregateOutputType | null
+    _max: TourProgressMaxAggregateOutputType | null
+  }
+
+  export type TourProgressAvgAggregateOutputType = {
+    xp: number | null
+    level: number | null
+    streak: number | null
+  }
+
+  export type TourProgressSumAggregateOutputType = {
+    xp: number | null
+    level: number | null
+    streak: number | null
+  }
+
+  export type TourProgressMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    persona: string | null
+    experienceLevel: string | null
+    primaryGoal: string | null
+    hasSeenWelcome: boolean | null
+    disableAutoStart: boolean | null
+    lastSeenWhatsNewVersion: string | null
+    lastKnownProjectType: string | null
+    lastKnownPlan: string | null
+    xp: number | null
+    level: number | null
+    streak: number | null
+    lastActiveDate: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type TourProgressMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    persona: string | null
+    experienceLevel: string | null
+    primaryGoal: string | null
+    hasSeenWelcome: boolean | null
+    disableAutoStart: boolean | null
+    lastSeenWhatsNewVersion: string | null
+    lastKnownProjectType: string | null
+    lastKnownPlan: string | null
+    xp: number | null
+    level: number | null
+    streak: number | null
+    lastActiveDate: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type TourProgressCountAggregateOutputType = {
+    id: number
+    userId: number
+    completedTours: number
+    skippedTours: number
+    completedChecklistItems: number
+    dismissedBeacons: number
+    persona: number
+    experienceLevel: number
+    primaryGoal: number
+    hasSeenWelcome: number
+    disableAutoStart: number
+    lastSeenWhatsNewVersion: number
+    lastKnownProjectType: number
+    lastKnownPlan: number
+    xp: number
+    level: number
+    streak: number
+    lastActiveDate: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type TourProgressAvgAggregateInputType = {
+    xp?: true
+    level?: true
+    streak?: true
+  }
+
+  export type TourProgressSumAggregateInputType = {
+    xp?: true
+    level?: true
+    streak?: true
+  }
+
+  export type TourProgressMinAggregateInputType = {
+    id?: true
+    userId?: true
+    persona?: true
+    experienceLevel?: true
+    primaryGoal?: true
+    hasSeenWelcome?: true
+    disableAutoStart?: true
+    lastSeenWhatsNewVersion?: true
+    lastKnownProjectType?: true
+    lastKnownPlan?: true
+    xp?: true
+    level?: true
+    streak?: true
+    lastActiveDate?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type TourProgressMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    persona?: true
+    experienceLevel?: true
+    primaryGoal?: true
+    hasSeenWelcome?: true
+    disableAutoStart?: true
+    lastSeenWhatsNewVersion?: true
+    lastKnownProjectType?: true
+    lastKnownPlan?: true
+    xp?: true
+    level?: true
+    streak?: true
+    lastActiveDate?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type TourProgressCountAggregateInputType = {
+    id?: true
+    userId?: true
+    completedTours?: true
+    skippedTours?: true
+    completedChecklistItems?: true
+    dismissedBeacons?: true
+    persona?: true
+    experienceLevel?: true
+    primaryGoal?: true
+    hasSeenWelcome?: true
+    disableAutoStart?: true
+    lastSeenWhatsNewVersion?: true
+    lastKnownProjectType?: true
+    lastKnownPlan?: true
+    xp?: true
+    level?: true
+    streak?: true
+    lastActiveDate?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type TourProgressAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TourProgress to aggregate.
+     */
+    where?: TourProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TourProgresses to fetch.
+     */
+    orderBy?: TourProgressOrderByWithRelationInput | TourProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TourProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TourProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TourProgresses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TourProgresses
+    **/
+    _count?: true | TourProgressCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TourProgressAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TourProgressSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TourProgressMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TourProgressMaxAggregateInputType
+  }
+
+  export type GetTourProgressAggregateType<T extends TourProgressAggregateArgs> = {
+        [P in keyof T & keyof AggregateTourProgress]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTourProgress[P]>
+      : GetScalarType<T[P], AggregateTourProgress[P]>
+  }
+
+
+
+
+  export type TourProgressGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TourProgressWhereInput
+    orderBy?: TourProgressOrderByWithAggregationInput | TourProgressOrderByWithAggregationInput[]
+    by: TourProgressScalarFieldEnum[] | TourProgressScalarFieldEnum
+    having?: TourProgressScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TourProgressCountAggregateInputType | true
+    _avg?: TourProgressAvgAggregateInputType
+    _sum?: TourProgressSumAggregateInputType
+    _min?: TourProgressMinAggregateInputType
+    _max?: TourProgressMaxAggregateInputType
+  }
+
+  export type TourProgressGroupByOutputType = {
+    id: string
+    userId: string
+    completedTours: JsonValue
+    skippedTours: JsonValue
+    completedChecklistItems: JsonValue
+    dismissedBeacons: JsonValue
+    persona: string | null
+    experienceLevel: string | null
+    primaryGoal: string | null
+    hasSeenWelcome: boolean
+    disableAutoStart: boolean
+    lastSeenWhatsNewVersion: string | null
+    lastKnownProjectType: string | null
+    lastKnownPlan: string | null
+    xp: number
+    level: number
+    streak: number
+    lastActiveDate: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: TourProgressCountAggregateOutputType | null
+    _avg: TourProgressAvgAggregateOutputType | null
+    _sum: TourProgressSumAggregateOutputType | null
+    _min: TourProgressMinAggregateOutputType | null
+    _max: TourProgressMaxAggregateOutputType | null
+  }
+
+  type GetTourProgressGroupByPayload<T extends TourProgressGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TourProgressGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TourProgressGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TourProgressGroupByOutputType[P]>
+            : GetScalarType<T[P], TourProgressGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TourProgressSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    completedTours?: boolean
+    skippedTours?: boolean
+    completedChecklistItems?: boolean
+    dismissedBeacons?: boolean
+    persona?: boolean
+    experienceLevel?: boolean
+    primaryGoal?: boolean
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: boolean
+    lastKnownProjectType?: boolean
+    lastKnownPlan?: boolean
+    xp?: boolean
+    level?: boolean
+    streak?: boolean
+    lastActiveDate?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tourProgress"]>
+
+  export type TourProgressSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    completedTours?: boolean
+    skippedTours?: boolean
+    completedChecklistItems?: boolean
+    dismissedBeacons?: boolean
+    persona?: boolean
+    experienceLevel?: boolean
+    primaryGoal?: boolean
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: boolean
+    lastKnownProjectType?: boolean
+    lastKnownPlan?: boolean
+    xp?: boolean
+    level?: boolean
+    streak?: boolean
+    lastActiveDate?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tourProgress"]>
+
+  export type TourProgressSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    completedTours?: boolean
+    skippedTours?: boolean
+    completedChecklistItems?: boolean
+    dismissedBeacons?: boolean
+    persona?: boolean
+    experienceLevel?: boolean
+    primaryGoal?: boolean
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: boolean
+    lastKnownProjectType?: boolean
+    lastKnownPlan?: boolean
+    xp?: boolean
+    level?: boolean
+    streak?: boolean
+    lastActiveDate?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tourProgress"]>
+
+  export type TourProgressSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    completedTours?: boolean
+    skippedTours?: boolean
+    completedChecklistItems?: boolean
+    dismissedBeacons?: boolean
+    persona?: boolean
+    experienceLevel?: boolean
+    primaryGoal?: boolean
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: boolean
+    lastKnownProjectType?: boolean
+    lastKnownPlan?: boolean
+    xp?: boolean
+    level?: boolean
+    streak?: boolean
+    lastActiveDate?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type TourProgressOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "completedTours" | "skippedTours" | "completedChecklistItems" | "dismissedBeacons" | "persona" | "experienceLevel" | "primaryGoal" | "hasSeenWelcome" | "disableAutoStart" | "lastSeenWhatsNewVersion" | "lastKnownProjectType" | "lastKnownPlan" | "xp" | "level" | "streak" | "lastActiveDate" | "createdAt" | "updatedAt", ExtArgs["result"]["tourProgress"]>
+  export type TourProgressInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type TourProgressIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type TourProgressIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $TourProgressPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TourProgress"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      completedTours: Prisma.JsonValue
+      skippedTours: Prisma.JsonValue
+      completedChecklistItems: Prisma.JsonValue
+      dismissedBeacons: Prisma.JsonValue
+      persona: string | null
+      experienceLevel: string | null
+      primaryGoal: string | null
+      hasSeenWelcome: boolean
+      disableAutoStart: boolean
+      lastSeenWhatsNewVersion: string | null
+      lastKnownProjectType: string | null
+      lastKnownPlan: string | null
+      xp: number
+      level: number
+      streak: number
+      lastActiveDate: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["tourProgress"]>
+    composites: {}
+  }
+
+  type TourProgressGetPayload<S extends boolean | null | undefined | TourProgressDefaultArgs> = $Result.GetResult<Prisma.$TourProgressPayload, S>
+
+  type TourProgressCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TourProgressFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TourProgressCountAggregateInputType | true
+    }
+
+  export interface TourProgressDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TourProgress'], meta: { name: 'TourProgress' } }
+    /**
+     * Find zero or one TourProgress that matches the filter.
+     * @param {TourProgressFindUniqueArgs} args - Arguments to find a TourProgress
+     * @example
+     * // Get one TourProgress
+     * const tourProgress = await prisma.tourProgress.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TourProgressFindUniqueArgs>(args: SelectSubset<T, TourProgressFindUniqueArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one TourProgress that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TourProgressFindUniqueOrThrowArgs} args - Arguments to find a TourProgress
+     * @example
+     * // Get one TourProgress
+     * const tourProgress = await prisma.tourProgress.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TourProgressFindUniqueOrThrowArgs>(args: SelectSubset<T, TourProgressFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TourProgress that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressFindFirstArgs} args - Arguments to find a TourProgress
+     * @example
+     * // Get one TourProgress
+     * const tourProgress = await prisma.tourProgress.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TourProgressFindFirstArgs>(args?: SelectSubset<T, TourProgressFindFirstArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TourProgress that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressFindFirstOrThrowArgs} args - Arguments to find a TourProgress
+     * @example
+     * // Get one TourProgress
+     * const tourProgress = await prisma.tourProgress.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TourProgressFindFirstOrThrowArgs>(args?: SelectSubset<T, TourProgressFindFirstOrThrowArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TourProgresses that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TourProgresses
+     * const tourProgresses = await prisma.tourProgress.findMany()
+     * 
+     * // Get first 10 TourProgresses
+     * const tourProgresses = await prisma.tourProgress.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const tourProgressWithIdOnly = await prisma.tourProgress.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TourProgressFindManyArgs>(args?: SelectSubset<T, TourProgressFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a TourProgress.
+     * @param {TourProgressCreateArgs} args - Arguments to create a TourProgress.
+     * @example
+     * // Create one TourProgress
+     * const TourProgress = await prisma.tourProgress.create({
+     *   data: {
+     *     // ... data to create a TourProgress
+     *   }
+     * })
+     * 
+     */
+    create<T extends TourProgressCreateArgs>(args: SelectSubset<T, TourProgressCreateArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many TourProgresses.
+     * @param {TourProgressCreateManyArgs} args - Arguments to create many TourProgresses.
+     * @example
+     * // Create many TourProgresses
+     * const tourProgress = await prisma.tourProgress.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TourProgressCreateManyArgs>(args?: SelectSubset<T, TourProgressCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many TourProgresses and returns the data saved in the database.
+     * @param {TourProgressCreateManyAndReturnArgs} args - Arguments to create many TourProgresses.
+     * @example
+     * // Create many TourProgresses
+     * const tourProgress = await prisma.tourProgress.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many TourProgresses and only return the `id`
+     * const tourProgressWithIdOnly = await prisma.tourProgress.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TourProgressCreateManyAndReturnArgs>(args?: SelectSubset<T, TourProgressCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a TourProgress.
+     * @param {TourProgressDeleteArgs} args - Arguments to delete one TourProgress.
+     * @example
+     * // Delete one TourProgress
+     * const TourProgress = await prisma.tourProgress.delete({
+     *   where: {
+     *     // ... filter to delete one TourProgress
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TourProgressDeleteArgs>(args: SelectSubset<T, TourProgressDeleteArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one TourProgress.
+     * @param {TourProgressUpdateArgs} args - Arguments to update one TourProgress.
+     * @example
+     * // Update one TourProgress
+     * const tourProgress = await prisma.tourProgress.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TourProgressUpdateArgs>(args: SelectSubset<T, TourProgressUpdateArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more TourProgresses.
+     * @param {TourProgressDeleteManyArgs} args - Arguments to filter TourProgresses to delete.
+     * @example
+     * // Delete a few TourProgresses
+     * const { count } = await prisma.tourProgress.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TourProgressDeleteManyArgs>(args?: SelectSubset<T, TourProgressDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TourProgresses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TourProgresses
+     * const tourProgress = await prisma.tourProgress.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TourProgressUpdateManyArgs>(args: SelectSubset<T, TourProgressUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TourProgresses and returns the data updated in the database.
+     * @param {TourProgressUpdateManyAndReturnArgs} args - Arguments to update many TourProgresses.
+     * @example
+     * // Update many TourProgresses
+     * const tourProgress = await prisma.tourProgress.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more TourProgresses and only return the `id`
+     * const tourProgressWithIdOnly = await prisma.tourProgress.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends TourProgressUpdateManyAndReturnArgs>(args: SelectSubset<T, TourProgressUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one TourProgress.
+     * @param {TourProgressUpsertArgs} args - Arguments to update or create a TourProgress.
+     * @example
+     * // Update or create a TourProgress
+     * const tourProgress = await prisma.tourProgress.upsert({
+     *   create: {
+     *     // ... data to create a TourProgress
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TourProgress we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TourProgressUpsertArgs>(args: SelectSubset<T, TourProgressUpsertArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of TourProgresses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressCountArgs} args - Arguments to filter TourProgresses to count.
+     * @example
+     * // Count the number of TourProgresses
+     * const count = await prisma.tourProgress.count({
+     *   where: {
+     *     // ... the filter for the TourProgresses we want to count
+     *   }
+     * })
+    **/
+    count<T extends TourProgressCountArgs>(
+      args?: Subset<T, TourProgressCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TourProgressCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TourProgress.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TourProgressAggregateArgs>(args: Subset<T, TourProgressAggregateArgs>): Prisma.PrismaPromise<GetTourProgressAggregateType<T>>
+
+    /**
+     * Group by TourProgress.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TourProgressGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TourProgressGroupByArgs['orderBy'] }
+        : { orderBy?: TourProgressGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TourProgressGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTourProgressGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TourProgress model
+   */
+  readonly fields: TourProgressFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TourProgress.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TourProgressClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TourProgress model
+   */
+  interface TourProgressFieldRefs {
+    readonly id: FieldRef<"TourProgress", 'String'>
+    readonly userId: FieldRef<"TourProgress", 'String'>
+    readonly completedTours: FieldRef<"TourProgress", 'Json'>
+    readonly skippedTours: FieldRef<"TourProgress", 'Json'>
+    readonly completedChecklistItems: FieldRef<"TourProgress", 'Json'>
+    readonly dismissedBeacons: FieldRef<"TourProgress", 'Json'>
+    readonly persona: FieldRef<"TourProgress", 'String'>
+    readonly experienceLevel: FieldRef<"TourProgress", 'String'>
+    readonly primaryGoal: FieldRef<"TourProgress", 'String'>
+    readonly hasSeenWelcome: FieldRef<"TourProgress", 'Boolean'>
+    readonly disableAutoStart: FieldRef<"TourProgress", 'Boolean'>
+    readonly lastSeenWhatsNewVersion: FieldRef<"TourProgress", 'String'>
+    readonly lastKnownProjectType: FieldRef<"TourProgress", 'String'>
+    readonly lastKnownPlan: FieldRef<"TourProgress", 'String'>
+    readonly xp: FieldRef<"TourProgress", 'Int'>
+    readonly level: FieldRef<"TourProgress", 'Int'>
+    readonly streak: FieldRef<"TourProgress", 'Int'>
+    readonly lastActiveDate: FieldRef<"TourProgress", 'DateTime'>
+    readonly createdAt: FieldRef<"TourProgress", 'DateTime'>
+    readonly updatedAt: FieldRef<"TourProgress", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TourProgress findUnique
+   */
+  export type TourProgressFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which TourProgress to fetch.
+     */
+    where: TourProgressWhereUniqueInput
+  }
+
+  /**
+   * TourProgress findUniqueOrThrow
+   */
+  export type TourProgressFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which TourProgress to fetch.
+     */
+    where: TourProgressWhereUniqueInput
+  }
+
+  /**
+   * TourProgress findFirst
+   */
+  export type TourProgressFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which TourProgress to fetch.
+     */
+    where?: TourProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TourProgresses to fetch.
+     */
+    orderBy?: TourProgressOrderByWithRelationInput | TourProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TourProgresses.
+     */
+    cursor?: TourProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TourProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TourProgresses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TourProgresses.
+     */
+    distinct?: TourProgressScalarFieldEnum | TourProgressScalarFieldEnum[]
+  }
+
+  /**
+   * TourProgress findFirstOrThrow
+   */
+  export type TourProgressFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which TourProgress to fetch.
+     */
+    where?: TourProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TourProgresses to fetch.
+     */
+    orderBy?: TourProgressOrderByWithRelationInput | TourProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TourProgresses.
+     */
+    cursor?: TourProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TourProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TourProgresses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TourProgresses.
+     */
+    distinct?: TourProgressScalarFieldEnum | TourProgressScalarFieldEnum[]
+  }
+
+  /**
+   * TourProgress findMany
+   */
+  export type TourProgressFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which TourProgresses to fetch.
+     */
+    where?: TourProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TourProgresses to fetch.
+     */
+    orderBy?: TourProgressOrderByWithRelationInput | TourProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TourProgresses.
+     */
+    cursor?: TourProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TourProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TourProgresses.
+     */
+    skip?: number
+    distinct?: TourProgressScalarFieldEnum | TourProgressScalarFieldEnum[]
+  }
+
+  /**
+   * TourProgress create
+   */
+  export type TourProgressCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TourProgress.
+     */
+    data: XOR<TourProgressCreateInput, TourProgressUncheckedCreateInput>
+  }
+
+  /**
+   * TourProgress createMany
+   */
+  export type TourProgressCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TourProgresses.
+     */
+    data: TourProgressCreateManyInput | TourProgressCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * TourProgress createManyAndReturn
+   */
+  export type TourProgressCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * The data used to create many TourProgresses.
+     */
+    data: TourProgressCreateManyInput | TourProgressCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TourProgress update
+   */
+  export type TourProgressUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TourProgress.
+     */
+    data: XOR<TourProgressUpdateInput, TourProgressUncheckedUpdateInput>
+    /**
+     * Choose, which TourProgress to update.
+     */
+    where: TourProgressWhereUniqueInput
+  }
+
+  /**
+   * TourProgress updateMany
+   */
+  export type TourProgressUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TourProgresses.
+     */
+    data: XOR<TourProgressUpdateManyMutationInput, TourProgressUncheckedUpdateManyInput>
+    /**
+     * Filter which TourProgresses to update
+     */
+    where?: TourProgressWhereInput
+    /**
+     * Limit how many TourProgresses to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * TourProgress updateManyAndReturn
+   */
+  export type TourProgressUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * The data used to update TourProgresses.
+     */
+    data: XOR<TourProgressUpdateManyMutationInput, TourProgressUncheckedUpdateManyInput>
+    /**
+     * Filter which TourProgresses to update
+     */
+    where?: TourProgressWhereInput
+    /**
+     * Limit how many TourProgresses to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TourProgress upsert
+   */
+  export type TourProgressUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TourProgress to update in case it exists.
+     */
+    where: TourProgressWhereUniqueInput
+    /**
+     * In case the TourProgress found by the `where` argument doesn't exist, create a new TourProgress with this data.
+     */
+    create: XOR<TourProgressCreateInput, TourProgressUncheckedCreateInput>
+    /**
+     * In case the TourProgress was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TourProgressUpdateInput, TourProgressUncheckedUpdateInput>
+  }
+
+  /**
+   * TourProgress delete
+   */
+  export type TourProgressDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter which TourProgress to delete.
+     */
+    where: TourProgressWhereUniqueInput
+  }
+
+  /**
+   * TourProgress deleteMany
+   */
+  export type TourProgressDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TourProgresses to delete
+     */
+    where?: TourProgressWhereInput
+    /**
+     * Limit how many TourProgresses to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * TourProgress without action
+   */
+  export type TourProgressDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
   }
 
 
@@ -43688,6 +45209,1099 @@ export namespace Prisma {
 
 
   /**
+   * Model Notification
+   */
+
+  export type AggregateNotification = {
+    _count: NotificationCountAggregateOutputType | null
+    _min: NotificationMinAggregateOutputType | null
+    _max: NotificationMaxAggregateOutputType | null
+  }
+
+  export type NotificationMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    type: string | null
+    title: string | null
+    message: string | null
+    read: boolean | null
+    createdAt: Date | null
+  }
+
+  export type NotificationMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    type: string | null
+    title: string | null
+    message: string | null
+    read: boolean | null
+    createdAt: Date | null
+  }
+
+  export type NotificationCountAggregateOutputType = {
+    id: number
+    userId: number
+    type: number
+    title: number
+    message: number
+    read: number
+    createdAt: number
+    action: number
+    _all: number
+  }
+
+
+  export type NotificationMinAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    title?: true
+    message?: true
+    read?: true
+    createdAt?: true
+  }
+
+  export type NotificationMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    title?: true
+    message?: true
+    read?: true
+    createdAt?: true
+  }
+
+  export type NotificationCountAggregateInputType = {
+    id?: true
+    userId?: true
+    type?: true
+    title?: true
+    message?: true
+    read?: true
+    createdAt?: true
+    action?: true
+    _all?: true
+  }
+
+  export type NotificationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Notification to aggregate.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Notifications
+    **/
+    _count?: true | NotificationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: NotificationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: NotificationMaxAggregateInputType
+  }
+
+  export type GetNotificationAggregateType<T extends NotificationAggregateArgs> = {
+        [P in keyof T & keyof AggregateNotification]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNotification[P]>
+      : GetScalarType<T[P], AggregateNotification[P]>
+  }
+
+
+
+
+  export type NotificationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationWhereInput
+    orderBy?: NotificationOrderByWithAggregationInput | NotificationOrderByWithAggregationInput[]
+    by: NotificationScalarFieldEnum[] | NotificationScalarFieldEnum
+    having?: NotificationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NotificationCountAggregateInputType | true
+    _min?: NotificationMinAggregateInputType
+    _max?: NotificationMaxAggregateInputType
+  }
+
+  export type NotificationGroupByOutputType = {
+    id: string
+    userId: string
+    type: string
+    title: string
+    message: string
+    read: boolean
+    createdAt: Date
+    action: JsonValue | null
+    _count: NotificationCountAggregateOutputType | null
+    _min: NotificationMinAggregateOutputType | null
+    _max: NotificationMaxAggregateOutputType | null
+  }
+
+  type GetNotificationGroupByPayload<T extends NotificationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NotificationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NotificationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NotificationGroupByOutputType[P]>
+            : GetScalarType<T[P], NotificationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NotificationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    title?: boolean
+    message?: boolean
+    read?: boolean
+    createdAt?: boolean
+    action?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["notification"]>
+
+  export type NotificationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    title?: boolean
+    message?: boolean
+    read?: boolean
+    createdAt?: boolean
+    action?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["notification"]>
+
+  export type NotificationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    title?: boolean
+    message?: boolean
+    read?: boolean
+    createdAt?: boolean
+    action?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["notification"]>
+
+  export type NotificationSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    type?: boolean
+    title?: boolean
+    message?: boolean
+    read?: boolean
+    createdAt?: boolean
+    action?: boolean
+  }
+
+  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "type" | "title" | "message" | "read" | "createdAt" | "action", ExtArgs["result"]["notification"]>
+  export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type NotificationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type NotificationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $NotificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Notification"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      type: string
+      title: string
+      message: string
+      read: boolean
+      createdAt: Date
+      action: Prisma.JsonValue | null
+    }, ExtArgs["result"]["notification"]>
+    composites: {}
+  }
+
+  type NotificationGetPayload<S extends boolean | null | undefined | NotificationDefaultArgs> = $Result.GetResult<Prisma.$NotificationPayload, S>
+
+  type NotificationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<NotificationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: NotificationCountAggregateInputType | true
+    }
+
+  export interface NotificationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Notification'], meta: { name: 'Notification' } }
+    /**
+     * Find zero or one Notification that matches the filter.
+     * @param {NotificationFindUniqueArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NotificationFindUniqueArgs>(args: SelectSubset<T, NotificationFindUniqueArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Notification that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {NotificationFindUniqueOrThrowArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NotificationFindUniqueOrThrowArgs>(args: SelectSubset<T, NotificationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Notification that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindFirstArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NotificationFindFirstArgs>(args?: SelectSubset<T, NotificationFindFirstArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Notification that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindFirstOrThrowArgs} args - Arguments to find a Notification
+     * @example
+     * // Get one Notification
+     * const notification = await prisma.notification.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NotificationFindFirstOrThrowArgs>(args?: SelectSubset<T, NotificationFindFirstOrThrowArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Notifications that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Notifications
+     * const notifications = await prisma.notification.findMany()
+     * 
+     * // Get first 10 Notifications
+     * const notifications = await prisma.notification.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const notificationWithIdOnly = await prisma.notification.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends NotificationFindManyArgs>(args?: SelectSubset<T, NotificationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Notification.
+     * @param {NotificationCreateArgs} args - Arguments to create a Notification.
+     * @example
+     * // Create one Notification
+     * const Notification = await prisma.notification.create({
+     *   data: {
+     *     // ... data to create a Notification
+     *   }
+     * })
+     * 
+     */
+    create<T extends NotificationCreateArgs>(args: SelectSubset<T, NotificationCreateArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Notifications.
+     * @param {NotificationCreateManyArgs} args - Arguments to create many Notifications.
+     * @example
+     * // Create many Notifications
+     * const notification = await prisma.notification.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends NotificationCreateManyArgs>(args?: SelectSubset<T, NotificationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Notifications and returns the data saved in the database.
+     * @param {NotificationCreateManyAndReturnArgs} args - Arguments to create many Notifications.
+     * @example
+     * // Create many Notifications
+     * const notification = await prisma.notification.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Notifications and only return the `id`
+     * const notificationWithIdOnly = await prisma.notification.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends NotificationCreateManyAndReturnArgs>(args?: SelectSubset<T, NotificationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Notification.
+     * @param {NotificationDeleteArgs} args - Arguments to delete one Notification.
+     * @example
+     * // Delete one Notification
+     * const Notification = await prisma.notification.delete({
+     *   where: {
+     *     // ... filter to delete one Notification
+     *   }
+     * })
+     * 
+     */
+    delete<T extends NotificationDeleteArgs>(args: SelectSubset<T, NotificationDeleteArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Notification.
+     * @param {NotificationUpdateArgs} args - Arguments to update one Notification.
+     * @example
+     * // Update one Notification
+     * const notification = await prisma.notification.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends NotificationUpdateArgs>(args: SelectSubset<T, NotificationUpdateArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Notifications.
+     * @param {NotificationDeleteManyArgs} args - Arguments to filter Notifications to delete.
+     * @example
+     * // Delete a few Notifications
+     * const { count } = await prisma.notification.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends NotificationDeleteManyArgs>(args?: SelectSubset<T, NotificationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Notifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Notifications
+     * const notification = await prisma.notification.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends NotificationUpdateManyArgs>(args: SelectSubset<T, NotificationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Notifications and returns the data updated in the database.
+     * @param {NotificationUpdateManyAndReturnArgs} args - Arguments to update many Notifications.
+     * @example
+     * // Update many Notifications
+     * const notification = await prisma.notification.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Notifications and only return the `id`
+     * const notificationWithIdOnly = await prisma.notification.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends NotificationUpdateManyAndReturnArgs>(args: SelectSubset<T, NotificationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Notification.
+     * @param {NotificationUpsertArgs} args - Arguments to update or create a Notification.
+     * @example
+     * // Update or create a Notification
+     * const notification = await prisma.notification.upsert({
+     *   create: {
+     *     // ... data to create a Notification
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Notification we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NotificationUpsertArgs>(args: SelectSubset<T, NotificationUpsertArgs<ExtArgs>>): Prisma__NotificationClient<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Notifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationCountArgs} args - Arguments to filter Notifications to count.
+     * @example
+     * // Count the number of Notifications
+     * const count = await prisma.notification.count({
+     *   where: {
+     *     // ... the filter for the Notifications we want to count
+     *   }
+     * })
+    **/
+    count<T extends NotificationCountArgs>(
+      args?: Subset<T, NotificationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NotificationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Notification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NotificationAggregateArgs>(args: Subset<T, NotificationAggregateArgs>): Prisma.PrismaPromise<GetNotificationAggregateType<T>>
+
+    /**
+     * Group by Notification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends NotificationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NotificationGroupByArgs['orderBy'] }
+        : { orderBy?: NotificationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NotificationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNotificationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Notification model
+   */
+  readonly fields: NotificationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Notification.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NotificationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Notification model
+   */
+  interface NotificationFieldRefs {
+    readonly id: FieldRef<"Notification", 'String'>
+    readonly userId: FieldRef<"Notification", 'String'>
+    readonly type: FieldRef<"Notification", 'String'>
+    readonly title: FieldRef<"Notification", 'String'>
+    readonly message: FieldRef<"Notification", 'String'>
+    readonly read: FieldRef<"Notification", 'Boolean'>
+    readonly createdAt: FieldRef<"Notification", 'DateTime'>
+    readonly action: FieldRef<"Notification", 'Json'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Notification findUnique
+   */
+  export type NotificationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification findUniqueOrThrow
+   */
+  export type NotificationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification findFirst
+   */
+  export type NotificationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Notifications.
+     */
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification findFirstOrThrow
+   */
+  export type NotificationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notification to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Notifications.
+     */
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification findMany
+   */
+  export type NotificationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter, which Notifications to fetch.
+     */
+    where?: NotificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Notifications to fetch.
+     */
+    orderBy?: NotificationOrderByWithRelationInput | NotificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Notifications.
+     */
+    cursor?: NotificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Notifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Notifications.
+     */
+    skip?: number
+    distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * Notification create
+   */
+  export type NotificationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Notification.
+     */
+    data: XOR<NotificationCreateInput, NotificationUncheckedCreateInput>
+  }
+
+  /**
+   * Notification createMany
+   */
+  export type NotificationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Notifications.
+     */
+    data: NotificationCreateManyInput | NotificationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Notification createManyAndReturn
+   */
+  export type NotificationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * The data used to create many Notifications.
+     */
+    data: NotificationCreateManyInput | NotificationCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Notification update
+   */
+  export type NotificationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Notification.
+     */
+    data: XOR<NotificationUpdateInput, NotificationUncheckedUpdateInput>
+    /**
+     * Choose, which Notification to update.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification updateMany
+   */
+  export type NotificationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Notifications.
+     */
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyInput>
+    /**
+     * Filter which Notifications to update
+     */
+    where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Notification updateManyAndReturn
+   */
+  export type NotificationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * The data used to update Notifications.
+     */
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyInput>
+    /**
+     * Filter which Notifications to update
+     */
+    where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Notification upsert
+   */
+  export type NotificationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Notification to update in case it exists.
+     */
+    where: NotificationWhereUniqueInput
+    /**
+     * In case the Notification found by the `where` argument doesn't exist, create a new Notification with this data.
+     */
+    create: XOR<NotificationCreateInput, NotificationUncheckedCreateInput>
+    /**
+     * In case the Notification was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NotificationUpdateInput, NotificationUncheckedUpdateInput>
+  }
+
+  /**
+   * Notification delete
+   */
+  export type NotificationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+    /**
+     * Filter which Notification to delete.
+     */
+    where: NotificationWhereUniqueInput
+  }
+
+  /**
+   * Notification deleteMany
+   */
+  export type NotificationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Notifications to delete
+     */
+    where?: NotificationWhereInput
+    /**
+     * Limit how many Notifications to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Notification without action
+   */
+  export type NotificationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Notification
+     */
+    select?: NotificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Notification
+     */
+    omit?: NotificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: NotificationInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -43951,6 +46565,32 @@ export namespace Prisma {
   };
 
   export type UserProfileScalarFieldEnum = (typeof UserProfileScalarFieldEnum)[keyof typeof UserProfileScalarFieldEnum]
+
+
+  export const TourProgressScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    completedTours: 'completedTours',
+    skippedTours: 'skippedTours',
+    completedChecklistItems: 'completedChecklistItems',
+    dismissedBeacons: 'dismissedBeacons',
+    persona: 'persona',
+    experienceLevel: 'experienceLevel',
+    primaryGoal: 'primaryGoal',
+    hasSeenWelcome: 'hasSeenWelcome',
+    disableAutoStart: 'disableAutoStart',
+    lastSeenWhatsNewVersion: 'lastSeenWhatsNewVersion',
+    lastKnownProjectType: 'lastKnownProjectType',
+    lastKnownPlan: 'lastKnownPlan',
+    xp: 'xp',
+    level: 'level',
+    streak: 'streak',
+    lastActiveDate: 'lastActiveDate',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type TourProgressScalarFieldEnum = (typeof TourProgressScalarFieldEnum)[keyof typeof TourProgressScalarFieldEnum]
 
 
   export const ProjectMemoryScalarFieldEnum: {
@@ -44237,6 +46877,20 @@ export namespace Prisma {
   export type KbChunkScalarFieldEnum = (typeof KbChunkScalarFieldEnum)[keyof typeof KbChunkScalarFieldEnum]
 
 
+  export const NotificationScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    type: 'type',
+    title: 'title',
+    message: 'message',
+    read: 'read',
+    createdAt: 'createdAt',
+    action: 'action'
+  };
+
+  export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -44414,6 +47068,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationListRelationFilter
     dataExportRequests?: DataExportRequestListRelationFilter
     loginEvents?: LoginEventListRelationFilter
+    tourProgress?: XOR<TourProgressNullableScalarRelationFilter, TourProgressWhereInput> | null
+    notifications?: NotificationListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -44457,6 +47113,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationOrderByRelationAggregateInput
     dataExportRequests?: DataExportRequestOrderByRelationAggregateInput
     loginEvents?: LoginEventOrderByRelationAggregateInput
+    tourProgress?: TourProgressOrderByWithRelationInput
+    notifications?: NotificationOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -44503,6 +47161,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationListRelationFilter
     dataExportRequests?: DataExportRequestListRelationFilter
     loginEvents?: LoginEventListRelationFilter
+    tourProgress?: XOR<TourProgressNullableScalarRelationFilter, TourProgressWhereInput> | null
+    notifications?: NotificationListRelationFilter
   }, "id" | "supabaseUserId" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -45727,6 +48387,138 @@ export namespace Prisma {
     memoryEntries?: JsonNullableWithAggregatesFilter<"UserProfile">
     createdAt?: DateTimeWithAggregatesFilter<"UserProfile"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"UserProfile"> | Date | string
+  }
+
+  export type TourProgressWhereInput = {
+    AND?: TourProgressWhereInput | TourProgressWhereInput[]
+    OR?: TourProgressWhereInput[]
+    NOT?: TourProgressWhereInput | TourProgressWhereInput[]
+    id?: StringFilter<"TourProgress"> | string
+    userId?: StringFilter<"TourProgress"> | string
+    completedTours?: JsonFilter<"TourProgress">
+    skippedTours?: JsonFilter<"TourProgress">
+    completedChecklistItems?: JsonFilter<"TourProgress">
+    dismissedBeacons?: JsonFilter<"TourProgress">
+    persona?: StringNullableFilter<"TourProgress"> | string | null
+    experienceLevel?: StringNullableFilter<"TourProgress"> | string | null
+    primaryGoal?: StringNullableFilter<"TourProgress"> | string | null
+    hasSeenWelcome?: BoolFilter<"TourProgress"> | boolean
+    disableAutoStart?: BoolFilter<"TourProgress"> | boolean
+    lastSeenWhatsNewVersion?: StringNullableFilter<"TourProgress"> | string | null
+    lastKnownProjectType?: StringNullableFilter<"TourProgress"> | string | null
+    lastKnownPlan?: StringNullableFilter<"TourProgress"> | string | null
+    xp?: IntFilter<"TourProgress"> | number
+    level?: IntFilter<"TourProgress"> | number
+    streak?: IntFilter<"TourProgress"> | number
+    lastActiveDate?: DateTimeNullableFilter<"TourProgress"> | Date | string | null
+    createdAt?: DateTimeFilter<"TourProgress"> | Date | string
+    updatedAt?: DateTimeFilter<"TourProgress"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type TourProgressOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    completedTours?: SortOrder
+    skippedTours?: SortOrder
+    completedChecklistItems?: SortOrder
+    dismissedBeacons?: SortOrder
+    persona?: SortOrderInput | SortOrder
+    experienceLevel?: SortOrderInput | SortOrder
+    primaryGoal?: SortOrderInput | SortOrder
+    hasSeenWelcome?: SortOrder
+    disableAutoStart?: SortOrder
+    lastSeenWhatsNewVersion?: SortOrderInput | SortOrder
+    lastKnownProjectType?: SortOrderInput | SortOrder
+    lastKnownPlan?: SortOrderInput | SortOrder
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+    lastActiveDate?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type TourProgressWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: TourProgressWhereInput | TourProgressWhereInput[]
+    OR?: TourProgressWhereInput[]
+    NOT?: TourProgressWhereInput | TourProgressWhereInput[]
+    completedTours?: JsonFilter<"TourProgress">
+    skippedTours?: JsonFilter<"TourProgress">
+    completedChecklistItems?: JsonFilter<"TourProgress">
+    dismissedBeacons?: JsonFilter<"TourProgress">
+    persona?: StringNullableFilter<"TourProgress"> | string | null
+    experienceLevel?: StringNullableFilter<"TourProgress"> | string | null
+    primaryGoal?: StringNullableFilter<"TourProgress"> | string | null
+    hasSeenWelcome?: BoolFilter<"TourProgress"> | boolean
+    disableAutoStart?: BoolFilter<"TourProgress"> | boolean
+    lastSeenWhatsNewVersion?: StringNullableFilter<"TourProgress"> | string | null
+    lastKnownProjectType?: StringNullableFilter<"TourProgress"> | string | null
+    lastKnownPlan?: StringNullableFilter<"TourProgress"> | string | null
+    xp?: IntFilter<"TourProgress"> | number
+    level?: IntFilter<"TourProgress"> | number
+    streak?: IntFilter<"TourProgress"> | number
+    lastActiveDate?: DateTimeNullableFilter<"TourProgress"> | Date | string | null
+    createdAt?: DateTimeFilter<"TourProgress"> | Date | string
+    updatedAt?: DateTimeFilter<"TourProgress"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId">
+
+  export type TourProgressOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    completedTours?: SortOrder
+    skippedTours?: SortOrder
+    completedChecklistItems?: SortOrder
+    dismissedBeacons?: SortOrder
+    persona?: SortOrderInput | SortOrder
+    experienceLevel?: SortOrderInput | SortOrder
+    primaryGoal?: SortOrderInput | SortOrder
+    hasSeenWelcome?: SortOrder
+    disableAutoStart?: SortOrder
+    lastSeenWhatsNewVersion?: SortOrderInput | SortOrder
+    lastKnownProjectType?: SortOrderInput | SortOrder
+    lastKnownPlan?: SortOrderInput | SortOrder
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+    lastActiveDate?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: TourProgressCountOrderByAggregateInput
+    _avg?: TourProgressAvgOrderByAggregateInput
+    _max?: TourProgressMaxOrderByAggregateInput
+    _min?: TourProgressMinOrderByAggregateInput
+    _sum?: TourProgressSumOrderByAggregateInput
+  }
+
+  export type TourProgressScalarWhereWithAggregatesInput = {
+    AND?: TourProgressScalarWhereWithAggregatesInput | TourProgressScalarWhereWithAggregatesInput[]
+    OR?: TourProgressScalarWhereWithAggregatesInput[]
+    NOT?: TourProgressScalarWhereWithAggregatesInput | TourProgressScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TourProgress"> | string
+    userId?: StringWithAggregatesFilter<"TourProgress"> | string
+    completedTours?: JsonWithAggregatesFilter<"TourProgress">
+    skippedTours?: JsonWithAggregatesFilter<"TourProgress">
+    completedChecklistItems?: JsonWithAggregatesFilter<"TourProgress">
+    dismissedBeacons?: JsonWithAggregatesFilter<"TourProgress">
+    persona?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    experienceLevel?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    primaryGoal?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    hasSeenWelcome?: BoolWithAggregatesFilter<"TourProgress"> | boolean
+    disableAutoStart?: BoolWithAggregatesFilter<"TourProgress"> | boolean
+    lastSeenWhatsNewVersion?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    lastKnownProjectType?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    lastKnownPlan?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    xp?: IntWithAggregatesFilter<"TourProgress"> | number
+    level?: IntWithAggregatesFilter<"TourProgress"> | number
+    streak?: IntWithAggregatesFilter<"TourProgress"> | number
+    lastActiveDate?: DateTimeNullableWithAggregatesFilter<"TourProgress"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"TourProgress"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"TourProgress"> | Date | string
   }
 
   export type ProjectMemoryWhereInput = {
@@ -47201,6 +49993,76 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"KbChunk"> | Date | string
   }
 
+  export type NotificationWhereInput = {
+    AND?: NotificationWhereInput | NotificationWhereInput[]
+    OR?: NotificationWhereInput[]
+    NOT?: NotificationWhereInput | NotificationWhereInput[]
+    id?: StringFilter<"Notification"> | string
+    userId?: StringFilter<"Notification"> | string
+    type?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    message?: StringFilter<"Notification"> | string
+    read?: BoolFilter<"Notification"> | boolean
+    createdAt?: DateTimeFilter<"Notification"> | Date | string
+    action?: JsonNullableFilter<"Notification">
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type NotificationOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    read?: SortOrder
+    createdAt?: SortOrder
+    action?: SortOrderInput | SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type NotificationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: NotificationWhereInput | NotificationWhereInput[]
+    OR?: NotificationWhereInput[]
+    NOT?: NotificationWhereInput | NotificationWhereInput[]
+    userId?: StringFilter<"Notification"> | string
+    type?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    message?: StringFilter<"Notification"> | string
+    read?: BoolFilter<"Notification"> | boolean
+    createdAt?: DateTimeFilter<"Notification"> | Date | string
+    action?: JsonNullableFilter<"Notification">
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type NotificationOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    read?: SortOrder
+    createdAt?: SortOrder
+    action?: SortOrderInput | SortOrder
+    _count?: NotificationCountOrderByAggregateInput
+    _max?: NotificationMaxOrderByAggregateInput
+    _min?: NotificationMinOrderByAggregateInput
+  }
+
+  export type NotificationScalarWhereWithAggregatesInput = {
+    AND?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
+    OR?: NotificationScalarWhereWithAggregatesInput[]
+    NOT?: NotificationScalarWhereWithAggregatesInput | NotificationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Notification"> | string
+    userId?: StringWithAggregatesFilter<"Notification"> | string
+    type?: StringWithAggregatesFilter<"Notification"> | string
+    title?: StringWithAggregatesFilter<"Notification"> | string
+    message?: StringWithAggregatesFilter<"Notification"> | string
+    read?: BoolWithAggregatesFilter<"Notification"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
+    action?: JsonNullableWithAggregatesFilter<"Notification">
+  }
+
   export type UserCreateInput = {
     id?: string
     supabaseUserId?: string | null
@@ -47242,6 +50104,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -47285,6 +50149,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -47328,6 +50194,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -47371,6 +50239,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -48739,6 +51609,166 @@ export namespace Prisma {
     language?: StringFieldUpdateOperationsInput | string
     learnedPreferences?: NullableJsonNullValueInput | InputJsonValue
     memoryEntries?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TourProgressCreateInput = {
+    id?: string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: string | null
+    experienceLevel?: string | null
+    primaryGoal?: string | null
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: string | null
+    lastKnownProjectType?: string | null
+    lastKnownPlan?: string | null
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutTourProgressInput
+  }
+
+  export type TourProgressUncheckedCreateInput = {
+    id?: string
+    userId: string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: string | null
+    experienceLevel?: string | null
+    primaryGoal?: string | null
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: string | null
+    lastKnownProjectType?: string | null
+    lastKnownPlan?: string | null
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TourProgressUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTourProgressNestedInput
+  }
+
+  export type TourProgressUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TourProgressCreateManyInput = {
+    id?: string
+    userId: string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: string | null
+    experienceLevel?: string | null
+    primaryGoal?: string | null
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: string | null
+    lastKnownProjectType?: string | null
+    lastKnownPlan?: string | null
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TourProgressUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TourProgressUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -50356,6 +53386,82 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type NotificationCreateInput = {
+    id?: string
+    type: string
+    title: string
+    message: string
+    read?: boolean
+    createdAt?: Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
+    user: UserCreateNestedOneWithoutNotificationsInput
+  }
+
+  export type NotificationUncheckedCreateInput = {
+    id?: string
+    userId: string
+    type: string
+    title: string
+    message: string
+    read?: boolean
+    createdAt?: Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type NotificationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
+    user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
+  }
+
+  export type NotificationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type NotificationCreateManyInput = {
+    id?: string
+    userId: string
+    type: string
+    title: string
+    message: string
+    read?: boolean
+    createdAt?: Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type NotificationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type NotificationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -50549,6 +53655,17 @@ export namespace Prisma {
     none?: LoginEventWhereInput
   }
 
+  export type TourProgressNullableScalarRelationFilter = {
+    is?: TourProgressWhereInput | null
+    isNot?: TourProgressWhereInput | null
+  }
+
+  export type NotificationListRelationFilter = {
+    every?: NotificationWhereInput
+    some?: NotificationWhereInput
+    none?: NotificationWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -50623,6 +53740,10 @@ export namespace Prisma {
   }
 
   export type LoginEventOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type NotificationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -51601,6 +54722,79 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type TourProgressCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    completedTours?: SortOrder
+    skippedTours?: SortOrder
+    completedChecklistItems?: SortOrder
+    dismissedBeacons?: SortOrder
+    persona?: SortOrder
+    experienceLevel?: SortOrder
+    primaryGoal?: SortOrder
+    hasSeenWelcome?: SortOrder
+    disableAutoStart?: SortOrder
+    lastSeenWhatsNewVersion?: SortOrder
+    lastKnownProjectType?: SortOrder
+    lastKnownPlan?: SortOrder
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+    lastActiveDate?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TourProgressAvgOrderByAggregateInput = {
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+  }
+
+  export type TourProgressMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    persona?: SortOrder
+    experienceLevel?: SortOrder
+    primaryGoal?: SortOrder
+    hasSeenWelcome?: SortOrder
+    disableAutoStart?: SortOrder
+    lastSeenWhatsNewVersion?: SortOrder
+    lastKnownProjectType?: SortOrder
+    lastKnownPlan?: SortOrder
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+    lastActiveDate?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TourProgressMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    persona?: SortOrder
+    experienceLevel?: SortOrder
+    primaryGoal?: SortOrder
+    hasSeenWelcome?: SortOrder
+    disableAutoStart?: SortOrder
+    lastSeenWhatsNewVersion?: SortOrder
+    lastKnownProjectType?: SortOrder
+    lastKnownPlan?: SortOrder
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+    lastActiveDate?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TourProgressSumOrderByAggregateInput = {
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+  }
+
   export type ProjectMemoryCountOrderByAggregateInput = {
     id?: SortOrder
     projectId?: SortOrder
@@ -52369,6 +55563,37 @@ export namespace Prisma {
     chunkIndex?: SortOrder
   }
 
+  export type NotificationCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    read?: SortOrder
+    createdAt?: SortOrder
+    action?: SortOrder
+  }
+
+  export type NotificationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    read?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type NotificationMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    type?: SortOrder
+    title?: SortOrder
+    message?: SortOrder
+    read?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type AccountCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -52501,6 +55726,19 @@ export namespace Prisma {
     connect?: LoginEventWhereUniqueInput | LoginEventWhereUniqueInput[]
   }
 
+  export type TourProgressCreateNestedOneWithoutUserInput = {
+    create?: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TourProgressCreateOrConnectWithoutUserInput
+    connect?: TourProgressWhereUniqueInput
+  }
+
+  export type NotificationCreateNestedManyWithoutUserInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -52631,6 +55869,19 @@ export namespace Prisma {
     connectOrCreate?: LoginEventCreateOrConnectWithoutUserInput | LoginEventCreateOrConnectWithoutUserInput[]
     createMany?: LoginEventCreateManyUserInputEnvelope
     connect?: LoginEventWhereUniqueInput | LoginEventWhereUniqueInput[]
+  }
+
+  export type TourProgressUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TourProgressCreateOrConnectWithoutUserInput
+    connect?: TourProgressWhereUniqueInput
+  }
+
+  export type NotificationUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -52915,6 +56166,30 @@ export namespace Prisma {
     deleteMany?: LoginEventScalarWhereInput | LoginEventScalarWhereInput[]
   }
 
+  export type TourProgressUpdateOneWithoutUserNestedInput = {
+    create?: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TourProgressCreateOrConnectWithoutUserInput
+    upsert?: TourProgressUpsertWithoutUserInput
+    disconnect?: TourProgressWhereInput | boolean
+    delete?: TourProgressWhereInput | boolean
+    connect?: TourProgressWhereUniqueInput
+    update?: XOR<XOR<TourProgressUpdateToOneWithWhereWithoutUserInput, TourProgressUpdateWithoutUserInput>, TourProgressUncheckedUpdateWithoutUserInput>
+  }
+
+  export type NotificationUpdateManyWithoutUserNestedInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -53175,6 +56450,30 @@ export namespace Prisma {
     update?: LoginEventUpdateWithWhereUniqueWithoutUserInput | LoginEventUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: LoginEventUpdateManyWithWhereWithoutUserInput | LoginEventUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: LoginEventScalarWhereInput | LoginEventScalarWhereInput[]
+  }
+
+  export type TourProgressUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TourProgressCreateOrConnectWithoutUserInput
+    upsert?: TourProgressUpsertWithoutUserInput
+    disconnect?: TourProgressWhereInput | boolean
+    delete?: TourProgressWhereInput | boolean
+    connect?: TourProgressWhereUniqueInput
+    update?: XOR<XOR<TourProgressUpdateToOneWithWhereWithoutUserInput, TourProgressUpdateWithoutUserInput>, TourProgressUncheckedUpdateWithoutUserInput>
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput> | NotificationCreateWithoutUserInput[] | NotificationUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
+    upsert?: NotificationUpsertWithWhereUniqueWithoutUserInput | NotificationUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: NotificationCreateManyUserInputEnvelope
+    set?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    disconnect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    delete?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+    update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -53943,6 +57242,20 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUserProfileInput, UserUpdateWithoutUserProfileInput>, UserUncheckedUpdateWithoutUserProfileInput>
   }
 
+  export type UserCreateNestedOneWithoutTourProgressInput = {
+    create?: XOR<UserCreateWithoutTourProgressInput, UserUncheckedCreateWithoutTourProgressInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTourProgressInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutTourProgressNestedInput = {
+    create?: XOR<UserCreateWithoutTourProgressInput, UserUncheckedCreateWithoutTourProgressInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTourProgressInput
+    upsert?: UserUpsertWithoutTourProgressInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTourProgressInput, UserUpdateWithoutTourProgressInput>, UserUncheckedUpdateWithoutTourProgressInput>
+  }
+
   export type ProjectCreateNestedOneWithoutProjectMemoryInput = {
     create?: XOR<ProjectCreateWithoutProjectMemoryInput, ProjectUncheckedCreateWithoutProjectMemoryInput>
     connectOrCreate?: ProjectCreateOrConnectWithoutProjectMemoryInput
@@ -54591,6 +57904,20 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutDataExportRequestsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDataExportRequestsInput, UserUpdateWithoutDataExportRequestsInput>, UserUncheckedUpdateWithoutDataExportRequestsInput>
+  }
+
+  export type UserCreateNestedOneWithoutNotificationsInput = {
+    create?: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
+    create?: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput
+    upsert?: UserUpsertWithoutNotificationsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutNotificationsInput, UserUpdateWithoutNotificationsInput>, UserUncheckedUpdateWithoutNotificationsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -55539,6 +58866,85 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TourProgressCreateWithoutUserInput = {
+    id?: string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: string | null
+    experienceLevel?: string | null
+    primaryGoal?: string | null
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: string | null
+    lastKnownProjectType?: string | null
+    lastKnownPlan?: string | null
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TourProgressUncheckedCreateWithoutUserInput = {
+    id?: string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: string | null
+    experienceLevel?: string | null
+    primaryGoal?: string | null
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: string | null
+    lastKnownProjectType?: string | null
+    lastKnownPlan?: string | null
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TourProgressCreateOrConnectWithoutUserInput = {
+    where: TourProgressWhereUniqueInput
+    create: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+  }
+
+  export type NotificationCreateWithoutUserInput = {
+    id?: string
+    type: string
+    title: string
+    message: string
+    read?: boolean
+    createdAt?: Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type NotificationUncheckedCreateWithoutUserInput = {
+    id?: string
+    type: string
+    title: string
+    message: string
+    read?: boolean
+    createdAt?: Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type NotificationCreateOrConnectWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    create: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput>
+  }
+
+  export type NotificationCreateManyUserInputEnvelope = {
+    data: NotificationCreateManyUserInput | NotificationCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
     where: AccountWhereUniqueInput
     update: XOR<AccountUpdateWithoutUserInput, AccountUncheckedUpdateWithoutUserInput>
@@ -56152,6 +59558,91 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"LoginEvent"> | Date | string
   }
 
+  export type TourProgressUpsertWithoutUserInput = {
+    update: XOR<TourProgressUpdateWithoutUserInput, TourProgressUncheckedUpdateWithoutUserInput>
+    create: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+    where?: TourProgressWhereInput
+  }
+
+  export type TourProgressUpdateToOneWithWhereWithoutUserInput = {
+    where?: TourProgressWhereInput
+    data: XOR<TourProgressUpdateWithoutUserInput, TourProgressUncheckedUpdateWithoutUserInput>
+  }
+
+  export type TourProgressUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TourProgressUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUpsertWithWhereUniqueWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    update: XOR<NotificationUpdateWithoutUserInput, NotificationUncheckedUpdateWithoutUserInput>
+    create: XOR<NotificationCreateWithoutUserInput, NotificationUncheckedCreateWithoutUserInput>
+  }
+
+  export type NotificationUpdateWithWhereUniqueWithoutUserInput = {
+    where: NotificationWhereUniqueInput
+    data: XOR<NotificationUpdateWithoutUserInput, NotificationUncheckedUpdateWithoutUserInput>
+  }
+
+  export type NotificationUpdateManyWithWhereWithoutUserInput = {
+    where: NotificationScalarWhereInput
+    data: XOR<NotificationUpdateManyMutationInput, NotificationUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type NotificationScalarWhereInput = {
+    AND?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+    OR?: NotificationScalarWhereInput[]
+    NOT?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+    id?: StringFilter<"Notification"> | string
+    userId?: StringFilter<"Notification"> | string
+    type?: StringFilter<"Notification"> | string
+    title?: StringFilter<"Notification"> | string
+    message?: StringFilter<"Notification"> | string
+    read?: BoolFilter<"Notification"> | boolean
+    createdAt?: DateTimeFilter<"Notification"> | Date | string
+    action?: JsonNullableFilter<"Notification">
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     supabaseUserId?: string | null
@@ -56192,6 +59683,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -56234,6 +59727,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -56292,6 +59787,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -56334,6 +59831,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -56376,6 +59875,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -56418,6 +59919,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -56476,6 +59979,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -56518,6 +60023,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutProjectsInput = {
@@ -56560,6 +60067,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProjectsInput = {
@@ -56602,6 +60111,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProjectsInput = {
@@ -57015,6 +60526,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProjectsInput = {
@@ -57057,6 +60570,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectMemberUpsertWithWhereUniqueWithoutProjectInput = {
@@ -57323,6 +60838,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSubscriptionsInput = {
@@ -57365,6 +60882,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSubscriptionsInput = {
@@ -57423,6 +60942,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubscriptionsInput = {
@@ -57465,6 +60986,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutTransactionsInput = {
@@ -57507,6 +61030,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTransactionsInput = {
@@ -57549,6 +61074,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTransactionsInput = {
@@ -57607,6 +61134,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTransactionsInput = {
@@ -57649,6 +61178,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutMediaItemsInput = {
@@ -57691,6 +61222,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMediaItemsInput = {
@@ -57733,6 +61266,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMediaItemsInput = {
@@ -57791,6 +61326,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMediaItemsInput = {
@@ -57833,6 +61370,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutFeedbacksInput = {
@@ -57875,6 +61414,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFeedbacksInput = {
@@ -57917,6 +61458,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFeedbacksInput = {
@@ -57975,6 +61518,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFeedbacksInput = {
@@ -58017,6 +61562,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutProjectMembershipsInput = {
@@ -58059,6 +61606,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProjectMembershipsInput = {
@@ -58101,6 +61650,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProjectMembershipsInput = {
@@ -58206,6 +61757,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProjectMembershipsInput = {
@@ -58248,6 +61801,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutMembersInput = {
@@ -58851,6 +62406,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserProfileInput = {
@@ -58893,6 +62450,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserProfileInput = {
@@ -58951,6 +62510,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserProfileInput = {
@@ -58993,6 +62554,200 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutTourProgressInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    projects?: ProjectCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberCreateNestedManyWithoutUserInput
+    userProfile?: UserProfileCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutTourProgressInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemUncheckedCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+    userProfile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationUncheckedCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutTourProgressInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTourProgressInput, UserUncheckedCreateWithoutTourProgressInput>
+  }
+
+  export type UserUpsertWithoutTourProgressInput = {
+    update: XOR<UserUpdateWithoutTourProgressInput, UserUncheckedUpdateWithoutTourProgressInput>
+    create: XOR<UserCreateWithoutTourProgressInput, UserUncheckedCreateWithoutTourProgressInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutTourProgressInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTourProgressInput, UserUncheckedUpdateWithoutTourProgressInput>
+  }
+
+  export type UserUpdateWithoutTourProgressInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    projects?: ProjectUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUpdateManyWithoutUserNestedInput
+    userProfile?: UserProfileUpdateOneWithoutUserNestedInput
+    chatConversations?: ChatConversationUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutTourProgressInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUncheckedUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+    userProfile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
+    chatConversations?: ChatConversationUncheckedUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectCreateWithoutProjectMemoryInput = {
@@ -59135,6 +62890,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutChatConversationsInput = {
@@ -59177,6 +62934,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutChatConversationsInput = {
@@ -59388,6 +63147,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatConversationsInput = {
@@ -59430,6 +63191,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutChatConversationsInput = {
@@ -60088,6 +63851,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiActionLogsInput = {
@@ -60130,6 +63895,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiActionLogsInput = {
@@ -60274,6 +64041,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiActionLogsInput = {
@@ -60316,6 +64085,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutAiActionLogsInput = {
@@ -60456,6 +64227,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiInsightsInput = {
@@ -60498,6 +64271,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiInsightsInput = {
@@ -60603,6 +64378,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiInsightsInput = {
@@ -60645,6 +64422,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutAiInsightsInput = {
@@ -60740,6 +64519,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiUsagesInput = {
@@ -60782,6 +64563,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiUsagesInput = {
@@ -60887,6 +64670,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiUsagesInput = {
@@ -60929,6 +64714,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutAiUsagesInput = {
@@ -61024,6 +64811,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCustomerBotChannelsInput = {
@@ -61066,6 +64855,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCustomerBotChannelsInput = {
@@ -61207,6 +64998,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCustomerBotChannelsInput = {
@@ -61249,6 +65042,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutCustomerBotChannelsInput = {
@@ -61668,6 +65463,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserSessionsInput = {
@@ -61710,6 +65507,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserSessionsInput = {
@@ -61768,6 +65567,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserSessionsInput = {
@@ -61810,6 +65611,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutLoginEventsInput = {
@@ -61852,6 +65655,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutLoginEventsInput = {
@@ -61894,6 +65699,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutLoginEventsInput = {
@@ -61952,6 +65759,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLoginEventsInput = {
@@ -61994,6 +65803,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutUserApiKeysInput = {
@@ -62036,6 +65847,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserApiKeysInput = {
@@ -62078,6 +65891,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserApiKeysInput = {
@@ -62136,6 +65951,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserApiKeysInput = {
@@ -62178,6 +65995,8 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutUserIntegrationsInput = {
@@ -62220,6 +66039,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserIntegrationsInput = {
@@ -62262,6 +66083,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserIntegrationsInput = {
@@ -62320,6 +66143,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserIntegrationsInput = {
@@ -62362,6 +66187,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutDataExportRequestsInput = {
@@ -62404,6 +66231,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDataExportRequestsInput = {
@@ -62446,6 +66275,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDataExportRequestsInput = {
@@ -62504,6 +66335,8 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDataExportRequestsInput = {
@@ -62546,6 +66379,200 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutNotificationsInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    projects?: ProjectCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberCreateNestedManyWithoutUserInput
+    userProfile?: UserProfileCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutNotificationsInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemUncheckedCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+    userProfile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationUncheckedCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutNotificationsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+  }
+
+  export type UserUpsertWithoutNotificationsInput = {
+    update: XOR<UserUpdateWithoutNotificationsInput, UserUncheckedUpdateWithoutNotificationsInput>
+    create: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutNotificationsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutNotificationsInput, UserUncheckedUpdateWithoutNotificationsInput>
+  }
+
+  export type UserUpdateWithoutNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    projects?: ProjectUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUpdateManyWithoutUserNestedInput
+    userProfile?: UserProfileUpdateOneWithoutUserNestedInput
+    chatConversations?: ChatConversationUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutNotificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUncheckedUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+    userProfile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
+    chatConversations?: ChatConversationUncheckedUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type AccountCreateManyUserInput = {
@@ -62758,6 +66785,16 @@ export namespace Prisma {
     userAgent?: string | null
     location?: string | null
     createdAt?: Date | string
+  }
+
+  export type NotificationCreateManyUserInput = {
+    id?: string
+    type: string
+    title: string
+    message: string
+    read?: boolean
+    createdAt?: Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type AccountUpdateWithoutUserInput = {
@@ -63422,6 +67459,36 @@ export namespace Prisma {
     userAgent?: NullableStringFieldUpdateOperationsInput | string | null
     location?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type NotificationUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type NotificationUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
+  }
+
+  export type NotificationUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    type?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    message?: StringFieldUpdateOperationsInput | string
+    read?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    action?: NullableJsonNullValueInput | InputJsonValue
   }
 
   export type ProjectMemberCreateManyProjectInput = {

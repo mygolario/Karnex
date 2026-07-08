@@ -72,6 +72,7 @@ model User {
 
   // Product Tour Relations
   tourProgress TourProgress?
+  notifications      Notification[]
 }
 
 model Account {
@@ -763,4 +764,20 @@ model KbChunk {
   @@index([source])
   @@index([verified])
 }
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // "info" | "success" | "warning" | "promo" | "achievement"
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  action    Json?    // Optional: { label: String, href: String }
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
 

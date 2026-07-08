@@ -159,6 +159,8 @@ export async function callOpenRouter(
          * (~$0.005/search). Ignored for models with built-in search (e.g. Perplexity Sonar).
          */
         webSearch?: boolean | { engine?: string; maxResults?: number };
+        /** Optional base64 image URL to send for multimodal / vision tasks */
+        imageUrl?: string;
     }
 ): Promise<OpenRouterResponse> {
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -178,6 +180,7 @@ export async function callOpenRouter(
         modelOverride,
         responseFormat,
         webSearch,
+        imageUrl,
     } = options || {};
 
     const webSearchPlugin = buildWebSearchPlugin(webSearch);
@@ -212,14 +215,26 @@ export async function callOpenRouter(
                                 ]
                             });
                         }
+
+                        const userContent: any[] = [
+                            {
+                                type: "text",
+                                text: prompt
+                            }
+                        ];
+
+                        if (imageUrl) {
+                            userContent.push({
+                                type: "image_url",
+                                image_url: {
+                                    url: imageUrl
+                                }
+                            });
+                        }
+
                         messages.push({
                             role: "user",
-                            content: [
-                                {
-                                    type: "text",
-                                    text: prompt
-                                }
-                            ]
+                            content: userContent
                         });
 
                         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {

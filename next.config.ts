@@ -110,7 +110,7 @@ const nextConfig: NextConfig = {
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: blob: https: http:",
           "font-src 'self' data:",
-          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.ingest.de.sentry.io https://*.sentry.io https://openrouter.ai https://nominatim.openstreetmap.org https://overpass-api.de",
+          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.ingest.de.sentry.io https://*.sentry.io https://openrouter.ai https://nominatim.openstreetmap.org https://overpass-api.de http://127.0.0.1:7443 ws://127.0.0.1:7443",
           "frame-ancestors 'none'",
           "base-uri 'self'",
           "form-action 'self'",

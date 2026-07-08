@@ -65,7 +65,7 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
   }
 
   const name = displayName(supabaseUser);
-  return prisma.user.create({
+  const newUser = await prisma.user.create({
     data: {
       supabaseUserId: supabaseUser.id,
       email: supabaseUser.email,
@@ -76,4 +76,13 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
         : null,
     },
   });
+
+  try {
+    const { seedWelcomeNotifications } = await import("@/lib/notifications");
+    await seedWelcomeNotifications(newUser.id);
+  } catch (seedErr) {
+    console.error("Failed to seed welcome notifications on user sync:", seedErr);
+  }
+
+  return newUser;
 }

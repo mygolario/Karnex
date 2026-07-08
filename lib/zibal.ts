@@ -47,9 +47,14 @@ function createZibalClient(timeoutMs: number): AxiosInstance {
 
   const fixieUrl = process.env.FIXIE_URL;
   if (fixieUrl) {
+    console.info("[Zibal] Routing via Fixie proxy");
     client.defaults.httpsAgent = new HttpsProxyAgent(fixieUrl);
     // Disable axios' own proxy/env handling so our custom agent is actually used.
     client.defaults.proxy = false;
+  } else {
+    console.warn(
+      "[Zibal] FIXIE_URL not set — direct outbound (OK for sandbox, fails IP whitelist in prod)"
+    );
   }
 
   return client;

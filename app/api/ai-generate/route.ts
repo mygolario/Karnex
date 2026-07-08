@@ -69,6 +69,7 @@ export async function POST(req: Request) {
         businessDescription = "",
         lat,
         lon,
+        storefrontPhoto,
       } = body;
 
       try {
@@ -87,6 +88,7 @@ export async function POST(req: Request) {
           modelOverride,
           coordinates:
             typeof lat === "number" && typeof lon === "number" ? { lat, lon } : undefined,
+          storefrontPhoto,
         });
         return NextResponse.json({ success: true, analysis: json });
       } catch (e) {

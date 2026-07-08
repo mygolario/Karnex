@@ -40,6 +40,16 @@ const serwist = new Serwist({
         url.pathname.startsWith("/api/ai-generate"),
       handler: new NetworkOnly(),
     },
+    {
+      matcher: ({ url }) => url.hostname.includes("enamad.ir"),
+      handler: async ({ request }) => {
+        try {
+          return await fetch(request);
+        } catch {
+          return new Response(null, { status: 408, statusText: "Network Error" });
+        }
+      },
+    },
     ...defaultCache,
   ],
 });

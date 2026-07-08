@@ -26,6 +26,7 @@ export async function runLocationAnalysis(params: {
   projectId?: string;
   modelOverride?: string;
   coordinates?: { lat: number; lon: number };
+  storefrontPhoto?: string;
 }): Promise<Record<string, any>> {
   const {
     city,
@@ -41,6 +42,7 @@ export async function runLocationAnalysis(params: {
     projectId,
     modelOverride,
     coordinates,
+    storefrontPhoto,
   } = params;
 
   const data = await fetchLocationData({
@@ -77,6 +79,7 @@ export async function runLocationAnalysis(params: {
         businessDescription || String(activeProject?.overview || ""),
       osmDataBlock: data.osmDataBlock,
       projectContextBlock,
+      storefrontPhoto,
     },
     modelOverride
   );

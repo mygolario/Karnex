@@ -18,6 +18,7 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { motion, AnimatePresence } from "framer-motion";
 import { useImmersivePage } from "@/hooks/use-immersive-page";
 import { useIsMobile } from "@/hooks/use-is-mobile";
+import { PageTourHelp } from "@/components/tour/page-tour-help";
 
 const PERSONAS: { id: CopilotPersona; label: string; color: string }[] = [
   { id: "startup", label: "استارتاپ", color: "text-blue-500" },
@@ -215,6 +216,8 @@ export function CopilotWorkspace() {
             >
               {artifactCanvasOpen ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
             </Button>
+
+            <PageTourHelp tourId="copilot" size="icon-sm" />
 
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <div className="w-2 h-2 rounded-full ai-orb animate-ai-pulse" />

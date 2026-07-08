@@ -1,26 +1,26 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useProject } from "@/contexts/project-context";
 import { useLocation } from "./location-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   MapPin,
-  Search,
   Loader2,
   History,
   GitCompare,
   Download,
   MessageSquare,
-  LayoutDashboard,
-  Map,
-  Users,
+  Sparkles,
+  ArrowRight,
+  Eye,
   DollarSign,
-  ShieldAlert,
+  Users,
   Target,
+  ShieldAlert,
+  Map,
+  Compass,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -29,43 +29,45 @@ import { PageTourHelp } from "@/components/tour/page-tour-help";
 import { VerdictChip } from "./verdict-command-center";
 import { LocationAiChat } from "./location-ai-chat";
 import { MobileLocationSummary } from "./mobile-summary";
-import { OverviewTab } from "./tabs/overview-tab";
-import { MapTab } from "./tabs/map-tab";
+import { LocationWizard } from "./location-wizard";
+import { InteractiveMap } from "./interactive-map";
+import { VisionAnalyzer } from "./vision-analyzer";
+import { FinancialSimulator } from "./financial-simulator";
+import { SmartAlternatives } from "./smart-alternatives";
+import { VerdictCommandCenter } from "./verdict-command-center";
+import { ExecutiveSummaryCard } from "./executive-summary-card";
+import { FitScoreBreakdown } from "./fit-score-breakdown";
+import { StreetContextPanel } from "./street-context-panel";
+import { NeighborhoodCard } from "./neighborhood-card";
+import { CompetitorTable } from "./competitor-table";
+import { CompetitorList } from "./competitor-list";
+import { DemographicsDashboard } from "./demographics-dashboard";
 import { CustomersTab } from "./tabs/customers-tab";
-import { FinancialTab } from "./tabs/financial-tab";
 import { RiskTab } from "./tabs/risk-tab";
 import { StrategyTab } from "./tabs/strategy-tab";
-import { CompareTab } from "./tabs/compare-tab";
-import { useImmersivePage } from "@/hooks/use-immersive-page";
-import { useIsMobile } from "@/hooks/use-is-mobile";
-import { DEMO_LOCATION_ANALYSES } from "@/lib/location/demo-analyses";
 import { exportLocationPdf } from "@/lib/location/pdf-export";
-import { readLocationSession, writeLocationSession } from "@/lib/location/session-state";
 import { toast } from "sonner";
 
-const TAB_ITEMS = [
-  { id: "overview", label: "خلاصه", icon: LayoutDashboard },
-  { id: "map", label: "نقشه", icon: Map },
-  { id: "customers", label: "مشتری", icon: Users },
-  { id: "financial", label: "مالی", icon: DollarSign },
-  { id: "risk", label: "ریسک", icon: ShieldAlert },
-  { id: "strategy", label: "استراتژی", icon: Target },
-  { id: "compare", label: "مقایسه", icon: GitCompare },
+const QUICK_NAV = [
+  { id: "verdict", label: "خلاصه و رأی", icon: Compass },
+  { id: "vision", label: "آنالیز ویترین", icon: Eye },
+  { id: "financials", label: "شبیه‌ساز مالی", icon: DollarSign },
+  { id: "demographics", label: "مشتریان و پاخور", icon: Users },
+  { id: "competitors", label: "رقبا و اشباع", icon: Target },
+  { id: "risks", label: "ریسک‌ها و استراتژی", icon: ShieldAlert },
+  { id: "alternatives", label: "گزینه‌های جایگزین", icon: MapPin },
 ];
 
 const LOADING_STEPS = [
-  { icon: "🗺️", label: "اسکن نقشه OSM..." },
-  { icon: "🏪", label: "شناسایی رقبا..." },
-  { icon: "📊", label: "محاسبه مالی و ریسک..." },
-  { icon: "🧠", label: "تحلیل شخصی‌سازی‌شده..." },
-  { icon: "✨", label: "نهایی‌سازی گزارش..." },
+  { icon: "🗺️", label: "در حال مسیریابی و اسکن نقشه نشان..." },
+  { icon: "🏪", label: "شناسایی و خوشه‌بندی رقبا..." },
+  { icon: "📊", label: "محاسبه توجیه مالی و نقطه سر‌به‌سر..." },
+  { icon: "🧠", label: "اجرای مدل هوشمند مکان‌یابی Karnex..." },
+  { icon: "✨", label: "نهایی‌سازی سناریوهای سوددهی..." },
 ];
 
 export function LocationWorkspace() {
   const { activeProject } = useProject();
-  const projectId = activeProject?.id;
-  const sessionSeed = projectId ? readLocationSession(projectId) : null;
-
   const {
     analysis,
     loading,
@@ -73,45 +75,17 @@ export function LocationWorkspace() {
     history,
     comparisonMode,
     toggleComparisonMode,
-    comparisonItems,
     loadDemoAnalysis,
   } = useLocation();
 
-  const isMobile = useIsMobile();
-  useImmersivePage(isMobile);
-
-  const [city, setCity] = useState(sessionSeed?.city ?? "Tehran");
-  const [address, setAddress] = useState(sessionSeed?.address ?? "");
-  const [businessDescription, setBusinessDescription] = useState(
-    sessionSeed?.businessDescription ?? ""
-  );
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState(sessionSeed?.activeTab ?? "overview");
   const [chatOpen, setChatOpen] = useState(false);
   const [loadingStep, setLoadingStep] = useState(0);
-  const [radius] = useState(500);
+  const [showWizard, setShowWizard] = useState(false);
+  const [activeSection, setActiveSection] = useState("verdict");
 
-  useEffect(() => {
-    if (analysis) {
-      if (analysis.city) setCity(analysis.city);
-      if (analysis.address) setAddress(analysis.address);
-      if (analysis.businessDescription) setBusinessDescription(analysis.businessDescription);
-      else if (analysis.inputs?.businessDescription)
-        setBusinessDescription(analysis.inputs.businessDescription);
-    } else if (activeProject?.overview) {
-      setBusinessDescription(activeProject.overview.slice(0, 120));
-    }
-  }, [analysis, activeProject?.overview]);
-
-  useEffect(() => {
-    if (!projectId) return;
-    writeLocationSession(projectId, {
-      city,
-      address,
-      businessDescription,
-      activeTab,
-    });
-  }, [projectId, city, address, businessDescription, activeTab]);
+  // Ref to track scroll positions of sections
+  const rightPanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!loading) return;
@@ -122,288 +96,294 @@ export function LocationWorkspace() {
     return () => timers.forEach(clearTimeout);
   }, [loading]);
 
-  const handleAnalyze = () => {
-    if (!address.trim()) return;
-    void analyzeLocation(city, address, businessDescription);
+  const handleAnalyze = async (params: {
+    city: string;
+    address: string;
+    businessDescription: string;
+    options: {
+      priceTier: "budget" | "mid" | "premium";
+      footfallDependency: "high" | "destination";
+      rentBudget: number;
+      businessCategory: string;
+    };
+  }) => {
+    setShowWizard(false);
+    await analyzeLocation(
+      params.city,
+      params.address,
+      params.businessDescription,
+      params.options
+    );
   };
 
   const handleExport = async () => {
     if (!analysis) return;
     try {
       await exportLocationPdf(analysis, activeProject?.projectName || "Karnex");
-      toast.success("PDF دانلود شد");
+      toast.success("گزارش PDF با موفقیت دانلود شد");
     } catch {
-      toast.error("خطا در PDF");
+      toast.error("خطا در خروجی PDF");
     }
   };
 
-  const showCompareTab = comparisonItems.length >= 1 || comparisonMode;
+  const scrollToSection = (id: string) => {
+    setActiveSection(id);
+    const el = document.getElementById(`section-${id}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const showWizardScreen = !analysis || showWizard;
 
   return (
-    <div
-      className={cn(
-        "bg-background text-foreground flex overflow-hidden mobile-immersive -mx-4 -mt-3",
-        isMobile ? "h-[calc(100dvh-3.5rem)] flex-col" : "min-h-screen h-screen"
-      )}
-    >
+    <div className="bg-slate-950 text-foreground flex flex-col md:flex-row overflow-hidden -mx-4 -mt-3 h-[calc(100vh-3.5rem)] md:h-[calc(100vh-4rem)]">
       <HistorySidebar isOpen={historyOpen} onClose={() => setHistoryOpen(false)} />
       <LocationAiChat open={chatOpen && !!analysis} onClose={() => setChatOpen(false)} />
 
-      <div className="flex-1 h-full overflow-y-auto min-h-0">
-        <div
-          className={cn(
-            "sticky top-0 z-20 bg-background/85 backdrop-blur-xl border-b border-white/5",
-            isMobile ? "px-3 py-3" : "px-6 py-4"
+      {/* Loading state screen */}
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-slate-950/95 backdrop-blur-md z-[500] flex flex-col items-center justify-center p-6 text-center"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center mb-6 shadow-xl shadow-indigo-500/20">
+              <Loader2 className="w-8 h-8 animate-spin text-white" />
+            </div>
+            <h3 className="text-lg font-black text-white mb-2">در حال شبیه‌سازی و تحلیل موقعیت</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mb-6 leading-relaxed">
+              هوش مصنوعی Karnex با دریافت داده‌های زنده نقشه نشان و مشخصات صنف شما، در حال تدوین سناریوهای سوددهی است.
+            </p>
+            <div className="p-4 bg-slate-900 border border-white/5 rounded-2xl min-w-[280px]">
+              <div className="text-2xl mb-2">
+                {LOADING_STEPS[Math.min(loadingStep, LOADING_STEPS.length - 1)].icon}
+              </div>
+              <span className="text-xs text-indigo-400 font-bold animate-pulse">
+                {LOADING_STEPS[Math.min(loadingStep, LOADING_STEPS.length - 1)].label}
+              </span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* WIZARD ONBOARDING OR FULL CONTROL VIEW */}
+      {showWizardScreen ? (
+        <div className="flex-1 overflow-y-auto py-10 flex flex-col justify-center">
+          <div className="max-w-2xl mx-auto w-full text-center px-4 mb-4">
+            <div className="inline-flex w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 items-center justify-center mb-4">
+              <MapPin size={24} className="text-white" />
+            </div>
+            <h1 className="text-2xl font-black text-white">تحلیل‌گر موقعیت و مکان یابی Karnex</h1>
+            <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto leading-relaxed">
+              تطبیق فیزیکی و مالی محل کسب‌وکار با ویژگی‌های صنف شما با استفاده از هوش مصنوعی و داده‌های زنده نشان.
+            </p>
+          </div>
+          
+          <LocationWizard
+            isLoading={loading}
+            onAnalyze={handleAnalyze}
+            initialValues={{
+              city: analysis?.city,
+              address: analysis?.address,
+              businessDescription: analysis?.businessDescription,
+            }}
+          />
+
+          {history.length > 0 && (
+            <div className="max-w-2xl mx-auto w-full px-4 text-center mt-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs text-indigo-400 hover:text-indigo-300 gap-1.5"
+                onClick={() => setShowWizard(false)}
+              >
+                <ArrowRight size={14} />
+                بازگشت به آخرین تحلیل
+              </Button>
+            </div>
           )}
-        >
-          <div className={cn(isMobile ? "" : "max-w-6xl mx-auto")}>
-            <div className="flex items-center justify-between mb-3 gap-2">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shrink-0">
-                  <MapPin size={20} className="text-white" />
+        </div>
+      ) : (
+        <>
+          {/* RIGHT PANEL: Scrollable Reports (58% width on desktop) */}
+          <div
+            ref={rightPanelRef}
+            className="w-full md:w-[58%] h-1/2 md:h-full overflow-y-auto border-l border-white/5 flex flex-col bg-slate-950 order-2 md:order-1"
+          >
+            {/* Sticky Header Bar */}
+            <div className="sticky top-0 z-20 bg-slate-950/80 backdrop-blur-xl border-b border-white/5 px-6 py-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-600/20">
+                  <MapPin size={18} className="text-white" />
                 </div>
-                <div className="min-w-0">
-                  <h1
-                    data-tour-id="location-header"
-                    className="text-lg font-black tracking-tight truncate"
-                  >
-                    تحلیل هوشمند موقعیت
+                <div>
+                  <h1 className="text-sm font-black text-white truncate max-w-[200px]">
+                    {analysis.address || "تحلیل موقعیت"}
                   </h1>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {activeProject?.projectName}
-                  </p>
+                  <span className="text-[10px] text-muted-foreground">{analysis.city}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
-                {analysis && activeTab !== "overview" && <VerdictChip />}
-                <PageTourHelp tourId="location-analyzer" />
-                {analysis && (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs"
-                      onClick={handleExport}
-                    >
-                      <Download size={14} />
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs"
-                      onClick={() => setChatOpen(true)}
-                    >
-                      <MessageSquare size={14} />
-                    </Button>
-                  </>
-                )}
-                {history.length > 0 && (
-                  <>
-                    <Button
-                      data-tour-id="compare-btn"
-                      variant="outline"
-                      size="sm"
-                      className={cn("h-8 text-xs", comparisonMode && "border-primary/30")}
-                      onClick={toggleComparisonMode}
-                    >
-                      <GitCompare size={14} />
-                    </Button>
-                    <Button
-                      data-tour-id="history-btn"
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs"
-                      onClick={() => setHistoryOpen(true)}
-                    >
-                      <History size={14} />
-                      {!isMobile && `(${history.length})`}
-                    </Button>
-                  </>
-                )}
+
+              {/* Actions strip */}
+              <div className="flex items-center gap-1.5">
+                <VerdictChip />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-[10px] border-white/5 hover:bg-white/5 text-muted-foreground hover:text-white"
+                  onClick={handleExport}
+                >
+                  <Download size={13} />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-[10px] border-white/5 hover:bg-white/5 text-indigo-400 hover:text-indigo-300"
+                  onClick={() => setChatOpen(true)}
+                >
+                  <MessageSquare size={13} />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 text-[10px] border-white/5 hover:bg-white/5 text-muted-foreground hover:text-white"
+                  onClick={() => setHistoryOpen(true)}
+                >
+                  <History size={13} />
+                </Button>
+                <Button
+                  size="sm"
+                  className="h-8 text-[10px] bg-indigo-600 hover:bg-indigo-500 text-white gap-1"
+                  onClick={() => setShowWizard(true)}
+                >
+                  <Sparkles size={12} className="animate-pulse" />
+                  <span>تحلیل جدید</span>
+                </Button>
               </div>
             </div>
 
-            <Card
-              data-tour-id="location-search"
-              className="p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 bg-card/50 border-white/5 rounded-xl mb-2"
-            >
-              <Input
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="شهر"
-                className="sm:w-[100px] bg-transparent text-xs border-none shadow-none h-9"
-              />
-              <Input
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="محله، خیابان..."
-                className="flex-1 bg-transparent text-xs border-none shadow-none h-9"
-                onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-              />
-              <Input
-                value={businessDescription}
-                onChange={(e) => setBusinessDescription(e.target.value)}
-                placeholder="توضیح کسب‌وکار (مثلاً کافه specialty)"
-                className="flex-1 bg-transparent text-xs border-none shadow-none h-9"
-              />
-              <Button
-                size="sm"
-                className="h-9 px-4 bg-gradient-to-r from-violet-600 to-indigo-600"
-                onClick={handleAnalyze}
-                disabled={loading || !address.trim()}
-              >
-                {loading ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  <Search size={14} />
-                )}
-                تحلیل
-              </Button>
-            </Card>
+            {/* Quick Sticky Section Navigation */}
+            <div className="sticky top-[73px] z-10 bg-slate-950/90 border-b border-white/5 px-6 py-2 flex gap-2 overflow-x-auto no-scrollbar">
+              {QUICK_NAV.map((nav) => {
+                const Icon = nav.icon;
+                const active = activeSection === nav.id;
+                return (
+                  <button
+                    key={nav.id}
+                    onClick={() => scrollToSection(nav.id)}
+                    className={cn(
+                      "text-[10px] px-3 py-1.5 rounded-lg border shrink-0 transition-all flex items-center gap-1.5",
+                      active
+                        ? "bg-indigo-600/10 border-indigo-500 text-white font-bold"
+                        : "bg-slate-900/40 border-white/5 text-muted-foreground hover:bg-slate-900"
+                    )}
+                  >
+                    <Icon size={12} />
+                    {nav.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Stacked Report Sections */}
+            <div className="p-6 space-y-10 pb-24">
+              
+              {/* SECTION 1: Verdict & Main Score */}
+              <div id="section-verdict" className="space-y-6">
+                <VerdictCommandCenter />
+                <ExecutiveSummaryCard onNavigateTab={scrollToSection} />
+                <FitScoreBreakdown />
+                <StreetContextPanel />
+              </div>
+
+              {/* SECTION 2: Facade & Vision AI */}
+              <div id="section-vision" className="space-y-4 border-t border-white/5 pt-8">
+                <VisionAnalyzer />
+              </div>
+
+              {/* SECTION 3: Financial Simulator */}
+              <div id="section-financials" className="space-y-4 border-t border-white/5 pt-8">
+                <FinancialSimulator initialRent={analysis.inputs?.rentBudget} />
+              </div>
+
+              {/* SECTION 4: Customers & Demographics */}
+              <div id="section-demographics" className="space-y-4 border-t border-white/5 pt-8">
+                <div className="flex items-center gap-2 mb-2">
+                  <Users size={16} className="text-violet-400" />
+                  <h3 className="font-black text-sm text-white">جامعه مشتریان هدف و پاخور لوکیشن</h3>
+                </div>
+                <CustomersTab />
+              </div>
+
+              {/* SECTION 5: Competitor Saturation */}
+              <div id="section-competitors" className="space-y-4 border-t border-white/5 pt-8">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target size={16} className="text-indigo-400" />
+                  <h3 className="font-black text-sm text-white">تحلیل میزان اشباع و رقبای محلی</h3>
+                </div>
+                <CompetitorTable />
+                <CompetitorList />
+              </div>
+
+              {/* SECTION 6: Risks & SWOT Strategy */}
+              <div id="section-risks" className="space-y-4 border-t border-white/5 pt-8">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShieldAlert size={16} className="text-rose-400" />
+                  <h3 className="font-black text-sm text-white">ارزیابی ریسک‌ها و تدوین استراتژی مغازه</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <RiskTab />
+                  <StrategyTab />
+                </div>
+              </div>
+
+              {/* SECTION 7: Smart Alternatives */}
+              <div id="section-alternatives" className="space-y-4 border-t border-white/5 pt-8">
+                <SmartAlternatives />
+              </div>
+
+            </div>
           </div>
-        </div>
 
-        <div className={cn("mx-auto py-6", isMobile ? "px-3 pb-24" : "max-w-6xl px-6")}>
-          {loading ? (
-            <LoadingState step={loadingStep} />
-          ) : !analysis ? (
-            <EmptyState
-              onDemo={loadDemoAnalysis}
-              onFillExample={(cityVal, addr, biz) => {
-                setCity(cityVal);
-                setAddress(addr);
-                setBusinessDescription(biz);
+          {/* LEFT PANEL: Sticky Full Height Map (42% width on desktop) */}
+          <div className="w-full md:w-[42%] h-1/2 md:h-full relative order-1 md:order-2">
+            <InteractiveMap
+              center={analysis.coordinates || { lat: 35.6892, lon: 51.3890 }}
+              competitors={
+                analysis.competitorAnalysis?.directCompetitors
+                  ?.filter((c) => c.coordinates?.lat && c.coordinates?.lon)
+                  .map((c) => ({
+                    name: c.name,
+                    lat: c.coordinates!.lat,
+                    lon: c.coordinates!.lon,
+                  })) || []
+              }
+              alternatives={analysis.alternatives || []}
+              radius={analysis.catchment?.radiusM || 500}
+              onPinDragEnd={async (lat, lon) => {
+                await analyzeLocation(
+                  analysis.city,
+                  `${lat.toFixed(6)}, ${lon.toFixed(6)}`,
+                  analysis.businessDescription || "",
+                  {
+                    radius: analysis.catchment?.radiusM,
+                    priceTier: analysis.inputs?.priceTier,
+                    footfallDependency: analysis.inputs?.footfallDependency,
+                    rentBudget: analysis.inputs?.rentBudget,
+                    businessCategory: analysis.businessCategory,
+                    storefrontPhoto: analysis.storefront?.photoDataUrl || "",
+                  }
+                );
               }}
+              mapStyle="dark"
+              showLayerToggle
             />
-          ) : isMobile ? (
-            <MobileLocationSummary />
-          ) : (
-            <Tabs
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="dir-rtl"
-              data-tour-id="location-tabs"
-            >
-              <TabsList className="w-full flex flex-wrap h-auto gap-1 bg-muted/30 p-1 mb-6">
-                {TAB_ITEMS.filter((t) => t.id !== "compare" || showCompareTab).map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <TabsTrigger
-                      key={tab.id}
-                      value={tab.id}
-                      className="text-xs gap-1.5 data-[state=active]:bg-primary/15"
-                    >
-                      <Icon size={14} />
-                      {tab.label}
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <TabsContent value="overview" className="mt-0">
-                    <OverviewTab
-                      onNavigateTab={setActiveTab}
-                      onOpenChat={() => setChatOpen(true)}
-                      radius={analysis.catchment?.radiusM || radius}
-                    />
-                  </TabsContent>
-                  <TabsContent value="map" className="mt-0">
-                    <MapTab radius={analysis.catchment?.radiusM || radius} />
-                  </TabsContent>
-                  <TabsContent value="customers" className="mt-0">
-                    <CustomersTab />
-                  </TabsContent>
-                  <TabsContent value="financial" className="mt-0">
-                    <FinancialTab initialRent={analysis.inputs?.rentBudget} />
-                  </TabsContent>
-                  <TabsContent value="risk" className="mt-0">
-                    <RiskTab />
-                  </TabsContent>
-                  <TabsContent value="strategy" className="mt-0">
-                    <StrategyTab />
-                  </TabsContent>
-                  {showCompareTab && (
-                    <TabsContent value="compare" className="mt-0">
-                      <CompareTab />
-                    </TabsContent>
-                  )}
-                </motion.div>
-              </AnimatePresence>
-            </Tabs>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function LoadingState({ step }: { step: number }) {
-  return (
-    <div className="flex flex-col items-center py-24 space-y-6">
-      <Loader2 className="w-12 h-12 animate-spin text-violet-500" />
-      <p className="text-sm font-bold">
-        {LOADING_STEPS[Math.min(step, LOADING_STEPS.length - 1)].label}
-      </p>
-    </div>
-  );
-}
-
-function EmptyState({
-  onDemo,
-  onFillExample,
-}: {
-  onDemo: (a: import("@/lib/db").LocationAnalysis) => void;
-  onFillExample: (city: string, address: string, biz: string) => void;
-}) {
-  return (
-    <div className="flex flex-col items-center py-20 text-center dir-rtl max-w-lg mx-auto">
-      <MapPin size={48} className="text-violet-400/50 mb-4" />
-      <h2 className="text-xl font-black mb-2">قبل از امضای lease — در ۲ دقیقه بدانید</h2>
-      <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-        شهر، آدرس و یک خط توضیح کسب‌وکار را وارد کنید. Karnex با داده OSM واقعی و پروفایل
-        پروژه شما تحلیل می‌کند.
-      </p>
-      <p className="text-xs text-muted-foreground mb-3 w-full text-right font-semibold">
-        نمونه‌های آماده:
-      </p>
-      <div className="flex flex-wrap justify-center gap-2 mb-6">
-        {DEMO_LOCATION_ANALYSES.map((demo) => (
-          <button
-            key={demo.id}
-            type="button"
-            onClick={() => onDemo(demo.analysis)}
-            className="text-xs px-3 py-1.5 rounded-full border border-white/10 hover:border-violet-500/30 hover:bg-violet-500/10"
-          >
-            {demo.label}
-          </button>
-        ))}
-      </div>
-      <div className="flex flex-wrap gap-2 justify-center">
-        {DEMO_LOCATION_ANALYSES.map((demo) => (
-          <button
-            key={`fill-${demo.id}`}
-            type="button"
-            onClick={() =>
-              onFillExample(
-                demo.analysis.city,
-                demo.analysis.address,
-                demo.analysis.businessDescription || ""
-              )
-            }
-            className="text-[10px] text-primary underline"
-          >
-            پر کردن: {demo.label}
-          </button>
-        ))}
-      </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
