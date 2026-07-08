@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import type { Badge } from "@/hooks/use-gamification";
+import { getAllTours } from "@/lib/tour/registry";
+
+const TOTAL_TOURS = getAllTours().filter((t) => t.id !== "whats-new").length;
 
 const STORAGE_KEY = "karnex-tour-gamification";
 const XP_PER_LEVEL = 100;
@@ -115,7 +118,7 @@ export function useTourGamification() {
           completedTourCount,
           lastActiveDate: today,
           streak: newStreak,
-          badges: computeTourBadges(completedTourCount, 9),
+          badges: computeTourBadges(completedTourCount, TOTAL_TOURS),
         };
         saveState(userId, next);
         return next;
@@ -130,6 +133,6 @@ export function useTourGamification() {
     ...state,
     lastXp,
     awardTourXp,
-    tourBadges: computeTourBadges(state.completedTourCount, 9),
+    tourBadges: computeTourBadges(state.completedTourCount, TOTAL_TOURS),
   };
 }

@@ -1,3 +1,5 @@
+import { toPersianDigits } from "@/lib/utils";
+
 export const tourI18n = {
   next: "بعدی",
   prev: "قبلی",
@@ -35,4 +37,51 @@ export const tourI18n = {
   whatsNew: "تازه‌ها",
   tourLauncher: "راهنمای تعاملی",
   resumeTour: "ادامه تور",
+
+  // Onboarding questionnaire
+  onboardingStepOf: (current: number, total: number) => `مرحله ${current} از ${total}`,
+  onboardingBack: "بازگشت",
+  onboardingContinue: "ادامه",
+  onboardingFinish: "شروع کنید",
+  onboardingPersonaTitle: "نقش شما چیست؟",
+  onboardingPersonaSubtitle: "تا راهنما را متناسب با شما تنظیم کنیم.",
+  onboardingExperienceTitle: "چقدر با ابزارهای این‌چنینی آشنا هستید؟",
+  onboardingExperienceSubtitle: "بر اساس این، جزئیات راهنما را بیشتر یا کمتر می‌کنیم.",
+  onboardingGoalTitle: "هدف اصلی شما از کارنکس چیست؟",
+  onboardingGoalSubtitle: "راهنما را حول همین هدف می‌چینیم.",
+  experienceLevels: {
+    beginner: "تازه‌کار",
+    intermediate: "کمی تجربه دارم",
+    pro: "حرفه‌ای هستم",
+  },
+  primaryGoals: {
+    "validate-idea": "اعتبارسنجی ایده",
+    "grow-audience": "رشد مخاطب",
+    "raise-funding": "جذب سرمایه",
+    "launch-product": "راه‌اندازی محصول",
+    "just-exploring": "فقط دارم نگاه می‌کنم",
+  },
+
+  // Re-personalization
+  repersonalizeProjectTypeTitle: "نوع پروژه شما تغییر کرد",
+  repersonalizePlanTitle: "اشتراک شما ارتقا پیدا کرد",
+  repersonalizeBody: "می‌خواهید راهنما را دوباره متناسب با وضعیت جدید تنظیم کنیم؟",
+  repersonalizeAccept: "بله، تنظیم مجدد",
+  repersonalizeDismiss: "فعلاً نه",
+
+  // Re-engagement
+  reengagementTitle: "یادت نره!",
+  reengagementBody: (tourTitle: string) => `تور «${tourTitle}» رو رد کرده بودی. دوست داری الان شروعش کنیم؟`,
+  reengagementAccept: "شروع تور",
+  reengagementDismiss: "بی‌خیال",
+
+  // Tour hub
+  hubTitle: "مرکز تورهای تعاملی",
+  hubSubtitle: "پیشرفت خودت رو دنبال کن و هر وقت خواستی هر بخش رو دوباره یاد بگیر.",
+  hubContinue: "ادامه راهنما",
+  hubAllDone: "همه تورهای مرتبط با شما تکمیل شده! 🎉",
+  hubStatusNotStarted: "شروع نشده",
+  hubStatusInProgress: "نیمه‌کاره",
+  hubStatusCompleted: "تکمیل شده",
+  hubStepsCount: (n: number) => `${toPersianDigits(n)} مرحله`,
 } as const;
