@@ -1,7 +1,13 @@
 "use client";
 
 import { create } from "zustand";
-import type { TourPersona, TourPersistedState, TourStepContext } from "./types";
+import type {
+  TourExperienceLevel,
+  TourPersona,
+  TourPersistedState,
+  TourPrimaryGoal,
+  TourStepContext,
+} from "./types";
 import {
   defaultPersistedState,
   loadPersistedState,
@@ -9,6 +15,12 @@ import {
 } from "./migration";
 import { createEngineState, type TourEngineState } from "./engine";
 import { getTourWithDynamic } from "./registry";
+import {
+  fetchRemoteTourProgress,
+  queueTourProgressSync,
+  reconcilePersistedState,
+  setTourSyncEnabled,
+} from "./sync";
 
 export interface CelebrationPayload {
   tourId: string;
@@ -28,12 +40,24 @@ interface TourStore {
   beaconsEnabled: boolean;
   stepContext: TourStepContext;
   pendingXpCallback: ((amount: number, reason: string) => void) | null;
+  reengagementCandidate: string | null;
+  repersonalizePrompt: { kind: "projectType" | "plan"; value: string } | null;
 
-  initialize: (userId: string) => void;
+  initialize: (userId: string) => Promise<void>;
   setStepContext: (ctx: Partial<TourStepContext>) => void;
   setPersona: (persona: TourPersona) => void;
+  completeOnboarding: (
+    persona: TourPersona,
+    experienceLevel: TourExperienceLevel,
+    primaryGoal: TourPrimaryGoal
+  ) => void;
   setDisableAutoStart: (disabled: boolean) => void;
   setXpCallback: (cb: (amount: number, reason: string) => void) => void;
+  recordEnvironmentSnapshot: (projectType?: string, plan?: string) => void;
+  dismissReengagement: () => void;
+  setReengagementCandidate: (tourId: string | null) => void;
+  dismissRepersonalize: () => void;
+  acceptRepersonalize: () => void;
 
   startTour: (tourId: string, stepIndex?: number, force?: boolean) => boolean;
   endTour: (markComplete?: boolean) => void;
@@ -57,8 +81,9 @@ interface TourStore {
 
 function persist(get: () => TourStore, partial: Partial<TourPersistedState>) {
   const { userId, persisted } = get();
-  const next = { ...persisted, ...partial };
+  const next = { ...persisted, ...partial, updatedAt: Date.now() };
   savePersistedState(userId, next);
+  queueTourProgressSync(partial);
   return next;
 }
 
@@ -74,19 +99,36 @@ export const useTourStore = create<TourStore>((set, get) => ({
   beaconsEnabled: true,
   stepContext: { persona: "general" },
   pendingXpCallback: null,
+  reengagementCandidate: null,
+  repersonalizePrompt: null,
 
-  initialize: (userId) => {
-    const persisted = loadPersistedState(userId);
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'176184'},body:JSON.stringify({sessionId:'176184',location:'store.ts:initialize',message:'initialize called',data:{userId,skippedTours:persisted.skippedTours,completedTours:persisted.completedTours,hasSeenWelcome:persisted.hasSeenWelcome,activeTourId:persisted.activeTourId},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
-    // #endregion
+  initialize: async (userId) => {
+    const local = loadPersistedState(userId);
+    const isGuest = userId === "guest";
+    setTourSyncEnabled(!isGuest);
+
     set({
       userId,
-      persisted,
+      persisted: local,
       initialized: true,
-      showWelcome: !persisted.hasSeenWelcome,
+      showWelcome: !local.hasSeenWelcome,
       beaconsEnabled: true,
     });
+
+    if (isGuest) return;
+
+    const remote = await fetchRemoteTourProgress();
+    if (!remote) return;
+
+    const reconciled = reconcilePersistedState(local, remote.persisted);
+    if (reconciled !== local) {
+      savePersistedState(userId, reconciled);
+      set({
+        persisted: reconciled,
+        showWelcome: !reconciled.hasSeenWelcome,
+        stepContext: { ...get().stepContext, persona: reconciled.persona ?? "general" },
+      });
+    }
   },
 
   setStepContext: (ctx) => {
@@ -98,6 +140,20 @@ export const useTourStore = create<TourStore>((set, get) => ({
     set({ persisted, stepContext: { ...get().stepContext, persona } });
   },
 
+  completeOnboarding: (persona, experienceLevel, primaryGoal) => {
+    const persisted = persist(get, {
+      persona,
+      experienceLevel,
+      primaryGoal,
+      hasSeenWelcome: true,
+    });
+    set({
+      persisted,
+      showWelcome: false,
+      stepContext: { ...get().stepContext, persona, experienceLevel, primaryGoal },
+    });
+  },
+
   setDisableAutoStart: (disabled) => {
     const persisted = persist(get, { disableAutoStart: disabled });
     set({ persisted });
@@ -105,17 +161,62 @@ export const useTourStore = create<TourStore>((set, get) => ({
 
   setXpCallback: (cb) => set({ pendingXpCallback: cb }),
 
+  recordEnvironmentSnapshot: (projectType, plan) => {
+    const { persisted, showWelcome } = get();
+    const prevProjectType = persisted.lastKnownProjectType;
+    const prevPlan = persisted.lastKnownPlan;
+    const nextProjectType = projectType ?? null;
+    const nextPlan = plan ?? null;
+
+    if (prevProjectType === nextProjectType && prevPlan === nextPlan) return;
+
+    const nextPersisted = persist(get, {
+      lastKnownProjectType: nextProjectType,
+      lastKnownPlan: nextPlan,
+    });
+
+    // Only offer to re-personalize on a genuine *change* after onboarding, not on first observation.
+    const isMaterialProjectTypeChange =
+      prevProjectType !== null && nextProjectType !== null && prevProjectType !== nextProjectType;
+    const isMaterialPlanUpgrade =
+      prevPlan !== null && nextPlan !== null && prevPlan !== nextPlan;
+
+    let repersonalizePrompt = get().repersonalizePrompt;
+    if (!showWelcome && !repersonalizePrompt) {
+      if (isMaterialProjectTypeChange && nextProjectType) {
+        repersonalizePrompt = { kind: "projectType", value: nextProjectType };
+      } else if (isMaterialPlanUpgrade && nextPlan) {
+        repersonalizePrompt = { kind: "plan", value: nextPlan };
+      }
+    }
+
+    set({ persisted: nextPersisted, repersonalizePrompt });
+  },
+
+  dismissRepersonalize: () => set({ repersonalizePrompt: null }),
+
+  acceptRepersonalize: () => {
+    // Re-open the guided onboarding so the user can pick a fresh persona/goal;
+    // never silently mutate their persona without explicit confirmation.
+    const nextPersisted = persist(get, { hasSeenWelcome: false });
+    set({ persisted: nextPersisted, showWelcome: true, repersonalizePrompt: null });
+  },
+
+  setReengagementCandidate: (tourId) => set({ reengagementCandidate: tourId }),
+
+  dismissReengagement: () => {
+    // Session-scoped only: we intentionally don't persist a "reminded" flag so the
+    // nudge stays a single gentle, transient suggestion rather than another thing to track forever.
+    set({ reengagementCandidate: null });
+  },
+
   startTour: (tourId, stepIndex, force = false) => {
-    const { stepContext, persisted, userId } = get();
+    const { stepContext, persisted } = get();
     const tour = getTourWithDynamic(tourId);
     if (!tour) return false;
 
     const isSkipped = persisted.skippedTours?.includes(tourId);
     const isCompleted = persisted.completedTours.includes(tourId);
-
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'176184'},body:JSON.stringify({sessionId:'176184',location:'store.ts:startTour',message:'startTour attempt',data:{tourId,force,stepIndex,userId,isSkipped,isCompleted,skippedTours:persisted.skippedTours,willBlock:!force&&(isSkipped||isCompleted)&&stepIndex===undefined},timestamp:Date.now(),hypothesisId:'H1,H3,H4'})}).catch(()=>{});
-    // #endregion
 
     if (!force && (isSkipped || isCompleted) && stepIndex === undefined) {
       return false;
@@ -138,6 +239,7 @@ export const useTourStore = create<TourStore>((set, get) => ({
       isOpen: true,
       persisted: nextPersisted,
       showWelcome: false,
+      reengagementCandidate: null,
     });
     return true;
   },
@@ -167,7 +269,13 @@ export const useTourStore = create<TourStore>((set, get) => ({
           checklistId,
         ];
       }
-      savePersistedState(get().userId, nextPersisted);
+      nextPersisted = persist(get, {
+        completedTours: nextPersisted.completedTours,
+        activeTourId: null,
+        activeStepIndex: 0,
+        completedChecklistItems: nextPersisted.completedChecklistItems,
+      });
+      queueTourProgressSync({ xpDelta: tour.xpReward });
       pendingXpCallback?.(tour.xpReward, `تکمیل تور: ${tour.title}`);
       celebration = {
         tourId: tour.id,
@@ -188,10 +296,7 @@ export const useTourStore = create<TourStore>((set, get) => ({
   },
 
   skipTour: () => {
-    const { engine, persisted, userId } = get();
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'176184'},body:JSON.stringify({sessionId:'176184',location:'store.ts:skipTour',message:'skipTour called',data:{userId,hasEngine:!!engine,tourId:engine?.tourId??null,skippedBefore:persisted.skippedTours},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
+    const { engine, persisted } = get();
     if (!engine) return;
     const skippedTours = persisted.skippedTours || [];
     const nextSkipped = skippedTours.includes(engine.tourId)
@@ -202,9 +307,6 @@ export const useTourStore = create<TourStore>((set, get) => ({
       activeStepIndex: 0,
       skippedTours: nextSkipped,
     });
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'176184'},body:JSON.stringify({sessionId:'176184',location:'store.ts:skipTour:after',message:'skipTour persisted',data:{userId,tourId:engine.tourId,skippedAfter:nextPersisted.skippedTours,storageKey:`karnex-tour-v2_${userId}`},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
     set({ engine: null, isOpen: false, persisted: nextPersisted });
   },
 
@@ -287,6 +389,7 @@ export const useTourStore = create<TourStore>((set, get) => ({
       completedChecklistItems: [...persisted.completedChecklistItems, itemId],
     });
     set({ persisted: next });
+    queueTourProgressSync({ xpDelta: 15 });
     pendingXpCallback?.(15, "تکمیل آیتم چک‌لیست");
   },
 

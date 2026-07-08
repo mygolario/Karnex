@@ -5,7 +5,9 @@ import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { MentorProvider } from "@/components/dashboard/mentor-context";
 import { TourProvider } from "@/components/tour/tour-provider";
-import { TourOverlay } from "@/components/tour/tour-overlay";
+import { TourRoot } from "@/components/tour/tour-root";
+import { TourReengagementNudge } from "@/components/tour/tour-reengagement-nudge";
+import { TourRepersonalizePrompt } from "@/components/tour/tour-repersonalize-prompt";
 import { MobileProvider } from "@/contexts/mobile-context";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { DesktopDashboardShell } from "@/components/dashboard/desktop-dashboard-shell";
@@ -45,7 +47,9 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
     <MobileProvider>
       <MentorProvider>
         <TourProvider>
-          <TourOverlay />
+          <TourRoot />
+          <TourReengagementNudge />
+          <TourRepersonalizePrompt />
           {isMobile ? (
             <MobileDashboardShell>{children}</MobileDashboardShell>
           ) : (

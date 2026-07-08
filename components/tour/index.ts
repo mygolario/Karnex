@@ -7,5 +7,8 @@ export { SetupChecklist } from "./setup-checklist";
 export { TourLauncher } from "./tour-launcher";
 export { PageTourHelp } from "./page-tour-help";
 export { TourBeacon } from "./tour-beacon";
+export { TourBeaconAnchor } from "./tour-beacon-anchor";
 export { TourMascot } from "./tour-mascot";
 export { useRegisterTour } from "./use-register-tour";
+export { TourReengagementNudge } from "./tour-reengagement-nudge";
+export { TourRepersonalizePrompt } from "./tour-repersonalize-prompt";
