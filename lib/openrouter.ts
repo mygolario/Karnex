@@ -3,6 +3,8 @@
  * Centralized configuration for all AI text generation
  */
 
+import { getAiUsageContext } from "./ai-usage-context";
+
 // Google Gemini Models (Preferred Priority)
 // Primary: gemini-3.5-flash (fast, high quality, low cost, beginner-friendly Persian output)
 // Fallbacks kept for resilience
@@ -11,6 +13,46 @@ export const TEXT_MODELS = [
     "google/gemini-2.5-flash",        // Priority 2 (Stable fallback)
     "google/gemini-2.5-flash-lite"   // Priority 3 (Ultra-fast budget fallback)
 ];
+
+// === Named model IDs — single source of truth for model policy ===
+// Use these constants instead of string literals so a model swap is one edit.
+export const MODEL_GEMINI_35_FLASH       = "google/gemini-3.5-flash";
+export const MODEL_GEMINI_25_FLASH       = "google/gemini-2.5-flash";
+export const MODEL_GEMINI_25_FLASH_LITE  = "google/gemini-2.5-flash-lite";
+export const MODEL_GEMINI_31_FLASH_LITE  = "google/gemini-3.1-flash-lite";
+export const MODEL_CLAUDE_SONNET_5       = "anthropic/claude-sonnet-5";
+export const MODEL_PERPLEXITY_SONAR      = "perplexity/sonar";
+export const MODEL_PERPLEXITY_SONAR_DEEP = "perplexity/sonar-deep-research";
+export const MODEL_WHISPER_LARGE_V3      = "openai/whisper-large-v3";
+export const MODEL_GEMINI_FLASH_IMAGE    = "google/gemini-3.1-flash-image";
+
+// === Tier presets — semantic role → preferred model ===
+export const TIER_DEFAULT      = MODEL_GEMINI_35_FLASH;       // backbone: canvas, plan, chat, copilot
+export const TIER_FAST         = MODEL_GEMINI_31_FLASH_LITE;  // memory, insights, quick rewrites
+export const TIER_REASONING    = MODEL_CLAUDE_SONNET_5;       // high-stakes JSON (opt-in)
+export const TIER_GROUNDED     = MODEL_PERPLEXITY_SONAR;      // live-web competitor/market research
+export const TIER_GROUNDED_DEEP = MODEL_PERPLEXITY_SONAR_DEEP; // TAM/SAM/SOM deep dives
+export const TIER_LOCATION     = MODEL_GEMINI_25_FLASH;       // location analysis (large JSON)
+export const TIER_STT          = MODEL_WHISPER_LARGE_V3;      // speech-to-text
+export const TIER_IMAGE        = MODEL_GEMINI_FLASH_IMAGE;    // in-product image generation
+
+/**
+ * Build the OpenRouter `web_search` plugin object, or null when disabled.
+ * Engine defaults to the `OPENROUTER_WEB_SEARCH_ENGINE` env var (or "auto").
+ */
+export function buildWebSearchPlugin(
+    webSearch?: boolean | { engine?: string; maxResults?: number }
+): { id: string; engine: string; max_results?: number } | null {
+    if (!webSearch) return null;
+    const opts = typeof webSearch === "object" ? webSearch : {};
+    const engine = opts.engine || process.env.OPENROUTER_WEB_SEARCH_ENGINE || "auto";
+    const plugin: { id: string; engine: string; max_results?: number } = {
+        id: "web_search",
+        engine,
+    };
+    if (opts.maxResults) plugin.max_results = opts.maxResults;
+    return plugin;
+}
 
 // Dedicated model list for the agentic Copilot loop (tool-calling + streaming).
 // Kept separate so the copilot can evolve independently of the generic TEXT_MODELS.
@@ -49,6 +91,7 @@ export interface OpenRouterResponse {
     model?: string;
     finishReason?: string;
     error?: string;
+    usage?: { promptTokens: number; completionTokens: number; totalTokens: number };
 }
 
 export class TransientError extends Error {
@@ -110,6 +153,12 @@ export async function callOpenRouter(
         singleModel?: boolean;
         modelOverride?: string;
         responseFormat?: { type: 'json_object' };
+        /**
+         * Enable the OpenRouter `web_search` server plugin so the model can pull
+         * live web results into its answer. Billed to the OpenRouter balance
+         * (~$0.005/search). Ignored for models with built-in search (e.g. Perplexity Sonar).
+         */
+        webSearch?: boolean | { engine?: string; maxResults?: number };
     }
 ): Promise<OpenRouterResponse> {
     const apiKey = process.env.OPENROUTER_API_KEY;
@@ -127,8 +176,11 @@ export async function callOpenRouter(
         maxAttempts = 3,
         singleModel = false,
         modelOverride,
-        responseFormat
+        responseFormat,
+        webSearch,
     } = options || {};
+
+    const webSearchPlugin = buildWebSearchPlugin(webSearch);
 
     let lastError: string | null = null;
     
@@ -184,6 +236,7 @@ export async function callOpenRouter(
                                 max_tokens: maxTokens,
                                 temperature,
                                 response_format: responseFormat,
+                                ...(webSearchPlugin ? { plugins: [webSearchPlugin] } : {}),
                             }),
                             signal: controller.signal,
                         });
@@ -204,7 +257,12 @@ export async function callOpenRouter(
                         if (!text) {
                             throw new Error("Empty response");
                         }
-                        return { text, finishReason: choice?.finish_reason as string | undefined };
+                        const usage = {
+                            promptTokens: data.usage?.prompt_tokens ?? 0,
+                            completionTokens: data.usage?.completion_tokens ?? 0,
+                            totalTokens: data.usage?.total_tokens ?? 0,
+                        };
+                        return { text, finishReason: choice?.finish_reason as string | undefined, usage };
                     } finally {
                         clearTimeout(timeoutId);
                     }
@@ -214,7 +272,26 @@ export async function callOpenRouter(
                 isTransient
             );
 
-            return { success: true, content: result.text, model, finishReason: result.finishReason };
+            // Auto-record token/cost usage when a request-scoped AiUsageContext is
+            // active (set via runWithAiUsage at the route/action entry point).
+            // Fire-and-forget so it never blocks the user response.
+            const ctx = getAiUsageContext();
+            if (ctx) {
+                const { recordAiUsage } = await import("./copilot/usage-tracking");
+                void recordAiUsage({
+                    userId: ctx.userId,
+                    projectId: ctx.projectId,
+                    conversationId: ctx.conversationId,
+                    feature: ctx.feature,
+                    model,
+                    promptTokens: result.usage.promptTokens,
+                    completionTokens: result.usage.completionTokens,
+                    totalTokens: result.usage.totalTokens,
+                    success: true,
+                });
+            }
+
+            return { success: true, content: result.text, model, finishReason: result.finishReason, usage: result.usage };
 
         } catch (error: any) {
             if (error.name === "AbortError" || error.message?.includes("Timeout") || error.message?.includes("timeout")) {
@@ -313,6 +390,8 @@ export interface CopilotChatParams {
     modelOverride?: string;
     timeoutMs?: number;
     tier?: CopilotModelTier;   // "hard" (default) for reasoning/tool-use, "fast" for cheap tasks
+    /** Enable the OpenRouter `web_search` plugin so the agent can ground answers. */
+    webSearch?: boolean | { engine?: string; maxResults?: number };
 }
 
 export interface CopilotChatResult {
@@ -354,8 +433,10 @@ export async function callCopilotChat(params: CopilotChatParams): Promise<Copilo
         modelOverride,
         timeoutMs = 30000,
         tier = "hard",
+        webSearch,
     } = params;
 
+    const webSearchPlugin = buildWebSearchPlugin(webSearch);
     const models = copilotModelChain(modelOverride, tier);
     let lastError: Error | null = null;
 
@@ -387,6 +468,9 @@ export async function callCopilotChat(params: CopilotChatParams): Promise<Copilo
                             // Ask the provider to include a final usage chunk so we
                             // can record token/cost data for streaming responses.
                             body.stream_options = { include_usage: true };
+                        }
+                        if (webSearchPlugin) {
+                            body.plugins = [webSearchPlugin];
                         }
 
                         const res = await fetch(OPENROUTER_URL, {

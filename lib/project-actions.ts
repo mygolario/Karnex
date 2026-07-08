@@ -3,8 +3,9 @@
 import { auth } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
 import { checkProjectLimit, checkAIRequestLimit, incrementAIUsage } from "@/lib/usage-tracker";
-import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
+import { callOpenRouter, parseJsonFromAI, TIER_DEFAULT } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
+import { runWithAiUsage } from "@/lib/ai-usage-context";
 import { getPrompt } from "@/lib/prompts/registry";
 import { callAIWithValidation, BusinessPlanCoreSchema, RoadmapOnlySchema } from "@/lib/ai-validation";
 import fs from 'fs';
@@ -313,7 +314,12 @@ function normalizeRoadmapOnly(parsed: unknown) {
   return plan;
 }
 
-export async function generatePlanAction(data: any) {
+export async function generatePlanAction(data: any): Promise<{
+  success?: boolean;
+  plan?: any;
+  error?: string;
+  message?: string;
+}> {
     const { idea, audience, budget, projectType, genesisAnswers } = data;
     
     const session = await auth();
@@ -333,7 +339,13 @@ export async function generatePlanAction(data: any) {
       : 'None provided';
 
     const { businessGlossary } = await import("@/lib/knowledge-base");
-    
+    const { getKbContextBlock } = await import("@/lib/ai/rag");
+
+    // Ground the plan with authoritative Iranian regulatory content (e‌namad,
+    // samandehi, tax, nic, ...). Best-effort: empty string if RAG is unavailable.
+    const kbQuery = `${idea} ${audience ?? ""} ${projectType ?? ""}`.trim();
+    const kbContext = await getKbContextBlock(kbQuery, { k: 4 });
+
     const { system, user } = getPrompt("generatePlan", {
       projectType,
       idea,
@@ -343,8 +355,13 @@ export async function generatePlanAction(data: any) {
       businessGlossary: JSON.stringify(businessGlossary, null, 2)
     });
 
+    const userWithKb = kbContext ? `${user}\n\n${kbContext}` : user;
+
     try {
-      const coreUser = `${user}\n\n⚠️ مرحله ۱: فقط overview، businessModelCanvas، brandKit، marketingStrategy و competitors را کامل تولید کن. فیلد roadmap را حتماً به صورت آرایه خالی [] برگردان.`;
+      return await runWithAiUsage(
+        { userId: session.user.id, feature: "generatePlan" },
+        async () => {
+      const coreUser = `${userWithKb}\n\n⚠️ مرحله ۱: فقط overview، businessModelCanvas، brandKit، marketingStrategy و competitors را کامل تولید کن. فیلد roadmap را حتماً به صورت آرایه خالی [] برگردان.`;
 
       const corePlan = await callAIWithValidation(
         coreUser,
@@ -353,7 +370,7 @@ export async function generatePlanAction(data: any) {
           maxTokens: 12000,
           temperature: 0.6,
           timeoutMs: 90000,
-          modelOverride: "google/gemini-3.5-flash",
+          modelOverride: TIER_DEFAULT,
         },
         BusinessPlanCoreSchema,
         1
@@ -376,7 +393,7 @@ ${formattedAnswers}
           maxTokens: 32000,
           temperature: 0.6,
           timeoutMs: 120000,
-          modelOverride: "google/gemini-3.5-flash",
+          modelOverride: TIER_DEFAULT,
         },
         RoadmapOnlySchema,
         2,
@@ -394,8 +411,10 @@ ${formattedAnswers}
 
       // Normalize full plan structure
       const normalized = normalizeProjectPlan(structuredPlan);
-      
-      return { success: true, plan: normalized };
+
+      return { success: true as const, plan: normalized };
+        }
+      );
     } catch (parseError: any) {
       console.error("AI Validation / Parse Error:", parseError);
       await rollback();

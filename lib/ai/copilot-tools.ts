@@ -181,7 +181,7 @@ export const COPILOT_TOOLS = [
     type: "function",
     function: {
       name: "search_competitors",
-      description: "Search and analyze real competitors and generate a market SWOT analysis for the user's startup. Use this when the user asks about competitors, market rivals, or competitive analysis.",
+      description: "Research real competitors using live web data and generate a market SWOT analysis for the user's project. Grounded via Perplexity Sonar. Use this when the user asks about competitors, market rivals, or competitive analysis.",
       parameters: {
         type: "object",
         properties: {
@@ -1092,11 +1092,33 @@ export async function executeAnalyzeLocation(
     const hasAccess = await checkProjectWriteAccess(projectId, userId);
     if (!hasAccess) throw new Error("Unauthorized access to project");
 
+    const project = await prisma.project.findFirst({
+        where: { id: projectId },
+        select: { projectName: true, description: true, data: true },
+    });
+    if (!project) throw new Error("Project not found");
+
+    const activeProject = {
+        id: projectId,
+        projectName: project.projectName,
+        overview: project.description,
+        ...((project.data as any) || {}),
+    };
+
+    const { runLocationAnalysis } = await import("@/lib/location/analyze-pipeline");
+    const analysis = await runLocationAnalysis({
+        city: args.city,
+        address: args.address,
+        businessDescription: args.businessDescription,
+        activeProject,
+        userId,
+        projectId,
+    });
+
     return {
         success: true,
-        message: `برای تحلیل «${args.address}» در ${args.city} به Location Analyzer بروید یا در UI دکمه تحلیل را بزنید.`,
-        redirectHint: "/dashboard/location",
-        params: args,
+        message: `تحلیل مکان برای «${args.address}» در ${args.city} انجام شد.`,
+        analysis,
     };
 }
 

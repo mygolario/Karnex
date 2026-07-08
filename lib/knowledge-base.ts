@@ -558,5 +558,58 @@ export function getDifficultyLabel(difficulty: "easy" | "medium" | "hard"): stri
   return labels[difficulty];
 }
 
+// ============================================
+// RAG-AUGMENTED STEP GUIDES
+// ============================================
+
+import { retrieveKbContext, formatKbContext, type KbSnippet } from "@/lib/ai/rag";
+
+export interface AugmentedTaskGuide {
+  /** Static guide matched by keyword, or null if none matched. */
+  guide: TaskGuide | null;
+  /** Static guide key matched by keyword (e.g. "enamad", "tax_registration"). */
+  guideKey: string | null;
+  /** Grounding snippets retrieved from the Persian KB (pgvector). Empty if RAG
+   *  is unavailable or no relevant chunks were found. */
+  kbSnippets: KbSnippet[];
+  /** Formatted Persian context block ready to append to a prompt / render. */
+  kbContext: string;
+}
+
+/**
+ * Resolve the static guide for a roadmap step text AND retrieve grounding
+ * snippets from the Persian Knowledge Base. The RAG call is best-effort: if
+ * embeddings/DB are unavailable, `kbSnippets` is [] and the static guide is
+ * still returned.
+ */
+export async function getAugmentedGuideForStep(
+  stepText: string
+): Promise<AugmentedTaskGuide> {
+  const staticGuide = findGuideForStep(stepText);
+
+  // Scope retrieval to the source most relevant to the matched guide key, when
+  // we can map one. Otherwise run an open query against the whole KB.
+  const guideKeyToSource: Record<string, string[]> = {
+    enamad: ["enamad"],
+    tax_registration: ["tax"],
+    trade_license: ["kargozarsalari"],
+    payment: ["enamad", "tax"],
+    website: ["nic"],
+  };
+  const matchedKey = staticGuide
+    ? Object.keys(roadmapTaskGuides).find((k) => roadmapTaskGuides[k] === staticGuide) ?? null
+    : null;
+  const sources = matchedKey ? guideKeyToSource[matchedKey] : undefined;
+
+  const snippets = await retrieveKbContext(stepText, { k: 3, sources });
+  return {
+    guide: staticGuide,
+    guideKey: matchedKey,
+    kbSnippets: snippets,
+    kbContext: formatKbContext(snippets, "## راهنمای معتبر از پایگاه دانش"),
+  };
+}
+
+
 
 

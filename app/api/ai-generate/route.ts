@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server";
-import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
+import { callOpenRouter, parseJsonFromAI, TIER_LOCATION } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { auth } from "@/lib/auth/session";
 import { resolveAssembledPrompt } from "@/lib/ai/prompt-service";
-import { fetchLocationOsmData } from "@/lib/location/data-adapters/osm-adapter";
-import {
-  buildLocationProjectContextBlock,
-  computeCannibalization,
-} from "@/lib/location/project-context-block";
+import { runWithAiUsage } from "@/lib/ai-usage-context";
+import { runLocationAnalysis } from "@/lib/location/analyze-pipeline";
 import {
   buildGenerateContext,
-  handleAnalyzeLocation,
   handleContentBrief,
   handleContentIdeas,
   handleContentStrategy,
   handleFullCanvas,
   handleGrowthPlan,
   handleCanvasCritique,
+  handleMarketResearch,
   handlePitchSlideAI,
   handleRepurpose,
   handleScriptWriter,
@@ -56,10 +53,13 @@ export async function POST(req: Request) {
 
     const genCtx = buildGenerateContext(activeProject, userId, modifier);
 
+    // Wrap the dispatch in a request-scoped AiUsageContext so every
+    // callOpenRouter inside handlers auto-records token/cost to AiUsage.
+    const feature = (action as string) || (body.featureKey as string) || "ai-generate";
+    return await runWithAiUsage(
+      { userId: userId || "anonymous", projectId: genCtx.projectId, feature },
+      async () => {
     if (action === "analyze-location") {
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'50a938'},body:JSON.stringify({sessionId:'50a938',location:'ai-generate/route.ts:analyze-location-start',message:'analyze-location started',data:{city,address,bodySize:JSON.stringify(body).length,elapsedMs:Date.now()-reqStart},timestamp:Date.now(),hypothesisId:'H3'})}).catch(()=>{});
-      // #endregion
       const {
         radius: requestedRadius,
         priceTier = "mid",
@@ -67,74 +67,30 @@ export async function POST(req: Request) {
         rentBudget = 0,
         businessCategory = "",
         businessDescription = "",
+        lat,
+        lon,
       } = body;
 
-      const osmStart = Date.now();
-      const osm = await fetchLocationOsmData({
-        city,
-        address,
-        businessDescription: businessDescription || String(activeProject?.overview || ""),
-        businessCategory,
-        radius: requestedRadius,
-      });
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'50a938'},body:JSON.stringify({sessionId:'50a938',location:'ai-generate/route.ts:osm-done',message:'OSM fetch completed',data:{osmMs:Date.now()-osmStart,competitors:osm.competitorsList.length,radius:osm.radius,elapsedMs:Date.now()-reqStart},timestamp:Date.now(),hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
-      console.log("[analyze-location] osm-done", { osmMs: Date.now() - osmStart, elapsedMs: Date.now() - reqStart });
-
-      const projectContextBlock = buildLocationProjectContextBlock(activeProject);
-
       try {
-        const aiStart = Date.now();
-        const json = await handleAnalyzeLocation(
-          {
-            ...genCtx,
-            city,
-            address,
-            radius: osm.radius,
-            priceTier,
-            footfallDependency,
-            rentBudget,
-            businessCategory: osm.categorySlug,
-            businessDescription: businessDescription || String(activeProject?.overview || ""),
-            osmDataBlock: osm.osmDataBlock,
-            projectContextBlock,
-          },
-          modelOverride
-        );
-        // #region agent log
-        fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'50a938'},body:JSON.stringify({sessionId:'50a938',location:'ai-generate/route.ts:ai-done',message:'handleAnalyzeLocation completed',data:{aiMs:Date.now()-aiStart,totalMs:Date.now()-reqStart,hasVerdict:!!json?.verdict},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
-        // #endregion
-        console.log("[analyze-location] ai-done", { aiMs: Date.now() - aiStart, totalMs: Date.now() - reqStart });
-        json.coordinates = osm.centerCoordinates;
-        json.osmMeta = {
-          landmark: osm.landmark,
-          buildingTags: osm.buildingTags,
-          mapillaryUrl: osm.mapillaryUrl,
-          categorySlug: osm.categorySlug,
-        };
-        if (!json.catchment) {
-          json.catchment = {
-            radiusM: osm.radius,
-            poiDensity: osm.poiDensity,
-            transitStops: osm.transitStops,
-            confidence: "real",
-          };
-        }
-        const cann = computeCannibalization(
-          osm.centerCoordinates.lat,
-          osm.centerCoordinates.lon,
-          activeProject?.locationHistory as import("@/lib/db").LocationAnalysis[] | undefined
-        );
-        if (!json.cannibalization) {
-          json.cannibalization = { ...cann, confidence: "inferred" };
-        }
+        const json = await runLocationAnalysis({
+          city,
+          address,
+          businessDescription: businessDescription || String(activeProject?.overview || ""),
+          businessCategory,
+          radius: requestedRadius,
+          priceTier,
+          footfallDependency,
+          rentBudget,
+          activeProject,
+          userId,
+          projectId: genCtx.projectId,
+          modelOverride,
+          coordinates:
+            typeof lat === "number" && typeof lon === "number" ? { lat, lon } : undefined,
+        });
         return NextResponse.json({ success: true, analysis: json });
       } catch (e) {
         const detail = e instanceof Error ? e.message : String(e);
-        // #region agent log
-        fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3355b'},body:JSON.stringify({sessionId:'c3355b',location:'ai-generate/route.ts:analyze-location-error',message:'analyze-location failed',data:{error:detail,totalMs:Date.now()-reqStart},timestamp:Date.now(),hypothesisId:'H4'})}).catch(()=>{});
-        // #endregion
         console.error("[analyze-location] failed", { error: detail, totalMs: Date.now() - reqStart });
         await rollback();
         return NextResponse.json(
@@ -155,7 +111,7 @@ export async function POST(req: Request) {
         systemPrompt: system,
         maxTokens: 800,
         temperature: 0.4,
-        modelOverride: modelOverride || "google/gemini-2.5-flash",
+        modelOverride: modelOverride || TIER_LOCATION,
       });
       if (!result.success) {
         await rollback();
@@ -352,6 +308,26 @@ export async function POST(req: Request) {
       }
     }
 
+    if (action === "generate-market-research") {
+      const { researchType, geography, deep } = body;
+      if (!researchType) {
+        return NextResponse.json({ error: "researchType required" }, { status: 400 });
+      }
+      try {
+        const research = await handleMarketResearch({
+          ...genCtx,
+          businessIdea: businessIdea || genCtx.projectDescription || "",
+          geography,
+          researchType,
+          deep: !!deep,
+        });
+        return NextResponse.json({ success: true, research });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
+
     // Generic fallback — still use base prompt when featureKey provided
     if (!prompt) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
@@ -388,6 +364,9 @@ export async function POST(req: Request) {
       model: result.model,
       content: result.content,
     });
+      }
+    );
+
   } catch (error) {
     console.error("AI Generate Error:", error);
     await rollback();

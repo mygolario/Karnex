@@ -218,6 +218,8 @@ export async function POST(req: Request) {
               }
 
               // Agentic loop call: non-streaming, with tools (always hard tier for tool-use).
+              // web_search plugin lets the model ground answers that don't route through
+              // the grounded search_competitors tool (e.g. market trend questions).
               const { response: loopRes, model: loopModel } = await callCopilotChat({
                   messages: currentMessages,
                   tools: activeTools,
@@ -225,6 +227,7 @@ export async function POST(req: Request) {
                   temperature: 0.7,
                   signal: clientSignal,
                   tier: "hard",
+                  webSearch: true,
               });
               lastModelUsed = loopModel;
 

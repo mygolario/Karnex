@@ -1,6 +1,6 @@
 import "server-only";
 import { resolveAssembledPrompt, SCRIPT_TEMPLATE_INSTRUCTIONS } from "@/lib/ai/prompt-service";
-import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
+import { callOpenRouter, parseJsonFromAI, TIER_LOCATION, TIER_GROUNDED, TIER_GROUNDED_DEEP, MODEL_GEMINI_25_FLASH_LITE } from "@/lib/openrouter";
 import { normalizeLocationAnalysis } from "@/lib/location/normalize-analysis";
 import { multiPassGenerate } from "@/lib/ai/multi-pass";
 import type { PromptKey } from "@/lib/prompts/registry";
@@ -299,12 +299,12 @@ export async function handleAnalyzeLocation(
     timeoutMs: 52000,
     maxAttempts: 1,
     responseFormat: { type: "json_object" as const },
-    modelOverride: modelOverride || "google/gemini-2.5-flash",
+    modelOverride: modelOverride || TIER_LOCATION,
   };
 
   const modelsToTry = [
     callOpts.modelOverride!,
-    "google/gemini-2.5-flash-lite",
+    MODEL_GEMINI_25_FLASH_LITE,
   ].filter((m, i, arr) => arr.indexOf(m) === i);
 
   let lastError = "Location analysis generation failed";
@@ -370,10 +370,57 @@ export async function handlePitchSlideAI(
     scorecard: "Investor readiness scorecard in Persian. Return JSON: { \"score\": number, \"tips\": string[], \"summary\": string }",
   };
   const system = modePrompts[ctx.mode] || modePrompts.rewrite;
+  // Investor Readiness Scorecard benefits from live-web grounding (citations,
+  // market benchmarks) — route to Perplexity Sonar for that mode only.
+  const isScorecard = ctx.mode === "scorecard";
   const result = await callOpenRouter(ctx.slideContent, {
     systemPrompt: system,
     maxTokens: 1200,
     temperature: 0.5,
+    modelOverride: isScorecard ? TIER_GROUNDED : undefined,
+  });
+  if (!result.success) throw new Error(result.error);
+  return parseJsonFromAI(result.content!);
+}
+
+/**
+ * Grounded market research (TAM/SAM/SOM, competitors, trends, scorecard) via
+ * Perplexity Sonar — uses live web data with citations. The `deep` variant
+ * uses sonar-deep-research for higher-effort TAM/SAM/SOM dives.
+ */
+export async function handleMarketResearch(
+  ctx: GenerateContext & {
+    businessIdea: string;
+    geography?: string;
+    researchType: "tam" | "competitors" | "trends" | "scorecard";
+    deep?: boolean;
+  }
+) {
+  const model = ctx.deep ? TIER_GROUNDED_DEEP : TIER_GROUNDED;
+  const geo = ctx.geography || "ایران";
+
+  const typeInstruction: Record<typeof ctx.researchType, string> = {
+    tam: `TAM/SAM/SOM را بر اساس داده‌های زنده بازار ${geo} برآورد کن. JSON: { tam, sam, som, currency, assumptions[], sources[] }`,
+    competitors: `۳-۵ رقیب واقعی در بازار ${geo} با نام، وب‌سایت، نقاط قوت/ضعف و بخش بازار تحلیل کن. JSON: { competitors[{name,url,strength,weakness,marketShare}], sources[] }`,
+    trends: `۳-۵ روند فعلی بازار ${geo} مرتبط با ایده را با زمان‌بندی و منبع بیان کن. JSON: { trends[{title,direction,horizon,evidence}], sources[] }`,
+    scorecard: `آمادگی سرمایه‌گذاری ایده را با امتیاز ۰-۱۰۰ و توصیه‌های مبتنی بر داده بده. JSON: { score, dimensions[{name,score,note}], recommendations[], sources[] }`,
+  };
+
+  const system = `تو یک تحلیل‌گر بازار هستی که با داده‌های زنده وب و ارجاع (citation) پاسخ می‌دهی. فقط به فارسی و در قالب JSON معتبر پاسخ بده. هر ادعا را با منبع همراه کن.`;
+  const user = `پروژه: ${ctx.projectName || "پروژه جدید"}
+ایده کسب‌وکار: ${ctx.businessIdea}
+مخاطب: ${ctx.projectAudience || "نامشخص"}
+جغرافیا: ${geo}
+
+${typeInstruction[ctx.researchType]}`;
+
+  const result = await callOpenRouter(user, {
+    systemPrompt: system,
+    maxTokens: 4000,
+    temperature: 0.3,
+    timeoutMs: 60000,
+    modelOverride: model,
+    responseFormat: { type: "json_object" },
   });
   if (!result.success) throw new Error(result.error);
   return parseJsonFromAI(result.content!);

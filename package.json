@@ -10,7 +10,10 @@
     "lint": "eslint",
     "analyze": "cross-env ANALYZE=true next build",
     "deploy": "echo 'Deploy via Vercel integration'",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "kb:scrape": "node --env-file=.env.local --env-file=.env scripts/build-kb-corpus.ts",
+    "kb:chunk": "node --env-file=.env.local --env-file=.env scripts/chunk-kb.ts",
+    "kb:embed": "node --env-file=.env.local --env-file=.env scripts/embed-kb.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.989.0",

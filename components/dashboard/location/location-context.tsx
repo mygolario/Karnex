@@ -10,6 +10,7 @@ import {
   writeLocationSession,
   clearLocationDraft,
 } from "@/lib/location/session-state";
+import { reverseGeocodeAction } from "@/lib/location/reverse-geocode-action";
 
 interface LocationContextType {
   analysis: LocationAnalysis | null;
@@ -314,11 +315,22 @@ export function LocationProvider({ children }: { children: React.ReactNode }) {
   };
 
   const confirmPinAnalysisInternal = async (lat: number, lon: number) => {
-    const coordsStr = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
     setPendingPin(null);
+    // Reverse-geocode the dropped pin into a real Persian address via Neshan
+    // so the analysis prompt receives a human-readable address instead of raw
+    // "lat, lon" coordinates. Falls back to coords if Neshan is unavailable.
+    let addressForAnalysis = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+    try {
+      const rev = await reverseGeocodeAction(lat, lon);
+      if (rev.success && rev.address) {
+        addressForAnalysis = rev.address;
+      }
+    } catch {
+      // keep coordinate fallback
+    }
     await analyzeLocation(
       lastSearch.city,
-      coordsStr,
+      addressForAnalysis,
       lastSearch.businessDescription,
       lastSearch.options as Parameters<LocationContextType["analyzeLocation"]>[3]
     );

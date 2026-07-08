@@ -708,3 +708,22 @@ model DataExportRequest {
 
   @@index([userId])
 }
+
+/// Persian Knowledge Base chunk for RAG (scraped Iranian gov/regulatory sites).
+/// The `embedding` column uses pgvector and is managed via a raw SQL migration
+/// (Prisma represents it as Unsupported until first-class vector support lands).
+model KbChunk {
+  id         String                       @id @default(cuid())
+  source     String // "enamad" | "nic" | "samandehi" | "intamedia" | "qds" | "tax" | "kargozarsalari"
+  url        String
+  section    String?
+  text       String
+  chunkIndex Int                          @default(0)
+  verified   Boolean                      @default(false)
+  embedding  Unsupported("vector(1024)")?
+
+  createdAt DateTime @default(now())
+
+  @@index([source])
+  @@index([verified])
+}

@@ -29,6 +29,8 @@ export interface OsmFetchResult {
   buildingTags: string[];
   landmark?: string;
   mapillaryUrl?: string;
+  /** Which adapter produced this result. */
+  provider?: "neshan" | "osm";
 }
 
 export async function fetchLocationOsmData(params: {
@@ -166,6 +168,7 @@ ${osmLines || "هیچ رقیب نام‌دار یافت نشد"}`;
     buildingTags,
     landmark,
     mapillaryUrl,
+    provider: "osm",
   };
 }
 

@@ -543,6 +543,17 @@ exports.Prisma.DataExportRequestScalarFieldEnum = {
   expiresAt: 'expiresAt'
 };
 
+exports.Prisma.KbChunkScalarFieldEnum = {
+  id: 'id',
+  source: 'source',
+  url: 'url',
+  section: 'section',
+  text: 'text',
+  chunkIndex: 'chunkIndex',
+  verified: 'verified',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -607,7 +618,8 @@ exports.Prisma.ModelName = {
   LoginEvent: 'LoginEvent',
   UserApiKey: 'UserApiKey',
   UserIntegration: 'UserIntegration',
-  DataExportRequest: 'DataExportRequest'
+  DataExportRequest: 'DataExportRequest',
+  KbChunk: 'KbChunk'
 };
 
 /**

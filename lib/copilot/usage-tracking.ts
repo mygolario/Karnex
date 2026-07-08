@@ -14,10 +14,18 @@ import prisma from "@/lib/prisma";
 // are conservative approximations used only for internal cost dashboards.
 // Adjust as real billing data becomes available.
 const COST_PER_1M_TOKENS: Record<string, { input: number; output: number }> = {
-  "google/gemini-3.5-flash": { input: 0.075, output: 0.30 },
-  "google/gemini-3.1-flash-lite": { input: 0.02, output: 0.08 },
-  "google/gemini-2.5-flash": { input: 0.10, output: 0.40 },
-  "google/gemini-2.5-flash-lite": { input: 0.025, output: 0.10 },
+  "google/gemini-3.5-flash": { input: 1.5, output: 9 },
+  "google/gemini-3.1-flash-lite": { input: 0.25, output: 1.5 },
+  "google/gemini-2.5-flash": { input: 0.30, output: 2.5 },
+  "google/gemini-2.5-flash-lite": { input: 0.10, output: 0.40 },
+  "anthropic/claude-sonnet-5": { input: 2, output: 10 },
+  "perplexity/sonar": { input: 1, output: 1 },
+  "perplexity/sonar-pro": { input: 3, output: 15 },
+  "perplexity/sonar-deep-research": { input: 2, output: 8 },
+  "perplexity/sonar-reasoning-pro": { input: 2, output: 8 },
+  // Whisper STT is billed per second of audio, not per token — leave at 0 and
+  // rely on the audio duration if available; cost is tracked elsewhere.
+  "openai/whisper-large-v3": { input: 0, output: 0 },
 };
 
 const DEFAULT_COST = { input: 0.10, output: 0.40 };

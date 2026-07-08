@@ -178,6 +178,13 @@ export type UserIntegration = $Result.DefaultSelection<Prisma.$UserIntegrationPa
  * 
  */
 export type DataExportRequest = $Result.DefaultSelection<Prisma.$DataExportRequestPayload>
+/**
+ * Model KbChunk
+ * Persian Knowledge Base chunk for RAG (scraped Iranian gov/regulatory sites).
+ * The `embedding` column uses pgvector and is managed via a raw SQL migration
+ * (Prisma represents it as Unsupported until first-class vector support lands).
+ */
+export type KbChunk = $Result.DefaultSelection<Prisma.$KbChunkPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -625,6 +632,16 @@ export class PrismaClient<
     * ```
     */
   get dataExportRequest(): Prisma.DataExportRequestDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.kbChunk`: Exposes CRUD operations for the **KbChunk** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more KbChunks
+    * const kbChunks = await prisma.kbChunk.findMany()
+    * ```
+    */
+  get kbChunk(): Prisma.KbChunkDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1091,7 +1108,8 @@ export namespace Prisma {
     LoginEvent: 'LoginEvent',
     UserApiKey: 'UserApiKey',
     UserIntegration: 'UserIntegration',
-    DataExportRequest: 'DataExportRequest'
+    DataExportRequest: 'DataExportRequest',
+    KbChunk: 'KbChunk'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1107,7 +1125,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "subscription" | "transaction" | "mediaItem" | "systemLog" | "feedback" | "projectMember" | "canvas" | "card" | "comment" | "canvasVersion" | "userProfile" | "projectMemory" | "chatConversation" | "chatMessage" | "aiFeedback" | "artifact" | "aiActionLog" | "aiInsight" | "aiUsage" | "customerBotChannel" | "customerBotConversation" | "customerBotMessage" | "script" | "userSession" | "loginEvent" | "userApiKey" | "userIntegration" | "dataExportRequest"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "subscription" | "transaction" | "mediaItem" | "systemLog" | "feedback" | "projectMember" | "canvas" | "card" | "comment" | "canvasVersion" | "userProfile" | "projectMemory" | "chatConversation" | "chatMessage" | "aiFeedback" | "artifact" | "aiActionLog" | "aiInsight" | "aiUsage" | "customerBotChannel" | "customerBotConversation" | "customerBotMessage" | "script" | "userSession" | "loginEvent" | "userApiKey" | "userIntegration" | "dataExportRequest" | "kbChunk"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3553,6 +3571,80 @@ export namespace Prisma {
           }
         }
       }
+      KbChunk: {
+        payload: Prisma.$KbChunkPayload<ExtArgs>
+        fields: Prisma.KbChunkFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.KbChunkFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KbChunkPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.KbChunkFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KbChunkPayload>
+          }
+          findFirst: {
+            args: Prisma.KbChunkFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KbChunkPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.KbChunkFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KbChunkPayload>
+          }
+          findMany: {
+            args: Prisma.KbChunkFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KbChunkPayload>[]
+          }
+          create: {
+            args: Prisma.KbChunkCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KbChunkPayload>
+          }
+          createMany: {
+            args: Prisma.KbChunkCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.KbChunkCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KbChunkPayload>[]
+          }
+          delete: {
+            args: Prisma.KbChunkDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KbChunkPayload>
+          }
+          update: {
+            args: Prisma.KbChunkUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KbChunkPayload>
+          }
+          deleteMany: {
+            args: Prisma.KbChunkDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.KbChunkUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.KbChunkUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KbChunkPayload>[]
+          }
+          upsert: {
+            args: Prisma.KbChunkUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$KbChunkPayload>
+          }
+          aggregate: {
+            args: Prisma.KbChunkAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateKbChunk>
+          }
+          groupBy: {
+            args: Prisma.KbChunkGroupByArgs<ExtArgs>
+            result: $Utils.Optional<KbChunkGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.KbChunkCountArgs<ExtArgs>
+            result: $Utils.Optional<KbChunkCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -3694,6 +3786,7 @@ export namespace Prisma {
     userApiKey?: UserApiKeyOmit
     userIntegration?: UserIntegrationOmit
     dataExportRequest?: DataExportRequestOmit
+    kbChunk?: KbChunkOmit
   }
 
   /* Types for Logging */
@@ -42527,6 +42620,1074 @@ export namespace Prisma {
 
 
   /**
+   * Model KbChunk
+   */
+
+  export type AggregateKbChunk = {
+    _count: KbChunkCountAggregateOutputType | null
+    _avg: KbChunkAvgAggregateOutputType | null
+    _sum: KbChunkSumAggregateOutputType | null
+    _min: KbChunkMinAggregateOutputType | null
+    _max: KbChunkMaxAggregateOutputType | null
+  }
+
+  export type KbChunkAvgAggregateOutputType = {
+    chunkIndex: number | null
+  }
+
+  export type KbChunkSumAggregateOutputType = {
+    chunkIndex: number | null
+  }
+
+  export type KbChunkMinAggregateOutputType = {
+    id: string | null
+    source: string | null
+    url: string | null
+    section: string | null
+    text: string | null
+    chunkIndex: number | null
+    verified: boolean | null
+    createdAt: Date | null
+  }
+
+  export type KbChunkMaxAggregateOutputType = {
+    id: string | null
+    source: string | null
+    url: string | null
+    section: string | null
+    text: string | null
+    chunkIndex: number | null
+    verified: boolean | null
+    createdAt: Date | null
+  }
+
+  export type KbChunkCountAggregateOutputType = {
+    id: number
+    source: number
+    url: number
+    section: number
+    text: number
+    chunkIndex: number
+    verified: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type KbChunkAvgAggregateInputType = {
+    chunkIndex?: true
+  }
+
+  export type KbChunkSumAggregateInputType = {
+    chunkIndex?: true
+  }
+
+  export type KbChunkMinAggregateInputType = {
+    id?: true
+    source?: true
+    url?: true
+    section?: true
+    text?: true
+    chunkIndex?: true
+    verified?: true
+    createdAt?: true
+  }
+
+  export type KbChunkMaxAggregateInputType = {
+    id?: true
+    source?: true
+    url?: true
+    section?: true
+    text?: true
+    chunkIndex?: true
+    verified?: true
+    createdAt?: true
+  }
+
+  export type KbChunkCountAggregateInputType = {
+    id?: true
+    source?: true
+    url?: true
+    section?: true
+    text?: true
+    chunkIndex?: true
+    verified?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type KbChunkAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KbChunk to aggregate.
+     */
+    where?: KbChunkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KbChunks to fetch.
+     */
+    orderBy?: KbChunkOrderByWithRelationInput | KbChunkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: KbChunkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KbChunks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KbChunks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned KbChunks
+    **/
+    _count?: true | KbChunkCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: KbChunkAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: KbChunkSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: KbChunkMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: KbChunkMaxAggregateInputType
+  }
+
+  export type GetKbChunkAggregateType<T extends KbChunkAggregateArgs> = {
+        [P in keyof T & keyof AggregateKbChunk]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateKbChunk[P]>
+      : GetScalarType<T[P], AggregateKbChunk[P]>
+  }
+
+
+
+
+  export type KbChunkGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: KbChunkWhereInput
+    orderBy?: KbChunkOrderByWithAggregationInput | KbChunkOrderByWithAggregationInput[]
+    by: KbChunkScalarFieldEnum[] | KbChunkScalarFieldEnum
+    having?: KbChunkScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: KbChunkCountAggregateInputType | true
+    _avg?: KbChunkAvgAggregateInputType
+    _sum?: KbChunkSumAggregateInputType
+    _min?: KbChunkMinAggregateInputType
+    _max?: KbChunkMaxAggregateInputType
+  }
+
+  export type KbChunkGroupByOutputType = {
+    id: string
+    source: string
+    url: string
+    section: string | null
+    text: string
+    chunkIndex: number
+    verified: boolean
+    createdAt: Date
+    _count: KbChunkCountAggregateOutputType | null
+    _avg: KbChunkAvgAggregateOutputType | null
+    _sum: KbChunkSumAggregateOutputType | null
+    _min: KbChunkMinAggregateOutputType | null
+    _max: KbChunkMaxAggregateOutputType | null
+  }
+
+  type GetKbChunkGroupByPayload<T extends KbChunkGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<KbChunkGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof KbChunkGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], KbChunkGroupByOutputType[P]>
+            : GetScalarType<T[P], KbChunkGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type KbChunkSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    source?: boolean
+    url?: boolean
+    section?: boolean
+    text?: boolean
+    chunkIndex?: boolean
+    verified?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["kbChunk"]>
+
+  export type KbChunkSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    source?: boolean
+    url?: boolean
+    section?: boolean
+    text?: boolean
+    chunkIndex?: boolean
+    verified?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["kbChunk"]>
+
+  export type KbChunkSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    source?: boolean
+    url?: boolean
+    section?: boolean
+    text?: boolean
+    chunkIndex?: boolean
+    verified?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["kbChunk"]>
+
+  export type KbChunkSelectScalar = {
+    id?: boolean
+    source?: boolean
+    url?: boolean
+    section?: boolean
+    text?: boolean
+    chunkIndex?: boolean
+    verified?: boolean
+    createdAt?: boolean
+  }
+
+  export type KbChunkOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "source" | "url" | "section" | "text" | "chunkIndex" | "verified" | "createdAt", ExtArgs["result"]["kbChunk"]>
+
+  export type $KbChunkPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "KbChunk"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      source: string
+      url: string
+      section: string | null
+      text: string
+      chunkIndex: number
+      verified: boolean
+      createdAt: Date
+    }, ExtArgs["result"]["kbChunk"]>
+    composites: {}
+  }
+
+  type KbChunkGetPayload<S extends boolean | null | undefined | KbChunkDefaultArgs> = $Result.GetResult<Prisma.$KbChunkPayload, S>
+
+  type KbChunkCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<KbChunkFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: KbChunkCountAggregateInputType | true
+    }
+
+  export interface KbChunkDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['KbChunk'], meta: { name: 'KbChunk' } }
+    /**
+     * Find zero or one KbChunk that matches the filter.
+     * @param {KbChunkFindUniqueArgs} args - Arguments to find a KbChunk
+     * @example
+     * // Get one KbChunk
+     * const kbChunk = await prisma.kbChunk.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends KbChunkFindUniqueArgs>(args: SelectSubset<T, KbChunkFindUniqueArgs<ExtArgs>>): Prisma__KbChunkClient<$Result.GetResult<Prisma.$KbChunkPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one KbChunk that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {KbChunkFindUniqueOrThrowArgs} args - Arguments to find a KbChunk
+     * @example
+     * // Get one KbChunk
+     * const kbChunk = await prisma.kbChunk.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends KbChunkFindUniqueOrThrowArgs>(args: SelectSubset<T, KbChunkFindUniqueOrThrowArgs<ExtArgs>>): Prisma__KbChunkClient<$Result.GetResult<Prisma.$KbChunkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KbChunk that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KbChunkFindFirstArgs} args - Arguments to find a KbChunk
+     * @example
+     * // Get one KbChunk
+     * const kbChunk = await prisma.kbChunk.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends KbChunkFindFirstArgs>(args?: SelectSubset<T, KbChunkFindFirstArgs<ExtArgs>>): Prisma__KbChunkClient<$Result.GetResult<Prisma.$KbChunkPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first KbChunk that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KbChunkFindFirstOrThrowArgs} args - Arguments to find a KbChunk
+     * @example
+     * // Get one KbChunk
+     * const kbChunk = await prisma.kbChunk.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends KbChunkFindFirstOrThrowArgs>(args?: SelectSubset<T, KbChunkFindFirstOrThrowArgs<ExtArgs>>): Prisma__KbChunkClient<$Result.GetResult<Prisma.$KbChunkPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more KbChunks that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KbChunkFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all KbChunks
+     * const kbChunks = await prisma.kbChunk.findMany()
+     * 
+     * // Get first 10 KbChunks
+     * const kbChunks = await prisma.kbChunk.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const kbChunkWithIdOnly = await prisma.kbChunk.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends KbChunkFindManyArgs>(args?: SelectSubset<T, KbChunkFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KbChunkPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a KbChunk.
+     * @param {KbChunkCreateArgs} args - Arguments to create a KbChunk.
+     * @example
+     * // Create one KbChunk
+     * const KbChunk = await prisma.kbChunk.create({
+     *   data: {
+     *     // ... data to create a KbChunk
+     *   }
+     * })
+     * 
+     */
+    create<T extends KbChunkCreateArgs>(args: SelectSubset<T, KbChunkCreateArgs<ExtArgs>>): Prisma__KbChunkClient<$Result.GetResult<Prisma.$KbChunkPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many KbChunks.
+     * @param {KbChunkCreateManyArgs} args - Arguments to create many KbChunks.
+     * @example
+     * // Create many KbChunks
+     * const kbChunk = await prisma.kbChunk.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends KbChunkCreateManyArgs>(args?: SelectSubset<T, KbChunkCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many KbChunks and returns the data saved in the database.
+     * @param {KbChunkCreateManyAndReturnArgs} args - Arguments to create many KbChunks.
+     * @example
+     * // Create many KbChunks
+     * const kbChunk = await prisma.kbChunk.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many KbChunks and only return the `id`
+     * const kbChunkWithIdOnly = await prisma.kbChunk.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends KbChunkCreateManyAndReturnArgs>(args?: SelectSubset<T, KbChunkCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KbChunkPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a KbChunk.
+     * @param {KbChunkDeleteArgs} args - Arguments to delete one KbChunk.
+     * @example
+     * // Delete one KbChunk
+     * const KbChunk = await prisma.kbChunk.delete({
+     *   where: {
+     *     // ... filter to delete one KbChunk
+     *   }
+     * })
+     * 
+     */
+    delete<T extends KbChunkDeleteArgs>(args: SelectSubset<T, KbChunkDeleteArgs<ExtArgs>>): Prisma__KbChunkClient<$Result.GetResult<Prisma.$KbChunkPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one KbChunk.
+     * @param {KbChunkUpdateArgs} args - Arguments to update one KbChunk.
+     * @example
+     * // Update one KbChunk
+     * const kbChunk = await prisma.kbChunk.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends KbChunkUpdateArgs>(args: SelectSubset<T, KbChunkUpdateArgs<ExtArgs>>): Prisma__KbChunkClient<$Result.GetResult<Prisma.$KbChunkPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more KbChunks.
+     * @param {KbChunkDeleteManyArgs} args - Arguments to filter KbChunks to delete.
+     * @example
+     * // Delete a few KbChunks
+     * const { count } = await prisma.kbChunk.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends KbChunkDeleteManyArgs>(args?: SelectSubset<T, KbChunkDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KbChunks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KbChunkUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many KbChunks
+     * const kbChunk = await prisma.kbChunk.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends KbChunkUpdateManyArgs>(args: SelectSubset<T, KbChunkUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more KbChunks and returns the data updated in the database.
+     * @param {KbChunkUpdateManyAndReturnArgs} args - Arguments to update many KbChunks.
+     * @example
+     * // Update many KbChunks
+     * const kbChunk = await prisma.kbChunk.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more KbChunks and only return the `id`
+     * const kbChunkWithIdOnly = await prisma.kbChunk.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends KbChunkUpdateManyAndReturnArgs>(args: SelectSubset<T, KbChunkUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$KbChunkPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one KbChunk.
+     * @param {KbChunkUpsertArgs} args - Arguments to update or create a KbChunk.
+     * @example
+     * // Update or create a KbChunk
+     * const kbChunk = await prisma.kbChunk.upsert({
+     *   create: {
+     *     // ... data to create a KbChunk
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the KbChunk we want to update
+     *   }
+     * })
+     */
+    upsert<T extends KbChunkUpsertArgs>(args: SelectSubset<T, KbChunkUpsertArgs<ExtArgs>>): Prisma__KbChunkClient<$Result.GetResult<Prisma.$KbChunkPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of KbChunks.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KbChunkCountArgs} args - Arguments to filter KbChunks to count.
+     * @example
+     * // Count the number of KbChunks
+     * const count = await prisma.kbChunk.count({
+     *   where: {
+     *     // ... the filter for the KbChunks we want to count
+     *   }
+     * })
+    **/
+    count<T extends KbChunkCountArgs>(
+      args?: Subset<T, KbChunkCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], KbChunkCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a KbChunk.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KbChunkAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends KbChunkAggregateArgs>(args: Subset<T, KbChunkAggregateArgs>): Prisma.PrismaPromise<GetKbChunkAggregateType<T>>
+
+    /**
+     * Group by KbChunk.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {KbChunkGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends KbChunkGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: KbChunkGroupByArgs['orderBy'] }
+        : { orderBy?: KbChunkGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, KbChunkGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetKbChunkGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the KbChunk model
+   */
+  readonly fields: KbChunkFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for KbChunk.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__KbChunkClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the KbChunk model
+   */
+  interface KbChunkFieldRefs {
+    readonly id: FieldRef<"KbChunk", 'String'>
+    readonly source: FieldRef<"KbChunk", 'String'>
+    readonly url: FieldRef<"KbChunk", 'String'>
+    readonly section: FieldRef<"KbChunk", 'String'>
+    readonly text: FieldRef<"KbChunk", 'String'>
+    readonly chunkIndex: FieldRef<"KbChunk", 'Int'>
+    readonly verified: FieldRef<"KbChunk", 'Boolean'>
+    readonly createdAt: FieldRef<"KbChunk", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * KbChunk findUnique
+   */
+  export type KbChunkFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+    /**
+     * Filter, which KbChunk to fetch.
+     */
+    where: KbChunkWhereUniqueInput
+  }
+
+  /**
+   * KbChunk findUniqueOrThrow
+   */
+  export type KbChunkFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+    /**
+     * Filter, which KbChunk to fetch.
+     */
+    where: KbChunkWhereUniqueInput
+  }
+
+  /**
+   * KbChunk findFirst
+   */
+  export type KbChunkFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+    /**
+     * Filter, which KbChunk to fetch.
+     */
+    where?: KbChunkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KbChunks to fetch.
+     */
+    orderBy?: KbChunkOrderByWithRelationInput | KbChunkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KbChunks.
+     */
+    cursor?: KbChunkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KbChunks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KbChunks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KbChunks.
+     */
+    distinct?: KbChunkScalarFieldEnum | KbChunkScalarFieldEnum[]
+  }
+
+  /**
+   * KbChunk findFirstOrThrow
+   */
+  export type KbChunkFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+    /**
+     * Filter, which KbChunk to fetch.
+     */
+    where?: KbChunkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KbChunks to fetch.
+     */
+    orderBy?: KbChunkOrderByWithRelationInput | KbChunkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for KbChunks.
+     */
+    cursor?: KbChunkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KbChunks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KbChunks.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of KbChunks.
+     */
+    distinct?: KbChunkScalarFieldEnum | KbChunkScalarFieldEnum[]
+  }
+
+  /**
+   * KbChunk findMany
+   */
+  export type KbChunkFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+    /**
+     * Filter, which KbChunks to fetch.
+     */
+    where?: KbChunkWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of KbChunks to fetch.
+     */
+    orderBy?: KbChunkOrderByWithRelationInput | KbChunkOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing KbChunks.
+     */
+    cursor?: KbChunkWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` KbChunks from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` KbChunks.
+     */
+    skip?: number
+    distinct?: KbChunkScalarFieldEnum | KbChunkScalarFieldEnum[]
+  }
+
+  /**
+   * KbChunk create
+   */
+  export type KbChunkCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+    /**
+     * The data needed to create a KbChunk.
+     */
+    data: XOR<KbChunkCreateInput, KbChunkUncheckedCreateInput>
+  }
+
+  /**
+   * KbChunk createMany
+   */
+  export type KbChunkCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many KbChunks.
+     */
+    data: KbChunkCreateManyInput | KbChunkCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * KbChunk createManyAndReturn
+   */
+  export type KbChunkCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+    /**
+     * The data used to create many KbChunks.
+     */
+    data: KbChunkCreateManyInput | KbChunkCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * KbChunk update
+   */
+  export type KbChunkUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+    /**
+     * The data needed to update a KbChunk.
+     */
+    data: XOR<KbChunkUpdateInput, KbChunkUncheckedUpdateInput>
+    /**
+     * Choose, which KbChunk to update.
+     */
+    where: KbChunkWhereUniqueInput
+  }
+
+  /**
+   * KbChunk updateMany
+   */
+  export type KbChunkUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update KbChunks.
+     */
+    data: XOR<KbChunkUpdateManyMutationInput, KbChunkUncheckedUpdateManyInput>
+    /**
+     * Filter which KbChunks to update
+     */
+    where?: KbChunkWhereInput
+    /**
+     * Limit how many KbChunks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * KbChunk updateManyAndReturn
+   */
+  export type KbChunkUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+    /**
+     * The data used to update KbChunks.
+     */
+    data: XOR<KbChunkUpdateManyMutationInput, KbChunkUncheckedUpdateManyInput>
+    /**
+     * Filter which KbChunks to update
+     */
+    where?: KbChunkWhereInput
+    /**
+     * Limit how many KbChunks to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * KbChunk upsert
+   */
+  export type KbChunkUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+    /**
+     * The filter to search for the KbChunk to update in case it exists.
+     */
+    where: KbChunkWhereUniqueInput
+    /**
+     * In case the KbChunk found by the `where` argument doesn't exist, create a new KbChunk with this data.
+     */
+    create: XOR<KbChunkCreateInput, KbChunkUncheckedCreateInput>
+    /**
+     * In case the KbChunk was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<KbChunkUpdateInput, KbChunkUncheckedUpdateInput>
+  }
+
+  /**
+   * KbChunk delete
+   */
+  export type KbChunkDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+    /**
+     * Filter which KbChunk to delete.
+     */
+    where: KbChunkWhereUniqueInput
+  }
+
+  /**
+   * KbChunk deleteMany
+   */
+  export type KbChunkDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which KbChunks to delete
+     */
+    where?: KbChunkWhereInput
+    /**
+     * Limit how many KbChunks to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * KbChunk without action
+   */
+  export type KbChunkDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the KbChunk
+     */
+    select?: KbChunkSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the KbChunk
+     */
+    omit?: KbChunkOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -43060,6 +44221,20 @@ export namespace Prisma {
   };
 
   export type DataExportRequestScalarFieldEnum = (typeof DataExportRequestScalarFieldEnum)[keyof typeof DataExportRequestScalarFieldEnum]
+
+
+  export const KbChunkScalarFieldEnum: {
+    id: 'id',
+    source: 'source',
+    url: 'url',
+    section: 'section',
+    text: 'text',
+    chunkIndex: 'chunkIndex',
+    verified: 'verified',
+    createdAt: 'createdAt'
+  };
+
+  export type KbChunkScalarFieldEnum = (typeof KbChunkScalarFieldEnum)[keyof typeof KbChunkScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -45955,6 +47130,75 @@ export namespace Prisma {
     error?: StringNullableWithAggregatesFilter<"DataExportRequest"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"DataExportRequest"> | Date | string
     expiresAt?: DateTimeNullableWithAggregatesFilter<"DataExportRequest"> | Date | string | null
+  }
+
+  export type KbChunkWhereInput = {
+    AND?: KbChunkWhereInput | KbChunkWhereInput[]
+    OR?: KbChunkWhereInput[]
+    NOT?: KbChunkWhereInput | KbChunkWhereInput[]
+    id?: StringFilter<"KbChunk"> | string
+    source?: StringFilter<"KbChunk"> | string
+    url?: StringFilter<"KbChunk"> | string
+    section?: StringNullableFilter<"KbChunk"> | string | null
+    text?: StringFilter<"KbChunk"> | string
+    chunkIndex?: IntFilter<"KbChunk"> | number
+    verified?: BoolFilter<"KbChunk"> | boolean
+    createdAt?: DateTimeFilter<"KbChunk"> | Date | string
+  }
+
+  export type KbChunkOrderByWithRelationInput = {
+    id?: SortOrder
+    source?: SortOrder
+    url?: SortOrder
+    section?: SortOrderInput | SortOrder
+    text?: SortOrder
+    chunkIndex?: SortOrder
+    verified?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type KbChunkWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: KbChunkWhereInput | KbChunkWhereInput[]
+    OR?: KbChunkWhereInput[]
+    NOT?: KbChunkWhereInput | KbChunkWhereInput[]
+    source?: StringFilter<"KbChunk"> | string
+    url?: StringFilter<"KbChunk"> | string
+    section?: StringNullableFilter<"KbChunk"> | string | null
+    text?: StringFilter<"KbChunk"> | string
+    chunkIndex?: IntFilter<"KbChunk"> | number
+    verified?: BoolFilter<"KbChunk"> | boolean
+    createdAt?: DateTimeFilter<"KbChunk"> | Date | string
+  }, "id">
+
+  export type KbChunkOrderByWithAggregationInput = {
+    id?: SortOrder
+    source?: SortOrder
+    url?: SortOrder
+    section?: SortOrderInput | SortOrder
+    text?: SortOrder
+    chunkIndex?: SortOrder
+    verified?: SortOrder
+    createdAt?: SortOrder
+    _count?: KbChunkCountOrderByAggregateInput
+    _avg?: KbChunkAvgOrderByAggregateInput
+    _max?: KbChunkMaxOrderByAggregateInput
+    _min?: KbChunkMinOrderByAggregateInput
+    _sum?: KbChunkSumOrderByAggregateInput
+  }
+
+  export type KbChunkScalarWhereWithAggregatesInput = {
+    AND?: KbChunkScalarWhereWithAggregatesInput | KbChunkScalarWhereWithAggregatesInput[]
+    OR?: KbChunkScalarWhereWithAggregatesInput[]
+    NOT?: KbChunkScalarWhereWithAggregatesInput | KbChunkScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"KbChunk"> | string
+    source?: StringWithAggregatesFilter<"KbChunk"> | string
+    url?: StringWithAggregatesFilter<"KbChunk"> | string
+    section?: StringNullableWithAggregatesFilter<"KbChunk"> | string | null
+    text?: StringWithAggregatesFilter<"KbChunk"> | string
+    chunkIndex?: IntWithAggregatesFilter<"KbChunk"> | number
+    verified?: BoolWithAggregatesFilter<"KbChunk"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"KbChunk"> | Date | string
   }
 
   export type UserCreateInput = {
@@ -49035,6 +50279,83 @@ export namespace Prisma {
     expiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
+  export type KbChunkCreateInput = {
+    id?: string
+    source: string
+    url: string
+    section?: string | null
+    text: string
+    chunkIndex?: number
+    verified?: boolean
+    createdAt?: Date | string
+  }
+
+  export type KbChunkUncheckedCreateInput = {
+    id?: string
+    source: string
+    url: string
+    section?: string | null
+    text: string
+    chunkIndex?: number
+    verified?: boolean
+    createdAt?: Date | string
+  }
+
+  export type KbChunkUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    text?: StringFieldUpdateOperationsInput | string
+    chunkIndex?: IntFieldUpdateOperationsInput | number
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KbChunkUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    text?: StringFieldUpdateOperationsInput | string
+    chunkIndex?: IntFieldUpdateOperationsInput | number
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KbChunkCreateManyInput = {
+    id?: string
+    source: string
+    url: string
+    section?: string | null
+    text: string
+    chunkIndex?: number
+    verified?: boolean
+    createdAt?: Date | string
+  }
+
+  export type KbChunkUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    text?: StringFieldUpdateOperationsInput | string
+    chunkIndex?: IntFieldUpdateOperationsInput | number
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type KbChunkUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    source?: StringFieldUpdateOperationsInput | string
+    url?: StringFieldUpdateOperationsInput | string
+    section?: NullableStringFieldUpdateOperationsInput | string | null
+    text?: StringFieldUpdateOperationsInput | string
+    chunkIndex?: IntFieldUpdateOperationsInput | number
+    verified?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -51005,6 +52326,47 @@ export namespace Prisma {
 
   export type DataExportRequestSumOrderByAggregateInput = {
     sizeBytes?: SortOrder
+  }
+
+  export type KbChunkCountOrderByAggregateInput = {
+    id?: SortOrder
+    source?: SortOrder
+    url?: SortOrder
+    section?: SortOrder
+    text?: SortOrder
+    chunkIndex?: SortOrder
+    verified?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type KbChunkAvgOrderByAggregateInput = {
+    chunkIndex?: SortOrder
+  }
+
+  export type KbChunkMaxOrderByAggregateInput = {
+    id?: SortOrder
+    source?: SortOrder
+    url?: SortOrder
+    section?: SortOrder
+    text?: SortOrder
+    chunkIndex?: SortOrder
+    verified?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type KbChunkMinOrderByAggregateInput = {
+    id?: SortOrder
+    source?: SortOrder
+    url?: SortOrder
+    section?: SortOrder
+    text?: SortOrder
+    chunkIndex?: SortOrder
+    verified?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type KbChunkSumOrderByAggregateInput = {
+    chunkIndex?: SortOrder
   }
 
   export type AccountCreateNestedManyWithoutUserInput = {

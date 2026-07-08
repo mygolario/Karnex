@@ -5,6 +5,11 @@ const serverSchema = z.object({
   DIRECT_URL: z.string().min(1).optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
   OPENROUTER_API_KEY: z.string().min(1).optional(),
+  OPENROUTER_WEB_SEARCH_ENGINE: z.string().optional(),
+  SERPER_API_KEY: z.string().min(1).optional(),
+  FIRECRAWL_API_KEY: z.string().min(1).optional(),
+  HUGGINGFACE_API_TOKEN: z.string().min(1).optional(),
+  NESHAN_API_KEY: z.string().min(1).optional(),
   REDIS_URL: z.string().optional(),
   SENTRY_DSN: z.string().url().optional(),
 });

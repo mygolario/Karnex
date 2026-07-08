@@ -1,17 +1,21 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/session';
+import { checkAILimit } from '@/lib/ai-limit-middleware';
+import { recordAiUsage } from '@/lib/copilot/usage-tracking';
+import { MODEL_WHISPER_LARGE_V3 } from '@/lib/openrouter';
 
 export async function POST(req: Request) {
-  try {
-    const session = await auth();
-    if (!session || !session.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const limitResult = await checkAILimit();
+  if (limitResult.errorResponse) return limitResult.errorResponse;
+  const rollback = limitResult.rollback;
+  const userId = limitResult.user?.id;
 
+  try {
     const formData = await req.formData();
     const file = formData.get('file') as File;
 
     if (!file) {
+      await rollback();
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
@@ -38,6 +42,7 @@ export async function POST(req: Request) {
 
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
+      await rollback();
       return NextResponse.json({ error: "OpenRouter API Key not configured" }, { status: 500 });
     }
 
@@ -50,7 +55,7 @@ export async function POST(req: Request) {
         "X-Title": "Karnex"
       },
       body: JSON.stringify({
-        model: "openai/whisper-large-v3",
+        model: MODEL_WHISPER_LARGE_V3,
         input_audio: {
           data: base64Audio,
           format: format
@@ -62,14 +67,31 @@ export async function POST(req: Request) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("OpenRouter Whisper error:", response.status, errorText);
+      await rollback();
       return NextResponse.json({ error: "خطا در تبدیل صدا به متن" }, { status: response.status });
     }
 
     const data = await response.json();
+    // Record STT usage for cost analytics. The audio transcription endpoint
+    // may not return token counts; record what is available (often 0 tokens,
+    // with the audio seconds being the real billing unit).
+    if (userId) {
+      void recordAiUsage({
+        userId,
+        model: MODEL_WHISPER_LARGE_V3,
+        provider: 'openrouter',
+        feature: 'stt',
+        promptTokens: data?.usage?.prompt_tokens ?? 0,
+        completionTokens: data?.usage?.completion_tokens ?? 0,
+        totalTokens: data?.usage?.total_tokens ?? 0,
+        success: true,
+      });
+    }
     return NextResponse.json({ transcript: data.text });
 
   } catch (error: any) {
     console.error("STT route error:", error);
+    await rollback();
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

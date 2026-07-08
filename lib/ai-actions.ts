@@ -1,7 +1,8 @@
 "use server";
 
-import { callOpenRouter, parseJsonFromAI, TEXT_MODELS } from "@/lib/openrouter";
+import { callOpenRouter, parseJsonFromAI, TEXT_MODELS, TIER_DEFAULT, TIER_GROUNDED } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
+import { runWithAiUsage } from "@/lib/ai-usage-context";
 import { getPrompt } from "@/lib/prompts/registry";
 import {
   callAIWithValidation,
@@ -37,11 +38,14 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
     const { system, user } = getPrompt("suggestAudience", { productIdea });
 
     try {
-      const parsed = await callAIWithValidation(
-        user,
-        { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 25000 },
-        SuggestAudienceSchema,
-        1
+      const parsed = await runWithAiUsage(
+        { userId: limitResult.user?.id || "anonymous", feature: "suggestAudience" },
+        () => callAIWithValidation(
+          user,
+          { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 25000 },
+          SuggestAudienceSchema,
+          1
+        )
       );
       return {
         success: true,
@@ -79,19 +83,19 @@ export async function suggestProjectNameAction(idea: string): Promise<ActionResp
     const { system, user } = getPrompt("suggestName", { idea });
 
     try {
-      const parsed = await callAIWithValidation(
-        user,
-        { systemPrompt: system, maxTokens: 800, temperature: 0.7, timeoutMs: 20000 },
-        SuggestNameSchema,
-        2
+      const parsed = await runWithAiUsage(
+        { userId: limitResult.user?.id || "anonymous", feature: "suggestName" },
+        () => callAIWithValidation(
+          user,
+          { systemPrompt: system, maxTokens: 800, temperature: 0.7, timeoutMs: 20000 },
+          SuggestNameSchema,
+          2
+        )
       );
       const names = (parsed.names || []).map((n) => n.trim()).filter(Boolean).slice(0, 6);
       if (names.length < 3) {
         throw new Error(`AI returned insufficient names (${names.length})`);
       }
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e3898a'},body:JSON.stringify({sessionId:'e3898a',location:'ai-actions.ts:suggestProjectNameAction',message:'AI success',data:{source:'ai',names,ideaPreview:idea.slice(0,200)},timestamp:Date.now(),hypothesisId:'H1-H5'})}).catch(()=>{});
-      // #endregion
       return {
         success: true,
         data: { names }
@@ -100,9 +104,6 @@ export async function suggestProjectNameAction(idea: string): Promise<ActionResp
       console.warn("AI Validation failed for suggestProjectNameAction, using fallback:", err);
       await rollback();
       const fallbackNames = generateFallbackNames(idea);
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e3898a'},body:JSON.stringify({sessionId:'e3898a',location:'ai-actions.ts:suggestProjectNameAction',message:'AI fallback',data:{source:'fallback',names:fallbackNames,error:String(err),ideaPreview:idea.slice(0,200)},timestamp:Date.now(),hypothesisId:'H1-H2'})}).catch(()=>{});
-      // #endregion
       return { success: true, data: { names: fallbackNames } };
     }
 
@@ -184,9 +185,6 @@ function generateFallbackNames(idea: string): string[] {
   }
 
   const result = suggestions.slice(0, 6);
-  // #region agent log
-  fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e3898a'},body:JSON.stringify({sessionId:'e3898a',location:'ai-actions.ts:generateFallbackNames',message:'fallback generated',data:{userName,result},timestamp:Date.now(),hypothesisId:'H2',runId:'post-fix'})}).catch(()=>{});
-  // #endregion
   return result;
 }
 
@@ -210,11 +208,14 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
     ];
 
     try {
-      const parsed = await callAIWithValidation(
-        user,
-        { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 20000 },
-        BreakTaskSchema,
-        1
+      const parsed = await runWithAiUsage(
+        { userId: limitResult.user?.id || "anonymous", feature: "breakTask" },
+        () => callAIWithValidation(
+          user,
+          { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 20000 },
+          BreakTaskSchema,
+          1
+        )
       );
       return { success: true, data: parsed };
     } catch (err) {
@@ -234,14 +235,16 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
 
 export async function analyzeCompetitorsAction(data: { projectName: string, projectIdea: string, audience: string }, options?: { skipLimitCheck?: boolean }): Promise<ActionResponse<any>> {
     let rollback = async () => {};
+    let usageUserId: string | undefined;
     try {
         // When invoked from the Copilot agent loop, the outer request already
-        // incremented the monthly quota — skip a second charge to avoid
-        // double-counting a single user message.
+        // incremented the monthly quota and records usage aggregated there —
+        // skip a second charge and a second usage record to avoid double counting.
         if (!options?.skipLimitCheck) {
             const limitResult = await checkAILimit();
             if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
             rollback = limitResult.rollback;
+            usageUserId = limitResult.user?.id;
         }
 
         if (!process.env.OPENROUTER_API_KEY) {
@@ -256,18 +259,24 @@ export async function analyzeCompetitorsAction(data: { projectName: string, proj
         });
 
         try {
-            const parsed = await callAIWithValidation(
+            const runValidation = () => callAIWithValidation(
                 user,
                 {
                     systemPrompt: system,
                     maxTokens: 2000,
                     temperature: 0.7,
                     timeoutMs: 30000,
-                    modelOverride: "google/gemini-3.5-flash",
+                    // Grounded via Perplexity Sonar (built-in live web search) instead
+                    // of LLM hallucination. Mock remains a last-resort degraded mode.
+                    modelOverride: TIER_GROUNDED,
                 },
                 SwotCompetitorsSchema,
                 1
             );
+            // Only record per-call usage on the direct (non-Copilot) path.
+            const parsed = usageUserId
+                ? await runWithAiUsage({ userId: usageUserId, feature: "analyzeCompetitors" }, runValidation)
+                : await runValidation();
             // Keep reasoning for UI display
             return { success: true, data: parsed };
         } catch (err) {
@@ -341,11 +350,14 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
         });
 
         try {
-            const parsed = await callAIWithValidation(
-                user,
-                { systemPrompt: system, maxTokens: 3000, temperature: 0.7, timeoutMs: 30000 },
-                PitchDeckSchema,
-                1
+            const parsed = await runWithAiUsage(
+                { userId: limitResult.user?.id || "anonymous", feature: "generatePitchDeck" },
+                () => callAIWithValidation(
+                    user,
+                    { systemPrompt: system, maxTokens: 3000, temperature: 0.7, timeoutMs: 30000 },
+                    PitchDeckSchema,
+                    1
+                )
             );
             
             let slides = parsed.slides || [];
@@ -388,11 +400,14 @@ export async function generateSmartCanvasAction(data: { idea: string, answers: R
         const { system, user } = getPrompt("generateSmartCanvas", { idea, type, answersBlock });
 
         try {
-            const parsed = await callAIWithValidation(
-                user,
-                { systemPrompt: system, maxTokens: 2500, temperature: 0.7, timeoutMs: 30000 },
-                SmartCanvasSchema,
-                1
+            const parsed = await runWithAiUsage(
+                { userId: limitResult.user?.id || "anonymous", feature: "generateSmartCanvas" },
+                () => callAIWithValidation(
+                    user,
+                    { systemPrompt: system, maxTokens: 2500, temperature: 0.7, timeoutMs: 30000 },
+                    SmartCanvasSchema,
+                    1
+                )
             );
             return { success: true, data: parsed as any };
         } catch (err) {

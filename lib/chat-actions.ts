@@ -1,7 +1,8 @@
 "use server";
 
-import { callOpenRouter } from '@/lib/openrouter';
+import { callOpenRouter, TIER_DEFAULT } from '@/lib/openrouter';
 import { checkAILimit } from '@/lib/ai-limit-middleware';
+import { runWithAiUsage } from '@/lib/ai-usage-context';
 import { getPrompt } from '@/lib/prompts/registry';
 import { CHAT_PERSONAS } from '@/lib/prompts/persona-packs';
 import type { ProjectType } from '@/lib/account/types';
@@ -36,13 +37,15 @@ export async function chatAction(message: string, planContext: any, generateFoll
       followUpBlock
     });
 
-    const result = await callOpenRouter(user, {
-      systemPrompt: system,
-      maxTokens: 800,
-      temperature: 0.5,
-      // Using google/gemini-3.5-flash for Assistant (fast, beginner-friendly Persian output)
-      modelOverride: "google/gemini-3.5-flash"
-    });
+    const result = await runWithAiUsage(
+      { userId: limitResult.user?.id || "anonymous", feature: "chatAction" },
+      () => callOpenRouter(user, {
+        systemPrompt: system,
+        maxTokens: 800,
+        temperature: 0.5,
+        modelOverride: TIER_DEFAULT
+      })
+    );
 
     if (!result.success) {
       await rollback();
@@ -159,11 +162,14 @@ export async function advisorChatAction(message: string, projectContext: any, co
       fullPrompt = `کاربر: ${message}\n\nدستیار (فقط فارسی):`;
     }
 
-    const result = await callOpenRouter(fullPrompt, {
-      systemPrompt: system,
-      maxTokens: 1024,
-      temperature: 0.5, // Lower temperature for more consistent output
-    });
+    const result = await runWithAiUsage(
+      { userId: limitResult.user?.id || "anonymous", feature: "advisorChat" },
+      () => callOpenRouter(fullPrompt, {
+        systemPrompt: system,
+        maxTokens: 1024,
+        temperature: 0.5, // Lower temperature for more consistent output
+      })
+    );
 
     if (!result.success) {
       await rollback();
