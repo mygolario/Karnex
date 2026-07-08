@@ -204,8 +204,8 @@ export function TourOverlay() {
 
   return createPortal(
     <div className="fixed inset-0 z-[10000] pointer-events-none" dir="rtl" aria-hidden={false}>
-      {/* SVG overlay with cutout */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-auto">
+      {/* SVG overlay with cutout — dark-mode aware dim + subtle blur backdrop */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-auto backdrop-blur-[2px]">
         <defs>
           <mask id={maskId}>
             <rect x="0" y="0" width="100%" height="100%" fill="white" />
@@ -226,7 +226,7 @@ export function TourOverlay() {
           y="0"
           width="100%"
           height="100%"
-          fill="rgba(0,0,0,0.65)"
+          className="fill-black/45 dark:fill-black/70"
           mask={`url(#${maskId})`}
         />
       </svg>
@@ -234,14 +234,14 @@ export function TourOverlay() {
       {/* Animated highlight ring */}
       {spotlightRect && (
         <motion.div
-          className="absolute pointer-events-none rounded-xl ring-2 ring-primary/60"
+          className="absolute pointer-events-none rounded-xl ring-2 ring-primary/70"
           initial={false}
           animate={{
             top: spotlightRect.y,
             left: spotlightRect.x,
             width: spotlightRect.w,
             height: spotlightRect.h,
-            boxShadow: "0 0 24px 4px rgba(99, 102, 241, 0.35)",
+            boxShadow: "0 0 0 4px rgba(99, 102, 241, 0.12), 0 0 28px 6px rgba(99, 102, 241, 0.35)",
           }}
           transition={
             reducedMotion
