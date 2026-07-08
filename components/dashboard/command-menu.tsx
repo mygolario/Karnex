@@ -147,22 +147,27 @@ export function CommandMenu({ mobile = false }: CommandMenuProps) {
             {getToursForProjectType(activeProject?.projectType)
               .filter((t) => t.id !== "whats-new")
               .slice(0, 6)
-              .map((tour) => (
-                <Command.Item
-                  key={tour.id}
-                  onSelect={() => runCommand(() => startTour(tour.id, 0, true))}
-                  className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
-                >
-                  <CircleHelp className="ms-2 h-4 w-4 text-primary" />
-                  <span>شروع تور: {tour.title.replace("تور ", "")}</span>
-                </Command.Item>
-              ))}
+              .map((tour) => {
+                const done = useTourStore.getState().persisted.completedTours.includes(tour.id);
+                return (
+                  <Command.Item
+                    key={tour.id}
+                    onSelect={() => runCommand(() => startTour(tour.id, 0, true))}
+                    className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+                  >
+                    <CircleHelp className="ms-2 h-4 w-4 text-primary" />
+                    <span>
+                      {done ? "بازپخش تور" : "شروع تور"}: {tour.title.replace("تور ", "")}
+                    </span>
+                  </Command.Item>
+                );
+              })}
             <Command.Item
-              onSelect={() => runCommand(() => startTour("dashboard", 0, true))}
+              onSelect={() => runCommand(() => router.push("/dashboard/help"))}
               className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
             >
               <CircleHelp className="ms-2 h-4 w-4" />
-              <span>بازپخش تور پیشخوان</span>
+              <span>مرکز تمام تورها و پیشرفت</span>
             </Command.Item>
           </Command.Group>
 
