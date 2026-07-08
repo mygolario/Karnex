@@ -1,3 +1,5 @@
+import axios, { AxiosInstance } from 'axios';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 interface ZibalRequestResult {
   trackId: number;
@@ -33,15 +35,32 @@ const ZIBAL_ERROR_CODES: Record<number, string> = {
 
 const ZIBAL_API_URL = "https://gateway.zibal.ir/v1";
 
+// Build an axios client scoped to Zibal. When FIXIE_URL is set, outbound calls are
+// routed through the Fixie static-IP proxy so they originate from the IPs whitelisted
+// in the Zibal gateway panel. When FIXIE_URL is absent, calls go direct (local dev).
+function createZibalClient(timeoutMs: number): AxiosInstance {
+  const client = axios.create({
+    baseURL: ZIBAL_API_URL,
+    timeout: timeoutMs,
+    headers: { "Content-Type": "application/json" },
+  });
+
+  const fixieUrl = process.env.FIXIE_URL;
+  if (fixieUrl) {
+    client.defaults.httpsAgent = new HttpsProxyAgent(fixieUrl);
+    // Disable axios' own proxy/env handling so our custom agent is actually used.
+    client.defaults.proxy = false;
+  }
+
+  return client;
+}
+
 export const zibalRequest = async (amount: number, description: string, callbackUrl: string, mobile?: string, orderId?: string): Promise<string | null> => {
   const merchant = process.env.ZIBAL_MERCHANT;
   if (!merchant) {
     console.error("[Zibal] ❌ ZIBAL_MERCHANT env var is not set. Cannot process payment.");
     return null;
   }
-  
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 seconds timeout
 
   try {
     const requestBody = {
@@ -52,17 +71,11 @@ export const zibalRequest = async (amount: number, description: string, callback
       mobile,
       orderId
     };
-    
-    const res = await fetch(`${ZIBAL_API_URL}/request`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      signal: controller.signal,
-      body: JSON.stringify(requestBody)
-    });
-    clearTimeout(timeoutId);
 
-    const data: ZibalRequestResult = await res.json();
-  
+    const client = createZibalClient(60000); // 60 seconds timeout
+    const response = await client.post<ZibalRequestResult>("/request", requestBody);
+    const data = response.data;
+
     if (data.result === 100) {
       const paymentUrl = `https://gateway.zibal.ir/start/${data.trackId}`;
       return paymentUrl;
@@ -71,7 +84,6 @@ export const zibalRequest = async (amount: number, description: string, callback
       return null;
     }
   } catch (error) {
-    clearTimeout(timeoutId);
     console.error("[Zibal] ❌ Network Error:", error);
     return null;
   }
@@ -80,25 +92,15 @@ export const zibalRequest = async (amount: number, description: string, callback
 
 export const zibalVerify = async (trackId: string): Promise<ZibalVerifyResult | null> => {
     const merchant = process.env.ZIBAL_MERCHANT || "zibal";
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     try {
-      const res = await fetch(`${ZIBAL_API_URL}/verify`, { // ...
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal: controller.signal,
-        body: JSON.stringify({
-          merchant,
-          trackId
-        })
+      const client = createZibalClient(30000); // 30 seconds timeout
+      const response = await client.post<ZibalVerifyResult>("/verify", {
+        merchant,
+        trackId
       });
-      clearTimeout(timeoutId);
-  
-      const data: ZibalVerifyResult = await res.json();
-      return data;
 
+      return response.data;
     } catch (error) {
       console.error("Zibal Verify Error:", error);
       return null;
