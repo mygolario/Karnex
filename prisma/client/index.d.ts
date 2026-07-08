@@ -94,6 +94,11 @@ export type CanvasVersion = $Result.DefaultSelection<Prisma.$CanvasVersionPayloa
  */
 export type UserProfile = $Result.DefaultSelection<Prisma.$UserProfilePayload>
 /**
+ * Model TourProgress
+ * 
+ */
+export type TourProgress = $Result.DefaultSelection<Prisma.$TourProgressPayload>
+/**
  * Model ProjectMemory
  * 
  */
@@ -455,6 +460,16 @@ export class PrismaClient<
     * ```
     */
   get userProfile(): Prisma.UserProfileDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.tourProgress`: Exposes CRUD operations for the **TourProgress** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TourProgresses
+    * const tourProgresses = await prisma.tourProgress.findMany()
+    * ```
+    */
+  get tourProgress(): Prisma.TourProgressDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.projectMemory`: Exposes CRUD operations for the **ProjectMemory** model.
@@ -1075,6 +1090,7 @@ export namespace Prisma {
     Comment: 'Comment',
     CanvasVersion: 'CanvasVersion',
     UserProfile: 'UserProfile',
+    TourProgress: 'TourProgress',
     ProjectMemory: 'ProjectMemory',
     ChatConversation: 'ChatConversation',
     ChatMessage: 'ChatMessage',
@@ -1107,7 +1123,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "subscription" | "transaction" | "mediaItem" | "systemLog" | "feedback" | "projectMember" | "canvas" | "card" | "comment" | "canvasVersion" | "userProfile" | "projectMemory" | "chatConversation" | "chatMessage" | "aiFeedback" | "artifact" | "aiActionLog" | "aiInsight" | "aiUsage" | "customerBotChannel" | "customerBotConversation" | "customerBotMessage" | "script" | "userSession" | "loginEvent" | "userApiKey" | "userIntegration" | "dataExportRequest"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "subscription" | "transaction" | "mediaItem" | "systemLog" | "feedback" | "projectMember" | "canvas" | "card" | "comment" | "canvasVersion" | "userProfile" | "tourProgress" | "projectMemory" | "chatConversation" | "chatMessage" | "aiFeedback" | "artifact" | "aiActionLog" | "aiInsight" | "aiUsage" | "customerBotChannel" | "customerBotConversation" | "customerBotMessage" | "script" | "userSession" | "loginEvent" | "userApiKey" | "userIntegration" | "dataExportRequest"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2292,6 +2308,80 @@ export namespace Prisma {
           count: {
             args: Prisma.UserProfileCountArgs<ExtArgs>
             result: $Utils.Optional<UserProfileCountAggregateOutputType> | number
+          }
+        }
+      }
+      TourProgress: {
+        payload: Prisma.$TourProgressPayload<ExtArgs>
+        fields: Prisma.TourProgressFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.TourProgressFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.TourProgressFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          findFirst: {
+            args: Prisma.TourProgressFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.TourProgressFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          findMany: {
+            args: Prisma.TourProgressFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>[]
+          }
+          create: {
+            args: Prisma.TourProgressCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          createMany: {
+            args: Prisma.TourProgressCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.TourProgressCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>[]
+          }
+          delete: {
+            args: Prisma.TourProgressDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          update: {
+            args: Prisma.TourProgressUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          deleteMany: {
+            args: Prisma.TourProgressDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.TourProgressUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.TourProgressUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>[]
+          }
+          upsert: {
+            args: Prisma.TourProgressUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$TourProgressPayload>
+          }
+          aggregate: {
+            args: Prisma.TourProgressAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateTourProgress>
+          }
+          groupBy: {
+            args: Prisma.TourProgressGroupByArgs<ExtArgs>
+            result: $Utils.Optional<TourProgressGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.TourProgressCountArgs<ExtArgs>
+            result: $Utils.Optional<TourProgressCountAggregateOutputType> | number
           }
         }
       }
@@ -3677,6 +3767,7 @@ export namespace Prisma {
     comment?: CommentOmit
     canvasVersion?: CanvasVersionOmit
     userProfile?: UserProfileOmit
+    tourProgress?: TourProgressOmit
     projectMemory?: ProjectMemoryOmit
     chatConversation?: ChatConversationOmit
     chatMessage?: ChatMessageOmit
@@ -4550,6 +4641,7 @@ export namespace Prisma {
     userIntegrations?: boolean | User$userIntegrationsArgs<ExtArgs>
     dataExportRequests?: boolean | User$dataExportRequestsArgs<ExtArgs>
     loginEvents?: boolean | User$loginEventsArgs<ExtArgs>
+    tourProgress?: boolean | User$tourProgressArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -4646,6 +4738,7 @@ export namespace Prisma {
     userIntegrations?: boolean | User$userIntegrationsArgs<ExtArgs>
     dataExportRequests?: boolean | User$dataExportRequestsArgs<ExtArgs>
     loginEvents?: boolean | User$loginEventsArgs<ExtArgs>
+    tourProgress?: boolean | User$tourProgressArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -4673,6 +4766,7 @@ export namespace Prisma {
       userIntegrations: Prisma.$UserIntegrationPayload<ExtArgs>[]
       dataExportRequests: Prisma.$DataExportRequestPayload<ExtArgs>[]
       loginEvents: Prisma.$LoginEventPayload<ExtArgs>[]
+      tourProgress: Prisma.$TourProgressPayload<ExtArgs> | null
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5109,6 +5203,7 @@ export namespace Prisma {
     userIntegrations<T extends User$userIntegrationsArgs<ExtArgs> = {}>(args?: Subset<T, User$userIntegrationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserIntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     dataExportRequests<T extends User$dataExportRequestsArgs<ExtArgs> = {}>(args?: Subset<T, User$dataExportRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DataExportRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     loginEvents<T extends User$loginEventsArgs<ExtArgs> = {}>(args?: Subset<T, User$loginEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LoginEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    tourProgress<T extends User$tourProgressArgs<ExtArgs> = {}>(args?: Subset<T, User$tourProgressArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -5995,6 +6090,25 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: LoginEventScalarFieldEnum | LoginEventScalarFieldEnum[]
+  }
+
+  /**
+   * User.tourProgress
+   */
+  export type User$tourProgressArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    where?: TourProgressWhereInput
   }
 
   /**
@@ -23009,6 +23123,1285 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserProfileInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model TourProgress
+   */
+
+  export type AggregateTourProgress = {
+    _count: TourProgressCountAggregateOutputType | null
+    _avg: TourProgressAvgAggregateOutputType | null
+    _sum: TourProgressSumAggregateOutputType | null
+    _min: TourProgressMinAggregateOutputType | null
+    _max: TourProgressMaxAggregateOutputType | null
+  }
+
+  export type TourProgressAvgAggregateOutputType = {
+    xp: number | null
+    level: number | null
+    streak: number | null
+  }
+
+  export type TourProgressSumAggregateOutputType = {
+    xp: number | null
+    level: number | null
+    streak: number | null
+  }
+
+  export type TourProgressMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    persona: string | null
+    experienceLevel: string | null
+    primaryGoal: string | null
+    hasSeenWelcome: boolean | null
+    disableAutoStart: boolean | null
+    lastSeenWhatsNewVersion: string | null
+    lastKnownProjectType: string | null
+    lastKnownPlan: string | null
+    xp: number | null
+    level: number | null
+    streak: number | null
+    lastActiveDate: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type TourProgressMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    persona: string | null
+    experienceLevel: string | null
+    primaryGoal: string | null
+    hasSeenWelcome: boolean | null
+    disableAutoStart: boolean | null
+    lastSeenWhatsNewVersion: string | null
+    lastKnownProjectType: string | null
+    lastKnownPlan: string | null
+    xp: number | null
+    level: number | null
+    streak: number | null
+    lastActiveDate: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type TourProgressCountAggregateOutputType = {
+    id: number
+    userId: number
+    completedTours: number
+    skippedTours: number
+    completedChecklistItems: number
+    dismissedBeacons: number
+    persona: number
+    experienceLevel: number
+    primaryGoal: number
+    hasSeenWelcome: number
+    disableAutoStart: number
+    lastSeenWhatsNewVersion: number
+    lastKnownProjectType: number
+    lastKnownPlan: number
+    xp: number
+    level: number
+    streak: number
+    lastActiveDate: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type TourProgressAvgAggregateInputType = {
+    xp?: true
+    level?: true
+    streak?: true
+  }
+
+  export type TourProgressSumAggregateInputType = {
+    xp?: true
+    level?: true
+    streak?: true
+  }
+
+  export type TourProgressMinAggregateInputType = {
+    id?: true
+    userId?: true
+    persona?: true
+    experienceLevel?: true
+    primaryGoal?: true
+    hasSeenWelcome?: true
+    disableAutoStart?: true
+    lastSeenWhatsNewVersion?: true
+    lastKnownProjectType?: true
+    lastKnownPlan?: true
+    xp?: true
+    level?: true
+    streak?: true
+    lastActiveDate?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type TourProgressMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    persona?: true
+    experienceLevel?: true
+    primaryGoal?: true
+    hasSeenWelcome?: true
+    disableAutoStart?: true
+    lastSeenWhatsNewVersion?: true
+    lastKnownProjectType?: true
+    lastKnownPlan?: true
+    xp?: true
+    level?: true
+    streak?: true
+    lastActiveDate?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type TourProgressCountAggregateInputType = {
+    id?: true
+    userId?: true
+    completedTours?: true
+    skippedTours?: true
+    completedChecklistItems?: true
+    dismissedBeacons?: true
+    persona?: true
+    experienceLevel?: true
+    primaryGoal?: true
+    hasSeenWelcome?: true
+    disableAutoStart?: true
+    lastSeenWhatsNewVersion?: true
+    lastKnownProjectType?: true
+    lastKnownPlan?: true
+    xp?: true
+    level?: true
+    streak?: true
+    lastActiveDate?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type TourProgressAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TourProgress to aggregate.
+     */
+    where?: TourProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TourProgresses to fetch.
+     */
+    orderBy?: TourProgressOrderByWithRelationInput | TourProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: TourProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TourProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TourProgresses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned TourProgresses
+    **/
+    _count?: true | TourProgressCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: TourProgressAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: TourProgressSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: TourProgressMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: TourProgressMaxAggregateInputType
+  }
+
+  export type GetTourProgressAggregateType<T extends TourProgressAggregateArgs> = {
+        [P in keyof T & keyof AggregateTourProgress]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateTourProgress[P]>
+      : GetScalarType<T[P], AggregateTourProgress[P]>
+  }
+
+
+
+
+  export type TourProgressGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: TourProgressWhereInput
+    orderBy?: TourProgressOrderByWithAggregationInput | TourProgressOrderByWithAggregationInput[]
+    by: TourProgressScalarFieldEnum[] | TourProgressScalarFieldEnum
+    having?: TourProgressScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: TourProgressCountAggregateInputType | true
+    _avg?: TourProgressAvgAggregateInputType
+    _sum?: TourProgressSumAggregateInputType
+    _min?: TourProgressMinAggregateInputType
+    _max?: TourProgressMaxAggregateInputType
+  }
+
+  export type TourProgressGroupByOutputType = {
+    id: string
+    userId: string
+    completedTours: JsonValue
+    skippedTours: JsonValue
+    completedChecklistItems: JsonValue
+    dismissedBeacons: JsonValue
+    persona: string | null
+    experienceLevel: string | null
+    primaryGoal: string | null
+    hasSeenWelcome: boolean
+    disableAutoStart: boolean
+    lastSeenWhatsNewVersion: string | null
+    lastKnownProjectType: string | null
+    lastKnownPlan: string | null
+    xp: number
+    level: number
+    streak: number
+    lastActiveDate: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: TourProgressCountAggregateOutputType | null
+    _avg: TourProgressAvgAggregateOutputType | null
+    _sum: TourProgressSumAggregateOutputType | null
+    _min: TourProgressMinAggregateOutputType | null
+    _max: TourProgressMaxAggregateOutputType | null
+  }
+
+  type GetTourProgressGroupByPayload<T extends TourProgressGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<TourProgressGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof TourProgressGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], TourProgressGroupByOutputType[P]>
+            : GetScalarType<T[P], TourProgressGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type TourProgressSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    completedTours?: boolean
+    skippedTours?: boolean
+    completedChecklistItems?: boolean
+    dismissedBeacons?: boolean
+    persona?: boolean
+    experienceLevel?: boolean
+    primaryGoal?: boolean
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: boolean
+    lastKnownProjectType?: boolean
+    lastKnownPlan?: boolean
+    xp?: boolean
+    level?: boolean
+    streak?: boolean
+    lastActiveDate?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tourProgress"]>
+
+  export type TourProgressSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    completedTours?: boolean
+    skippedTours?: boolean
+    completedChecklistItems?: boolean
+    dismissedBeacons?: boolean
+    persona?: boolean
+    experienceLevel?: boolean
+    primaryGoal?: boolean
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: boolean
+    lastKnownProjectType?: boolean
+    lastKnownPlan?: boolean
+    xp?: boolean
+    level?: boolean
+    streak?: boolean
+    lastActiveDate?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tourProgress"]>
+
+  export type TourProgressSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    completedTours?: boolean
+    skippedTours?: boolean
+    completedChecklistItems?: boolean
+    dismissedBeacons?: boolean
+    persona?: boolean
+    experienceLevel?: boolean
+    primaryGoal?: boolean
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: boolean
+    lastKnownProjectType?: boolean
+    lastKnownPlan?: boolean
+    xp?: boolean
+    level?: boolean
+    streak?: boolean
+    lastActiveDate?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["tourProgress"]>
+
+  export type TourProgressSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    completedTours?: boolean
+    skippedTours?: boolean
+    completedChecklistItems?: boolean
+    dismissedBeacons?: boolean
+    persona?: boolean
+    experienceLevel?: boolean
+    primaryGoal?: boolean
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: boolean
+    lastKnownProjectType?: boolean
+    lastKnownPlan?: boolean
+    xp?: boolean
+    level?: boolean
+    streak?: boolean
+    lastActiveDate?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type TourProgressOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "completedTours" | "skippedTours" | "completedChecklistItems" | "dismissedBeacons" | "persona" | "experienceLevel" | "primaryGoal" | "hasSeenWelcome" | "disableAutoStart" | "lastSeenWhatsNewVersion" | "lastKnownProjectType" | "lastKnownPlan" | "xp" | "level" | "streak" | "lastActiveDate" | "createdAt" | "updatedAt", ExtArgs["result"]["tourProgress"]>
+  export type TourProgressInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type TourProgressIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type TourProgressIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $TourProgressPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "TourProgress"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      completedTours: Prisma.JsonValue
+      skippedTours: Prisma.JsonValue
+      completedChecklistItems: Prisma.JsonValue
+      dismissedBeacons: Prisma.JsonValue
+      persona: string | null
+      experienceLevel: string | null
+      primaryGoal: string | null
+      hasSeenWelcome: boolean
+      disableAutoStart: boolean
+      lastSeenWhatsNewVersion: string | null
+      lastKnownProjectType: string | null
+      lastKnownPlan: string | null
+      xp: number
+      level: number
+      streak: number
+      lastActiveDate: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["tourProgress"]>
+    composites: {}
+  }
+
+  type TourProgressGetPayload<S extends boolean | null | undefined | TourProgressDefaultArgs> = $Result.GetResult<Prisma.$TourProgressPayload, S>
+
+  type TourProgressCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<TourProgressFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: TourProgressCountAggregateInputType | true
+    }
+
+  export interface TourProgressDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['TourProgress'], meta: { name: 'TourProgress' } }
+    /**
+     * Find zero or one TourProgress that matches the filter.
+     * @param {TourProgressFindUniqueArgs} args - Arguments to find a TourProgress
+     * @example
+     * // Get one TourProgress
+     * const tourProgress = await prisma.tourProgress.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends TourProgressFindUniqueArgs>(args: SelectSubset<T, TourProgressFindUniqueArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one TourProgress that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {TourProgressFindUniqueOrThrowArgs} args - Arguments to find a TourProgress
+     * @example
+     * // Get one TourProgress
+     * const tourProgress = await prisma.tourProgress.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends TourProgressFindUniqueOrThrowArgs>(args: SelectSubset<T, TourProgressFindUniqueOrThrowArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TourProgress that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressFindFirstArgs} args - Arguments to find a TourProgress
+     * @example
+     * // Get one TourProgress
+     * const tourProgress = await prisma.tourProgress.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends TourProgressFindFirstArgs>(args?: SelectSubset<T, TourProgressFindFirstArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first TourProgress that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressFindFirstOrThrowArgs} args - Arguments to find a TourProgress
+     * @example
+     * // Get one TourProgress
+     * const tourProgress = await prisma.tourProgress.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends TourProgressFindFirstOrThrowArgs>(args?: SelectSubset<T, TourProgressFindFirstOrThrowArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more TourProgresses that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all TourProgresses
+     * const tourProgresses = await prisma.tourProgress.findMany()
+     * 
+     * // Get first 10 TourProgresses
+     * const tourProgresses = await prisma.tourProgress.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const tourProgressWithIdOnly = await prisma.tourProgress.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends TourProgressFindManyArgs>(args?: SelectSubset<T, TourProgressFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a TourProgress.
+     * @param {TourProgressCreateArgs} args - Arguments to create a TourProgress.
+     * @example
+     * // Create one TourProgress
+     * const TourProgress = await prisma.tourProgress.create({
+     *   data: {
+     *     // ... data to create a TourProgress
+     *   }
+     * })
+     * 
+     */
+    create<T extends TourProgressCreateArgs>(args: SelectSubset<T, TourProgressCreateArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many TourProgresses.
+     * @param {TourProgressCreateManyArgs} args - Arguments to create many TourProgresses.
+     * @example
+     * // Create many TourProgresses
+     * const tourProgress = await prisma.tourProgress.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends TourProgressCreateManyArgs>(args?: SelectSubset<T, TourProgressCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many TourProgresses and returns the data saved in the database.
+     * @param {TourProgressCreateManyAndReturnArgs} args - Arguments to create many TourProgresses.
+     * @example
+     * // Create many TourProgresses
+     * const tourProgress = await prisma.tourProgress.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many TourProgresses and only return the `id`
+     * const tourProgressWithIdOnly = await prisma.tourProgress.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends TourProgressCreateManyAndReturnArgs>(args?: SelectSubset<T, TourProgressCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a TourProgress.
+     * @param {TourProgressDeleteArgs} args - Arguments to delete one TourProgress.
+     * @example
+     * // Delete one TourProgress
+     * const TourProgress = await prisma.tourProgress.delete({
+     *   where: {
+     *     // ... filter to delete one TourProgress
+     *   }
+     * })
+     * 
+     */
+    delete<T extends TourProgressDeleteArgs>(args: SelectSubset<T, TourProgressDeleteArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one TourProgress.
+     * @param {TourProgressUpdateArgs} args - Arguments to update one TourProgress.
+     * @example
+     * // Update one TourProgress
+     * const tourProgress = await prisma.tourProgress.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends TourProgressUpdateArgs>(args: SelectSubset<T, TourProgressUpdateArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more TourProgresses.
+     * @param {TourProgressDeleteManyArgs} args - Arguments to filter TourProgresses to delete.
+     * @example
+     * // Delete a few TourProgresses
+     * const { count } = await prisma.tourProgress.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends TourProgressDeleteManyArgs>(args?: SelectSubset<T, TourProgressDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TourProgresses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many TourProgresses
+     * const tourProgress = await prisma.tourProgress.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends TourProgressUpdateManyArgs>(args: SelectSubset<T, TourProgressUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more TourProgresses and returns the data updated in the database.
+     * @param {TourProgressUpdateManyAndReturnArgs} args - Arguments to update many TourProgresses.
+     * @example
+     * // Update many TourProgresses
+     * const tourProgress = await prisma.tourProgress.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more TourProgresses and only return the `id`
+     * const tourProgressWithIdOnly = await prisma.tourProgress.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends TourProgressUpdateManyAndReturnArgs>(args: SelectSubset<T, TourProgressUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one TourProgress.
+     * @param {TourProgressUpsertArgs} args - Arguments to update or create a TourProgress.
+     * @example
+     * // Update or create a TourProgress
+     * const tourProgress = await prisma.tourProgress.upsert({
+     *   create: {
+     *     // ... data to create a TourProgress
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the TourProgress we want to update
+     *   }
+     * })
+     */
+    upsert<T extends TourProgressUpsertArgs>(args: SelectSubset<T, TourProgressUpsertArgs<ExtArgs>>): Prisma__TourProgressClient<$Result.GetResult<Prisma.$TourProgressPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of TourProgresses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressCountArgs} args - Arguments to filter TourProgresses to count.
+     * @example
+     * // Count the number of TourProgresses
+     * const count = await prisma.tourProgress.count({
+     *   where: {
+     *     // ... the filter for the TourProgresses we want to count
+     *   }
+     * })
+    **/
+    count<T extends TourProgressCountArgs>(
+      args?: Subset<T, TourProgressCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], TourProgressCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a TourProgress.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends TourProgressAggregateArgs>(args: Subset<T, TourProgressAggregateArgs>): Prisma.PrismaPromise<GetTourProgressAggregateType<T>>
+
+    /**
+     * Group by TourProgress.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {TourProgressGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends TourProgressGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: TourProgressGroupByArgs['orderBy'] }
+        : { orderBy?: TourProgressGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, TourProgressGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetTourProgressGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the TourProgress model
+   */
+  readonly fields: TourProgressFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for TourProgress.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__TourProgressClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the TourProgress model
+   */
+  interface TourProgressFieldRefs {
+    readonly id: FieldRef<"TourProgress", 'String'>
+    readonly userId: FieldRef<"TourProgress", 'String'>
+    readonly completedTours: FieldRef<"TourProgress", 'Json'>
+    readonly skippedTours: FieldRef<"TourProgress", 'Json'>
+    readonly completedChecklistItems: FieldRef<"TourProgress", 'Json'>
+    readonly dismissedBeacons: FieldRef<"TourProgress", 'Json'>
+    readonly persona: FieldRef<"TourProgress", 'String'>
+    readonly experienceLevel: FieldRef<"TourProgress", 'String'>
+    readonly primaryGoal: FieldRef<"TourProgress", 'String'>
+    readonly hasSeenWelcome: FieldRef<"TourProgress", 'Boolean'>
+    readonly disableAutoStart: FieldRef<"TourProgress", 'Boolean'>
+    readonly lastSeenWhatsNewVersion: FieldRef<"TourProgress", 'String'>
+    readonly lastKnownProjectType: FieldRef<"TourProgress", 'String'>
+    readonly lastKnownPlan: FieldRef<"TourProgress", 'String'>
+    readonly xp: FieldRef<"TourProgress", 'Int'>
+    readonly level: FieldRef<"TourProgress", 'Int'>
+    readonly streak: FieldRef<"TourProgress", 'Int'>
+    readonly lastActiveDate: FieldRef<"TourProgress", 'DateTime'>
+    readonly createdAt: FieldRef<"TourProgress", 'DateTime'>
+    readonly updatedAt: FieldRef<"TourProgress", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * TourProgress findUnique
+   */
+  export type TourProgressFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which TourProgress to fetch.
+     */
+    where: TourProgressWhereUniqueInput
+  }
+
+  /**
+   * TourProgress findUniqueOrThrow
+   */
+  export type TourProgressFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which TourProgress to fetch.
+     */
+    where: TourProgressWhereUniqueInput
+  }
+
+  /**
+   * TourProgress findFirst
+   */
+  export type TourProgressFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which TourProgress to fetch.
+     */
+    where?: TourProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TourProgresses to fetch.
+     */
+    orderBy?: TourProgressOrderByWithRelationInput | TourProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TourProgresses.
+     */
+    cursor?: TourProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TourProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TourProgresses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TourProgresses.
+     */
+    distinct?: TourProgressScalarFieldEnum | TourProgressScalarFieldEnum[]
+  }
+
+  /**
+   * TourProgress findFirstOrThrow
+   */
+  export type TourProgressFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which TourProgress to fetch.
+     */
+    where?: TourProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TourProgresses to fetch.
+     */
+    orderBy?: TourProgressOrderByWithRelationInput | TourProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for TourProgresses.
+     */
+    cursor?: TourProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TourProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TourProgresses.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of TourProgresses.
+     */
+    distinct?: TourProgressScalarFieldEnum | TourProgressScalarFieldEnum[]
+  }
+
+  /**
+   * TourProgress findMany
+   */
+  export type TourProgressFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter, which TourProgresses to fetch.
+     */
+    where?: TourProgressWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of TourProgresses to fetch.
+     */
+    orderBy?: TourProgressOrderByWithRelationInput | TourProgressOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing TourProgresses.
+     */
+    cursor?: TourProgressWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` TourProgresses from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` TourProgresses.
+     */
+    skip?: number
+    distinct?: TourProgressScalarFieldEnum | TourProgressScalarFieldEnum[]
+  }
+
+  /**
+   * TourProgress create
+   */
+  export type TourProgressCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * The data needed to create a TourProgress.
+     */
+    data: XOR<TourProgressCreateInput, TourProgressUncheckedCreateInput>
+  }
+
+  /**
+   * TourProgress createMany
+   */
+  export type TourProgressCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many TourProgresses.
+     */
+    data: TourProgressCreateManyInput | TourProgressCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * TourProgress createManyAndReturn
+   */
+  export type TourProgressCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * The data used to create many TourProgresses.
+     */
+    data: TourProgressCreateManyInput | TourProgressCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TourProgress update
+   */
+  export type TourProgressUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * The data needed to update a TourProgress.
+     */
+    data: XOR<TourProgressUpdateInput, TourProgressUncheckedUpdateInput>
+    /**
+     * Choose, which TourProgress to update.
+     */
+    where: TourProgressWhereUniqueInput
+  }
+
+  /**
+   * TourProgress updateMany
+   */
+  export type TourProgressUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update TourProgresses.
+     */
+    data: XOR<TourProgressUpdateManyMutationInput, TourProgressUncheckedUpdateManyInput>
+    /**
+     * Filter which TourProgresses to update
+     */
+    where?: TourProgressWhereInput
+    /**
+     * Limit how many TourProgresses to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * TourProgress updateManyAndReturn
+   */
+  export type TourProgressUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * The data used to update TourProgresses.
+     */
+    data: XOR<TourProgressUpdateManyMutationInput, TourProgressUncheckedUpdateManyInput>
+    /**
+     * Filter which TourProgresses to update
+     */
+    where?: TourProgressWhereInput
+    /**
+     * Limit how many TourProgresses to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * TourProgress upsert
+   */
+  export type TourProgressUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * The filter to search for the TourProgress to update in case it exists.
+     */
+    where: TourProgressWhereUniqueInput
+    /**
+     * In case the TourProgress found by the `where` argument doesn't exist, create a new TourProgress with this data.
+     */
+    create: XOR<TourProgressCreateInput, TourProgressUncheckedCreateInput>
+    /**
+     * In case the TourProgress was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<TourProgressUpdateInput, TourProgressUncheckedUpdateInput>
+  }
+
+  /**
+   * TourProgress delete
+   */
+  export type TourProgressDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
+    /**
+     * Filter which TourProgress to delete.
+     */
+    where: TourProgressWhereUniqueInput
+  }
+
+  /**
+   * TourProgress deleteMany
+   */
+  export type TourProgressDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which TourProgresses to delete
+     */
+    where?: TourProgressWhereInput
+    /**
+     * Limit how many TourProgresses to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * TourProgress without action
+   */
+  export type TourProgressDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the TourProgress
+     */
+    select?: TourProgressSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the TourProgress
+     */
+    omit?: TourProgressOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: TourProgressInclude<ExtArgs> | null
   }
 
 
@@ -42792,6 +44185,32 @@ export namespace Prisma {
   export type UserProfileScalarFieldEnum = (typeof UserProfileScalarFieldEnum)[keyof typeof UserProfileScalarFieldEnum]
 
 
+  export const TourProgressScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    completedTours: 'completedTours',
+    skippedTours: 'skippedTours',
+    completedChecklistItems: 'completedChecklistItems',
+    dismissedBeacons: 'dismissedBeacons',
+    persona: 'persona',
+    experienceLevel: 'experienceLevel',
+    primaryGoal: 'primaryGoal',
+    hasSeenWelcome: 'hasSeenWelcome',
+    disableAutoStart: 'disableAutoStart',
+    lastSeenWhatsNewVersion: 'lastSeenWhatsNewVersion',
+    lastKnownProjectType: 'lastKnownProjectType',
+    lastKnownPlan: 'lastKnownPlan',
+    xp: 'xp',
+    level: 'level',
+    streak: 'streak',
+    lastActiveDate: 'lastActiveDate',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type TourProgressScalarFieldEnum = (typeof TourProgressScalarFieldEnum)[keyof typeof TourProgressScalarFieldEnum]
+
+
   export const ProjectMemoryScalarFieldEnum: {
     id: 'id',
     projectId: 'projectId',
@@ -43239,6 +44658,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationListRelationFilter
     dataExportRequests?: DataExportRequestListRelationFilter
     loginEvents?: LoginEventListRelationFilter
+    tourProgress?: XOR<TourProgressNullableScalarRelationFilter, TourProgressWhereInput> | null
   }
 
   export type UserOrderByWithRelationInput = {
@@ -43282,6 +44702,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationOrderByRelationAggregateInput
     dataExportRequests?: DataExportRequestOrderByRelationAggregateInput
     loginEvents?: LoginEventOrderByRelationAggregateInput
+    tourProgress?: TourProgressOrderByWithRelationInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -43328,6 +44749,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationListRelationFilter
     dataExportRequests?: DataExportRequestListRelationFilter
     loginEvents?: LoginEventListRelationFilter
+    tourProgress?: XOR<TourProgressNullableScalarRelationFilter, TourProgressWhereInput> | null
   }, "id" | "supabaseUserId" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -44552,6 +45974,138 @@ export namespace Prisma {
     memoryEntries?: JsonNullableWithAggregatesFilter<"UserProfile">
     createdAt?: DateTimeWithAggregatesFilter<"UserProfile"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"UserProfile"> | Date | string
+  }
+
+  export type TourProgressWhereInput = {
+    AND?: TourProgressWhereInput | TourProgressWhereInput[]
+    OR?: TourProgressWhereInput[]
+    NOT?: TourProgressWhereInput | TourProgressWhereInput[]
+    id?: StringFilter<"TourProgress"> | string
+    userId?: StringFilter<"TourProgress"> | string
+    completedTours?: JsonFilter<"TourProgress">
+    skippedTours?: JsonFilter<"TourProgress">
+    completedChecklistItems?: JsonFilter<"TourProgress">
+    dismissedBeacons?: JsonFilter<"TourProgress">
+    persona?: StringNullableFilter<"TourProgress"> | string | null
+    experienceLevel?: StringNullableFilter<"TourProgress"> | string | null
+    primaryGoal?: StringNullableFilter<"TourProgress"> | string | null
+    hasSeenWelcome?: BoolFilter<"TourProgress"> | boolean
+    disableAutoStart?: BoolFilter<"TourProgress"> | boolean
+    lastSeenWhatsNewVersion?: StringNullableFilter<"TourProgress"> | string | null
+    lastKnownProjectType?: StringNullableFilter<"TourProgress"> | string | null
+    lastKnownPlan?: StringNullableFilter<"TourProgress"> | string | null
+    xp?: IntFilter<"TourProgress"> | number
+    level?: IntFilter<"TourProgress"> | number
+    streak?: IntFilter<"TourProgress"> | number
+    lastActiveDate?: DateTimeNullableFilter<"TourProgress"> | Date | string | null
+    createdAt?: DateTimeFilter<"TourProgress"> | Date | string
+    updatedAt?: DateTimeFilter<"TourProgress"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type TourProgressOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    completedTours?: SortOrder
+    skippedTours?: SortOrder
+    completedChecklistItems?: SortOrder
+    dismissedBeacons?: SortOrder
+    persona?: SortOrderInput | SortOrder
+    experienceLevel?: SortOrderInput | SortOrder
+    primaryGoal?: SortOrderInput | SortOrder
+    hasSeenWelcome?: SortOrder
+    disableAutoStart?: SortOrder
+    lastSeenWhatsNewVersion?: SortOrderInput | SortOrder
+    lastKnownProjectType?: SortOrderInput | SortOrder
+    lastKnownPlan?: SortOrderInput | SortOrder
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+    lastActiveDate?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type TourProgressWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    userId?: string
+    AND?: TourProgressWhereInput | TourProgressWhereInput[]
+    OR?: TourProgressWhereInput[]
+    NOT?: TourProgressWhereInput | TourProgressWhereInput[]
+    completedTours?: JsonFilter<"TourProgress">
+    skippedTours?: JsonFilter<"TourProgress">
+    completedChecklistItems?: JsonFilter<"TourProgress">
+    dismissedBeacons?: JsonFilter<"TourProgress">
+    persona?: StringNullableFilter<"TourProgress"> | string | null
+    experienceLevel?: StringNullableFilter<"TourProgress"> | string | null
+    primaryGoal?: StringNullableFilter<"TourProgress"> | string | null
+    hasSeenWelcome?: BoolFilter<"TourProgress"> | boolean
+    disableAutoStart?: BoolFilter<"TourProgress"> | boolean
+    lastSeenWhatsNewVersion?: StringNullableFilter<"TourProgress"> | string | null
+    lastKnownProjectType?: StringNullableFilter<"TourProgress"> | string | null
+    lastKnownPlan?: StringNullableFilter<"TourProgress"> | string | null
+    xp?: IntFilter<"TourProgress"> | number
+    level?: IntFilter<"TourProgress"> | number
+    streak?: IntFilter<"TourProgress"> | number
+    lastActiveDate?: DateTimeNullableFilter<"TourProgress"> | Date | string | null
+    createdAt?: DateTimeFilter<"TourProgress"> | Date | string
+    updatedAt?: DateTimeFilter<"TourProgress"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "userId">
+
+  export type TourProgressOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    completedTours?: SortOrder
+    skippedTours?: SortOrder
+    completedChecklistItems?: SortOrder
+    dismissedBeacons?: SortOrder
+    persona?: SortOrderInput | SortOrder
+    experienceLevel?: SortOrderInput | SortOrder
+    primaryGoal?: SortOrderInput | SortOrder
+    hasSeenWelcome?: SortOrder
+    disableAutoStart?: SortOrder
+    lastSeenWhatsNewVersion?: SortOrderInput | SortOrder
+    lastKnownProjectType?: SortOrderInput | SortOrder
+    lastKnownPlan?: SortOrderInput | SortOrder
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+    lastActiveDate?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: TourProgressCountOrderByAggregateInput
+    _avg?: TourProgressAvgOrderByAggregateInput
+    _max?: TourProgressMaxOrderByAggregateInput
+    _min?: TourProgressMinOrderByAggregateInput
+    _sum?: TourProgressSumOrderByAggregateInput
+  }
+
+  export type TourProgressScalarWhereWithAggregatesInput = {
+    AND?: TourProgressScalarWhereWithAggregatesInput | TourProgressScalarWhereWithAggregatesInput[]
+    OR?: TourProgressScalarWhereWithAggregatesInput[]
+    NOT?: TourProgressScalarWhereWithAggregatesInput | TourProgressScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"TourProgress"> | string
+    userId?: StringWithAggregatesFilter<"TourProgress"> | string
+    completedTours?: JsonWithAggregatesFilter<"TourProgress">
+    skippedTours?: JsonWithAggregatesFilter<"TourProgress">
+    completedChecklistItems?: JsonWithAggregatesFilter<"TourProgress">
+    dismissedBeacons?: JsonWithAggregatesFilter<"TourProgress">
+    persona?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    experienceLevel?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    primaryGoal?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    hasSeenWelcome?: BoolWithAggregatesFilter<"TourProgress"> | boolean
+    disableAutoStart?: BoolWithAggregatesFilter<"TourProgress"> | boolean
+    lastSeenWhatsNewVersion?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    lastKnownProjectType?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    lastKnownPlan?: StringNullableWithAggregatesFilter<"TourProgress"> | string | null
+    xp?: IntWithAggregatesFilter<"TourProgress"> | number
+    level?: IntWithAggregatesFilter<"TourProgress"> | number
+    streak?: IntWithAggregatesFilter<"TourProgress"> | number
+    lastActiveDate?: DateTimeNullableWithAggregatesFilter<"TourProgress"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"TourProgress"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"TourProgress"> | Date | string
   }
 
   export type ProjectMemoryWhereInput = {
@@ -45998,6 +47552,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -46041,6 +47596,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -46084,6 +47640,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -46127,6 +47684,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -47495,6 +49053,166 @@ export namespace Prisma {
     language?: StringFieldUpdateOperationsInput | string
     learnedPreferences?: NullableJsonNullValueInput | InputJsonValue
     memoryEntries?: NullableJsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TourProgressCreateInput = {
+    id?: string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: string | null
+    experienceLevel?: string | null
+    primaryGoal?: string | null
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: string | null
+    lastKnownProjectType?: string | null
+    lastKnownPlan?: string | null
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutTourProgressInput
+  }
+
+  export type TourProgressUncheckedCreateInput = {
+    id?: string
+    userId: string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: string | null
+    experienceLevel?: string | null
+    primaryGoal?: string | null
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: string | null
+    lastKnownProjectType?: string | null
+    lastKnownPlan?: string | null
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TourProgressUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutTourProgressNestedInput
+  }
+
+  export type TourProgressUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TourProgressCreateManyInput = {
+    id?: string
+    userId: string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: string | null
+    experienceLevel?: string | null
+    primaryGoal?: string | null
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: string | null
+    lastKnownProjectType?: string | null
+    lastKnownPlan?: string | null
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TourProgressUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TourProgressUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -49228,6 +50946,11 @@ export namespace Prisma {
     none?: LoginEventWhereInput
   }
 
+  export type TourProgressNullableScalarRelationFilter = {
+    is?: TourProgressWhereInput | null
+    isNot?: TourProgressWhereInput | null
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -50280,6 +52003,79 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type TourProgressCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    completedTours?: SortOrder
+    skippedTours?: SortOrder
+    completedChecklistItems?: SortOrder
+    dismissedBeacons?: SortOrder
+    persona?: SortOrder
+    experienceLevel?: SortOrder
+    primaryGoal?: SortOrder
+    hasSeenWelcome?: SortOrder
+    disableAutoStart?: SortOrder
+    lastSeenWhatsNewVersion?: SortOrder
+    lastKnownProjectType?: SortOrder
+    lastKnownPlan?: SortOrder
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+    lastActiveDate?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TourProgressAvgOrderByAggregateInput = {
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+  }
+
+  export type TourProgressMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    persona?: SortOrder
+    experienceLevel?: SortOrder
+    primaryGoal?: SortOrder
+    hasSeenWelcome?: SortOrder
+    disableAutoStart?: SortOrder
+    lastSeenWhatsNewVersion?: SortOrder
+    lastKnownProjectType?: SortOrder
+    lastKnownPlan?: SortOrder
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+    lastActiveDate?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TourProgressMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    persona?: SortOrder
+    experienceLevel?: SortOrder
+    primaryGoal?: SortOrder
+    hasSeenWelcome?: SortOrder
+    disableAutoStart?: SortOrder
+    lastSeenWhatsNewVersion?: SortOrder
+    lastKnownProjectType?: SortOrder
+    lastKnownPlan?: SortOrder
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+    lastActiveDate?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type TourProgressSumOrderByAggregateInput = {
+    xp?: SortOrder
+    level?: SortOrder
+    streak?: SortOrder
+  }
+
   export type ProjectMemoryCountOrderByAggregateInput = {
     id?: SortOrder
     projectId?: SortOrder
@@ -51139,6 +52935,12 @@ export namespace Prisma {
     connect?: LoginEventWhereUniqueInput | LoginEventWhereUniqueInput[]
   }
 
+  export type TourProgressCreateNestedOneWithoutUserInput = {
+    create?: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TourProgressCreateOrConnectWithoutUserInput
+    connect?: TourProgressWhereUniqueInput
+  }
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -51269,6 +53071,12 @@ export namespace Prisma {
     connectOrCreate?: LoginEventCreateOrConnectWithoutUserInput | LoginEventCreateOrConnectWithoutUserInput[]
     createMany?: LoginEventCreateManyUserInputEnvelope
     connect?: LoginEventWhereUniqueInput | LoginEventWhereUniqueInput[]
+  }
+
+  export type TourProgressUncheckedCreateNestedOneWithoutUserInput = {
+    create?: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TourProgressCreateOrConnectWithoutUserInput
+    connect?: TourProgressWhereUniqueInput
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -51553,6 +53361,16 @@ export namespace Prisma {
     deleteMany?: LoginEventScalarWhereInput | LoginEventScalarWhereInput[]
   }
 
+  export type TourProgressUpdateOneWithoutUserNestedInput = {
+    create?: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TourProgressCreateOrConnectWithoutUserInput
+    upsert?: TourProgressUpsertWithoutUserInput
+    disconnect?: TourProgressWhereInput | boolean
+    delete?: TourProgressWhereInput | boolean
+    connect?: TourProgressWhereUniqueInput
+    update?: XOR<XOR<TourProgressUpdateToOneWithWhereWithoutUserInput, TourProgressUpdateWithoutUserInput>, TourProgressUncheckedUpdateWithoutUserInput>
+  }
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<AccountCreateWithoutUserInput, AccountUncheckedCreateWithoutUserInput> | AccountCreateWithoutUserInput[] | AccountUncheckedCreateWithoutUserInput[]
     connectOrCreate?: AccountCreateOrConnectWithoutUserInput | AccountCreateOrConnectWithoutUserInput[]
@@ -51813,6 +53631,16 @@ export namespace Prisma {
     update?: LoginEventUpdateWithWhereUniqueWithoutUserInput | LoginEventUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: LoginEventUpdateManyWithWhereWithoutUserInput | LoginEventUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: LoginEventScalarWhereInput | LoginEventScalarWhereInput[]
+  }
+
+  export type TourProgressUncheckedUpdateOneWithoutUserNestedInput = {
+    create?: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+    connectOrCreate?: TourProgressCreateOrConnectWithoutUserInput
+    upsert?: TourProgressUpsertWithoutUserInput
+    disconnect?: TourProgressWhereInput | boolean
+    delete?: TourProgressWhereInput | boolean
+    connect?: TourProgressWhereUniqueInput
+    update?: XOR<XOR<TourProgressUpdateToOneWithWhereWithoutUserInput, TourProgressUpdateWithoutUserInput>, TourProgressUncheckedUpdateWithoutUserInput>
   }
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -52579,6 +54407,20 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutUserProfileInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutUserProfileInput, UserUpdateWithoutUserProfileInput>, UserUncheckedUpdateWithoutUserProfileInput>
+  }
+
+  export type UserCreateNestedOneWithoutTourProgressInput = {
+    create?: XOR<UserCreateWithoutTourProgressInput, UserUncheckedCreateWithoutTourProgressInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTourProgressInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutTourProgressNestedInput = {
+    create?: XOR<UserCreateWithoutTourProgressInput, UserUncheckedCreateWithoutTourProgressInput>
+    connectOrCreate?: UserCreateOrConnectWithoutTourProgressInput
+    upsert?: UserUpsertWithoutTourProgressInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutTourProgressInput, UserUpdateWithoutTourProgressInput>, UserUncheckedUpdateWithoutTourProgressInput>
   }
 
   export type ProjectCreateNestedOneWithoutProjectMemoryInput = {
@@ -54177,6 +56019,55 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type TourProgressCreateWithoutUserInput = {
+    id?: string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: string | null
+    experienceLevel?: string | null
+    primaryGoal?: string | null
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: string | null
+    lastKnownProjectType?: string | null
+    lastKnownPlan?: string | null
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TourProgressUncheckedCreateWithoutUserInput = {
+    id?: string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: string | null
+    experienceLevel?: string | null
+    primaryGoal?: string | null
+    hasSeenWelcome?: boolean
+    disableAutoStart?: boolean
+    lastSeenWhatsNewVersion?: string | null
+    lastKnownProjectType?: string | null
+    lastKnownPlan?: string | null
+    xp?: number
+    level?: number
+    streak?: number
+    lastActiveDate?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type TourProgressCreateOrConnectWithoutUserInput = {
+    where: TourProgressWhereUniqueInput
+    create: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+  }
+
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
     where: AccountWhereUniqueInput
     update: XOR<AccountUpdateWithoutUserInput, AccountUncheckedUpdateWithoutUserInput>
@@ -54790,6 +56681,61 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"LoginEvent"> | Date | string
   }
 
+  export type TourProgressUpsertWithoutUserInput = {
+    update: XOR<TourProgressUpdateWithoutUserInput, TourProgressUncheckedUpdateWithoutUserInput>
+    create: XOR<TourProgressCreateWithoutUserInput, TourProgressUncheckedCreateWithoutUserInput>
+    where?: TourProgressWhereInput
+  }
+
+  export type TourProgressUpdateToOneWithWhereWithoutUserInput = {
+    where?: TourProgressWhereInput
+    data: XOR<TourProgressUpdateWithoutUserInput, TourProgressUncheckedUpdateWithoutUserInput>
+  }
+
+  export type TourProgressUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type TourProgressUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    completedTours?: JsonNullValueInput | InputJsonValue
+    skippedTours?: JsonNullValueInput | InputJsonValue
+    completedChecklistItems?: JsonNullValueInput | InputJsonValue
+    dismissedBeacons?: JsonNullValueInput | InputJsonValue
+    persona?: NullableStringFieldUpdateOperationsInput | string | null
+    experienceLevel?: NullableStringFieldUpdateOperationsInput | string | null
+    primaryGoal?: NullableStringFieldUpdateOperationsInput | string | null
+    hasSeenWelcome?: BoolFieldUpdateOperationsInput | boolean
+    disableAutoStart?: BoolFieldUpdateOperationsInput | boolean
+    lastSeenWhatsNewVersion?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownProjectType?: NullableStringFieldUpdateOperationsInput | string | null
+    lastKnownPlan?: NullableStringFieldUpdateOperationsInput | string | null
+    xp?: IntFieldUpdateOperationsInput | number
+    level?: IntFieldUpdateOperationsInput | number
+    streak?: IntFieldUpdateOperationsInput | number
+    lastActiveDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserCreateWithoutAccountsInput = {
     id?: string
     supabaseUserId?: string | null
@@ -54830,6 +56776,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -54872,6 +56819,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -54930,6 +56878,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -54972,6 +56921,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutSessionsInput = {
@@ -55014,6 +56964,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -55056,6 +57007,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -55114,6 +57066,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -55156,6 +57109,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutProjectsInput = {
@@ -55198,6 +57152,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProjectsInput = {
@@ -55240,6 +57195,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProjectsInput = {
@@ -55653,6 +57609,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProjectsInput = {
@@ -55695,6 +57652,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProjectMemberUpsertWithWhereUniqueWithoutProjectInput = {
@@ -55961,6 +57919,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutSubscriptionsInput = {
@@ -56003,6 +57962,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutSubscriptionsInput = {
@@ -56061,6 +58021,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutSubscriptionsInput = {
@@ -56103,6 +58064,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutTransactionsInput = {
@@ -56145,6 +58107,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutTransactionsInput = {
@@ -56187,6 +58150,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutTransactionsInput = {
@@ -56245,6 +58209,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutTransactionsInput = {
@@ -56287,6 +58252,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutMediaItemsInput = {
@@ -56329,6 +58295,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutMediaItemsInput = {
@@ -56371,6 +58338,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutMediaItemsInput = {
@@ -56429,6 +58397,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutMediaItemsInput = {
@@ -56471,6 +58440,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutFeedbacksInput = {
@@ -56513,6 +58483,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutFeedbacksInput = {
@@ -56555,6 +58526,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutFeedbacksInput = {
@@ -56613,6 +58585,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutFeedbacksInput = {
@@ -56655,6 +58628,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutProjectMembershipsInput = {
@@ -56697,6 +58671,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutProjectMembershipsInput = {
@@ -56739,6 +58714,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutProjectMembershipsInput = {
@@ -56844,6 +58820,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutProjectMembershipsInput = {
@@ -56886,6 +58863,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutMembersInput = {
@@ -57489,6 +59467,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserProfileInput = {
@@ -57531,6 +59510,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserProfileInput = {
@@ -57589,6 +59569,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserProfileInput = {
@@ -57621,6 +59602,195 @@ export namespace Prisma {
     transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
     feedbacks?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
     projectMemberships?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+    chatConversations?: ChatConversationUncheckedUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserCreateWithoutTourProgressInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    projects?: ProjectCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberCreateNestedManyWithoutUserInput
+    userProfile?: UserProfileCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutTourProgressInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemUncheckedCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+    userProfile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationUncheckedCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutTourProgressInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutTourProgressInput, UserUncheckedCreateWithoutTourProgressInput>
+  }
+
+  export type UserUpsertWithoutTourProgressInput = {
+    update: XOR<UserUpdateWithoutTourProgressInput, UserUncheckedUpdateWithoutTourProgressInput>
+    create: XOR<UserCreateWithoutTourProgressInput, UserUncheckedCreateWithoutTourProgressInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutTourProgressInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutTourProgressInput, UserUncheckedUpdateWithoutTourProgressInput>
+  }
+
+  export type UserUpdateWithoutTourProgressInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    projects?: ProjectUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUpdateManyWithoutUserNestedInput
+    userProfile?: UserProfileUpdateOneWithoutUserNestedInput
+    chatConversations?: ChatConversationUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutTourProgressInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUncheckedUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+    userProfile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
     chatConversations?: ChatConversationUncheckedUpdateManyWithoutUserNestedInput
     aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutUserNestedInput
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
@@ -57773,6 +59943,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutChatConversationsInput = {
@@ -57815,6 +59986,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutChatConversationsInput = {
@@ -58026,6 +60198,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatConversationsInput = {
@@ -58068,6 +60241,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutChatConversationsInput = {
@@ -58726,6 +60900,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiActionLogsInput = {
@@ -58768,6 +60943,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiActionLogsInput = {
@@ -58912,6 +61088,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiActionLogsInput = {
@@ -58954,6 +61131,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutAiActionLogsInput = {
@@ -59094,6 +61272,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiInsightsInput = {
@@ -59136,6 +61315,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiInsightsInput = {
@@ -59241,6 +61421,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiInsightsInput = {
@@ -59283,6 +61464,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutAiInsightsInput = {
@@ -59378,6 +61560,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAiUsagesInput = {
@@ -59420,6 +61603,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAiUsagesInput = {
@@ -59525,6 +61709,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAiUsagesInput = {
@@ -59567,6 +61752,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutAiUsagesInput = {
@@ -59662,6 +61848,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCustomerBotChannelsInput = {
@@ -59704,6 +61891,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCustomerBotChannelsInput = {
@@ -59845,6 +62033,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCustomerBotChannelsInput = {
@@ -59887,6 +62076,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type ProjectUpsertWithoutCustomerBotChannelsInput = {
@@ -60306,6 +62496,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserSessionsInput = {
@@ -60348,6 +62539,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserSessionsInput = {
@@ -60406,6 +62598,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserSessionsInput = {
@@ -60448,6 +62641,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutLoginEventsInput = {
@@ -60490,6 +62684,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutLoginEventsInput = {
@@ -60532,6 +62727,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutLoginEventsInput = {
@@ -60590,6 +62786,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutLoginEventsInput = {
@@ -60632,6 +62829,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutUserApiKeysInput = {
@@ -60674,6 +62872,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserApiKeysInput = {
@@ -60716,6 +62915,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserApiKeysInput = {
@@ -60774,6 +62974,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserApiKeysInput = {
@@ -60816,6 +63017,7 @@ export namespace Prisma {
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutUserIntegrationsInput = {
@@ -60858,6 +63060,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutUserIntegrationsInput = {
@@ -60900,6 +63103,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutUserIntegrationsInput = {
@@ -60958,6 +63162,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutUserIntegrationsInput = {
@@ -61000,6 +63205,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type UserCreateWithoutDataExportRequestsInput = {
@@ -61042,6 +63248,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDataExportRequestsInput = {
@@ -61084,6 +63291,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDataExportRequestsInput = {
@@ -61142,6 +63350,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDataExportRequestsInput = {
@@ -61184,6 +63393,7 @@ export namespace Prisma {
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
   }
 
   export type AccountCreateManyUserInput = {

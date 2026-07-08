@@ -14,11 +14,16 @@ export function defaultPersistedState(): TourPersistedState {
     completedChecklistItems: [],
     dismissedBeacons: [],
     persona: null,
+    experienceLevel: null,
+    primaryGoal: null,
     hasSeenWelcome: false,
     disableAutoStart: false,
     activeTourId: null,
     activeStepIndex: 0,
     lastSeenWhatsNewVersion: null,
+    lastKnownProjectType: null,
+    lastKnownPlan: null,
+    updatedAt: 0,
   };
 }
 
@@ -38,7 +43,8 @@ export function loadPersistedState(userId: string): TourPersistedState {
 
 export function savePersistedState(userId: string, state: TourPersistedState) {
   if (typeof window === "undefined") return;
-  localStorage.setItem(getStorageKey(userId), JSON.stringify(state));
+  const stamped: TourPersistedState = { ...state, updatedAt: Date.now() };
+  localStorage.setItem(getStorageKey(userId), JSON.stringify(stamped));
 }
 
 function migrateLegacyState(userId: string): TourPersistedState {
