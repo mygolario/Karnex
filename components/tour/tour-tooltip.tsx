@@ -78,7 +78,7 @@ export function TourTooltip({
         transition={{ duration: reducedMotion ? 0.1 : 0.25 }}
         className={cn(
           "fixed pointer-events-auto z-[10001] rounded-3xl overflow-hidden",
-          "bg-card/95 backdrop-blur-xl border border-white/10 shadow-2xl",
+          "bg-card/95 backdrop-blur-xl border border-border/70 shadow-2xl shadow-black/10 dark:shadow-black/40",
           cardWidth,
           position.isMobileSheet && "start-4 end-4 mx-auto"
         )}

@@ -1,0 +1,50 @@
+import type { TourDefinition } from "../types";
+
+export const pitchDeckTour: TourDefinition = {
+  id: "pitch-deck",
+  title: "تور پیچ‌دک",
+  description: "داستان استارتاپ برای جذب سرمایه",
+  accent: "fuchsia",
+  route: "/dashboard/pitch-deck",
+  helpCenterHref: "/dashboard/help",
+  xpReward: 40,
+  checklistItem: true,
+  estimatedTime: "۱ دقیقه",
+  projectTypes: ["startup"],
+  personas: ["founder"],
+  steps: [
+    {
+      id: "deck-welcome",
+      target: "deck-header",
+      title: "داستان استارتاپ شما",
+      description: "پیچ‌دک شما با کمک دستیار کارنکس آماده شده است! اینجا می‌توانید داستان خود را مرور و ویرایش کنید.",
+      route: "/dashboard/pitch-deck",
+      mood: "welcome",
+      position: "bottom",
+    },
+    {
+      id: "deck-grid",
+      target: "deck-grid",
+      title: "ویرایش و شخصی‌سازی",
+      description: "روی هر اسلاید کلیک کنید تا محتوا را ویرایش کنید.",
+      mood: "tip",
+      position: "top",
+    },
+    {
+      id: "add-slide",
+      target: "add-slide-btn",
+      title: "افزودن اسلاید جدید",
+      description: "اگر نیاز به اسلاید بیشتری دارید، از اینجا اضافه کنید.",
+      mood: "action",
+      position: "left",
+    },
+    {
+      id: "deck-actions",
+      target: "deck-actions",
+      title: "دستیار هوشمند و خروجی",
+      description: "با دستیار کارنکس دک را بازنویسی کنید، یا فایل PPTX قابل ویرایش بگیرید.",
+      mood: "success",
+      position: "bottom",
+    },
+  ],
+};

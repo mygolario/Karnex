@@ -324,6 +324,29 @@ exports.Prisma.UserProfileScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.TourProgressScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  completedTours: 'completedTours',
+  skippedTours: 'skippedTours',
+  completedChecklistItems: 'completedChecklistItems',
+  dismissedBeacons: 'dismissedBeacons',
+  persona: 'persona',
+  experienceLevel: 'experienceLevel',
+  primaryGoal: 'primaryGoal',
+  hasSeenWelcome: 'hasSeenWelcome',
+  disableAutoStart: 'disableAutoStart',
+  lastSeenWhatsNewVersion: 'lastSeenWhatsNewVersion',
+  lastKnownProjectType: 'lastKnownProjectType',
+  lastKnownPlan: 'lastKnownPlan',
+  xp: 'xp',
+  level: 'level',
+  streak: 'streak',
+  lastActiveDate: 'lastActiveDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.ProjectMemoryScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
@@ -602,6 +625,7 @@ exports.Prisma.ModelName = {
   Comment: 'Comment',
   CanvasVersion: 'CanvasVersion',
   UserProfile: 'UserProfile',
+  TourProgress: 'TourProgress',
   ProjectMemory: 'ProjectMemory',
   ChatConversation: 'ChatConversation',
   ChatMessage: 'ChatMessage',

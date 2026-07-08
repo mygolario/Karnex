@@ -36,10 +36,12 @@ import {
   TrendingUp
 } from "lucide-react";
 import { Card, CardIcon } from "@/components/ui/card";
+import { toPersianDigits } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTourStore } from "@/lib/tour/store";
-import { getToursForProjectType } from "@/lib/tour/registry";
+import { getToursForProjectType, getNextRecommendedTour, ACCENT_CLASSES } from "@/lib/tour/registry";
+import { tourI18n } from "@/lib/tour/i18n";
 import { useProject } from "@/contexts/project-context";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -51,6 +53,10 @@ interface FAQ {
   a: string;
   category: "general" | "startup" | "traditional" | "creator";
   tags: string[];
+}
+
+function completedFraction(completed: number, total: number): string {
+  return `${toPersianDigits(completed)}/${toPersianDigits(total)} تکمیل شده`;
 }
 
 export default function HelpCenterPage() {
@@ -73,7 +79,11 @@ export default function HelpCenterPage() {
 
   const startTour = useTourStore((s) => s.startTour);
   const completedTours = useTourStore((s) => s.persisted.completedTours);
+  const skippedTours = useTourStore((s) => s.persisted.skippedTours);
+  const activeTourId = useTourStore((s) => s.persisted.activeTourId);
   const tours = getToursForProjectType(activeProject?.projectType).filter((t) => t.id !== "whats-new");
+  const nextTour = getNextRecommendedTour(completedTours, activeProject?.projectType);
+  const hubCompletedCount = tours.filter((t) => completedTours.includes(t.id)).length;
 
   // Load and save recently viewed FAQs
   useEffect(() => {
@@ -758,13 +768,48 @@ export default function HelpCenterPage() {
             </div>
           )}
 
-          {/* Interactive Tours Tab */}
+          {/* Tour Hub Tab — unified status, progress, and a prioritized next step */}
           {activeTab === "tours" && (
             <div className="space-y-6 animate-fade-in-up">
-              <div>
-                <h3 className="font-extrabold text-lg mb-2">تورهای گام‌به‌گام تعاملی</h3>
-                <p className="text-xs text-muted-foreground">با کمک راهنمای بصری مستقیم، نحوه استفاده از ابزارها را بصورت عملی فرابگیرید.</p>
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <h3 className="font-extrabold text-lg mb-1">{tourI18n.hubTitle}</h3>
+                  <p className="text-xs text-muted-foreground">{tourI18n.hubSubtitle}</p>
+                </div>
+                {tours.length > 0 && (
+                  <Badge variant="outline" size="sm" className="text-[10px] border-border bg-muted/20">
+                    {completedFraction(hubCompletedCount, tours.length)}
+                  </Badge>
+                )}
               </div>
+
+              {/* Prioritized continue banner */}
+              {nextTour ? (
+                <div className="flex items-center justify-between gap-4 p-5 rounded-3xl border border-primary/20 bg-gradient-to-l from-primary/10 to-violet-500/10">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${(ACCENT_CLASSES[nextTour.accent] ?? ACCENT_CLASSES.primary).bg}`}>
+                      <Play size={18} className={(ACCENT_CLASSES[nextTour.accent] ?? ACCENT_CLASSES.primary).text} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-bold text-primary mb-0.5">{tourI18n.hubContinue}</p>
+                      <h4 className="font-bold text-sm text-foreground truncate">{nextTour.title}</h4>
+                      <p className="text-[10px] text-muted-foreground truncate">{nextTour.description}</p>
+                    </div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="gradient"
+                    className="rounded-xl text-xs font-bold shrink-0"
+                    onClick={() => startTour(nextTour.id, 0, true)}
+                  >
+                    {activeTourId === nextTour.id ? tourI18n.resumeTour : tourI18n.startTour}
+                  </Button>
+                </div>
+              ) : tours.length > 0 ? (
+                <div className="p-5 rounded-3xl border border-emerald-500/20 bg-emerald-500/5 text-center text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                  {tourI18n.hubAllDone}
+                </div>
+              ) : null}
 
               <div className="space-y-3">
                 {tours.length === 0 ? (
@@ -772,22 +817,55 @@ export default function HelpCenterPage() {
                 ) : (
                   tours.map((tour) => {
                     const done = completedTours.includes(tour.id);
+                    const skipped = !done && (skippedTours ?? []).includes(tour.id);
+                    const inProgress = !done && activeTourId === tour.id;
+                    const accent = ACCENT_CLASSES[tour.accent] ?? ACCENT_CLASSES.primary;
+                    const statusLabel = done
+                      ? tourI18n.hubStatusCompleted
+                      : inProgress || skipped
+                        ? tourI18n.hubStatusInProgress
+                        : tourI18n.hubStatusNotStarted;
+
                     return (
                       <div key={tour.id} className="flex items-center justify-between gap-4 p-4 rounded-2xl border border-border/50 bg-card/40 hover:border-primary/20 transition-all">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                            <CircleHelp size={18} className="text-primary" />
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${accent.bg}`}>
+                            {done ? (
+                              <CheckCircle size={18} className="text-emerald-500" />
+                            ) : (
+                              <CircleHelp size={18} className={accent.text} />
+                            )}
                           </div>
-                          <div>
-                            <h4 className="font-bold text-xs text-foreground">{tour.title}</h4>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">{tour.description}</p>
+                          <div className="min-w-0">
+                            <h4 className="font-bold text-xs text-foreground truncate">{tour.title}</h4>
+                            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{tour.description}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge
+                                variant={done ? "success" : "outline"}
+                                size="sm"
+                                className={`text-[9px] px-1.5 py-0 ${done ? "bg-emerald-500/10 text-emerald-500 border-transparent" : "border-border bg-muted/20"}`}
+                              >
+                                {statusLabel}
+                              </Badge>
+                              {tour.estimatedTime && (
+                                <span className="text-[9px] text-muted-foreground flex items-center gap-1">
+                                  <Clock size={9} />
+                                  {tour.estimatedTime}
+                                </span>
+                              )}
+                              <span className="text-[9px] text-muted-foreground">
+                                {tourI18n.hubStepsCount(tour.steps.length)}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          {done && <Badge variant="success" size="sm" className="bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/15 border-transparent">تکمیل شده</Badge>}
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="text-[10px] text-amber-500 font-bold hidden sm:inline">
+                            +{tour.xpReward} XP
+                          </span>
                           <Button size="sm" variant="outline" className="gap-1 rounded-xl text-xs font-bold" onClick={() => startTour(tour.id, 0, true)}>
                             <Play size={12} />
-                            {done ? "بازپخش" : "شروع"}
+                            {done ? "بازپخش" : inProgress ? tourI18n.resumeTour : "شروع"}
                           </Button>
                         </div>
                       </div>

@@ -18,6 +18,7 @@ import { getCompletenessScore } from "@/lib/canvas/completeness";
 import type { CanvasType } from "@/lib/canvas/types";
 import { toPersianDigits } from "@/lib/utils";
 import { CanvasPresentMode } from "./canvas-present-mode";
+import { TourBeaconAnchor } from "@/components/tour/tour-beacon-anchor";
 import { useProject } from "@/contexts/project-context";
 import { toast } from "sonner";
 
@@ -175,16 +176,18 @@ export function CanvasTopBar() {
 
         <div className="w-px h-5 bg-border mx-1" />
 
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-8 gap-1.5 shadow-sm"
-          onClick={() => setWizardOpen(true)}
-          data-tour-id="ai-auto-fill"
-        >
-          <Sparkles size={14} />
-          <span className="hidden md:inline">راهنمای هوشمند</span>
-        </Button>
+        <TourBeaconAnchor targetId="ai-auto-fill" tourId="canvas" label="راهنمای هوشمند اینجاست">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 shadow-sm"
+            onClick={() => setWizardOpen(true)}
+            data-tour-id="ai-auto-fill"
+          >
+            <Sparkles size={14} />
+            <span className="hidden md:inline">راهنمای هوشمند</span>
+          </Button>
+        </TourBeaconAnchor>
 
         <CanvasPresentMode />
 

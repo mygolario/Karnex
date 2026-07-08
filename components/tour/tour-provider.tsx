@@ -3,17 +3,23 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
+import { useSubscription } from "@/hooks/useSubscription";
 import { useTourStore } from "@/lib/tour/store";
-import { TOUR_VERSION } from "@/lib/tour/registry";
+import { getAllToursWithDynamic, TOUR_VERSION } from "@/lib/tour/registry";
+import { getGlobalAutoStartCandidate } from "@/lib/tour/trigger-queue";
 import { useTourGamification } from "@/hooks/use-tour-gamification";
 
 interface TourProviderProps {
   children: React.ReactNode;
 }
 
+const GLOBAL_AUTOSTART_DELAY_MS = 2000;
+const REENGAGEMENT_DELAY_MS = 45000;
+
 export function TourProvider({ children }: TourProviderProps) {
   const { user, loading: authLoading } = useAuth();
   const { activeProject } = useProject();
+  const { tier } = useSubscription();
   const {
     initialize,
     initialized,
@@ -23,6 +29,8 @@ export function TourProvider({ children }: TourProviderProps) {
     setXpCallback,
     markWhatsNewSeen,
     showWelcome,
+    recordEnvironmentSnapshot,
+    setReengagementCandidate,
   } = useTourStore();
 
   const { awardTourXp } = useTourGamification();
@@ -44,39 +52,77 @@ export function TourProvider({ children }: TourProviderProps) {
       planId: activeProject?.id,
       projectType: activeProject?.projectType,
       persona: persisted.persona ?? "general",
+      experienceLevel: persisted.experienceLevel ?? undefined,
+      primaryGoal: persisted.primaryGoal ?? undefined,
+      role: user?.role ?? undefined,
+      subscriptionPlan: tier,
     });
-  }, [activeProject?.id, activeProject?.projectType, persisted.persona, setStepContext]);
+  }, [
+    activeProject?.id,
+    activeProject?.projectType,
+    persisted.persona,
+    persisted.experienceLevel,
+    persisted.primaryGoal,
+    user?.role,
+    tier,
+    setStepContext,
+  ]);
 
-  // Auto-start dashboard tour for new users (runs once per mount)
+  // Track project type / plan drift so we can offer (opt-in) re-personalization.
+  useEffect(() => {
+    if (!initialized) return;
+    recordEnvironmentSnapshot(activeProject?.projectType, tier);
+  }, [initialized, activeProject?.projectType, tier, recordEnvironmentSnapshot]);
+
+  // Auto-start dashboard / what's-new tour for the shell (runs once per mount)
   const autoStartFired = useRef(false);
   useEffect(() => {
     if (!initialized || authLoading || showWelcome) return;
-    if (persisted.disableAutoStart) return;
     if (autoStartFired.current) return;
     autoStartFired.current = true;
 
     const timer = setTimeout(() => {
-      const current = useTourStore.getState().persisted;
-      const dashBlocked = current.completedTours.includes("dashboard") || current.skippedTours?.includes("dashboard");
-      const whatsNewEligible = current.lastSeenWhatsNewVersion !== TOUR_VERSION && !current.skippedTours?.includes("whats-new");
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'176184'},body:JSON.stringify({sessionId:'176184',location:'tour-provider.tsx:autoStart',message:'TourProvider autoStart timer',data:{dashBlocked,whatsNewEligible,skippedTours:current.skippedTours,completedTours:current.completedTours,disableAutoStart:current.disableAutoStart},timestamp:Date.now(),hypothesisId:'H4,H5'})}).catch(()=>{});
-      // #endregion
-      if (!dashBlocked) {
-        startTour("dashboard");
-      } else if (whatsNewEligible) {
-        startTour("whats-new", 0, true);
+      const state = useTourStore.getState();
+      const candidate = getGlobalAutoStartCandidate({
+        initialized: state.initialized,
+        showWelcome: state.showWelcome,
+        persisted: state.persisted,
+      });
+      if (!candidate) return;
+      startTour(candidate.tourId, 0, candidate.force);
+      if (candidate.tourId === "whats-new") {
         markWhatsNewSeen(TOUR_VERSION);
       }
-    }, 2000);
+    }, GLOBAL_AUTOSTART_DELAY_MS);
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    initialized,
-    authLoading,
-    showWelcome,
-  ]);
+  }, [initialized, authLoading, showWelcome]);
+
+  // Gentle, session-scoped re-engagement nudge: if the user skipped exactly the tours
+  // relevant to their setup and hasn't been reminded yet this session, surface a single
+  // dismissible suggestion after a period of activity (never repeated, never nagging).
+  const reengagementScheduled = useRef(false);
+  useEffect(() => {
+    if (!initialized || showWelcome || reengagementScheduled.current) return;
+    const skipped = persisted.skippedTours ?? [];
+    if (!skipped.length) return;
+
+    reengagementScheduled.current = true;
+    const timer = setTimeout(() => {
+      const state = useTourStore.getState();
+      if (state.isOpen || state.showWelcome) return;
+      const relevantTours = getAllToursWithDynamic().filter((t) => t.id !== "whats-new");
+      const candidate = relevantTours.find(
+        (t) =>
+          (state.persisted.skippedTours ?? []).includes(t.id) &&
+          !state.persisted.completedTours.includes(t.id)
+      );
+      if (candidate) setReengagementCandidate(candidate.id);
+    }, REENGAGEMENT_DELAY_MS);
+
+    return () => clearTimeout(timer);
+  }, [initialized, showWelcome, persisted.skippedTours, setReengagementCandidate]);
 
   // Global restart event (legacy compat)
   useEffect(() => {
