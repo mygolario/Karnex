@@ -28,17 +28,29 @@ export const BreakTaskSchema = z.object({
   subTasks: z.array(z.string()).default([]),
 });
 
-// --- Pitch Deck Slide Schema ---
+// --- Pitch Deck Slide Schema (V2-compatible; bullets kept for AI output) ---
 export const PitchDeckSlideSchema = z.object({
   id: z.string().optional(),
   type: z.string().optional().default('generic'),
   title: z.string().default('بدون عنوان'),
   bullets: z.array(z.string()).default([]),
+  intent: z.string().optional(),
+  notes: z.string().optional(),
   isHidden: z.boolean().optional().default(false),
+  theme: z.string().optional(),
   metadata: z.any().optional(),
+  claims: z
+    .array(
+      z.object({
+        text: z.string(),
+        status: z.enum(['grounded', 'user', 'estimate']).default('estimate'),
+      })
+    )
+    .optional(),
 });
 
 export const PitchDeckSchema = z.object({
+  reasoning: z.string().optional(),
   slides: z.array(PitchDeckSlideSchema).default([]),
 });
 

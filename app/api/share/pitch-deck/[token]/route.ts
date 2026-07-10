@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import type { PitchDeckSlide } from "@/lib/db";
+import { getSlidesFromStored } from "@/lib/pitch-deck/migrate";
 
 export async function GET(
   _req: Request,
@@ -25,7 +25,7 @@ export async function GET(
     }
 
     const data = (project.data ?? {}) as Record<string, unknown>;
-    const slides = (data.pitchDeck ?? []) as PitchDeckSlide[];
+    const slides = getSlidesFromStored(data.pitchDeck as any).filter((s) => !s.isHidden);
 
     return NextResponse.json({
       projectName: project.projectName,

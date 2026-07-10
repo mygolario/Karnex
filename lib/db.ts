@@ -275,16 +275,18 @@ export interface PermitItem {
   priority: 'high' | 'medium' | 'low';
 }
 
-// Pitch Deck structure (For Startups)
-export interface PitchDeckSlide {
-  id: string;
-  type: 'title' | 'problem' | 'solution' | 'market' | 'business_model' | 'traction' | 'team' | 'ask' | 'generic' | string;
-  title: string;
-  bullets: string[];
-  notes?: string;
-  isHidden?: boolean;
-  metadata?: Record<string, any>;
-}
+// Pitch Deck structure (For Startups) — V2 lives in lib/pitch-deck
+export type {
+  PitchDeckSlide,
+  PitchDeckV2,
+  PitchDeckStored,
+  PitchDeckMeta,
+  PitchDeckVersion,
+  PitchDeckReadiness,
+  SlideBlock,
+  WizardAnswers,
+} from "@/lib/pitch-deck/types";
+import type { PitchDeckStored, PitchDeckV2, PitchDeckSlide } from "@/lib/pitch-deck/types";
 
 // SWOT Analysis structure (For Traditional Businesses)
 export interface SWOTAnalysis {
@@ -783,7 +785,7 @@ export interface BusinessPlan {
   legalAdvice?: LegalAdvice;
   mediaKit?: MediaKit; // Creator
   permits?: PermitItem[]; // Traditional
-  pitchDeck?: PitchDeckSlide[]; // Startup
+  pitchDeck?: PitchDeckStored; // Startup — V2 object or legacy slide array
   budget: string;
   audience: string;
   ideaInput?: string;
@@ -1149,9 +1151,13 @@ export const savePermits = async (userId: string, permits: any[], projectId: str
     return savePlanToCloud(userId, { permits: permits }, true, projectId);
 };
 
-export const savePitchDeck = async (userId: string, deck: any[], projectId: string) => {
-    return savePlanToCloud(userId, { pitchDeck: deck }, true, projectId);
-};
+export const savePitchDeck = async (
+  userId: string,
+  deck: PitchDeckV2 | PitchDeckSlide[],
+  projectId: string
+) => {
+  return savePlanToCloud(userId, { pitchDeck: deck }, true, projectId);
+};;
 
 export const saveSWOT = async (userId: string, swot: SWOTAnalysis, projectId: string) => {
     return savePlanToCloud(userId, { swotAnalysis: swot }, true, projectId);

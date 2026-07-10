@@ -148,7 +148,7 @@ export const COPILOT_TOOLS = [
           },
           type: { 
             type: "string", 
-            enum: ["title", "problem", "solution", "market", "business_model", "team", "generic"],
+            enum: ["title", "problem", "solution", "market", "business_model", "competition", "roadmap", "team", "ask", "closing", "traction", "product", "gtm", "financials", "use_of_funds", "vision", "moat", "generic"],
             description: "The type of slide layout to use"
           }
         },
@@ -502,20 +502,27 @@ export async function executeCreatePitchDeckSlide(projectId: string, args: any, 
 
     if (!project) throw new Error("Project not found");
 
-    const currentData = (project.data as any) || {};
-    const currentDeck = (currentData.pitchDeck as any[]) || [];
+    const { migratePitchDeck, normalizeSlide } = await import("@/lib/pitch-deck/migrate");
+    const { computeReadiness } = await import("@/lib/pitch-deck/readiness");
 
-    const newSlide = {
+    const currentData = (project.data as any) || {};
+    const deck = migratePitchDeck(currentData.pitchDeck);
+
+    const newSlide = normalizeSlide({
         id: `slide_${Date.now()}`,
         title: args.title,
         bullets: args.bullets,
         type: args.type,
-        isHidden: false
-    };
+        isHidden: false,
+        notes: args.notes,
+    }, deck.slides.length);
+
+    const nextDeck = { ...deck, slides: [...deck.slides, newSlide] };
+    nextDeck.readiness = computeReadiness(nextDeck);
 
     const newData = {
         ...currentData,
-        pitchDeck: [...currentDeck, newSlide]
+        pitchDeck: nextDeck
     };
 
     await prisma.project.update({
@@ -540,25 +547,37 @@ export async function executeUpdatePitchDeckSlide(projectId: string, args: any, 
 
    if (!project) throw new Error("Project not found");
 
-   const currentData = (project.data as any) || {};
-   const currentDeck = (currentData.pitchDeck as any[]) || [];
+   const { migratePitchDeck, normalizeSlide } = await import("@/lib/pitch-deck/migrate");
+   const { computeReadiness } = await import("@/lib/pitch-deck/readiness");
 
-   const slideIndex = currentDeck.findIndex((s: any) => s.id === args.slideId);
+   const currentData = (project.data as any) || {};
+   const deck = migratePitchDeck(currentData.pitchDeck);
+
+   const slideIndex = deck.slides.findIndex((s: any) => s.id === args.slideId);
    if (slideIndex === -1) throw new Error("Slide not found");
 
-   const updatedSlide = {
-       ...currentDeck[slideIndex],
+   const updatedSlide = normalizeSlide({
+       ...deck.slides[slideIndex],
        ...(args.title && { title: args.title }),
        ...(args.bullets && { bullets: args.bullets }),
        ...(args.notes && { notes: args.notes }),
-   };
+       userOverrides: Array.from(
+         new Set([
+           ...(deck.slides[slideIndex].userOverrides || []),
+           ...(args.title ? ["title"] : []),
+           ...(args.bullets ? ["bullets"] : []),
+         ])
+       ),
+   }, slideIndex);
 
-   const newDeck = [...currentDeck];
-   newDeck[slideIndex] = updatedSlide;
+   const newSlides = [...deck.slides];
+   newSlides[slideIndex] = updatedSlide;
+   const nextDeck = { ...deck, slides: newSlides };
+   nextDeck.readiness = computeReadiness(nextDeck);
 
    const newData = {
        ...currentData,
-       pitchDeck: newDeck
+       pitchDeck: nextDeck
    };
 
    await prisma.project.update({

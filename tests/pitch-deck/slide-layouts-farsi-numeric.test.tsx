@@ -33,7 +33,7 @@ describe("Farsi Numeric Parsing and Separators Validation", () => {
       },
     });
 
-    const circles = container.querySelectorAll("circle");
+    const circles = container.querySelectorAll("svg.pitch-market-circles circle");
     expect(circles.length).toBe(3);
 
     const rTam = parseFloat(circles[0].getAttribute("r") || "0");
@@ -57,7 +57,7 @@ describe("Farsi Numeric Parsing and Separators Validation", () => {
       },
     });
 
-    const circles = container.querySelectorAll("circle");
+    const circles = container.querySelectorAll("svg.pitch-market-circles circle");
     const rSam = parseFloat(circles[1].getAttribute("r") || "0");
     const rSom = parseFloat(circles[2].getAttribute("r") || "0");
 
