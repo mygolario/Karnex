@@ -1,31 +1,29 @@
-import { describe, it, expect } from 'vitest'
-import { SlideThemes } from '@/components/features/pitch-deck/slide-templates'
+import { describe, it, expect } from "vitest";
+import { SlideThemes, resolveTheme, LEGACY_THEME_MAP } from "@/lib/pitch-deck/themes";
 
-describe('Pitch Deck Themes', () => {
-  it('should define three distinct themes', () => {
-    expect(SlideThemes.midnight_cyan).toBeDefined()
-    expect(SlideThemes.amethyst_glow).toBeDefined()
-    expect(SlideThemes.sleek_slate).toBeDefined()
-  })
+describe("Pitch Deck Karnex Themes", () => {
+  it("should define four Karnex themes", () => {
+    expect(SlideThemes.karnex_light).toBeDefined();
+    expect(SlideThemes.karnex_glass).toBeDefined();
+    expect(SlideThemes.karnex_stage).toBeDefined();
+    expect(SlideThemes.karnex_minimal).toBeDefined();
+  });
 
-  it('should map Midnight Cyan properties correctly', () => {
-    const theme = SlideThemes.midnight_cyan
-    expect(theme.bg).toBe('#020617')
-    expect(theme.primary).toBe('#22D3EE')
-    expect(theme.secondary).toBe('#60A5FA')
-  })
+  it("should use Karnex pink/orange brand colors on light theme", () => {
+    const theme = SlideThemes.karnex_light;
+    expect(theme.primary.toLowerCase()).toBe("#ec4899");
+    expect(theme.secondary.toLowerCase()).toBe("#f97316");
+    expect(theme.isDark).toBe(false);
+  });
 
-  it('should map Amethyst Glow properties correctly', () => {
-    const theme = SlideThemes.amethyst_glow
-    expect(theme.bg).toBe('#09090B')
-    expect(theme.primary).toBe('#C084FC')
-    expect(theme.secondary).toBe('#F472B6')
-  })
+  it("should map legacy themes to Karnex themes", () => {
+    expect(LEGACY_THEME_MAP.midnight_cyan).toBe("karnex_stage");
+    expect(LEGACY_THEME_MAP.amethyst_glow).toBe("karnex_glass");
+    expect(LEGACY_THEME_MAP.sleek_slate).toBe("karnex_minimal");
+    expect(resolveTheme("midnight_cyan").id).toBe("karnex_stage");
+  });
 
-  it('should map Sleek Slate properties correctly', () => {
-    const theme = SlideThemes.sleek_slate
-    expect(theme.bg).toBe('#0B0F10')
-    expect(theme.primary).toBe('#34D399')
-    expect(theme.secondary).toBe('#94A3B8')
-  })
-})
+  it("should resolve unknown themes to default light", () => {
+    expect(resolveTheme("nope").id).toBe("karnex_light");
+  });
+});

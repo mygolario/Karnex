@@ -106,7 +106,12 @@ function buildPillarContext(data: Record<string, any>, projectType: string): str
 
   // --- Startup specifics ---
   if (projectType === "startup") {
-    const pitchCount = Array.isArray(data.pitchDeck) ? data.pitchDeck.length : 0;
+    const pitchRaw = data.pitchDeck;
+    const pitchCount = Array.isArray(pitchRaw)
+      ? pitchRaw.length
+      : pitchRaw && typeof pitchRaw === "object" && Array.isArray(pitchRaw.slides)
+        ? pitchRaw.slides.length
+        : 0;
     lines.push(`- پیچ‌دک: ${pitchCount} اسلاید.`);
     if (data.swotAnalysis) lines.push(`- تحلیل SWOT: موجود.`);
   }
@@ -155,7 +160,15 @@ export function buildCopilotContext(input: CopilotContextInput): BuiltCopilotCon
     projectDescription: input.projectDescription || "N/A",
     projectAudience: input.projectAudience || "Unknown",
     canvasStatus: input.projectData?.leanCanvas ? "Partially Filled" : "Empty",
-    pitchDeckCount: String(Array.isArray(input.projectData?.pitchDeck) ? input.projectData.pitchDeck.length : 0),
+    pitchDeckCount: String(
+      Array.isArray(input.projectData?.pitchDeck)
+        ? input.projectData.pitchDeck.length
+        : input.projectData?.pitchDeck &&
+            typeof input.projectData.pitchDeck === "object" &&
+            Array.isArray((input.projectData.pitchDeck as any).slides)
+          ? (input.projectData.pitchDeck as any).slides.length
+          : 0
+    ),
     mentionedContext: input.mentionedContext,
     personaSection,
     modeSection,

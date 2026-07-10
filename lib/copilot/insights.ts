@@ -139,7 +139,12 @@ export async function generateInsightsForProject(
 
   // --- Startup specifics ---
   if (projectType === "startup") {
-    const pitchCount = Array.isArray(data.pitchDeck) ? data.pitchDeck.length : 0;
+    const pitchRaw = data.pitchDeck;
+    const pitchCount = Array.isArray(pitchRaw)
+      ? pitchRaw.length
+      : pitchRaw && typeof pitchRaw === "object" && Array.isArray((pitchRaw as any).slides)
+        ? (pitchRaw as any).slides.length
+        : 0;
     if (pitchCount === 0) {
       insights.push({
         type: "gap",
@@ -162,6 +167,24 @@ export async function generateInsightsForProject(
           type: "open_copilot",
           label: "تکمیل پیچ‌دک",
           prefill: "اسلایدهای ناقص پیچ‌دکم رو تکمیل کن.",
+        },
+      });
+    } else if (
+      pitchRaw &&
+      typeof pitchRaw === "object" &&
+      !Array.isArray(pitchRaw) &&
+      (pitchRaw as any).readiness?.score != null &&
+      (pitchRaw as any).readiness.score < 60
+    ) {
+      insights.push({
+        type: "gap",
+        priority: "info",
+        title: "آمادگی پیچ‌دک پایین است",
+        body: `امتیاز آمادگی سرمایه‌گذار حدود ${(pitchRaw as any).readiness.score} است. نکات مربی را در استودیو ببین.`,
+        actionPayload: {
+          type: "open_page",
+          label: "باز کردن پیچ‌دک",
+          href: "/dashboard/pitch-deck",
         },
       });
     }

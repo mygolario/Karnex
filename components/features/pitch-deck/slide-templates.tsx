@@ -1,98 +1,31 @@
 "use client";
 
 import React from "react";
-import { PitchDeckSlide } from "@/lib/db";
-import { 
-  TrendingUp, 
-  Users, 
-  Target, 
-  DollarSign, 
-  ShieldAlert, 
-  CheckCircle, 
-  MapPin, 
-  Milestone, 
-  ChevronRight, 
-  Zap, 
-  Layers, 
+import type { PitchDeckSlide } from "@/lib/pitch-deck/types";
+import { getSlideBullets } from "@/lib/pitch-deck/migrate";
+import { SlideThemes, resolveTheme } from "@/lib/pitch-deck/themes";
+import { convertPersianArabicDigits, parseNum, safeString } from "@/lib/pitch-deck/utils";
+import {
+  TrendingUp,
+  Users,
+  Target,
+  DollarSign,
+  ShieldAlert,
+  CheckCircle,
+  Milestone,
+  Zap,
+  Layers,
   Award,
   Check,
-  X
+  X,
+  Rocket,
+  BarChart3,
+  Map,
+  Eye,
+  PieChart,
 } from "lucide-react";
 
-const convertPersianArabicDigits = (val: any): string => {
-  if (typeof val === 'symbol') return '';
-  if (typeof val === 'number') return String(val);
-  if (!val) return '';
-  const pMap = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-  const aMap = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-  let str = String(val);
-  for (let i = 0; i < 10; i++) {
-    str = str.replace(new RegExp(pMap[i], 'g'), String(i))
-             .replace(new RegExp(aMap[i], 'g'), String(i));
-  }
-  return str;
-};
-
-const safeString = (val: any): string => {
-  if (typeof val === 'symbol') return '';
-  if (val === null || val === undefined) return '';
-  if (typeof val === 'object') {
-    try {
-      return JSON.stringify(val);
-    } catch {
-      return '';
-    }
-  }
-  return String(val);
-};
-
-const parseNum = (val: any): number => {
-  if (typeof val === 'symbol') return 0;
-  if (typeof val === 'number') return val;
-  if (!val) return 0;
-  const cleaned = convertPersianArabicDigits(val).replace(/,/g, '');
-  const cleanStr = cleaned.replace(/[^0-9.-]/g, '');
-  const parsed = parseFloat(cleanStr);
-  return isNaN(parsed) ? 0 : parsed;
-};
-
-
-export const SlideThemes = {
-
-  midnight_cyan: {
-    bg: "#020617",
-    card: "rgba(15, 23, 42, 0.6)",
-    border: "rgba(34, 211, 238, 0.15)",
-    primary: "#22D3EE",
-    secondary: "#60A5FA",
-    glow1: "rgba(6, 182, 212, 0.12)",
-    glow2: "rgba(109, 40, 217, 0.08)",
-    accentGradient: "linear-gradient(to right, #22D3EE, #4F46E5, #D946EF)",
-    badgeBg: "rgba(34, 211, 238, 0.1)",
-  },
-  amethyst_glow: {
-    bg: "#09090B",
-    card: "rgba(24, 24, 27, 0.6)",
-    border: "rgba(168, 85, 247, 0.15)",
-    primary: "#C084FC",
-    secondary: "#F472B6",
-    glow1: "rgba(168, 85, 247, 0.15)",
-    glow2: "rgba(236, 72, 153, 0.08)",
-    accentGradient: "linear-gradient(to right, #A855F7, #EC4899, #F43F5E)",
-    badgeBg: "rgba(192, 132, 252, 0.1)",
-  },
-  sleek_slate: {
-    bg: "#0B0F10",
-    card: "rgba(30, 30, 30, 0.6)",
-    border: "rgba(52, 211, 153, 0.15)",
-    primary: "#34D399",
-    secondary: "#94A3B8",
-    glow1: "rgba(52, 211, 153, 0.08)",
-    glow2: "rgba(148, 163, 184, 0.05)",
-    accentGradient: "linear-gradient(to right, #34D399, #64748B, #CBD5E1)",
-    badgeBg: "rgba(52, 211, 153, 0.1)",
-  }
-};
+export { SlideThemes, resolveTheme };
 
 interface SlideTemplatesProps {
   slide: PitchDeckSlide;
@@ -102,10 +35,14 @@ interface SlideTemplatesProps {
   isExport?: boolean;
 }
 
-export function SlideVisualizer({ slide, index, total, projectName, isExport = false }: SlideTemplatesProps) {
+export function SlideVisualizer({
+  slide,
+  index,
+  total,
+  projectName,
+}: SlideTemplatesProps) {
   if (!slide) return null;
 
-  // Render correct layout based on slide.type
   const renderLayout = () => {
     switch (slide.type) {
       case "title":
@@ -127,96 +64,163 @@ export function SlideVisualizer({ slide, index, total, projectName, isExport = f
         return <TeamLayout slide={slide} />;
       case "ask":
         return <AskLayout slide={slide} />;
+      case "traction":
+        return <TractionLayout slide={slide} />;
+      case "product":
+        return <ProductLayout slide={slide} />;
+      case "gtm":
+        return <GtmLayout slide={slide} />;
+      case "financials":
+        return <FinancialsLayout slide={slide} />;
+      case "use_of_funds":
+        return <UseOfFundsLayout slide={slide} />;
+      case "vision":
+      case "moat":
+        return <VisionLayout slide={slide} />;
+      case "closing":
+      case "generic":
       default:
         return <GenericLayout slide={slide} />;
     }
   };
 
-  const themeKey = slide.metadata?.theme || 'midnight_cyan';
-  const activeTheme = SlideThemes[themeKey as keyof typeof SlideThemes] || SlideThemes.midnight_cyan;
+  const activeTheme = resolveTheme(slide.theme || slide.metadata?.theme);
+  const textClass = activeTheme.isDark ? "text-white" : "text-neutral-900";
 
   return (
-    <div 
-      className="w-full h-full p-8 md:p-10 flex flex-col relative overflow-hidden text-white select-none transition-all duration-300"
+    <div
+      className={`w-full h-full p-8 md:p-10 flex flex-col relative overflow-hidden select-none transition-all duration-300 ${textClass}`}
       style={{
         backgroundColor: activeTheme.bg,
         borderColor: activeTheme.border,
-        ['--theme-bg' as any]: activeTheme.bg,
-        ['--theme-card' as any]: activeTheme.card,
-        ['--theme-border' as any]: activeTheme.border,
-        ['--theme-primary' as any]: activeTheme.primary,
-        ['--theme-secondary' as any]: activeTheme.secondary,
-        ['--theme-glow1' as any]: activeTheme.glow1,
-        ['--theme-glow2' as any]: activeTheme.glow2,
-        ['--theme-accent' as any]: activeTheme.accentGradient,
-        ['--theme-badge-bg' as any]: activeTheme.badgeBg,
+        ["--theme-bg" as string]: activeTheme.bg,
+        ["--theme-card" as string]: activeTheme.card,
+        ["--theme-border" as string]: activeTheme.border,
+        ["--theme-primary" as string]: activeTheme.primary,
+        ["--theme-secondary" as string]: activeTheme.secondary,
+        ["--theme-glow1" as string]: activeTheme.glow1,
+        ["--theme-glow2" as string]: activeTheme.glow2,
+        ["--theme-accent" as string]: activeTheme.accentGradient,
+        ["--theme-badge-bg" as string]: activeTheme.badgeBg,
+        ["--theme-text" as string]: activeTheme.text,
+        ["--theme-muted" as string]: activeTheme.muted,
+        color: activeTheme.text,
       }}
     >
-      {/* Glow Effects */}
-      <div 
-        className="absolute -top-24 -left-24 w-72 h-72 rounded-full blur-[100px] pointer-events-none transition-all duration-500" 
-        style={{ backgroundColor: 'var(--theme-glow1)' }}
+      <div
+        className="absolute -top-24 -start-24 w-72 h-72 rounded-full blur-[100px] pointer-events-none"
+        style={{ backgroundColor: "var(--theme-glow1)" }}
       />
-      <div 
-        className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full blur-[100px] pointer-events-none transition-all duration-500" 
-        style={{ backgroundColor: 'var(--theme-glow2)' }}
+      <div
+        className="absolute -bottom-24 -end-24 w-72 h-72 rounded-full blur-[100px] pointer-events-none"
+        style={{ backgroundColor: "var(--theme-glow2)" }}
       />
-      
-      {/* Header */}
-      <div 
+
+      <div
         className="flex justify-between items-center mb-6 border-b pb-3 relative z-10"
-        style={{ borderColor: 'var(--theme-border)' }}
+        style={{ borderColor: "var(--theme-border)" }}
       >
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--theme-primary)' }} />
-          <span className="text-xs font-black tracking-widest uppercase font-mono" style={{ color: 'var(--theme-primary)' }}>{projectName || "KARNEX"}</span>
+          <span
+            className="w-2.5 h-2.5 rounded-full animate-pulse"
+            style={{ backgroundColor: "var(--theme-primary)" }}
+          />
+          <span
+            className="text-xs font-black tracking-widest uppercase"
+            style={{ color: "var(--theme-primary)" }}
+          >
+            {projectName || "KARNEX"}
+          </span>
         </div>
-        <span 
-          className="text-xs font-mono bg-slate-900/60 border px-2 py-0.5 rounded-full"
-          style={{ borderColor: 'var(--theme-border)', color: 'var(--theme-secondary)' }}
+        <span
+          className="text-xs font-mono border px-2 py-0.5 rounded-full"
+          style={{
+            borderColor: "var(--theme-border)",
+            color: "var(--theme-secondary)",
+            backgroundColor: "var(--theme-badge-bg)",
+          }}
         >
           اسلاید {index + 1} از {total}
         </span>
       </div>
 
-      {/* Content Area */}
       <div className="flex-1 flex flex-col relative z-10 justify-center">
         {renderLayout()}
       </div>
 
-      {/* Footer Accent Line */}
-      <div 
-        className="absolute bottom-0 left-0 w-full h-1 opacity-80 transition-all duration-500" 
-        style={{ backgroundImage: 'var(--theme-accent)' }}
+      <div
+        className="absolute bottom-0 left-0 w-full h-1 opacity-90"
+        style={{ backgroundImage: "var(--theme-accent)" }}
       />
     </div>
   );
 }
 
-// 1. Title Layout
+function CardShell({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`rounded-2xl border p-3 ${className}`}
+      style={{
+        backgroundColor: "var(--theme-card)",
+        borderColor: "var(--theme-border)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 function TitleLayout({ slide }: { slide: PitchDeckSlide }) {
+  const bullets = getSlideBullets(slide);
   return (
     <div className="text-center py-6 flex flex-col items-center justify-center space-y-6" dir="rtl">
       <div className="relative">
-        <div className="absolute inset-0 bg-cyan-500/20 blur-2xl rounded-full scale-150" />
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-400 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/20 border border-white/10 relative">
+        <div
+          className="absolute inset-0 blur-2xl rounded-full scale-150 opacity-40"
+          style={{ backgroundColor: "var(--theme-primary)" }}
+        />
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg border border-white/20 relative"
+          style={{ backgroundImage: "var(--theme-accent)" }}
+        >
           <Zap className="w-8 h-8 text-white" />
         </div>
       </div>
       <div className="space-y-3 max-w-xl">
-        <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-violet-300 tracking-tight leading-tight">
+        <h1
+          className="text-3xl md:text-4xl font-extrabold tracking-tight leading-tight"
+          style={{
+            backgroundImage: "var(--theme-accent)",
+            WebkitBackgroundClip: "text",
+            color: "transparent",
+          }}
+        >
           {slide.title}
         </h1>
-        {(slide.bullets || []).length > 0 && (
-          <p className="text-base text-cyan-400 font-medium">
-            {(slide.bullets || [])[0]}
+        {bullets[0] && (
+          <p className="text-base font-medium" style={{ color: "var(--theme-primary)" }}>
+            {bullets[0]}
           </p>
         )}
       </div>
-      {(slide.bullets || []).length > 1 && (
+      {bullets.length > 1 && (
         <div className="flex flex-wrap justify-center gap-3 mt-2 max-w-lg">
-          {(slide.bullets || []).slice(1).map((b, i) => (
-            <span key={i} className="text-xs bg-slate-900/80 border border-white/5 px-3 py-1.5 rounded-xl text-slate-300">
+          {bullets.slice(1).map((b, i) => (
+            <span
+              key={i}
+              className="text-xs border px-3 py-1.5 rounded-xl"
+              style={{
+                borderColor: "var(--theme-border)",
+                backgroundColor: "var(--theme-card)",
+                color: "var(--theme-muted)",
+              }}
+            >
               {b}
             </span>
           ))}
@@ -226,579 +230,650 @@ function TitleLayout({ slide }: { slide: PitchDeckSlide }) {
   );
 }
 
-// 2. Problem Layout
 function ProblemLayout({ slide }: { slide: PitchDeckSlide }) {
+  const bullets = getSlideBullets(slide);
   return (
     <div className="grid md:grid-cols-12 gap-6 items-center" dir="rtl">
       <div className="md:col-span-7 space-y-4">
-        <h2 className="text-2xl font-black text-rose-400 flex items-center gap-2">
-          <ShieldAlert className="w-6 h-6 text-rose-500" />
+        <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: "var(--theme-secondary)" }}>
+          <ShieldAlert className="w-6 h-6" />
           {slide.title}
         </h2>
         <div className="space-y-3">
-          {(slide.bullets || []).map((b, i) => (
-            <div key={i} className="flex gap-3 items-start bg-slate-900/40 border border-white/5 p-3 rounded-2xl">
-              <span className="w-6 h-6 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center text-xs font-mono font-bold shrink-0 mt-0.5">
+          {bullets.map((b, i) => (
+            <CardShell key={i} className="flex gap-3 items-start">
+              <span
+                className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-mono font-bold shrink-0"
+                style={{ backgroundColor: "var(--theme-badge-bg)", color: "var(--theme-secondary)" }}
+              >
                 {i + 1}
               </span>
-              <p className="text-sm md:text-base leading-relaxed text-slate-300 font-medium">{b}</p>
-            </div>
+              <p className="text-sm md:text-base leading-relaxed font-medium" style={{ color: "var(--theme-text)" }}>
+                {b}
+              </p>
+            </CardShell>
           ))}
         </div>
       </div>
-      <div className="md:col-span-5 hidden md:flex justify-center relative">
-        <div className="absolute inset-0 bg-rose-500/10 blur-[50px] rounded-full" />
-        <div className="relative w-44 h-44 rounded-full border border-rose-500/20 bg-rose-500/5 flex flex-col items-center justify-center text-center p-4">
-          <ShieldAlert className="w-10 h-10 text-rose-500 mb-2 animate-bounce" />
-          <span className="text-xs text-rose-400 font-bold uppercase tracking-wider">چالش بازار</span>
-          <span className="text-[10px] text-slate-400 mt-1">مشکل برطرف نشده مشتریان</span>
+      <div className="md:col-span-5 hidden md:flex justify-center">
+        <div
+          className="w-40 h-40 rounded-full flex items-center justify-center border-4"
+          style={{ borderColor: "var(--theme-secondary)", backgroundColor: "var(--theme-badge-bg)" }}
+        >
+          <span className="text-sm font-bold" style={{ color: "var(--theme-secondary)" }}>
+            چالش بازار
+          </span>
         </div>
       </div>
     </div>
   );
 }
 
-// 3. Solution Layout
 function SolutionLayout({ slide }: { slide: PitchDeckSlide }) {
+  const bullets = getSlideBullets(slide);
   return (
-    <div className="grid md:grid-cols-12 gap-6 items-center" dir="rtl">
-      <div className="md:col-span-7 space-y-4">
-        <h2 className="text-2xl font-black text-emerald-400 flex items-center gap-2">
-          <CheckCircle className="w-6 h-6 text-emerald-400" />
-          {slide.title}
-        </h2>
-        <div className="space-y-3">
-          {(slide.bullets || []).map((b, i) => (
-            <div key={i} className="flex gap-3 items-start bg-slate-900/40 border border-white/5 p-3 rounded-2xl">
-              <span className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs font-mono font-bold shrink-0 mt-0.5">
-                {i + 1}
-              </span>
-              <p className="text-sm md:text-base leading-relaxed text-slate-300 font-medium">{b}</p>
+    <div className="space-y-5" dir="rtl">
+      <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: "var(--theme-primary)" }}>
+        <CheckCircle className="w-6 h-6" />
+        {slide.title}
+      </h2>
+      <div className="grid md:grid-cols-3 gap-3">
+        {bullets.slice(0, 3).map((b, i) => (
+          <CardShell key={i} className="space-y-2 min-h-[110px]">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-white text-sm font-bold"
+              style={{ backgroundImage: "var(--theme-accent)" }}
+            >
+              {i + 1}
             </div>
-          ))}
-        </div>
-      </div>
-      <div className="md:col-span-5 hidden md:flex justify-center relative">
-        <div className="absolute inset-0 bg-emerald-500/10 blur-[50px] rounded-full" />
-        <div className="relative w-44 h-44 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col items-center justify-center text-center p-4">
-          <CheckCircle className="w-10 h-10 text-emerald-400 mb-2 animate-pulse" />
-          <span className="text-xs text-emerald-400 font-bold uppercase tracking-wider">ارزش پیشنهادی</span>
-          <span className="text-[10px] text-slate-400 mt-1">راهکار هوشمند کارنکس</span>
-        </div>
+            <p className="text-sm leading-relaxed font-medium">{b}</p>
+          </CardShell>
+        ))}
       </div>
     </div>
   );
 }
 
-// 4. Market TAM/SAM/SOM Layout
 function MarketLayout({ slide }: { slide: PitchDeckSlide }) {
-  const metadata = slide.metadata || {};
-  const [hoveredCircle, setHoveredCircle] = React.useState<'tam' | 'sam' | 'som' | null>(null);
-
-  const tamVal = parseNum(metadata.tam);
-  const samVal = parseNum(metadata.sam);
-  const somVal = parseNum(metadata.som);
-
-  const formatValue = (val: any): string => {
-    if (typeof val === 'symbol') return '';
-    if (val === null || val === undefined || val === '') return 'نامشخص';
-    const cleaned = convertPersianArabicDigits(val).replace(/,/g, '');
-    const num = Number(cleaned);
-    if (!isNaN(num)) {
-      return num.toLocaleString('fa-IR');
-    }
-    return String(val);
-  };
-
-  const formattedTam = formatValue(metadata.tam);
-  const formattedSam = formatValue(metadata.sam);
-  const formattedSom = formatValue(metadata.som);
-
-  const hasVals = tamVal > 0 && samVal > 0 && somVal > 0;
-  const t = hasVals ? tamVal : 100;
-  const s = hasVals ? samVal : 60;
-  const o = hasVals ? somVal : 20;
-
+  const meta = slide.metadata || {};
+  const bullets = getSlideBullets(slide);
+  const cards = [
+    { key: "TAM", value: meta.tam, desc: meta.tamDesc },
+    { key: "SAM", value: meta.sam, desc: meta.samDesc },
+    { key: "SOM", value: meta.som, desc: meta.somDesc },
+  ];
+  const tam = Math.max(parseNum(meta.tam), 0.0001);
+  const sam = Math.max(parseNum(meta.sam), 0);
+  const som = Math.max(parseNum(meta.som), 0);
+  const t = tam;
+  const s = sam;
+  const o = som;
   const rTam = 120;
   const rSam = Math.max(45, Math.min(rTam - 20, rTam * Math.sqrt(s / t)));
   const rSom = Math.max(20, Math.min(rSam - 15, rTam * Math.sqrt(o / t)));
 
   return (
-    <div className="grid md:grid-cols-12 gap-6 items-center" dir="rtl">
-      {/* Cards list */}
-      <div className="md:col-span-7 space-y-3">
-        <h2 className="text-2xl font-black mb-3" style={{ color: 'var(--theme-primary)' }}>{slide.title}</h2>
-        <div className="space-y-2">
-          {/* TAM Card */}
-          <div 
-            className={`p-3.5 rounded-xl border transition-all duration-300 ${
-              hoveredCircle === 'tam' 
-                ? 'bg-[var(--theme-card)] border-[var(--theme-primary)] scale-[1.01] shadow-lg shadow-[var(--theme-glow1)]' 
-                : 'bg-[var(--theme-card)]/50 border-[var(--theme-border)]'
-            }`}
-            onMouseEnter={() => setHoveredCircle('tam')}
-            onMouseLeave={() => setHoveredCircle(null)}
-          >
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-bold text-slate-400">TAM - کل بازار در دسترس</span>
-              <span className="text-base font-black text-white font-mono">{formattedTam} ریال</span>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-1">{metadata.tamDesc || 'حجم کلی تقاضا در این بازار هدف'}</p>
-          </div>
-
-          {/* SAM Card */}
-          <div 
-            className={`p-3.5 rounded-xl border transition-all duration-300 ${
-              hoveredCircle === 'sam' 
-                ? 'bg-[var(--theme-card)] border-[var(--theme-secondary)] scale-[1.01] shadow-lg' 
-                : 'bg-[var(--theme-card)]/50 border-[var(--theme-border)]'
-            }`}
-            onMouseEnter={() => setHoveredCircle('sam')}
-            onMouseLeave={() => setHoveredCircle(null)}
-          >
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-bold" style={{ color: 'var(--theme-secondary)' }}>SAM - بازار قابل دسترسی</span>
-              <span className="text-base font-black font-mono" style={{ color: 'var(--theme-secondary)' }}>{formattedSam} ریال</span>
-            </div>
-            <p className="text-[11px] text-slate-400 mt-1">{metadata.samDesc || 'بخش قابل آدرس‌دهی و متناسب با کانال‌های توزیع ما'}</p>
-          </div>
-
-          {/* SOM Card */}
-          <div 
-            className={`p-3.5 rounded-xl border transition-all duration-300 ${
-              hoveredCircle === 'som' 
-                ? 'bg-[var(--theme-card)] border-[var(--theme-primary)] scale-[1.01] shadow-lg shadow-[var(--theme-glow1)]' 
-                : 'bg-[var(--theme-card)]/50 border-[var(--theme-border)]'
-            }`}
-            onMouseEnter={() => setHoveredCircle('som')}
-            onMouseLeave={() => setHoveredCircle(null)}
-          >
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-bold" style={{ color: 'var(--theme-primary)' }}>SOM - سهم بازار هدف اولیه</span>
-              <span className="text-base font-black font-mono" style={{ color: 'var(--theme-primary)' }}>{formattedSom} ریال</span>
-            </div>
-            <p className="text-[11px] text-slate-300 mt-1">{metadata.somDesc || 'سهمی از بازار که در ۱ تا ۳ سال اول کسب می‌کنیم'}</p>
-          </div>
+    <div className="space-y-5" dir="rtl">
+      <h2 className="text-2xl font-black flex items-center gap-2">
+        <Target className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
+        {slide.title}
+      </h2>
+      <div className="grid md:grid-cols-2 gap-6 items-center">
+        <div className="grid grid-cols-3 gap-2">
+          {cards.map((c) => (
+            <CardShell key={c.key} className="text-center space-y-1">
+              <p className="text-[10px] font-bold" style={{ color: "var(--theme-secondary)" }}>
+                {c.key}
+              </p>
+              <p className="text-sm font-black" style={{ color: "var(--theme-primary)" }}>
+                {safeString(c.value) || "—"}
+              </p>
+              {c.desc && (
+                <p className="text-[10px] leading-snug" style={{ color: "var(--theme-muted)" }}>
+                  {safeString(c.desc)}
+                </p>
+              )}
+            </CardShell>
+          ))}
+        </div>
+        <div className="relative w-40 h-40 mx-auto flex items-center justify-center">
+          <svg viewBox="0 0 260 260" className="w-full h-full pitch-market-circles">
+            <circle
+              cx="130"
+              cy="130"
+              r={rTam}
+              fill="none"
+              stroke="var(--theme-primary)"
+              strokeWidth="2"
+              opacity="0.35"
+            />
+            <circle
+              cx="130"
+              cy="130"
+              r={rSam}
+              fill="none"
+              stroke="var(--theme-secondary)"
+              strokeWidth="2"
+              opacity="0.55"
+            />
+            <circle
+              cx="130"
+              cy="130"
+              r={rSom}
+              fill="var(--theme-badge-bg)"
+              stroke="var(--theme-primary)"
+              strokeWidth="2"
+            />
+          </svg>
         </div>
       </div>
-
-      {/* SVG Concentric visualization */}
-      <div className="md:col-span-5 flex justify-center relative">
-        <svg width="260" height="260" viewBox="0 0 260 260" className="drop-shadow-2xl">
-          {/* TAM Outer Circle */}
-          <circle 
-            cx="130" cy="130" r={rTam} 
-            className="transition-all duration-300 stroke-2 cursor-pointer" 
-            style={{ 
-              stroke: hoveredCircle === 'tam' ? 'var(--theme-primary)' : 'rgba(255,255,255,0.1)',
-              fill: hoveredCircle === 'tam' ? 'var(--theme-glow1)' : 'transparent'
-            }}
-            onMouseEnter={() => setHoveredCircle('tam')}
-            onMouseLeave={() => setHoveredCircle(null)}
-          />
-          {/* SAM Middle Circle */}
-          <circle 
-            cx="130" cy="130" r={rSam} 
-            className="transition-all duration-300 stroke-2 cursor-pointer" 
-            style={{ 
-              stroke: hoveredCircle === 'sam' ? 'var(--theme-secondary)' : 'var(--theme-border)',
-              fill: hoveredCircle === 'sam' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)'
-            }}
-            onMouseEnter={() => setHoveredCircle('sam')}
-            onMouseLeave={() => setHoveredCircle(null)}
-          />
-          {/* SOM Inner Circle */}
-          <circle 
-            cx="130" cy="130" r={rSom} 
-            className="transition-all duration-300 stroke-2 cursor-pointer animate-pulse" 
-            style={{ 
-              stroke: 'var(--theme-primary)',
-              fill: hoveredCircle === 'som' ? 'var(--theme-badge-bg)' : 'rgba(34, 211, 238, 0.12)'
-            }}
-            onMouseEnter={() => setHoveredCircle('som')}
-            onMouseLeave={() => setHoveredCircle(null)}
-          />
-
-          {/* Value overlays */}
-          <text x="130" y="134" textAnchor="middle" fill="#ffffff" fontSize="9" fontWeight="bold" className="pointer-events-none font-mono">SOM</text>
-        </svg>
-      </div>
+      {bullets.length > 0 && (
+        <ul className="space-y-1 text-sm" style={{ color: "var(--theme-muted)" }}>
+          {bullets.slice(0, 3).map((b, i) => (
+            <li key={i}>• {b}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }
 
-// 5. Business Model Layout
 function BusinessModelLayout({ slide }: { slide: PitchDeckSlide }) {
-  const metadata = slide.metadata || {};
-  const rawModels = metadata.models;
-  const modelsList = Array.isArray(rawModels) ? rawModels : [];
-  const models = modelsList.filter(Boolean);
+  const models = (slide.metadata?.models || []).slice(0, 3);
+  const bullets = getSlideBullets(slide);
+  const items =
+    models.length > 0
+      ? models
+      : bullets.slice(0, 3).map((b) => ({ title: b, desc: "" }));
 
   return (
-    <div className="space-y-4" dir="rtl">
-      <h2 className="text-2xl font-black text-violet-400 flex items-center gap-2">
-        <DollarSign className="w-6 h-6 text-violet-400" />
+    <div className="space-y-5" dir="rtl">
+      <h2 className="text-2xl font-black flex items-center gap-2">
+        <DollarSign className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
         {slide.title}
       </h2>
-      
-      {models.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {models.slice(0, 3).map((m: any, i: number) => {
-            const mTitle = safeString(m && typeof m === 'object' ? m.title : '');
-            const mDesc = safeString(m && typeof m === 'object' ? m.desc : '');
-            return (
-              <div key={i} className="bg-slate-900/60 border border-white/5 p-4 rounded-2xl hover:border-violet-500/30 transition-all flex flex-col justify-between">
-                <div className="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center mb-3">
-                  <DollarSign className="w-4 h-4" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-white">{mTitle}</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">{mDesc}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {(slide.bullets || []).map((b, i) => (
-            <div key={i} className="bg-slate-900/60 border border-white/5 p-4 rounded-2xl flex flex-col justify-between">
-              <div className="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center mb-3">
-                <DollarSign className="w-4 h-4" />
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed font-medium">{b}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="grid md:grid-cols-3 gap-3">
+        {items.map((m: any, i: number) => (
+          <CardShell key={i} className="space-y-2 min-h-[100px]">
+            <Layers className="w-5 h-5" style={{ color: "var(--theme-secondary)" }} />
+            <p className="font-bold text-sm">{m.title || m}</p>
+            {m.desc && (
+              <p className="text-xs" style={{ color: "var(--theme-muted)" }}>
+                {m.desc}
+              </p>
+            )}
+          </CardShell>
+        ))}
+      </div>
     </div>
   );
 }
 
-// 6. Competition Layout
 function CompetitionLayout({ slide }: { slide: PitchDeckSlide }) {
-  const metadata = slide.metadata || {};
-  const rawComps = metadata.competitors;
-  const compsList = Array.isArray(rawComps) ? rawComps : [];
-  const competitors = compsList.filter(Boolean);
+  const layout = slide.metadata?.competitionLayout || "matrix";
+  const rawCompetitors = slide.metadata?.competitors;
+  const competitors = Array.isArray(rawCompetitors)
+    ? rawCompetitors.filter(Boolean)
+    : [];
+  const bullets = getSlideBullets(slide);
 
+  if (layout === "swot") {
+    const cells = [
+      { t: "قوت", items: bullets.slice(0, 2), color: "var(--theme-primary)" },
+      { t: "ضعف", items: bullets.slice(2, 4), color: "var(--theme-secondary)" },
+      {
+        t: "فرصت",
+        items: competitors.slice(0, 2).map((c: any) => safeString(c?.weakness || c?.name)),
+        color: "var(--theme-primary)",
+      },
+      {
+        t: "تهدید",
+        items: competitors.slice(0, 2).map((c: any) => safeString(c?.strength || c?.name)),
+        color: "var(--theme-secondary)",
+      },
+    ];
+    return (
+      <div className="space-y-4" dir="rtl">
+        <h2 className="text-2xl font-black">{slide.title}</h2>
+        <div className="grid grid-cols-2 gap-2">
+          {cells.map((c) => (
+            <CardShell key={c.t}>
+              <p className="text-xs font-bold mb-2" style={{ color: c.color }}>
+                {c.t}
+              </p>
+              <ul className="space-y-1 text-xs">
+                {(c.items || []).map((it: string, i: number) => (
+                  <li key={i}>{safeString(it)}</li>
+                ))}
+              </ul>
+            </CardShell>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (layout === "table") {
+    return (
+      <div className="space-y-4" dir="rtl">
+        <h2 className="text-2xl font-black">{slide.title}</h2>
+        <div className="overflow-hidden rounded-xl border" style={{ borderColor: "var(--theme-border)" }}>
+          <table className="w-full text-xs">
+            <thead style={{ backgroundColor: "var(--theme-badge-bg)" }}>
+              <tr>
+                <th className="p-2 text-start">رقیب</th>
+                <th className="p-2 text-start">قوت</th>
+                <th className="p-2 text-start">ضعف</th>
+              </tr>
+            </thead>
+            <tbody>
+              {competitors.slice(0, 5).map((c: any, i: number) => (
+                <tr key={i} className="border-t" style={{ borderColor: "var(--theme-border)" }}>
+                  <td className="p-2 font-bold">{safeString(c?.name)}</td>
+                  <td className="p-2">
+                    <span className="inline-flex items-center gap-1">
+                      <Check size={10} style={{ color: "var(--theme-primary)" }} />
+                      {safeString(c?.strength)}
+                    </span>
+                  </td>
+                  <td className="p-2">
+                    <span className="inline-flex items-center gap-1">
+                      <X size={10} style={{ color: "var(--theme-secondary)" }} />
+                      {safeString(c?.weakness)}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  }
+
+  // Default 2x2-ish matrix cards
   return (
     <div className="space-y-4" dir="rtl">
-      <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: 'var(--theme-primary)' }}>
-        <Layers className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
+      <h2 className="text-2xl font-black flex items-center gap-2">
+        <Award className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
         {slide.title}
       </h2>
-
-      {competitors.length > 0 ? (
-        <div className="grid md:grid-cols-2 gap-4">
-          {/* S - Strengths */}
-          <div className="bg-[var(--theme-card)] border border-emerald-500/20 p-4 rounded-2xl space-y-2">
-            <h4 className="text-xs font-black text-emerald-400 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              نقاط قوت ما (Strengths)
-            </h4>
-            <ul className="list-disc list-inside text-xs text-slate-300 space-y-1 pr-2">
-              {(slide.bullets || []).slice(0, 3).map((b, idx) => <li key={idx}>{b}</li>)}
-              {(slide.bullets || []).length === 0 && <li>مزیت انحصاری در سرعت و مقیاس کاربری</li>}
-            </ul>
-          </div>
-
-          {/* W - Weaknesses */}
-          <div className="bg-[var(--theme-card)] border border-rose-500/20 p-4 rounded-2xl space-y-2">
-            <h4 className="text-xs font-black text-rose-400 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              ضعف رقیبان و شکاف‌ها (Weaknesses)
-            </h4>
-            <div className="space-y-1.5 pr-2">
-              {competitors.slice(0, 3).map((c: any, idx: number) => {
-                const cName = safeString(c && typeof c === 'object' ? c.name : '');
-                const cWeakness = safeString(c && typeof c === 'object' ? (c.weakness || c.weaknesses) : '');
-                return (
-                  <div key={idx} className="text-xs text-slate-300">
-                    <strong className="text-white">{cName}:</strong> {cWeakness}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* O - Opportunities */}
-          <div className="bg-[var(--theme-card)] border border-cyan-500/20 p-4 rounded-2xl space-y-2">
-            <h4 className="text-xs font-black text-cyan-400 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-cyan-500" />
-              فرصت‌های رشد بازار (Opportunities)
-            </h4>
-            <p className="text-xs text-slate-300 leading-relaxed pr-2">
-              تمرکز روی سهم بازار آزاد شده به خاطر عدم انطباق رقبا با قوانین بومی و نبود خدمات پشتیبانی اختصاصی در ایران.
+      <div className="grid md:grid-cols-2 gap-3">
+        {competitors.slice(0, 4).map((c: any, i: number) => (
+          <CardShell key={i} className="space-y-1">
+            <p className="font-bold text-sm">{safeString(c?.name) || `رقیب ${i + 1}`}</p>
+            <p className="text-xs" style={{ color: "var(--theme-primary)" }}>
+              قوت: {safeString(c?.strength) || "—"}
             </p>
-          </div>
-
-          {/* T - Threats */}
-          <div className="bg-[var(--theme-card)] border border-amber-500/20 p-4 rounded-2xl space-y-2">
-            <h4 className="text-xs font-black text-amber-400 flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              تهدیدها و قوت رقبا (Threats)
-            </h4>
-            <div className="space-y-1.5 pr-2">
-              {competitors.slice(0, 3).map((c: any, idx: number) => {
-                const cName = safeString(c && typeof c === 'object' ? c.name : '');
-                const cStrength = safeString(c && typeof c === 'object' ? (c.strength || c.strengths) : '');
-                return (
-                  <div key={idx} className="text-xs text-slate-300">
-                    <strong className="text-white">{cName}:</strong> {cStrength}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="grid md:grid-cols-3 gap-4">
-          {(slide.bullets ?? []).map((b, i) => (
-            <div key={i} className="bg-[var(--theme-card)] border p-4 rounded-2xl flex gap-3 items-start" style={{ borderColor: 'var(--theme-border)' }}>
-              <span className="w-2 h-2 rounded-full bg-[var(--theme-primary)] mt-2 shrink-0" />
-              <p className="text-xs text-slate-300 leading-relaxed font-semibold">{b}</p>
-            </div>
+            <p className="text-xs" style={{ color: "var(--theme-muted)" }}>
+              ضعف: {safeString(c?.weakness) || "—"}
+            </p>
+          </CardShell>
+        ))}
+        {competitors.length === 0 &&
+          bullets.slice(0, 4).map((b, i) => (
+            <CardShell key={i}>
+              <p className="text-sm">{b}</p>
+            </CardShell>
           ))}
-        </div>
-      )}
+      </div>
     </div>
   );
 }
 
-// 7. Roadmap Timeline Layout
 function RoadmapLayout({ slide }: { slide: PitchDeckSlide }) {
-  const metadata = slide.metadata || {};
-  const rawPhases = metadata.phases;
-  const phasesList = Array.isArray(rawPhases) ? rawPhases : [];
-  const phases = phasesList.filter(Boolean);
+  const phases = slide.metadata?.phases || [];
+  const bullets = getSlideBullets(slide);
+  const items =
+    phases.length > 0
+      ? phases
+      : bullets.map((b, i) => ({ phase: `فاز ${i + 1}`, title: b, date: "" }));
 
   return (
-    <div className="space-y-4" dir="rtl">
-      <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: 'var(--theme-primary)' }}>
-        <Milestone className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
+    <div className="space-y-5" dir="rtl">
+      <h2 className="text-2xl font-black flex items-center gap-2">
+        <Milestone className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
         {slide.title}
       </h2>
-
-      {phases.length > 0 ? (
-        <div className="relative flex flex-col md:flex-row justify-between gap-4 py-8">
-          {/* Connector line */}
-          <div className="absolute top-[35px] left-8 right-8 h-0.5 hidden md:block opacity-35" style={{ backgroundColor: 'var(--theme-primary)' }} />
-          
-          {phases.slice(0, 5).map((p: any, i: number) => {
-            const pPhase = safeString(p && typeof p === 'object' ? p.phase : '');
-            const pDate = safeString(p && typeof p === 'object' ? p.date : '');
-            const pTitle = safeString(p && typeof p === 'object' ? p.title : '');
-            return (
-              <div key={i} className="relative z-10 flex-1 flex flex-col items-center">
-                {/* Timeline dot */}
-                <div 
-                  className="w-5 h-5 rounded-full border-4 mb-3 z-20 flex items-center justify-center transition-all duration-300"
-                  style={{ 
-                    backgroundColor: 'var(--theme-bg)',
-                    borderColor: 'var(--theme-primary)'
-                  }}
-                />
-                
-                {/* Content card */}
-                <div 
-                  className="w-full bg-[var(--theme-card)] border p-4 rounded-2xl flex flex-col space-y-2 hover:scale-[1.02] transition-transform duration-300"
-                  style={{ borderColor: 'var(--theme-border)' }}
-                >
-                  <div className="flex justify-between items-center gap-2">
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-black uppercase" style={{ backgroundColor: 'var(--theme-badge-bg)', color: 'var(--theme-primary)' }}>{pPhase}</span>
-                    <span className="text-[10px] text-slate-400 font-mono font-semibold">{pDate}</span>
-                  </div>
-                  <h4 className="text-xs font-bold text-white leading-relaxed">{pTitle}</h4>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {(slide.bullets || []).map((b, i) => (
-            <div key={i} className="bg-[var(--theme-card)] border p-4 rounded-2xl flex gap-3 items-start" style={{ borderColor: 'var(--theme-border)' }}>
-              <span className="w-6 h-6 rounded-lg bg-[var(--theme-badge-bg)] flex items-center justify-center text-xs font-bold shrink-0 mt-0.5" style={{ color: 'var(--theme-primary)' }}>{i+1}</span>
-              <p className="text-xs text-slate-300 leading-relaxed font-semibold">{b}</p>
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {items.slice(0, 5).map((p: any, i: number) => (
+          <CardShell key={i} className="min-w-[140px] space-y-1">
+            <p className="text-[10px] font-bold" style={{ color: "var(--theme-secondary)" }}>
+              {p.phase || `فاز ${i + 1}`}
+            </p>
+            <p className="text-sm font-bold">{p.title}</p>
+            {p.date && (
+              <p className="text-[10px]" style={{ color: "var(--theme-muted)" }}>
+                {p.date}
+              </p>
+            )}
+          </CardShell>
+        ))}
+      </div>
     </div>
   );
 }
 
-// 8. Team Layout
 function TeamLayout({ slide }: { slide: PitchDeckSlide }) {
-  const metadata = slide.metadata || {};
-  const rawTeam = metadata.team || metadata.members || [];
-  const teamList = Array.isArray(rawTeam) ? rawTeam : [];
-  const team = teamList.filter(Boolean);
-
-  const getRoleBadgeStyle = (role: any) => {
-    const r = String(role || '').toLowerCase();
-    if (r.includes('founder') || r.includes('ceo') || r.includes('بنیان') || r.includes('مدیر')) {
-      return { border: 'rgba(16, 185, 129, 0.2)', bg: 'rgba(16, 185, 129, 0.1)', text: '#10b981' }; // Emerald
-    }
-    if (r.includes('cto') || r.includes('tech') || r.includes('فنی') || r.includes('برنامه')) {
-      return { border: 'rgba(6, 182, 212, 0.2)', bg: 'rgba(6, 182, 212, 0.1)', text: '#06b6d4' }; // Cyan
-    }
-    if (r.includes('cmo') || r.includes('growth') || r.includes('بازار') || r.includes('رشد')) {
-      return { border: 'rgba(245, 158, 11, 0.2)', bg: 'rgba(245, 158, 11, 0.1)', text: '#f59e0b' }; // Amber
-    }
-    return { border: 'var(--theme-border)', bg: 'var(--theme-badge-bg)', text: 'var(--theme-primary)' };
-  };
+  const rawMembers = slide.metadata?.members || slide.metadata?.team;
+  const members = Array.isArray(rawMembers) ? rawMembers.filter(Boolean) : [];
+  const bullets = getSlideBullets(slide);
+  const list =
+    members.length > 0
+      ? members
+      : bullets.map((b) => {
+          const [name, role] = b.split(/[-–—:]/);
+          return { name: name?.trim() || b, role: role?.trim() || "" };
+        });
 
   return (
-    <div className="space-y-4" dir="rtl">
-      <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: 'var(--theme-primary)' }}>
-        <Users className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
+    <div className="space-y-5" dir="rtl">
+      <h2 className="text-2xl font-black flex items-center gap-2">
+        <Users className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
         {slide.title}
       </h2>
-
-      {team.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {team.slice(0, 6).map((m: any, i: number) => {
-            const mName = safeString(m && typeof m === 'object' ? m.name : '');
-            const mRole = safeString(m && typeof m === 'object' ? m.role : '');
-            const initials = mName ? mName.split(' ').map((n: string) => n[0]).join('') : '?';
-            const badgeStyle = getRoleBadgeStyle(mRole);
-            return (
-              <div 
-                key={i} 
-                className="bg-[var(--theme-card)] border p-4 rounded-2xl flex items-center gap-3 hover:scale-[1.01] transition-transform duration-300"
-                style={{ borderColor: 'var(--theme-border)' }}
-              >
-                <div 
-                  className="w-12 h-12 rounded-xl text-white flex items-center justify-center font-bold text-sm shrink-0 shadow-lg"
-                  style={{ 
-                    background: 'linear-gradient(135deg, var(--theme-primary), var(--theme-secondary))',
-                  }}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {list.slice(0, 8).map((m: any, i: number) => {
+          const name = safeString(m?.name) || "عضو تیم";
+          const role = safeString(m?.role || m?.bio);
+          const photo = typeof m?.photo === "string" ? m.photo : "";
+          return (
+            <CardShell key={i} className="text-center space-y-2">
+              {photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={photo} alt={name} className="w-12 h-12 rounded-full object-cover mx-auto" />
+              ) : (
+                <div
+                  className="w-12 h-12 rounded-full mx-auto flex items-center justify-center text-white font-bold"
+                  style={{ backgroundImage: "var(--theme-accent)" }}
                 >
-                  {safeString(m.initials) || initials}
+                  {name[0] || "?"}
                 </div>
-                <div className="space-y-1 overflow-hidden flex-1 text-right">
-                  <h4 className="text-xs font-bold text-white truncate">{mName}</h4>
-                  <span 
-                    className="inline-block text-[9px] font-black px-2 py-0.5 rounded-full border"
-                    style={{ 
-                      backgroundColor: badgeStyle.bg,
-                      color: badgeStyle.text,
-                      borderColor: badgeStyle.border
-                    }}
-                  >
-                    {mRole}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {(slide.bullets || []).map((b, i) => (
-            <div key={i} className="bg-[var(--theme-card)] border p-4 rounded-xl flex gap-3 items-center" style={{ borderColor: 'var(--theme-border)' }}>
-              <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: 'var(--theme-badge-bg)', color: 'var(--theme-primary)' }}>
-                <Users className="w-5 h-5" />
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed font-semibold">{b}</p>
-            </div>
-          ))}
-        </div>
-      )}
+              )}
+              <p className="text-sm font-bold">{name}</p>
+              <p className="text-[10px]" style={{ color: "var(--theme-muted)" }}>
+                {role}
+              </p>
+            </CardShell>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
-// 9. Ask / Funding Layout
 function AskLayout({ slide }: { slide: PitchDeckSlide }) {
-  const metadata = slide.metadata || {};
-  const amount = safeString(metadata.amount || "نامشخص");
-  const runway = safeString(metadata.runway || "نامشخص");
-  const use = safeString(metadata.use || "توسعه محصول و مارکتینگ");
-  
-  // Budget breakdown metadata mapping
-  const rawBudget = metadata.budget;
-  const budgetList = Array.isArray(rawBudget) ? rawBudget : [];
-  const budget = budgetList.length > 0 ? budgetList.filter(Boolean) : [
-    { category: "توسعه محصول و تحقیق و توسعه", percentage: 45 },
-    { category: "مارکتینگ و جذب مشتری", percentage: 35 },
-    { category: "عملیات و تیم اداری", percentage: 20 }
-  ];
-
-  const colors = ["bg-cyan-500", "bg-violet-500", "bg-emerald-500", "bg-amber-500"];
+  const meta = slide.metadata || {};
+  const bullets = getSlideBullets(slide);
+  const breakdown = meta.budgetBreakdown || meta.allocation || [];
 
   return (
-    <div className="grid md:grid-cols-12 gap-6 items-center" dir="rtl">
-      {/* Left: General Funding Ask */}
-      <div className="md:col-span-5 space-y-3">
-        <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: 'var(--theme-primary)' }}>
-          <DollarSign className="w-6 h-6" style={{ color: 'var(--theme-primary)' }} />
+    <div className="grid md:grid-cols-2 gap-6 items-center" dir="rtl">
+      <div className="space-y-4">
+        <h2 className="text-2xl font-black flex items-center gap-2">
+          <Rocket className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
           {slide.title}
         </h2>
-        <div className="bg-[var(--theme-card)] border p-4 rounded-2xl space-y-3" style={{ borderColor: 'var(--theme-border)' }}>
-          <div>
-            <span className="text-[10px] text-slate-400 font-bold block mb-1">سرمایه مورد نیاز</span>
-            <span className="text-xl md:text-2xl font-black" style={{ color: 'var(--theme-primary)' }}>{amount}</span>
-          </div>
-          <div>
-            <span className="text-[10px] text-slate-400 font-bold block mb-1">مدت زمان بقا (Runway)</span>
-            <span className="text-sm font-bold text-white">{runway}</span>
-          </div>
+        <div
+          className="rounded-3xl p-6 text-white text-center space-y-2"
+          style={{ backgroundImage: "var(--theme-accent)" }}
+        >
+          <p className="text-xs opacity-90">مبلغ جذب سرمایه</p>
+          <p className="text-3xl font-black">{safeString(meta.amount) || "—"}</p>
+          {meta.runway && <p className="text-sm opacity-90">Runway: {safeString(meta.runway)}</p>}
         </div>
       </div>
-
-      {/* Right: Sleek Budget Progress Allocation Card */}
-      <div className="md:col-span-7">
-        <div className="bg-[var(--theme-card)] border p-5 rounded-2xl space-y-4" style={{ borderColor: 'var(--theme-border)' }}>
-          <h4 className="text-xs font-black text-white pb-2 border-b" style={{ borderColor: 'var(--theme-border)' }}>توزیع تخصیص منابع بودجه</h4>
-          <div className="space-y-3.5">
-            {budget.map((b: any, idx: number) => {
-              const barColor = colors[idx % colors.length];
-              const bCategory = safeString(b && typeof b === 'object' ? b.category : '');
-              const bPercentageVal = parseNum(b && typeof b === 'object' ? b.percentage : 0);
-              const barWidth = Math.max(0, Math.min(100, bPercentageVal));
-
-              return (
-                <div key={idx} className="space-y-1">
-                  <div className="flex justify-between items-center text-xs font-semibold">
-                    <span className="text-slate-300">{bCategory}</span>
-                    <span className="font-mono" style={{ color: 'var(--theme-primary)' }}>{bPercentageVal}%</span>
-                  </div>
-                  {/* Progress bar container */}
-                  <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${barColor} rounded-full transition-all duration-500`}
-                      style={{ width: `${barWidth}%` }}
-                    />
-                  </div>
+      <div className="space-y-3">
+        {Array.isArray(breakdown) && breakdown.length > 0
+          ? breakdown.slice(0, 4).map((b: any, i: number) => (
+              <div key={i}>
+                <div className="flex justify-between text-xs mb-1">
+                  <span>{b.label || b.title || `بخش ${i + 1}`}</span>
+                  <span>{b.percent || b.value || ""}%</span>
                 </div>
-              );
-            })}
-          </div>
-        </div>
+                <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: "var(--theme-badge-bg)" }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${Math.min(100, parseNum(b.percent || b.value || 25))}%`,
+                      backgroundImage: "var(--theme-accent)",
+                    }}
+                  />
+                </div>
+              </div>
+            ))
+          : bullets.map((b, i) => (
+              <CardShell key={i}>
+                <p className="text-sm">{b}</p>
+              </CardShell>
+            ))}
+        {meta.use && (
+          <p className="text-xs" style={{ color: "var(--theme-muted)" }}>
+            مصرف اصلی: {safeString(meta.use)}
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
-// 10. Generic Layout
-function GenericLayout({ slide }: { slide: PitchDeckSlide }) {
+function TractionLayout({ slide }: { slide: PitchDeckSlide }) {
+  const bullets = getSlideBullets(slide);
+  const metrics = slide.metadata?.metrics || [];
+  const chart = slide.blocks?.find((b) => b.type === "chart")?.chartData || metrics;
+
   return (
-    <div className="space-y-4" dir="rtl">
-      <h2 className="text-2xl font-black text-cyan-400 flex items-center gap-2">
-        <Award className="w-6 h-6" />
+    <div className="space-y-5" dir="rtl">
+      <h2 className="text-2xl font-black flex items-center gap-2">
+        <TrendingUp className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
         {slide.title}
       </h2>
+      {slide.metadata?.validationScore != null && (
+        <p className="text-sm" style={{ color: "var(--theme-secondary)" }}>
+          امتیاز اعتبارسنجی: {slide.metadata.validationScore}
+        </p>
+      )}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {(chart.length > 0 ? chart : bullets.slice(0, 4).map((b) => ({ label: b, value: 1 }))).map(
+          (m: any, i: number) => (
+            <CardShell key={i} className="text-center space-y-2">
+              <BarChart3 className="w-4 h-4 mx-auto" style={{ color: "var(--theme-primary)" }} />
+              <p className="text-lg font-black" style={{ color: "var(--theme-primary)" }}>
+                {m.value != null ? convertPersianArabicDigits(m.value) : "—"}
+              </p>
+              <p className="text-[10px]" style={{ color: "var(--theme-muted)" }}>
+                {m.label || m.name || bullets[i] || "متریک"}
+              </p>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--theme-badge-bg)" }}>
+                <div
+                  className="h-full"
+                  style={{
+                    width: `${Math.min(100, 30 + (parseNum(m.value) % 70))}%`,
+                    backgroundImage: "var(--theme-accent)",
+                  }}
+                />
+              </div>
+            </CardShell>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ProductLayout({ slide }: { slide: PitchDeckSlide }) {
+  const bullets = getSlideBullets(slide);
+  const image =
+    slide.metadata?.imageUrl ||
+    slide.blocks?.find((b) => b.type === "image")?.imageUrl;
+
+  return (
+    <div className="grid md:grid-cols-2 gap-6 items-center" dir="rtl">
+      <div className="space-y-4">
+        <h2 className="text-2xl font-black flex items-center gap-2">
+          <Eye className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
+          {slide.title}
+        </h2>
+        <ul className="space-y-2">
+          {bullets.map((b, i) => (
+            <CardShell key={i}>
+              <p className="text-sm">{b}</p>
+            </CardShell>
+          ))}
+        </ul>
+      </div>
+      <div
+        className="aspect-video rounded-2xl border flex items-center justify-center overflow-hidden"
+        style={{ borderColor: "var(--theme-border)", backgroundColor: "var(--theme-card)" }}
+      >
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={image} alt="product" className="w-full h-full object-cover" />
+        ) : (
+          <p className="text-xs" style={{ color: "var(--theme-muted)" }}>
+            تصویر محصول / اسکرین‌شات
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function GtmLayout({ slide }: { slide: PitchDeckSlide }) {
+  const bullets = getSlideBullets(slide);
+  return (
+    <div className="space-y-5" dir="rtl">
+      <h2 className="text-2xl font-black flex items-center gap-2">
+        <Map className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
+        {slide.title}
+      </h2>
+      <div className="grid md:grid-cols-3 gap-3">
+        {bullets.slice(0, 6).map((b, i) => (
+          <CardShell key={i} className="space-y-2">
+            <span
+              className="text-[10px] font-bold px-2 py-0.5 rounded-full inline-block"
+              style={{ backgroundColor: "var(--theme-badge-bg)", color: "var(--theme-primary)" }}
+            >
+              کانال {i + 1}
+            </span>
+            <p className="text-sm font-medium">{b}</p>
+          </CardShell>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FinancialsLayout({ slide }: { slide: PitchDeckSlide }) {
+  const bullets = getSlideBullets(slide);
+  const meta = slide.metadata || {};
+  return (
+    <div className="space-y-5" dir="rtl">
+      <h2 className="text-2xl font-black flex items-center gap-2">
+        <PieChart className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
+        {slide.title}
+      </h2>
+      <div className="grid grid-cols-3 gap-3">
+        {[
+          { l: "درآمد ماهانه", v: meta.revenue || meta.monthlyRevenue },
+          { l: "هزینه ماهانه", v: meta.burn || meta.monthlyBurn },
+          { l: "Runway", v: meta.runway },
+        ].map((c) => (
+          <CardShell key={c.l} className="text-center">
+            <p className="text-[10px]" style={{ color: "var(--theme-muted)" }}>
+              {c.l}
+            </p>
+            <p className="text-sm font-black" style={{ color: "var(--theme-primary)" }}>
+              {safeString(c.v) || "—"}
+            </p>
+          </CardShell>
+        ))}
+      </div>
+      <ul className="space-y-1 text-sm">
+        {bullets.map((b, i) => (
+          <li key={i}>• {b}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function UseOfFundsLayout({ slide }: { slide: PitchDeckSlide }) {
+  const meta = slide.metadata || {};
+  const breakdown = meta.budgetBreakdown || meta.allocation || [];
+  const bullets = getSlideBullets(slide);
+  const items =
+    Array.isArray(breakdown) && breakdown.length > 0
+      ? breakdown
+      : bullets.map((b, i) => ({ label: b, percent: 20 + i * 5 }));
+
+  return (
+    <div className="space-y-5" dir="rtl">
+      <h2 className="text-2xl font-black">{slide.title}</h2>
       <div className="space-y-3">
-        {(slide.bullets || []).map((b, i) => (
-          <div key={i} className="flex gap-3 items-start bg-slate-900/40 border border-white/5 p-3 rounded-2xl">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-2.5 shrink-0" />
-            <p className="text-sm md:text-base leading-relaxed text-slate-300 font-semibold">{b}</p>
+        {items.slice(0, 6).map((b: any, i: number) => (
+          <div key={i}>
+            <div className="flex justify-between text-xs mb-1">
+              <span>{b.label || b.title || b}</span>
+              <span>{b.percent != null ? `${b.percent}%` : ""}</span>
+            </div>
+            <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--theme-badge-bg)" }}>
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${Math.min(100, parseNum(b.percent) || 25)}%`,
+                  backgroundImage: "var(--theme-accent)",
+                }}
+              />
+            </div>
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function VisionLayout({ slide }: { slide: PitchDeckSlide }) {
+  const bullets = getSlideBullets(slide);
+  return (
+    <div className="text-center space-y-6 max-w-2xl mx-auto" dir="rtl">
+      <h2
+        className="text-3xl font-black"
+        style={{
+          backgroundImage: "var(--theme-accent)",
+          WebkitBackgroundClip: "text",
+          color: "transparent",
+        }}
+      >
+        {slide.title}
+      </h2>
+      <div className="space-y-3">
+        {bullets.map((b, i) => (
+          <p key={i} className="text-base leading-relaxed" style={{ color: "var(--theme-muted)" }}>
+            {b}
+          </p>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GenericLayout({ slide }: { slide: PitchDeckSlide }) {
+  const bullets = getSlideBullets(slide);
+  return (
+    <div className="space-y-5" dir="rtl">
+      <h2 className="text-2xl font-black">{slide.title}</h2>
+      <ul className="space-y-2">
+        {bullets.map((b, i) => (
+          <CardShell key={i} className="flex gap-2 items-start">
+            <span
+              className="w-1.5 h-1.5 rounded-full mt-2 shrink-0"
+              style={{ backgroundColor: "var(--theme-primary)" }}
+            />
+            <p className="text-sm leading-relaxed">{b}</p>
+          </CardShell>
+        ))}
+      </ul>
     </div>
   );
 }

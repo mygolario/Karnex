@@ -1,8 +1,8 @@
 "use client";
 
 import { PageTourHelp } from "@/components/tour/page-tour-help";
-import { PitchDeckSlide } from "@/lib/db";
-import { SlideThemes } from "./slide-templates";
+import type { PitchDeckSlide } from "@/lib/pitch-deck/types";
+import { resolveTheme } from "@/lib/pitch-deck/themes";
 import { useProject } from "@/contexts/project-context";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
@@ -54,8 +54,8 @@ export function DeckPreview({ slides, onEditSlide, onDeleteSlide, onRegenerate, 
   // Render a visual miniature representation of the slide layout type
   const renderMiniature = (slide: PitchDeckSlide) => {
     const title = slide.title || "بدون عنوان";
-    const themeKey = slide.metadata?.theme || 'midnight_cyan';
-    const activeTheme = SlideThemes[themeKey as keyof typeof SlideThemes] || SlideThemes.midnight_cyan;
+    const themeKey = slide.theme || slide.metadata?.theme || "karnex_light";
+    const activeTheme = resolveTheme(themeKey);
 
     switch (slide.type) {
       case "title":

@@ -9,15 +9,16 @@ export const pitchDeckTour: TourDefinition = {
   helpCenterHref: "/dashboard/help",
   xpReward: 40,
   checklistItem: true,
-  estimatedTime: "۱ دقیقه",
+  estimatedTime: "۲ دقیقه",
   projectTypes: ["startup"],
   personas: ["founder"],
   steps: [
     {
       id: "deck-welcome",
       target: "deck-header",
-      title: "داستان استارتاپ شما",
-      description: "پیچ‌دک شما با کمک دستیار کارنکس آماده شده است! اینجا می‌توانید داستان خود را مرور و ویرایش کنید.",
+      title: "هاب پیچ‌دک کارنکس",
+      description:
+        "اینجا آمادگی سرمایه‌گذاری، ارائه، اشتراک و خروجی را یک‌جا می‌بینید. داستان شما با ویزارد و داده پروژه ساخته می‌شود.",
       route: "/dashboard/pitch-deck",
       mood: "welcome",
       position: "bottom",
@@ -25,24 +26,27 @@ export const pitchDeckTour: TourDefinition = {
     {
       id: "deck-grid",
       target: "deck-grid",
-      title: "ویرایش و شخصی‌سازی",
-      description: "روی هر اسلاید کلیک کنید تا محتوا را ویرایش کنید.",
+      title: "استوری‌بورد روایت",
+      description:
+        "جریان داستان سرمایه‌گذار را ببینید، اسلاید ضعیف را پیدا کنید و با کلیک وارد استودیو شوید.",
       mood: "tip",
       position: "top",
     },
     {
       id: "add-slide",
       target: "add-slide-btn",
-      title: "افزودن اسلاید جدید",
-      description: "اگر نیاز به اسلاید بیشتری دارید، از اینجا اضافه کنید.",
+      title: "اسلایدهای اختیاری",
+      description:
+        "تراکشن، محصول، GTM، مالی و مصرف بودجه را در صورت نیاز اضافه کنید.",
       mood: "action",
       position: "left",
     },
     {
       id: "deck-actions",
       target: "deck-actions",
-      title: "دستیار هوشمند و خروجی",
-      description: "با دستیار کارنکس دک را بازنویسی کنید، یا فایل PPTX قابل ویرایش بگیرید.",
+      title: "خروجی و مربی",
+      description:
+        "PPTX و PDF بگیرید، اسکریپت ارائه بسازید، یا با مربی سرمایه‌گذار اسلایدها را قوی‌تر کنید.",
       mood: "success",
       position: "bottom",
     },

@@ -105,7 +105,12 @@ function buildLiveContext(
   }
 
   if (projectType === "startup") {
-    const deck = Array.isArray(data.pitchDeck) ? data.pitchDeck : [];
+    const raw = data.pitchDeck;
+    const deck = Array.isArray(raw)
+      ? raw
+      : raw && typeof raw === "object" && Array.isArray((raw as any).slides)
+        ? (raw as any).slides
+        : [];
     lines.push(`- پیچ‌دک: ${deck.length} اسلاید`);
   }
 

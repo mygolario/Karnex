@@ -319,25 +319,39 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
         rollback = limitResult.rollback;
 
         const { idea, wizardAnswers, projectContext } = data;
-        const wizardAnswersBlock = wizardAnswers ? `اطلاعات تکمیلی از فرم دستیار:
+        const wizardAnswersBlock = wizardAnswers ? `اطلاعات تکمیلی از ویزارد داستان:
+        - کهن‌الگوی روایت: ${wizardAnswers.archetype || 'classic_seed'}
+        - مرحله: ${wizardAnswers.stage || ''}
         - تگ‌لاین: ${wizardAnswers.tagline || ''}
         - مشکل: ${wizardAnswers.problem || ''}
         - راهکار: ${wizardAnswers.solution || ''}
         - بازار هدف: ${wizardAnswers.market || ''}
         - مدل درآمدی: ${wizardAnswers.revenue || ''}
-        - تیم: ${wizardAnswers.team || ''}` : '';
+        - مبلغ جذب سرمایه: ${wizardAnswers.raiseSize || wizardAnswers.ask || ''}
+        - تیم: ${wizardAnswers.team || ''}
+        - لحن: ${wizardAnswers.voice || 'حرفه‌ای'}` : '';
 
         let projectContextBlock = '';
         if (projectContext) {
-            projectContextBlock = `اطلاعات پروژه‌ای فعلی در سیستم (از این اطلاعات برای شخصی‌سازی ارائه استفاده کن):
+            const runway = projectContext.financials?.runway;
+            projectContextBlock = `اطلاعات پروژه‌ای فعلی در سیستم (اولویت با داده واقعی پروژه؛ اعداد ساختگی را با برچسب تخمینی مشخص کن):
 - نام پروژه: ${projectContext.projectName || ''}
+- بودجه/Ask: ${projectContext.budget || ''}
+- مخاطب: ${projectContext.audience || ''}
 - بوم ناب (Lean Canvas):
+  * مشکل: ${JSON.stringify(projectContext.leanCanvas?.problem || '')}
+  * راهکار: ${JSON.stringify(projectContext.leanCanvas?.solution || '')}
   * ارزش پیشنهادی: ${projectContext.leanCanvas?.uniqueValue || ''}
-  * بخش مشتریان: ${projectContext.leanCanvas?.customerSegments || ''}
-  * مدل درآمدی: ${projectContext.leanCanvas?.revenueStream || ''}
-  * ساختار هزینه‌ها: ${projectContext.leanCanvas?.costStructure || ''}
-- لیست رقبا: ${Array.isArray(projectContext.competitors) ? projectContext.competitors.map((c: any) => `${c.name} (${c.strength || ''})`).join('، ') : ''}
-- نقشه راه فازها: ${Array.isArray(projectContext.roadmap) ? projectContext.roadmap.map((r: any) => `${r.title}`).join('، ') : ''}`;
+  * بخش مشتریان: ${JSON.stringify(projectContext.leanCanvas?.customerSegments || '')}
+  * کانال‌ها: ${JSON.stringify(projectContext.leanCanvas?.channels || '')}
+  * مدل درآمدی: ${JSON.stringify(projectContext.leanCanvas?.revenueStream || '')}
+  * ساختار هزینه‌ها: ${JSON.stringify(projectContext.leanCanvas?.costStructure || '')}
+- لیست رقبا: ${Array.isArray(projectContext.competitors) ? projectContext.competitors.map((c: any) => `${c.name} (قوت: ${c.strength || ''} / ضعف: ${c.weakness || ''})`).join('، ') : ''}
+- نقشه راه فازها: ${Array.isArray(projectContext.roadmap) ? projectContext.roadmap.map((r: any) => `${r.title}`).join('، ') : ''}
+- استراتژی بازاریابی: ${Array.isArray(projectContext.marketingStrategy) ? projectContext.marketingStrategy.join('، ') : ''}
+- Runway: ${runway ? `${runway.runwayMonths} ماه / burn ${runway.monthlyBurn}` : 'نامشخص'}
+- اعتبارسنجی: ${JSON.stringify(projectContext.validation || projectContext.ideaValidation || {})}
+- رشد: ${JSON.stringify(projectContext.growth || projectContext.growthPlan || {})}`;
         }
 
         const projectName = projectContext?.projectName || 'پروژه استارتاپی';
@@ -350,26 +364,44 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
         });
 
         try {
+            const { multiPassGenerate } = await import("@/lib/ai/multi-pass");
+            const { normalizeSlide } = await import("@/lib/pitch-deck/migrate");
+
             const parsed = await runWithAiUsage(
                 { userId: limitResult.user?.id || "anonymous", feature: "generatePitchDeck" },
-                () => callAIWithValidation(
-                    user,
-                    { systemPrompt: system, maxTokens: 3000, temperature: 0.7, timeoutMs: 30000 },
-                    PitchDeckSchema,
-                    1
-                )
+                async () => {
+                    try {
+                        const multi = await multiPassGenerate<{ slides?: any[]; reasoning?: string }>(
+                            user,
+                            system,
+                            {
+                                maxTokens: 4000,
+                                temperature: 0.55,
+                                critiqueInstruction:
+                                    "نقد سرمایه‌گذارانه: آیا داستان قانع‌کننده، داده‌ها واقع‌بینانه، Ask شفاف، و اسلایدها به فارسی و کامل‌اند؟ اعداد بدون منبع را در claims با status=estimate نگه دار. JSON اصلاح‌شده را برگردان.",
+                            }
+                        );
+                        const validated = PitchDeckSchema.safeParse(multi.data);
+                        if (validated.success) return validated.data;
+                        // Fallback single-pass validation
+                        return callAIWithValidation(
+                            user,
+                            { systemPrompt: system, maxTokens: 4000, temperature: 0.55, timeoutMs: 45000 },
+                            PitchDeckSchema,
+                            1
+                        );
+                    } catch {
+                        return callAIWithValidation(
+                            user,
+                            { systemPrompt: system, maxTokens: 4000, temperature: 0.55, timeoutMs: 45000 },
+                            PitchDeckSchema,
+                            1
+                        );
+                    }
+                }
             );
             
-            let slides = parsed.slides || [];
-            // Post-process to ensure IDs, types, and metadata are intact
-            slides = slides.map((s: any, i: number) => ({
-                id: s.id || `slide-${Date.now()}-${i}`,
-                type: s.type || 'generic',
-                title: s.title || 'بدون عنوان',
-                bullets: Array.isArray(s.bullets) ? s.bullets : [],
-                isHidden: s.isHidden || false,
-                metadata: s.metadata || {}
-            }));
+            let slides = (parsed.slides || []).map((s: any, i: number) => normalizeSlide(s, i));
 
             return { success: true, data: { slides } };
         } catch (err) {
