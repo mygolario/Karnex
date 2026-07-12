@@ -8,9 +8,16 @@ import {
 } from "@/lib/location/confidence";
 
 interface ConfidenceBadgeProps {
-  level: ConfidenceLevel;
+  level?: ConfidenceLevel;
   className?: string;
   showDot?: boolean;
+}
+
+const FALLBACK_LEVEL: ConfidenceLevel = "ai";
+
+function resolveLevel(level?: ConfidenceLevel): ConfidenceLevel {
+  if (level && level in CONFIDENCE_STYLES) return level;
+  return FALLBACK_LEVEL;
 }
 
 export function ConfidenceBadge({
@@ -18,7 +25,8 @@ export function ConfidenceBadge({
   className,
   showDot = true,
 }: ConfidenceBadgeProps) {
-  const styles = CONFIDENCE_STYLES[level];
+  const safeLevel = resolveLevel(level);
+  const styles = CONFIDENCE_STYLES[safeLevel];
   return (
     <span
       className={cn(
@@ -30,7 +38,7 @@ export function ConfidenceBadge({
       {showDot && (
         <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", styles.dot)} />
       )}
-      {CONFIDENCE_LABELS[level]}
+      {CONFIDENCE_LABELS[safeLevel]}
     </span>
   );
 }
