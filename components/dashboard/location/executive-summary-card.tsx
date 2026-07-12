@@ -57,17 +57,21 @@ export function ExecutiveSummaryCard({ onNavigateTab }: ExecutiveSummaryCardProp
           )}
           {links.length > 0 && onNavigateTab && (
             <div className="flex flex-wrap gap-2 mt-3">
-              {links.map((link) => (
-                <Button
-                  key={link.tab}
-                  variant="outline"
-                  size="sm"
-                  className="h-7 text-[10px] border-white/10"
-                  onClick={() => onNavigateTab(link.tab)}
-                >
-                  {link.label}
-                </Button>
-              ))}
+              {links.map((link, i) => {
+                const tab = link?.tab;
+                if (!tab) return null;
+                return (
+                  <Button
+                    key={`${i}-${tab}`}
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-[10px] border-white/10"
+                    onClick={() => onNavigateTab(tab)}
+                  >
+                    {link.label}
+                  </Button>
+                );
+              })}
             </div>
           )}
         </div>

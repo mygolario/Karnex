@@ -508,7 +508,7 @@ export interface LocationAnalysis {
 
   executiveSummary?: {
     narrative: string;
-    evidenceLinks?: Array<{ tab: string; label: string }>;
+    evidenceLinks?: Array<{ tab?: string; label: string }>;
   };
 
   fitScoreBreakdown?: Array<{
