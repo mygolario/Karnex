@@ -9,6 +9,9 @@ const withBundleAnalyzer = bundleAnalyzer({
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Avoid Turbopack hashed external aliases for native/server packages (pg) that
+  // break local collect-page-data and Vercel serverless traces.
+  serverExternalPackages: ["pg", "@prisma/client", "@prisma/adapter-pg"],
 
   images: {
     formats: ["image/avif", "image/webp"],
