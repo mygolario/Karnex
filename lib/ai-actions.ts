@@ -233,7 +233,15 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
 
 // === Analyze Competitors ===
 
-export async function analyzeCompetitorsAction(data: { projectName: string, projectIdea: string, audience: string }, options?: { skipLimitCheck?: boolean }): Promise<ActionResponse<any>> {
+export async function analyzeCompetitorsAction(
+  data: {
+    projectName: string;
+    projectIdea: string;
+    audience: string;
+    contextBlock?: string;
+  },
+  options?: { skipLimitCheck?: boolean }
+): Promise<ActionResponse<any>> {
     let rollback = async () => {};
     let usageUserId: string | undefined;
     try {
@@ -249,13 +257,14 @@ export async function analyzeCompetitorsAction(data: { projectName: string, proj
 
         if (!process.env.OPENROUTER_API_KEY) {
             await rollback();
-            return { success: true, data: getMockCompetitors() };
+            return { success: false, error: "OPENROUTER_API_KEY_MISSING" };
         }
 
         const { system, user } = getPrompt("analyzeCompetitors", {
             projectName: data.projectName,
             projectIdea: data.projectIdea,
-            audience: data.audience
+            audience: data.audience,
+            contextBlock: data.contextBlock || "",
         });
 
         try {
@@ -263,11 +272,10 @@ export async function analyzeCompetitorsAction(data: { projectName: string, proj
                 user,
                 {
                     systemPrompt: system,
-                    maxTokens: 2000,
-                    temperature: 0.7,
-                    timeoutMs: 30000,
-                    // Grounded via Perplexity Sonar (built-in live web search) instead
-                    // of LLM hallucination. Mock remains a last-resort degraded mode.
+                    maxTokens: 3500,
+                    temperature: 0.5,
+                    timeoutMs: 45000,
+                    // Grounded via Perplexity Sonar (built-in live web search).
                     modelOverride: TIER_GROUNDED,
                 },
                 SwotCompetitorsSchema,
@@ -277,37 +285,18 @@ export async function analyzeCompetitorsAction(data: { projectName: string, proj
             const parsed = usageUserId
                 ? await runWithAiUsage({ userId: usageUserId, feature: "analyzeCompetitors" }, runValidation)
                 : await runValidation();
-            // Keep reasoning for UI display
             return { success: true, data: parsed };
         } catch (err) {
-            console.warn("AI Validation failed for analyzeCompetitorsAction, using mock:", err);
+            console.warn("AI Validation failed for analyzeCompetitorsAction:", err);
             await rollback();
-            return { success: true, data: getMockCompetitors() };
+            return { success: false, error: "AI_VALIDATION_FAILED" };
         }
 
     } catch (error) {
         console.error("analyzeCompetitorsAction error:", error);
         await rollback();
-        return { success: true, data: getMockCompetitors() };
+        return { success: false, error: "ANALYZE_COMPETITORS_FAILED" };
     }
-}
-
-function getMockCompetitors() {
-    return {
-        competitors: [
-          { name: "رقیب ایرانی ۱", channel: "وب‌سایت", strength: "برند قوی", weakness: "قیمت بالا", isIranian: true },
-          { name: "رقیب ایرانی ۲", channel: "اینستاگرام", strength: "فعال در شبکه اجتماعی", weakness: "کیفیت ناپایدار", isIranian: true },
-          { name: "رقیب ایرانی ۳", channel: "اپ موبایل", strength: "تجربه کاربری خوب", weakness: "بدون وب‌سایت", isIranian: true },
-          { name: "Global Competitor", channel: "Website", strength: "تکنولوژی پیشرفته", weakness: "فارسی ندارد", isIranian: false },
-          { name: "International Player", channel: "App", strength: "سرمایه‌گذاری بالا", weakness: "درک بازار ایران ندارد", isIranian: false }
-        ],
-        swot: {
-          strengths: ["چابکی و سرعت تصمیم‌گیری", "درک عمیق بازار ایران", "هزینه‌های پایین"],
-          weaknesses: ["برند ناشناخته", "منابع مالی محدود", "تیم کوچک"],
-          opportunities: ["شکاف در بازار موجود", "رشد دیجیتالی ایران", "نیاز برآورده نشده مشتریان"],
-          threats: ["ورود رقبای بزرگ", "تغییرات اقتصادی", "تغییر رفتار مصرف‌کننده"]
-        }
-    };
 }
 // === Generate Pitch Deck ===
 

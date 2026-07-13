@@ -3,8 +3,24 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "../prisma/client";
 import { auth } from "@/lib/auth/session";
+import type {
+  IdeaValidationRecord,
+  ValidationBrief,
+} from "@/lib/validation/types";
+import type {
+  CompetitorIntel,
+  CompetitorIntelItem,
+  CompetitorPosition,
+  FeatureMatrixRow,
+} from "@/lib/competitors/types";
 
-// Define the Data Structure (TypeScript Interface)
+export type { IdeaValidationRecord, ValidationBrief };
+export type {
+  CompetitorIntel,
+  CompetitorIntelItem,
+  CompetitorPosition,
+  FeatureMatrixRow,
+};
 
 // User Profile Structure (Enhanced)
 export interface UserProfile {
@@ -95,12 +111,13 @@ export interface SubTask {
   order?: number; // Added order
 }
 
-// Competitor structure
+// Competitor structure (legacy projection for score / pitch / export)
 export interface Competitor {
   name: string;
   strength: string;
   weakness: string;
   channel: string;
+  isIranian?: boolean;
 }
 
 // Legal advice structure
@@ -780,6 +797,8 @@ export interface BusinessPlan {
   roadmap: RoadmapPhase[];
   marketingStrategy: string[];
   competitors: Competitor[];
+  /** Rich competitor workspace; `competitors` is the active projection for legacy readers */
+  competitorIntel?: CompetitorIntel;
   legalAdvice?: LegalAdvice;
   mediaKit?: MediaKit; // Creator
   permits?: PermitItem[]; // Traditional
@@ -794,7 +813,9 @@ export interface BusinessPlan {
   canvasConnections?: any[];
   canvasViewMode?: string;
   // growth removed
-  // ideaValidation removed
+  ideaValidation?: IdeaValidationRecord;
+  ideaValidationHistory?: IdeaValidationRecord[];
+  ideaValidationBrief?: ValidationBrief;
   // documents removed
   assistantData?: AssistantData; // NEW: Assistant Data
   // storefront removed
@@ -1155,6 +1176,26 @@ export const savePitchDeck = async (userId: string, deck: any[], projectId: stri
 
 export const saveSWOT = async (userId: string, swot: SWOTAnalysis, projectId: string) => {
     return savePlanToCloud(userId, { swotAnalysis: swot }, true, projectId);
+};
+
+export const saveCompetitorIntel = async (
+  userId: string,
+  competitorIntel: CompetitorIntel,
+  competitors: Competitor[],
+  projectId: string,
+  extra?: { swotAnalysis?: SWOTAnalysis; pitchDeck?: PitchDeckSlide[] }
+) => {
+  return savePlanToCloud(
+    userId,
+    {
+      competitorIntel,
+      competitors,
+      ...(extra?.swotAnalysis ? { swotAnalysis: extra.swotAnalysis } : {}),
+      ...(extra?.pitchDeck ? { pitchDeck: extra.pitchDeck } : {}),
+    },
+    true,
+    projectId
+  );
 };
 
 export const saveBrandCanvas = async (userId: string, canvas: BrandCanvas, projectId: string) => {

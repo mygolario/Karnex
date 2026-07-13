@@ -79,7 +79,10 @@ export function KarnexScore({ className, compact = false }: KarnexScoreProps) {
     let marketingScore = 0;
     const planAny = plan as Record<string, any>;
     if (planAny.growthHacks?.length > 0) marketingScore += 8;
-    if (planAny.competitors?.length > 0) marketingScore += 7;
+    const hasCompetitors =
+      (plan.competitorIntel?.competitors?.some((c) => c.status === "active") ?? false) ||
+      (planAny.competitors?.length > 0);
+    if (hasCompetitors) marketingScore += 7;
     breakdown.marketing = marketingScore;
     score += marketingScore;
 

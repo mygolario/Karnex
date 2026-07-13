@@ -195,7 +195,7 @@ export function CommandMenu({ mobile = false }: CommandMenuProps) {
               <span>نقد استراتژی پروژه</span>
             </Command.Item>
             <Command.Item
-                onSelect={() => askCopilot("/competitors رقبای اصلی پروژه‌ام رو تحلیل کن")}
+                onSelect={() => runCommand(() => router.push('/dashboard/competitors'))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
             >
               <Sparkles className="ms-2 h-4 w-4 text-muted-foreground" />

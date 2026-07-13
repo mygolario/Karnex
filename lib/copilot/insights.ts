@@ -179,22 +179,43 @@ export async function generateInsightsForProject(
         },
       });
     }
+  }
 
-    const competitors: any[] = Array.isArray(data.competitors)
-      ? data.competitors
-      : Array.isArray(data.competitorAnalysis)
-        ? data.competitorAnalysis
-        : [];
+  // --- Competitor workspace (startup + traditional) ---
+  if (projectType === "startup" || projectType === "traditional") {
+    const activeFromIntel = Array.isArray(data.competitorIntel?.competitors)
+      ? data.competitorIntel.competitors.filter((c: { status?: string }) => c.status === "active")
+      : [];
+    const competitors: unknown[] = activeFromIntel.length
+      ? activeFromIntel
+      : Array.isArray(data.competitors)
+        ? data.competitors
+        : Array.isArray(data.competitorAnalysis)
+          ? data.competitorAnalysis
+          : [];
+
     if (competitors.length === 0) {
       insights.push({
         type: "competitor",
         priority: "warning",
         title: "تحلیل رقبا شروع نشده",
-        body: "هنوز رقبای خودت رو اضافه نکردی. شناخت رقبا کلید تمایز و قیمت‌گذاریه.",
+        body: "هنوز رقیب فعالی در فضای تحلیل رقبا نداری. شناخت رقبا کلید تمایز و قیمت‌گذاریه.",
         actionPayload: {
-          type: "open_copilot",
-          label: "تحلیل رقبا",
-          prefill: "بیا رقبای اصلی پروژه‌م رو تحلیل کنیم.",
+          type: "open_page",
+          label: "باز کردن تحلیل رقبا",
+          href: "/dashboard/competitors",
+        },
+      });
+    } else if (!data.competitorIntel?.wedge && !data.competitorIntel?.brief) {
+      insights.push({
+        type: "competitor",
+        priority: "info",
+        title: `${competitors.length} رقیب داری؛ جایگاه هنوز مبهم است`,
+        body: "فهرست رقبا هست، ولی زاویه تمایز و خلاصه جایگاه را کامل کن تا تصمیم‌گیری راحت‌تر شود.",
+        actionPayload: {
+          type: "open_page",
+          label: "تکمیل جایگاه",
+          href: "/dashboard/competitors",
         },
       });
     }
@@ -280,27 +301,20 @@ export async function generateInsightsForProject(
           title: `${pending.length} مجوز در انتظار`,
           body: `${pending.length} مجوز هنوز تکمیل نشده. تأخیر در مجوزها می‌تونه افتتاح رو عقب بندازه.`,
           payload: { count: pending.length, titles: pending.slice(0, 5).map((p) => p.name || p.title) },
-          actionPayload: {
-            type: "open_page",
-            label: "چک‌لیست مجوزها",
-            href: "/dashboard/location",
-          },
         });
       }
     }
-    if (!data.locationAnalysis) {
-      insights.push({
-        type: "gap",
-        priority: "info",
-        title: "تحلیل موقعیت شروع نشده",
-        body: "تحلیل موقعیت بهت کمک می‌کنه بهترین مکان برای کسب‌وکارت رو پیدا کنی.",
-        actionPayload: {
-          type: "open_page",
-          label: "تحلیل موقعیت",
-          href: "/dashboard/location",
-        },
-      });
-    }
+    insights.push({
+      type: "gap",
+      priority: "info",
+      title: "سلامت کسب‌وکار را چک کن",
+      body: "امتیاز زنده از مالی، موجودی و نقشه راه در داشبورد سلامت کسب‌وکار در دسترس است.",
+      actionPayload: {
+        type: "open_page",
+        label: "سلامت کسب‌وکار",
+        href: "/dashboard/health",
+      },
+    });
   }
 
   await persistInsights(projectId, userId, insights);

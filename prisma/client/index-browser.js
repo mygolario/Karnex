@@ -588,6 +588,216 @@ exports.Prisma.NotificationScalarFieldEnum = {
   action: 'action'
 };
 
+exports.Prisma.ProductScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  name: 'name',
+  sku: 'sku',
+  category: 'category',
+  unit: 'unit',
+  cost: 'cost',
+  price: 'price',
+  stock: 'stock',
+  lowStockAt: 'lowStockAt',
+  supplierId: 'supplierId',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.StockTransactionScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  productId: 'productId',
+  type: 'type',
+  qty: 'qty',
+  unitCost: 'unitCost',
+  note: 'note',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.SupplierScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  name: 'name',
+  contact: 'contact',
+  address: 'address',
+  note: 'note',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.BusinessTransactionScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  type: 'type',
+  category: 'category',
+  amount: 'amount',
+  date: 'date',
+  note: 'note',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.StaffScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  name: 'name',
+  role: 'role',
+  phone: 'phone',
+  hourlyRate: 'hourlyRate',
+  active: 'active',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ShiftScalarFieldEnum = {
+  id: 'id',
+  staffId: 'staffId',
+  projectId: 'projectId',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  note: 'note',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AttendanceEntryScalarFieldEnum = {
+  id: 'id',
+  staffId: 'staffId',
+  projectId: 'projectId',
+  checkIn: 'checkIn',
+  checkOut: 'checkOut',
+  note: 'note',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.LoyaltyAccountScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  customerId: 'customerId',
+  customerName: 'customerName',
+  phone: 'phone',
+  points: 'points',
+  tier: 'tier',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PointTransactionScalarFieldEnum = {
+  id: 'id',
+  accountId: 'accountId',
+  projectId: 'projectId',
+  delta: 'delta',
+  reason: 'reason',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.OrderScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  customerId: 'customerId',
+  customerName: 'customerName',
+  paymentMethod: 'paymentMethod',
+  total: 'total',
+  note: 'note',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.OrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  productId: 'productId',
+  name: 'name',
+  qty: 'qty',
+  unitPrice: 'unitPrice',
+  lineTotal: 'lineTotal'
+};
+
+exports.Prisma.PromotionScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  title: 'title',
+  type: 'type',
+  discountPct: 'discountPct',
+  code: 'code',
+  startsAt: 'startsAt',
+  endsAt: 'endsAt',
+  active: 'active',
+  copy: 'copy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CouponScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  code: 'code',
+  discountPct: 'discountPct',
+  discountAmt: 'discountAmt',
+  maxUses: 'maxUses',
+  usedCount: 'usedCount',
+  expiresAt: 'expiresAt',
+  active: 'active',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CouponRedemptionScalarFieldEnum = {
+  id: 'id',
+  couponId: 'couponId',
+  projectId: 'projectId',
+  customerId: 'customerId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ReviewScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  author: 'author',
+  rating: 'rating',
+  body: 'body',
+  source: 'source',
+  reply: 'reply',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ReferralScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  code: 'code',
+  referrerId: 'referrerId',
+  referrerName: 'referrerName',
+  refereeId: 'refereeId',
+  status: 'status',
+  rewardPoints: 'rewardPoints',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.BroadcastScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  channel: 'channel',
+  title: 'title',
+  body: 'body',
+  status: 'status',
+  scheduledAt: 'scheduledAt',
+  sentAt: 'sentAt',
+  recipientCount: 'recipientCount',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AppointmentScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  customerName: 'customerName',
+  customerPhone: 'customerPhone',
+  service: 'service',
+  startAt: 'startAt',
+  endAt: 'endAt',
+  status: 'status',
+  note: 'note',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -655,7 +865,25 @@ exports.Prisma.ModelName = {
   UserIntegration: 'UserIntegration',
   DataExportRequest: 'DataExportRequest',
   KbChunk: 'KbChunk',
-  Notification: 'Notification'
+  Notification: 'Notification',
+  Product: 'Product',
+  StockTransaction: 'StockTransaction',
+  Supplier: 'Supplier',
+  BusinessTransaction: 'BusinessTransaction',
+  Staff: 'Staff',
+  Shift: 'Shift',
+  AttendanceEntry: 'AttendanceEntry',
+  LoyaltyAccount: 'LoyaltyAccount',
+  PointTransaction: 'PointTransaction',
+  Order: 'Order',
+  OrderItem: 'OrderItem',
+  Promotion: 'Promotion',
+  Coupon: 'Coupon',
+  CouponRedemption: 'CouponRedemption',
+  Review: 'Review',
+  Referral: 'Referral',
+  Broadcast: 'Broadcast',
+  Appointment: 'Appointment'
 };
 
 /**

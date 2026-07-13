@@ -4,10 +4,11 @@ import { cn, toPersianDigits } from "@/lib/utils";
 import {
   LayoutGrid, Map, Bot,
   Presentation, Target, Rocket,
-  MapPin,
   Calendar, Video, DollarSign,
   Crown, LucideIcon,
   ChevronDown, FolderKanban, Check,
+  Activity, Package, Wallet, ShoppingCart, Megaphone, Star, Calculator,
+  Waves, Receipt, Gift, Ticket, CalendarCheck, FileText, Share2, Users, Heart,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -76,7 +77,25 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
     { icon: Target, label: "تحلیل رقبا", href: "/dashboard/competitors" },
   ];
   const traditionalRoutes: Route[] = [
-    { icon: MapPin, label: "تحلیل موقعیت", href: "/dashboard/location" },
+    { icon: Target, label: "تحلیل رقبا", href: "/dashboard/competitors" },
+    { icon: Activity, label: "سلامت کسب‌وکار", href: "/dashboard/health" },
+    { icon: Wallet, label: "سود و زیان", href: "/dashboard/finance" },
+    { icon: Waves, label: "جریان نقدی", href: "/dashboard/cashflow" },
+    { icon: Receipt, label: "هزینه‌ها", href: "/dashboard/expenses" },
+    { icon: Receipt, label: "برآورد مالیات", href: "/dashboard/tax" },
+    { icon: Package, label: "موجودی و انبار", href: "/dashboard/inventory" },
+    { icon: ShoppingCart, label: "صندوق فروش", href: "/dashboard/sales" },
+    { icon: Users, label: "کارکنان و شیفت", href: "/dashboard/staff" },
+    { icon: Heart, label: "باشگاه مشتریان", href: "/dashboard/loyalty" },
+    { icon: Megaphone, label: "تخفیف و کمپین", href: "/dashboard/promotions" },
+    { icon: Share2, label: "پیام گروهی", href: "/dashboard/broadcast" },
+    { icon: Gift, label: "معرفی دوستان", href: "/dashboard/referral" },
+    { icon: Ticket, label: "کوپن و QR", href: "/dashboard/coupons" },
+    { icon: CalendarCheck, label: "نوبت‌دهی", href: "/dashboard/appointments" },
+    { icon: Star, label: "نظرات مشتریان", href: "/dashboard/reviews" },
+    { icon: Calculator, label: "قیمت‌گذاری", href: "/dashboard/pricing" },
+    { icon: FileText, label: "مرور ماهانه", href: "/dashboard/monthly-review" },
+    { icon: Target, label: "اهداف KPI", href: "/dashboard/goals" },
   ];
   const creatorRoutes: Route[] = [
     { icon: Calendar, label: "تقویم محتوا", href: "/dashboard/content-calendar" },

@@ -174,7 +174,7 @@ export const HeroSection = () => {
                   <div className="h-2 rounded-full bg-muted overflow-hidden">
                     <div
                       style={{ width: "68%" }}
-                      className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-[width] duration-[1500ms] delay-[800ms] ease-out"
+                      className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-[width] [transition-duration:1500ms] [transition-delay:800ms] ease-out"
                     />
                   </div>
                 </div>

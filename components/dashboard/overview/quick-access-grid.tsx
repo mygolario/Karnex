@@ -3,8 +3,9 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { 
-  LayoutGrid, Map, Bot, Calendar, Video, 
-  Share2, Target, BarChart3, FileText, ArrowUpRight
+  Map, Bot, Calendar, Video, 
+  Share2, Target, Activity, Package, Wallet, ShoppingCart, Megaphone,
+  Waves, Ticket, FileText,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -27,10 +28,16 @@ export function QuickAccessGrid({ projectType }: QuickAccessGridProps) {
 
     // Traditional Specific
     ...(projectType === 'traditional' ? [
-        { href: "/dashboard/location", icon: Map, label: "تحلیل مکان", color: "from-emerald-500 to-teal-500", desc: "انتخاب لوکیشن" },
-        // Add more traditional items if they exist, e.g. Inventory? (Removed in previous cleanup)
+        { href: "/dashboard/health", icon: Activity, label: "سلامت کسب‌وکار", color: "from-teal-500 to-cyan-500", desc: "امتیاز زنده" },
+        { href: "/dashboard/finance", icon: Wallet, label: "سود و زیان", color: "from-amber-500 to-orange-500", desc: "درآمد و هزینه" },
+        { href: "/dashboard/cashflow", icon: Waves, label: "جریان نقدی", color: "from-sky-500 to-blue-500", desc: "پیش‌بینی و runway" },
+        { href: "/dashboard/inventory", icon: Package, label: "موجودی", color: "from-emerald-500 to-teal-500", desc: "انبار و کالا" },
+        { href: "/dashboard/sales", icon: ShoppingCart, label: "صندوق فروش", color: "from-sky-500 to-blue-500", desc: "POS و Z-Report" },
+        { href: "/dashboard/promotions", icon: Megaphone, label: "کمپین", color: "from-fuchsia-500 to-pink-500", desc: "تخفیف و فروش ویژه" },
+        { href: "/dashboard/coupons", icon: Ticket, label: "کوپن", color: "from-lime-500 to-green-500", desc: "کد و QR" },
+        { href: "/dashboard/monthly-review", icon: FileText, label: "مرور ماهانه", color: "from-slate-500 to-slate-700", desc: "گزارش AI" },
      ] : []),
- 
+
      // Startup Specific
      ...(projectType === 'startup' ? [
         { href: "/dashboard/pitch-deck", icon: Share2, label: "پیچ دک", color: "from-blue-500 to-indigo-500", desc: "ارائه سرمایه‌گذار" },

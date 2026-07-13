@@ -8,7 +8,6 @@ import chatAction from "./chat-action.json";
 import advisorChat from "./advisor-chat.json";
 import generatePlan from "./generate-plan.json";
 import copilotSystem from "./copilot-system.json";
-import analyzeLocation from "./analyze-location.json";
 import validateIdea from "./validate-idea.json";
 import generateGrowthPlan from "./generate-growth-plan.json";
 import generateFullCanvas from "./generate-full-canvas.json";
@@ -32,7 +31,6 @@ export const Prompts = {
   advisorChat,
   generatePlan,
   copilotSystem,
-  analyzeLocation,
   validateIdea,
   generateGrowthPlan,
   generateFullCanvas,

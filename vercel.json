@@ -1,9 +1,12 @@
 {
-  "buildCommand": "prisma generate && next build && npm run serwist:build",
+  "buildCommand": "prisma generate && prisma migrate deploy && next build && npm run serwist:build",
   "framework": "nextjs",
   "regions": ["cdg1"],
   "functions": {
     "app/api/ai-generate/route.ts": {
+      "maxDuration": 120
+    },
+    "app/api/copilot/route.ts": {
       "maxDuration": 120
     }
   }

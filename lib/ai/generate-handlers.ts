@@ -1,9 +1,16 @@
 import "server-only";
 import { resolveAssembledPrompt, SCRIPT_TEMPLATE_INSTRUCTIONS } from "@/lib/ai/prompt-service";
-import { callOpenRouter, parseJsonFromAI, TIER_LOCATION, TIER_GROUNDED, TIER_GROUNDED_DEEP, MODEL_GEMINI_25_FLASH_LITE } from "@/lib/openrouter";
-import { normalizeLocationAnalysis } from "@/lib/location/normalize-analysis";
+import { callOpenRouter, parseJsonFromAI, TIER_GROUNDED, TIER_GROUNDED_DEEP } from "@/lib/openrouter";
 import { multiPassGenerate } from "@/lib/ai/multi-pass";
+import { callAIWithValidation } from "@/lib/ai-validation";
 import type { PromptKey } from "@/lib/prompts/registry";
+import {
+  IdeaValidationReportSchema,
+  formatBriefForPrompt,
+  preprocessValidationPayload,
+  type IdeaValidationReport,
+  type ValidationBrief,
+} from "@/lib/validation/types";
 
 export interface GenerateContext {
   userId?: string;
@@ -36,22 +43,66 @@ async function assembled(
 }
 
 export async function handleValidateIdea(
-  ctx: GenerateContext & { businessIdea: string }
+  ctx: GenerateContext & {
+    businessIdea: string;
+    validationBrief?: ValidationBrief;
+    businessStage?: string;
+  }
 ) {
+  const briefBlock = ctx.validationBrief
+    ? formatBriefForPrompt(ctx.validationBrief)
+    : formatBriefForPrompt({
+        problem: ctx.businessIdea,
+        whoSuffers: ctx.projectAudience || "",
+        currentSolution: "",
+        unfairAdvantage: "",
+        evidenceLevel: "none",
+      });
+
   const { system, user } = await assembled(
     "validateIdea",
     {
       projectName: ctx.projectName || "پروژه",
       businessIdea: ctx.businessIdea,
+      validationBrief: briefBlock,
+      businessStage: ctx.businessStage || "idea",
     },
     ctx
   );
 
-  const { data } = await multiPassGenerate<Record<string, unknown>>(user, system, {
-    maxTokens: 2500,
-    temperature: 0.8,
-  });
-  return { validation: data, reasoning: data.reasoning };
+  let report: IdeaValidationReport;
+  try {
+    const { data } = await multiPassGenerate<Record<string, unknown>>(user, system, {
+      maxTokens: 4000,
+      temperature: 0.75,
+      critiqueInstruction:
+        "نقد کن: آیا حکم صریح است، ابعاد کامل‌اند، آزمایش‌ها قابل اجرا در ایران‌اند، و comparableها واقعی‌اند؟",
+    });
+    const parsed = IdeaValidationReportSchema.safeParse(
+      preprocessValidationPayload(data)
+    );
+    if (parsed.success) {
+      report = parsed.data;
+    } else {
+      report = await callAIWithValidation(
+        user,
+        { systemPrompt: system, maxTokens: 4000, temperature: 0.4 },
+        IdeaValidationReportSchema,
+        1,
+        preprocessValidationPayload
+      );
+    }
+  } catch {
+    report = await callAIWithValidation(
+      user,
+      { systemPrompt: system, maxTokens: 4000, temperature: 0.4 },
+      IdeaValidationReportSchema,
+      1,
+      preprocessValidationPayload
+    );
+  }
+
+  return { validation: report, reasoning: report.reasoning };
 }
 
 export async function handleGrowthPlan(
@@ -230,131 +281,6 @@ export async function handleContentStrategy(
   return parseJsonFromAI(result.content!);
 }
 
-export async function handleAnalyzeLocation(
-  ctx: GenerateContext & {
-    city: string;
-    address: string;
-    radius: number;
-    priceTier: string;
-    footfallDependency: string;
-    rentBudget: number;
-    businessCategory: string;
-    businessDescription?: string;
-    osmDataBlock: string;
-    projectContextBlock?: string;
-    osmMeta?: Record<string, unknown>;
-    storefrontPhoto?: string;
-  },
-  modelOverride?: string
-) {
-  const priceLabel =
-    ctx.priceTier === "budget"
-      ? "اقتصادی"
-      : ctx.priceTier === "premium"
-        ? "لوکس"
-        : "متوسط";
-  const footfallLabel =
-    ctx.footfallDependency === "high" ? "پاخورمحور" : "مقصدمحور";
-
-  const { system, user } = await assembled(
-    "analyzeLocation",
-    {
-      city: ctx.city,
-      address: ctx.address,
-      projectName: ctx.projectName || "",
-      businessCategory: ctx.businessCategory || "other",
-      businessDescription: ctx.businessDescription || ctx.businessCategory || "کسب‌وکار سنتی",
-      priceTier: priceLabel,
-      footfallDependency: footfallLabel,
-      rentBudget: ctx.rentBudget
-        ? `${ctx.rentBudget.toLocaleString("fa-IR")} تومان`
-        : "استنتاج از پروژه",
-      radius: ctx.radius,
-      osmDataBlock: ctx.osmDataBlock,
-      projectContextBlock: ctx.projectContextBlock || "",
-    },
-    ctx
-  );
-
-  let enhancedUser = `${user}
-
-دستورالعمل‌های تکمیلی v3:
-1. aiCategory از businessDescription
-2. executiveSummary.narrative ۴-۶ جمله با ارجاع به پروفایل پروژه
-3. verdictDetails: دقیقاً ۳ dealBreaker و ۳ topReason
-4. fitScoreBreakdown: footfall, rent, competition, customerMatch, accessibility — هر کدام score 0-10 + confidence + reason
-5. competitorAnalysis.directCompetitors از OSM
-6. catchment با radiusM=${ctx.radius}
-7. cohortFit با توجه به مخاطب پروژه
-8. seasonality ۱۲ ماه ایران
-9. rentBenchmark + negotiationTips
-10. financialLab با monthlyPnL 12 ماه
-11. footfallTier: real|inferred|ai
-12. hourlyFootfall 24 عنصر
-13. alternatives: هر کدام شامل name, estimatedScore, reason, distance, coordinates (شامل lat, lon در فاصله ۱ تا ۳ کیلومتری) باشند.
-14. متن‌ها را مختصر نگه دار — JSON باید کامل و معتبر باشد.`;
-
-  if (ctx.storefrontPhoto) {
-    enhancedUser += `
-
-توجه ویژه: کاربر تصویری از ویترین/نمای بیرونی این مکان ارسال کرده است. تصویر پیوست‌شده را تحلیل کن و بخش storefront را به صورت زیر پر کن:
-- storefront.photoDataUrl را دقیقاً برابر همان رشته base64 ورودی قرار بده.
-- storefront.visibilityAssessment را بر اساس دید تابلو، وضعیت نما، موانع عابران پیاده و سطح دسترسی فیزیکی تصویر تحلیل فنی کن (۲-۳ جمله فارسی).
-- فیلد fitScoreBreakdown برای accessibility و همچنین امتیاز کل را بر اساس موانع دیده شده در تصویر (پله، سطح ناصاف، نبود رمپ و...) به‌روزرسانی کن.`;
-  }
-
-  const callOpts = {
-    systemPrompt: system,
-    maxTokens: 8192,
-    temperature: 0.3,
-    timeoutMs: 52000,
-    maxAttempts: 1,
-    responseFormat: { type: "json_object" as const },
-    modelOverride: modelOverride || TIER_LOCATION,
-    imageUrl: ctx.storefrontPhoto,
-  };
-
-  const modelsToTry = [
-    callOpts.modelOverride!,
-    MODEL_GEMINI_25_FLASH_LITE,
-  ].filter((m, i, arr) => arr.indexOf(m) === i);
-
-  let lastError = "Location analysis generation failed";
-  for (const model of modelsToTry) {
-    const result = await callOpenRouter(enhancedUser, { ...callOpts, modelOverride: model });
-
-    if (!result.success || !result.content) {
-      lastError = result.error || lastError;
-      console.warn("[analyze-location] model failed", { model, error: result.error });
-      continue;
-    }
-
-    if (result.finishReason === "length") {
-      console.warn("[analyze-location] response truncated", { model, finishReason: result.finishReason });
-    }
-
-    try {
-      const parsed = parseJsonFromAI(result.content) as Record<string, unknown>;
-      return normalizeLocationAnalysis(parsed, {
-        city: ctx.city,
-        address: ctx.address,
-        businessDescription: ctx.businessDescription,
-        radius: ctx.radius,
-      });
-    } catch (parseErr) {
-      lastError = `JSON parse failed (${model}): ${String(parseErr)}`;
-      console.error("[analyze-location] parse failed", {
-        model,
-        finishReason: result.finishReason,
-        preview: result.content.slice(0, 240),
-        error: String(parseErr),
-      });
-    }
-  }
-
-  throw new Error(lastError);
-}
-
 export async function handleCanvasCritique(
   ctx: GenerateContext & { canvasSummary: string }
 ) {
@@ -436,6 +362,63 @@ ${typeInstruction[ctx.researchType]}`;
   });
   if (!result.success) throw new Error(result.error);
   return parseJsonFromAI(result.content!);
+}
+
+export async function handleHealthDiagnosis(
+  ctx: GenerateContext & { report: Record<string, unknown> }
+) {
+  const system = `تو تحلیل‌گر سلامت کسب‌وکار Karnex هستی. بر اساس گزارش امتیاز سلامت و ابعاد آن، یک تشخیص کوتاه و عملی به فارسی بده.
+خروجی JSON:
+{ "diagnosis": string (۲-۳ جمله), "topRisks": string[] (حداکثر ۳), "recommendations": string[] (۳ اقدام عملی با اولویت) }`;
+  const user = `پروفایل پروژه: ${ctx.projectName || "—"} (${ctx.projectType || "—"})
+گزارش سلامت:
+${JSON.stringify(ctx.report, null, 0).slice(0, 4000)}`;
+  const result = await callOpenRouter(user, {
+    systemPrompt: system,
+    maxTokens: 1000,
+    temperature: 0.4,
+    responseFormat: { type: "json_object" },
+  });
+  if (!result.success) throw new Error(result.error);
+  return parseJsonFromAI(result.content!) as Record<string, unknown>;
+}
+
+export async function handlePnLNarrative(
+  ctx: GenerateContext & { pnl: Record<string, unknown> }
+) {
+  const system = `تو تحلیل‌گر مالی Karnex هستی. بر اساس گزارش سود و زیان ماهانه، یک خلاصه فارسی و کوتاه بده.
+خروجی JSON:
+{ "summary": string (۲-۳ جمله), "anomalies": string[] (نکات غیرعادی یا هشدار، حداکثر ۳), "tip": string (یک پیشنهاد عملی) }`;
+  const user = `پروفایل پروژه: ${ctx.projectName || "—"}
+گزارش سود و زیان:
+${JSON.stringify(ctx.pnl, null, 0).slice(0, 4000)}`;
+  const result = await callOpenRouter(user, {
+    systemPrompt: system,
+    maxTokens: 900,
+    temperature: 0.4,
+    responseFormat: { type: "json_object" },
+  });
+  if (!result.success) throw new Error(result.error);
+  return parseJsonFromAI(result.content!) as Record<string, unknown>;
+}
+
+export async function handleMonthlyReview(
+  ctx: GenerateContext & { report: Record<string, unknown> }
+) {
+  const system = `تو مشاور کسب‌وکار سنتی Karnex هستی. بر اساس گزارش ماهانه (سلامت، سود و زیان، موجودی) یک مرور فارسی عملی بنویس.
+خروجی JSON:
+{ "summary": string (۳-۵ جمله), "highlights": string[] (حداکثر ۴ نکته مثبت), "risks": string[] (حداکثر ۳ ریسک), "nextMonthFocus": string[] (۳ اولویت ماه بعد) }`;
+  const user = `پروفایل پروژه: ${ctx.projectName || "—"} (${ctx.projectType || "traditional"})
+گزارش ماهانه:
+${JSON.stringify(ctx.report, null, 0).slice(0, 6000)}`;
+  const result = await callOpenRouter(user, {
+    systemPrompt: system,
+    maxTokens: 1200,
+    temperature: 0.45,
+    responseFormat: { type: "json_object" },
+  });
+  if (!result.success) throw new Error(result.error);
+  return parseJsonFromAI(result.content!) as Record<string, unknown>;
 }
 
 export function buildGenerateContext(

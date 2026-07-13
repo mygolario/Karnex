@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Presentation, MapPin, Calendar, Video, DollarSign,
+  Presentation, Calendar, Video, DollarSign,
   Settings, User, HelpCircle, BarChart3, Lightbulb,
   Headphones, RefreshCw, ImageIcon, Shield, UtensilsCrossed,
-  LucideIcon,
+  Activity, Package, Wallet, ShoppingCart, Megaphone, Star, Calculator, LucideIcon,
+  Waves, Receipt, Gift, Ticket, CalendarCheck, FileText, Target, Share2, Users, Heart,
+  FlaskConical,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useProject } from "@/contexts/project-context";
@@ -32,8 +34,32 @@ export function MobileMoreSheet({ open, onOpenChange }: MobileMoreSheetProps) {
   const isCreator = plan?.projectType === "creator";
 
   const projectRoutes: MoreRoute[] = [
-    ...(isStartup ? [{ icon: Presentation, label: "پیچ‌دک", href: "/dashboard/pitch-deck" }] : []),
-    ...(isTraditional ? [{ icon: MapPin, label: "تحلیل موقعیت", href: "/dashboard/location" }] : []),
+    ...(isStartup ? [
+      { icon: Presentation, label: "پیچ‌دک", href: "/dashboard/pitch-deck" },
+      { icon: FlaskConical, label: "اعتبارسنجی ایده", href: "/dashboard/validation" },
+      { icon: Target, label: "تحلیل رقبا", href: "/dashboard/competitors" },
+    ] : []),
+    ...(isTraditional ? [
+      { icon: Target, label: "تحلیل رقبا", href: "/dashboard/competitors" },
+      { icon: Activity, label: "سلامت کسب‌وکار", href: "/dashboard/health" },
+      { icon: Wallet, label: "سود و زیان", href: "/dashboard/finance" },
+      { icon: Waves, label: "جریان نقدی", href: "/dashboard/cashflow" },
+      { icon: Receipt, label: "هزینه‌ها", href: "/dashboard/expenses" },
+      { icon: Receipt, label: "برآورد مالیات", href: "/dashboard/tax" },
+      { icon: Package, label: "موجودی و انبار", href: "/dashboard/inventory" },
+      { icon: ShoppingCart, label: "صندوق فروش", href: "/dashboard/sales" },
+      { icon: Users, label: "کارکنان و شیفت", href: "/dashboard/staff" },
+      { icon: Heart, label: "باشگاه مشتریان", href: "/dashboard/loyalty" },
+      { icon: Megaphone, label: "تخفیف و کمپین", href: "/dashboard/promotions" },
+      { icon: Share2, label: "پیام گروهی", href: "/dashboard/broadcast" },
+      { icon: Gift, label: "معرفی دوستان", href: "/dashboard/referral" },
+      { icon: Ticket, label: "کوپن و QR", href: "/dashboard/coupons" },
+      { icon: CalendarCheck, label: "نوبت‌دهی", href: "/dashboard/appointments" },
+      { icon: Star, label: "نظرات مشتریان", href: "/dashboard/reviews" },
+      { icon: Calculator, label: "قیمت‌گذاری", href: "/dashboard/pricing" },
+      { icon: FileText, label: "مرور ماهانه", href: "/dashboard/monthly-review" },
+      { icon: Target, label: "اهداف KPI", href: "/dashboard/goals" },
+    ] : []),
     ...(isCreator ? [
       { icon: Calendar, label: "تقویم محتوا", href: "/dashboard/content-calendar" },
       { icon: Video, label: "اسکریپت‌نویسی", href: "/dashboard/scripts" },

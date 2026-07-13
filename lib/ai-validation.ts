@@ -49,6 +49,16 @@ export const CompetitorSchema = z.object({
   strength: z.string().optional().default(''),
   weakness: z.string().optional().default(''),
   isIranian: z.boolean().optional().default(true),
+  scope: z.enum(['local', 'national', 'regional', 'global']).optional(),
+  url: z.string().optional().default(''),
+  tagline: z.string().optional().default(''),
+  entryPoints: z.array(z.string()).optional().default([]),
+  confidence: z.enum(['high', 'medium', 'low']).optional().default('medium'),
+  ratings: z.record(z.string(), z.number().min(1).max(5)).optional(),
+  position: z.object({
+    x: z.number().min(0).max(1),
+    y: z.number().min(0).max(1),
+  }).optional(),
 });
 
 export const SwotSchema = z.object({
@@ -61,6 +71,19 @@ export const SwotSchema = z.object({
 export const SwotCompetitorsSchema = z.object({
   competitors: z.array(CompetitorSchema).default([]),
   swot: SwotSchema,
+  brief: z.string().optional().default(''),
+  wedge: z.string().optional().default(''),
+  nextMoves: z.array(z.string()).optional().default([]),
+  whiteSpace: z.array(z.string()).optional().default([]),
+  matrixDimensions: z.array(z.string()).optional().default([]),
+  yourPosition: z.object({
+    x: z.number().min(0).max(1),
+    y: z.number().min(0).max(1),
+    xAxis: z.string(),
+    yAxis: z.string(),
+  }).optional(),
+  yourRatings: z.record(z.string(), z.number().min(1).max(5)).optional(),
+  reasoning: z.string().optional().default(''),
 });
 
 // --- Smart Canvas Schema ---

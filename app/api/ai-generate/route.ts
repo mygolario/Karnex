@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { callOpenRouter, parseJsonFromAI, TIER_LOCATION } from "@/lib/openrouter";
+import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { auth } from "@/lib/auth/session";
 import { resolveAssembledPrompt } from "@/lib/ai/prompt-service";
 import { runWithAiUsage } from "@/lib/ai-usage-context";
-import { runLocationAnalysis } from "@/lib/location/analyze-pipeline";
 import {
   buildGenerateContext,
   handleContentBrief,
@@ -13,7 +12,10 @@ import {
   handleFullCanvas,
   handleGrowthPlan,
   handleCanvasCritique,
+  handleHealthDiagnosis,
   handleMarketResearch,
+  handlePnLNarrative,
+  handleMonthlyReview,
   handlePitchSlideAI,
   handleRepurpose,
   handleScriptWriter,
@@ -27,7 +29,6 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   let rollback = async () => {};
-  const reqStart = Date.now();
   try {
     const limitResult = await checkAILimit();
     if (limitResult.errorResponse) return limitResult.errorResponse;
@@ -45,8 +46,6 @@ export async function POST(req: Request) {
       businessIdea,
       projectName,
       modelOverride,
-      city,
-      address,
       activeProject,
       modifier,
     } = body;
@@ -59,69 +58,6 @@ export async function POST(req: Request) {
     return await runWithAiUsage(
       { userId: userId || "anonymous", projectId: genCtx.projectId, feature },
       async () => {
-    if (action === "analyze-location") {
-      const {
-        radius: requestedRadius,
-        priceTier = "mid",
-        footfallDependency = "high",
-        rentBudget = 0,
-        businessCategory = "",
-        businessDescription = "",
-        lat,
-        lon,
-        storefrontPhoto,
-      } = body;
-
-      try {
-        const json = await runLocationAnalysis({
-          city,
-          address,
-          businessDescription: businessDescription || String(activeProject?.overview || ""),
-          businessCategory,
-          radius: requestedRadius,
-          priceTier,
-          footfallDependency,
-          rentBudget,
-          activeProject,
-          userId,
-          projectId: genCtx.projectId,
-          modelOverride,
-          coordinates:
-            typeof lat === "number" && typeof lon === "number" ? { lat, lon } : undefined,
-          storefrontPhoto,
-        });
-        return NextResponse.json({ success: true, analysis: json });
-      } catch (e) {
-        const detail = e instanceof Error ? e.message : String(e);
-        console.error("[analyze-location] failed", { error: detail, totalMs: Date.now() - reqStart });
-        await rollback();
-        return NextResponse.json(
-          { error: "Failed to parse location analysis", detail },
-          { status: 500 }
-        );
-      }
-    }
-
-    if (action === "location-chat") {
-      const { locationAnalysis, prompt: userPrompt } = body;
-      if (!userPrompt) {
-        return NextResponse.json({ error: "prompt required" }, { status: 400 });
-      }
-      const system = `تو تحلیل‌گر مکان Karnex هستی. فقط بر اساس گزارش تحلیل و پروفایل پروژه پاسخ بده. فارسی، کوتاه و عملی.`;
-      const user = `گزارش تحلیل:\n${JSON.stringify(locationAnalysis || {}, null, 0).slice(0, 6000)}\n\nسؤال کاربر: ${userPrompt}`;
-      const result = await callOpenRouter(user, {
-        systemPrompt: system,
-        maxTokens: 800,
-        temperature: 0.4,
-        modelOverride: modelOverride || TIER_LOCATION,
-      });
-      if (!result.success) {
-        await rollback();
-        return NextResponse.json({ error: result.error }, { status: 500 });
-      }
-      return NextResponse.json({ success: true, content: result.content, reply: result.content });
-    }
-
     if (action === "generate-full-canvas") {
       if (!businessIdea) {
         return NextResponse.json(
@@ -184,9 +120,12 @@ export async function POST(req: Request) {
 
     if (action === "validate-idea") {
       try {
+        const { validationBrief, businessStage } = body;
         const out = await handleValidateIdea({
           ...genCtx,
           businessIdea: businessIdea || "",
+          validationBrief,
+          businessStage,
         });
         return NextResponse.json({ success: true, ...out });
       } catch (e) {
@@ -324,6 +263,48 @@ export async function POST(req: Request) {
           deep: !!deep,
         });
         return NextResponse.json({ success: true, research });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
+
+    if (action === "health-diagnosis") {
+      const { report } = body;
+      if (!report) {
+        return NextResponse.json({ error: "report required" }, { status: 400 });
+      }
+      try {
+        const diagnosis = await handleHealthDiagnosis({ ...genCtx, report });
+        return NextResponse.json({ success: true, diagnosis });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
+
+    if (action === "pnl-narrative") {
+      const { pnl } = body;
+      if (!pnl) {
+        return NextResponse.json({ error: "pnl required" }, { status: 400 });
+      }
+      try {
+        const narrative = await handlePnLNarrative({ ...genCtx, pnl });
+        return NextResponse.json({ success: true, narrative });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
+
+    if (action === "monthly-review") {
+      const { report } = body;
+      if (!report) {
+        return NextResponse.json({ error: "report required" }, { status: 400 });
+      }
+      try {
+        const narrative = await handleMonthlyReview({ ...genCtx, report });
+        return NextResponse.json({ success: true, narrative });
       } catch (e) {
         await rollback();
         return NextResponse.json({ error: String(e) }, { status: 500 });

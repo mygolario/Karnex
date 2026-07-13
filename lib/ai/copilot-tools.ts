@@ -3,6 +3,15 @@ import { Prisma } from "../../prisma/client";
 import { analyzeCompetitorsAction } from "@/lib/ai-actions";
 import { callCopilotChat } from "@/lib/openrouter";
 import { parseJsonFromAI } from "@/lib/openrouter";
+import {
+  buildProjectContextBlock,
+  mergeDiscoveryIntoIntel,
+  projectActiveCompetitors,
+  seedCompetitorIntel,
+  swotArraysToAnalysis,
+} from "@/lib/competitors/normalize";
+import type { BusinessPlan, PitchDeckSlide } from "@/lib/db";
+import type { CompetitorDiscoveryResult } from "@/lib/competitors/types";
 
 // === Tool action audit (AiActionLog) ===
 
@@ -22,7 +31,7 @@ const PILLAR_TOOLS: Record<string, string[]> = {
   traditional: [
     "update_business_plan", "search_competitors", "update_swot_analysis", "save_memory",
     "update_step_status", "add_roadmap_step", "add_step_note", "add_canvas_card",
-    "toggle_permit", "analyze_location", "compare_locations",
+    "toggle_permit", "add_inventory_product", "record_stock_move", "log_business_transaction",
   ],
   creator: [
     "save_memory", "update_step_status", "add_roadmap_step", "add_step_note",
@@ -181,7 +190,7 @@ export const COPILOT_TOOLS = [
     type: "function",
     function: {
       name: "search_competitors",
-      description: "Research real competitors using live web data and generate a market SWOT analysis for the user's project. Grounded via Perplexity Sonar. Use this when the user asks about competitors, market rivals, or competitive analysis.",
+      description: "Research real competitors using live web data, generate SWOT/position brief, and SAVE them into the project's competitor workspace (competitorIntel + competitors). Grounded via Perplexity Sonar. Use when the user asks about competitors, market rivals, or competitive analysis.",
       parameters: {
         type: "object",
         properties: {
@@ -361,39 +370,54 @@ export const COPILOT_TOOLS = [
   {
     type: "function",
     function: {
-      name: "analyze_location",
-      description:
-        "Run or summarize location analysis for a traditional business. Provide city, address, and business description.",
+      name: "add_inventory_product",
+      description: "Add a product/SKU to the traditional business inventory with optional cost, price, and stock.",
       parameters: {
         type: "object",
         properties: {
-          city: { type: "string", description: "City name e.g. Tehran" },
-          address: { type: "string", description: "Neighborhood or street address" },
-          businessDescription: {
-            type: "string",
-            description: "Free-text business type e.g. specialty coffee shop",
-          },
+          name: { type: "string", description: "Product name in Persian" },
+          category: { type: "string" },
+          cost: { type: "number", description: "Purchase cost in Toman" },
+          price: { type: "number", description: "Sell price in Toman" },
+          stock: { type: "number" },
+          lowStockAt: { type: "number" },
+          unit: { type: "string" },
         },
-        required: ["city", "address", "businessDescription"],
+        required: ["name"],
       },
     },
   },
   {
     type: "function",
     function: {
-      name: "compare_locations",
-      description:
-        "Compare saved location analyses by createdAt timestamps or summarize comparison for the user.",
+      name: "record_stock_move",
+      description: "Record stock in/out/adjust for a product by name.",
       parameters: {
         type: "object",
         properties: {
-          createdAtIds: {
-            type: "array",
-            items: { type: "string" },
-            description: "createdAt values from locationHistory to compare (max 3)",
-          },
+          productName: { type: "string" },
+          type: { type: "string", enum: ["in", "out", "adjust"] },
+          qty: { type: "number" },
+          note: { type: "string" },
         },
-        required: ["createdAtIds"],
+        required: ["productName", "type", "qty"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "log_business_transaction",
+      description: "Log an income, expense, or COGS transaction for the P&L tracker.",
+      parameters: {
+        type: "object",
+        properties: {
+          type: { type: "string", enum: ["income", "expense", "cogs"] },
+          category: { type: "string" },
+          amount: { type: "number", description: "Amount in Toman" },
+          note: { type: "string" },
+        },
+        required: ["type", "category", "amount"],
       },
     },
   },
@@ -570,26 +594,92 @@ export async function executeUpdatePitchDeckSlide(projectId: string, args: any, 
 }
 
 export async function executeSearchCompetitors(projectId: string, args: any, userId?: string) {
+    if (!projectId) throw new Error("Project ID required");
+
+    const hasAccess = await checkProjectWriteAccess(projectId, userId);
+    if (!hasAccess) throw new Error("Unauthorized access to project");
+
+    const project = await prisma.project.findFirst({
+        where: { id: projectId },
+        select: { data: true, projectName: true },
+    });
+    if (!project) throw new Error("Project not found");
+
+    const currentData = (project.data as Record<string, unknown>) || {};
+    const plan = {
+        ...currentData,
+        projectName: (currentData.projectName as string) || project.projectName || args.projectName,
+    } as BusinessPlan;
+
+    const contextBlock = buildProjectContextBlock(plan);
+
     // skipLimitCheck: the Copilot route already incremented the monthly quota
     // for this user message, so we must not double-charge here.
     const result = await analyzeCompetitorsAction(
         {
-            projectName: args.projectName,
-            projectIdea: args.projectIdea,
-            audience: args.audience
+            projectName: args.projectName || plan.projectName,
+            projectIdea: args.projectIdea || plan.overview || "",
+            audience: args.audience || plan.audience || "",
+            contextBlock,
         },
         { skipLimitCheck: true }
     );
 
-    if (!result.success) {
+    if (!result.success || !result.data) {
         throw new Error(result.error || "خطا در تحلیل رقبا");
     }
 
-    return { 
-        success: true, 
-        message: "حریفان و رقبای استارتاپ شما شناسایی و تحلیل شدند.",
-        competitors: result.data.competitors,
-        swot: result.data.swot
+    const discovery = result.data as CompetitorDiscoveryResult;
+    const seeded = seedCompetitorIntel(plan);
+    const { intel } = mergeDiscoveryIntoIntel(seeded, discovery, { autoAccept: true });
+    const competitors = projectActiveCompetitors(intel);
+    const swotAnalysis = discovery.swot
+        ? swotArraysToAnalysis(discovery.swot)
+        : undefined;
+
+    let pitchDeck = Array.isArray(currentData.pitchDeck)
+        ? ([...(currentData.pitchDeck as PitchDeckSlide[])] as PitchDeckSlide[])
+        : undefined;
+
+    if (pitchDeck && competitors.length > 0) {
+        pitchDeck = pitchDeck.map((slide) => {
+            if (slide.type !== "competition") return slide;
+            return {
+                ...slide,
+                metadata: {
+                    ...(slide.metadata || {}),
+                    competitors: competitors.map((c) => ({
+                        name: c.name,
+                        strength: c.strength,
+                        weakness: c.weakness,
+                    })),
+                },
+            };
+        });
+    }
+
+    const newData = {
+        ...currentData,
+        competitorIntel: intel,
+        competitors,
+        ...(swotAnalysis ? { swotAnalysis } : {}),
+        ...(pitchDeck ? { pitchDeck } : {}),
+    };
+
+    await prisma.project.update({
+        where: { id: projectId },
+        data: { data: newData as unknown as Prisma.InputJsonValue },
+    });
+
+    return {
+        success: true,
+        message: `${competitors.length} رقیب در فضای تحلیل رقبا ذخیره شد. می‌توانی از صفحه تحلیل رقبا ویرایش و موقعیت‌یابی کنی.`,
+        competitors: discovery.competitors,
+        swot: discovery.swot,
+        brief: discovery.brief,
+        wedge: discovery.wedge,
+        nextMoves: discovery.nextMoves,
+        savedCount: competitors.length,
     };
 }
 
@@ -1083,77 +1173,71 @@ UNDO_REGISTRY["toggle_permit"] = async (projectId, payload) => {
     await setProjectData(projectId, { ...data, permits: newPermits });
 };
 
-export async function executeAnalyzeLocation(
+export async function executeAddInventoryProduct(
     projectId: string,
-    args: { city: string; address: string; businessDescription: string },
+    args: { name: string; category?: string; cost?: number; price?: number; stock?: number; lowStockAt?: number; unit?: string },
     userId?: string
 ) {
     if (!projectId) throw new Error("Project ID required");
     const hasAccess = await checkProjectWriteAccess(projectId, userId);
     if (!hasAccess) throw new Error("Unauthorized access to project");
 
-    const project = await prisma.project.findFirst({
-        where: { id: projectId },
-        select: { projectName: true, description: true, data: true },
+    const { createProduct } = await import("@/lib/inventory/server");
+    const product = await createProduct(projectId, {
+        name: args.name,
+        category: args.category,
+        cost: args.cost,
+        price: args.price,
+        stock: args.stock,
+        lowStockAt: args.lowStockAt,
+        unit: args.unit,
     });
-    if (!project) throw new Error("Project not found");
-
-    const activeProject = {
-        id: projectId,
-        projectName: project.projectName,
-        overview: project.description,
-        ...((project.data as any) || {}),
-    };
-
-    const { runLocationAnalysis } = await import("@/lib/location/analyze-pipeline");
-    const analysis = await runLocationAnalysis({
-        city: args.city,
-        address: args.address,
-        businessDescription: args.businessDescription,
-        activeProject,
-        userId,
-        projectId,
-    });
-
-    return {
-        success: true,
-        message: `تحلیل مکان برای «${args.address}» در ${args.city} انجام شد.`,
-        analysis,
-    };
+    return { success: true, message: `محصول «${product.name}» به موجودی اضافه شد.`, product };
 }
 
-export async function executeCompareLocations(
+export async function executeRecordStockMove(
     projectId: string,
-    args: { createdAtIds: string[] },
+    args: { productName: string; type: "in" | "out" | "adjust"; qty: number; note?: string },
     userId?: string
 ) {
     if (!projectId) throw new Error("Project ID required");
     const hasAccess = await checkProjectWriteAccess(projectId, userId);
     if (!hasAccess) throw new Error("Unauthorized access to project");
 
-    const data = await getProjectData(projectId);
-    const history: any[] = Array.isArray(data.locationHistory) ? data.locationHistory : [];
-    const ids = (args.createdAtIds || []).slice(0, 3);
-    const selected = history.filter((h) => ids.includes(h.createdAt));
+    const product = await prisma.product.findFirst({
+        where: { projectId, name: { contains: args.productName, mode: "insensitive" } },
+    });
+    if (!product) throw new Error(`محصول «${args.productName}» یافت نشد`);
 
-    if (selected.length < 2) {
-        return {
-            success: true,
-            message: "حداقل ۲ تحلیل ذخیره‌شده برای مقایسه لازم است.",
-            comparison: [],
-        };
-    }
-
-    const rows = selected.map((a) => ({
-        address: a.address,
-        score: a.score,
-        verdict: a.verdict?.decision,
-        createdAt: a.createdAt,
-    }));
-
+    const { recordStockMovement } = await import("@/lib/inventory/server");
+    const result = await recordStockMovement(projectId, {
+        productId: product.id,
+        type: args.type,
+        qty: args.qty,
+        note: args.note,
+    });
     return {
         success: true,
-        message: `مقایسه ${rows.length} مکان آماده است.`,
-        comparison: rows,
+        message: `موجودی «${product.name}» به‌روز شد (موجودی جدید: ${result.product.stock}).`,
+        product: result.product,
     };
 }
+
+export async function executeLogBusinessTransaction(
+    projectId: string,
+    args: { type: "income" | "expense" | "cogs"; category: string; amount: number; note?: string },
+    userId?: string
+) {
+    if (!projectId) throw new Error("Project ID required");
+    const hasAccess = await checkProjectWriteAccess(projectId, userId);
+    if (!hasAccess) throw new Error("Unauthorized access to project");
+
+    const { createTransaction } = await import("@/lib/finance/server");
+    const transaction = await createTransaction(projectId, {
+        type: args.type,
+        category: args.category,
+        amount: args.amount,
+        note: args.note,
+    });
+    return { success: true, message: `تراکنش ${args.type} به مبلغ ${args.amount} تومان ثبت شد.`, transaction };
+};

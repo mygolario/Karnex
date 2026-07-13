@@ -1,4 +1,5 @@
 import { BusinessPlan } from "./db";
+import { hasActiveCompetitors } from "@/lib/competitors/normalize";
 
 export interface ScoreResult {
   total: number;
@@ -71,8 +72,8 @@ export const calculateProjectScore = (plan: BusinessPlan): ScoreResult => {
 
   // 3. Market & Money (30 pts)
   // Competitors (10)
-  if (plan.competitors && plan.competitors.length > 0) market += 10;
-  else suggestions.push("حداقل یک رقیب را تحلیل کنید.");
+  if (hasActiveCompetitors(plan)) market += 10;
+  else suggestions.push("حداقل یک رقیب را در تحلیل رقبا ثبت کنید.");
 
   // Marketing (10)
   if (plan.marketingStrategy && plan.marketingStrategy.length >= 2) market += 10;
@@ -86,17 +87,6 @@ export const calculateProjectScore = (plan: BusinessPlan): ScoreResult => {
 
   if (hasFinancials) market += 10;
   else suggestions.push("ابزارهای مالی (نقطه سربه‌سر، نرخ‌نامه یا Runway) را استفاده کنید.");
-
-  // Location analysis bonus for traditional (up to 5 pts from market bucket, capped at 30)
-  if (plan.projectType === "traditional" && plan.locationAnalysis?.score) {
-    const locPts = Math.min(5, Math.round(plan.locationAnalysis.score / 2));
-    market = Math.min(30, market + locPts);
-    if (plan.locationAnalysis.score < 5) {
-      suggestions.push("تحلیل مکان نشان‌دهنده ریسک بالاست — گزینه‌های جایگزین را بررسی کنید.");
-    }
-  } else if (plan.projectType === "traditional") {
-    suggestions.push("تحلیل موقعیت مکان را در Location Analyzer اجرا کنید.");
-  }
 
 
   // 4. Execution (20 pts)

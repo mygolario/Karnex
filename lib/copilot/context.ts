@@ -11,7 +11,7 @@ import type { CopilotMode, CopilotPersona } from "./types";
  *
  * Phase 0: project base context + persona + mode behaviour.
  * Phase 1: appends UserProfile + ProjectMemory sections.
- * Phase 2: appends the full pillar bundle (roadmap, calendar, scripts, location,
+ * Phase 2: appends the full pillar bundle (roadmap, calendar, scripts,
  *          sponsor, ideas, gamification).
  */
 
@@ -111,6 +111,27 @@ function buildPillarContext(data: Record<string, any>, projectType: string): str
     if (data.swotAnalysis) lines.push(`- تحلیل SWOT: موجود.`);
   }
 
+  if (projectType === "startup" || projectType === "traditional") {
+    const intelComps = Array.isArray(data.competitorIntel?.competitors)
+      ? data.competitorIntel.competitors.filter((c: { status?: string }) => c.status === "active")
+      : [];
+    const legacyComps = Array.isArray(data.competitors) ? data.competitors : [];
+    const count = intelComps.length || legacyComps.length;
+    if (count > 0) {
+      const names = (intelComps.length ? intelComps : legacyComps)
+        .slice(0, 5)
+        .map((c: { name?: string }) => c.name)
+        .filter(Boolean)
+        .join("، ");
+      lines.push(`- رقبا: ${count} فعال${names ? ` (${names})` : ""}.`);
+      if (data.competitorIntel?.wedge) {
+        lines.push(`- زاویه تمایز رقابتی: ${data.competitorIntel.wedge}`);
+      }
+    } else {
+      lines.push(`- رقبا: هنوز ثبت نشده.`);
+    }
+  }
+
   // --- Creator specifics ---
   if (projectType === "creator") {
     const posts: any[] = Array.isArray(data.contentCalendar) ? data.contentCalendar : [];
@@ -129,10 +150,6 @@ function buildPillarContext(data: Record<string, any>, projectType: string): str
 
   // --- Traditional specifics ---
   if (projectType === "traditional") {
-    const loc = data.locationAnalysis;
-    if (loc) {
-      lines.push(`- تحلیل موقعیت: امتیاز ${loc.score ?? "—"}.`);
-    }
     const permits: any[] = Array.isArray(data.permits) ? data.permits : [];
     if (permits.length > 0) {
       const done = permits.filter((p) => p.status === "done").length;

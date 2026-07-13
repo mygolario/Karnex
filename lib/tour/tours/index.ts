@@ -7,7 +7,7 @@ import { calendarTour } from "./calendar";
 import { scriptsTour } from "./scripts";
 import { sponsorshipTour } from "./sponsorship";
 import { pitchDeckTour } from "./pitch-deck";
-import { locationAnalyzerTour } from "./location-analyzer";
+import { healthTour, financeTour, inventoryTour } from "./traditional";
 import { whatsNewTour } from "./whats-new";
 
 /**
@@ -23,6 +23,8 @@ export const TOUR_REGISTRY: Record<string, TourDefinition> = {
   scripts: scriptsTour,
   sponsorship: sponsorshipTour,
   "pitch-deck": pitchDeckTour,
-  "location-analyzer": locationAnalyzerTour,
+  health: healthTour,
+  finance: financeTour,
+  inventory: inventoryTour,
   "whats-new": whatsNewTour,
 };

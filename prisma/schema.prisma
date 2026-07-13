@@ -141,6 +141,21 @@ model Project {
   aiUsages             AiUsage[]
   customerBotChannels  CustomerBotChannel[]
 
+  // Traditional Pillar Revamp — operations + finance
+  products             Product[]
+  suppliers            Supplier[]
+  stockTransactions    StockTransaction[]
+  businessTransactions BusinessTransaction[]
+  staffMembers         Staff[]
+  loyaltyAccounts      LoyaltyAccount[]
+  orders               Order[]
+  promotions           Promotion[]
+  coupons              Coupon[]
+  reviews              Review[]
+  referrals            Referral[]
+  broadcasts           Broadcast[]
+  appointments         Appointment[]
+
   @@index([userId])
   @@index([createdAt])
 }
@@ -781,3 +796,315 @@ model Notification {
 }
 
 
+// ====================================================================
+// TRADITIONAL PILLAR REVAMP — operations + finance relational tables
+// High-volume transactional data for the new flagship features:
+// Inventory & Stock Manager, P&L / Income Tracker, Business Health.
+// Config/drafts still live in Project.data JSONB (see lib/db.ts).
+// ====================================================================
+
+model Product {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name        String
+  sku         String?
+  category    String?
+  unit        String   @default("عدد") // "عدد" | "کیلوگرام" | "لیتر" | ...
+  cost        Float    @default(0)  // purchase/COGS cost per unit (Toman)
+  price       Float    @default(0)  // sell price per unit (Toman)
+  stock       Float    @default(0)  // current on-hand quantity
+  lowStockAt  Float    @default(0)  // reorder threshold
+  supplierId  String?
+  metadata    Json?    // barcode, description, image, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactions StockTransaction[]
+
+  @@index([projectId])
+  @@index([projectId, category])
+}
+
+model StockTransaction {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  type       String   // "in" | "out" | "adjust"
+  qty        Float    // signed delta applied to stock (in: +, out: -, adjust: sets absolute via metadata)
+  unitCost   Float?   // cost per unit at time of transaction (for COGS on "in")
+  note       String?
+  createdAt  DateTime @default(now())
+
+  @@index([projectId])
+  @@index([productId])
+  @@index([createdAt])
+}
+
+model Supplier {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name       String
+  contact    String?  // phone / email / handle
+  address    String?
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+/// Unified income/expense/COGS ledger entry for the P&L / Income Tracker.
+/// type: "income" | "expense" | "cogs"
+/// category: free-form label e.g. "rent" | "utilities" | "salaries" | "sales" | ...
+model BusinessTransaction {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  type       String
+  category   String
+  amount     Float    // Toman
+  date       DateTime @default(now())
+  note       String?
+  metadata   Json?    // receipt url, linked order id, recurring rule, etc.
+  createdAt  DateTime @default(now())
+
+  @@index([projectId])
+  @@index([projectId, type])
+  @@index([projectId, date])
+  @@index([projectId, category])
+}
+
+// --- Phase 2: Staff + Loyalty ---
+
+model Staff {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name       String
+  role       String?
+  phone      String?
+  hourlyRate Float?
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  shifts      Shift[]
+  attendance  AttendanceEntry[]
+
+  @@index([projectId])
+}
+
+model Shift {
+  id        String   @id @default(cuid())
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  projectId String
+  startAt   DateTime
+  endAt     DateTime
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([staffId])
+  @@index([projectId])
+  @@index([startAt])
+}
+
+model AttendanceEntry {
+  id        String   @id @default(cuid())
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  projectId String
+  checkIn   DateTime
+  checkOut  DateTime?
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([staffId])
+  @@index([projectId])
+}
+
+model LoyaltyAccount {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  customerId String
+  customerName String?
+  phone      String?
+  points     Int      @default(0)
+  tier       String?  @default("bronze")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  transactions PointTransaction[]
+
+  @@unique([projectId, customerId])
+  @@index([projectId])
+}
+
+model PointTransaction {
+  id        String   @id @default(cuid())
+  accountId String
+  account   LoyaltyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  projectId String
+  delta     Int
+  reason    String?
+  createdAt DateTime @default(now())
+
+  @@index([accountId])
+  @@index([projectId])
+}
+
+// --- Phase 3: Sales + Promotions + Reviews ---
+
+model Order {
+  id           String   @id @default(cuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  customerId   String?
+  customerName String?
+  paymentMethod String? // cash | card | transfer
+  total        Float    @default(0)
+  note         String?
+  createdAt    DateTime @default(now())
+
+  items OrderItem[]
+
+  @@index([projectId])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String?
+  name      String
+  qty       Float  @default(1)
+  unitPrice Float  @default(0)
+  lineTotal Float  @default(0)
+
+  @@index([orderId])
+}
+
+model Promotion {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  type        String    // discount | bogo | flash
+  discountPct Float?
+  code        String?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  active      Boolean   @default(true)
+  copy        String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([projectId])
+}
+
+model Coupon {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  code        String
+  discountPct Float?
+  discountAmt Float?
+  maxUses     Int?
+  usedCount   Int       @default(0)
+  expiresAt   DateTime?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  redemptions CouponRedemption[]
+
+  @@unique([projectId, code])
+  @@index([projectId])
+}
+
+model CouponRedemption {
+  id         String   @id @default(cuid())
+  couponId   String
+  coupon     Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  projectId  String
+  customerId String?
+  createdAt  DateTime @default(now())
+
+  @@index([couponId])
+  @@index([projectId])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author     String?
+  rating     Int
+  body       String?  @db.Text
+  source     String?  // google | direct | maps
+  reply      String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([projectId])
+  @@index([rating])
+}
+
+// --- Phase 4: Referral, Broadcast, Appointments ---
+
+model Referral {
+  id           String   @id @default(cuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  code         String
+  referrerId   String?
+  referrerName String?
+  refereeId    String?
+  status       String   @default("pending") // pending | converted | rewarded
+  rewardPoints Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@unique([projectId, code])
+  @@index([projectId])
+}
+
+model Broadcast {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  channel    String   // sms | whatsapp | telegram
+  title      String
+  body       String   @db.Text
+  status     String   @default("draft") // draft | scheduled | sent
+  scheduledAt DateTime?
+  sentAt     DateTime?
+  recipientCount Int  @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([projectId])
+}
+
+model Appointment {
+  id           String   @id @default(cuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  customerName String
+  customerPhone String?
+  service      String?
+  startAt      DateTime
+  endAt        DateTime?
+  status       String   @default("booked") // booked | done | cancelled | no_show
+  note         String?
+  createdAt    DateTime @default(now())
+
+  @@index([projectId])
+  @@index([startAt])
+}

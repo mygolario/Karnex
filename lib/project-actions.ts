@@ -287,6 +287,13 @@ function normalizeProjectPlan(plan: any): any {
     });
   }
 
+  // 6b. Pass through competitorIntel if present
+  if (plan.competitorIntel && typeof plan.competitorIntel === "object") {
+    if (!Array.isArray(plan.competitorIntel.competitors)) {
+      plan.competitorIntel.competitors = [];
+    }
+  }
+
   return plan;
 }
 

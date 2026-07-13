@@ -195,7 +195,7 @@ export function RoadmapMissionControl({
                   // #endregion
                   return (
                   <li
-                    key={step.id}
+                    key={step.id || step.title || idx}
                     className="flex items-center gap-3 cursor-pointer group rounded-md px-2 py-1.5 hover:bg-muted/60 transition-colors"
                   >
                     {/* Number circle */}

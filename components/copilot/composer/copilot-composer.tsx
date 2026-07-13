@@ -241,7 +241,7 @@ export function CopilotComposer() {
       }
     }
 
-    // Traditional: permits + location
+    // Traditional: permits
     if (plan.projectType === "traditional") {
       const permits = Array.isArray((plan as any).permits) ? (plan as any).permits : [];
       if (permits.length > 0) {
@@ -262,17 +262,6 @@ export function CopilotComposer() {
             data: p,
             icon: "ClipboardList",
           });
-        });
-      }
-      const loc = (plan as any).locationAnalysis;
-      if (loc) {
-        items.push({
-          id: "location_analysis",
-          type: "location",
-          title: "تحلیل موقعیت",
-          subtitle: "تحلیل مکانی",
-          data: loc,
-          icon: "MapPin",
         });
       }
     }

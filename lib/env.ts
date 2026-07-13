@@ -9,7 +9,6 @@ const serverSchema = z.object({
   SERPER_API_KEY: z.string().min(1).optional(),
   FIRECRAWL_API_KEY: z.string().min(1).optional(),
   HUGGINGFACE_API_TOKEN: z.string().min(1).optional(),
-  NESHAN_API_KEY: z.string().min(1).optional(),
   REDIS_URL: z.string().optional(),
   SENTRY_DSN: z.string().url().optional(),
 });

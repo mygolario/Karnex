@@ -6,6 +6,7 @@ export { AIEmptyState } from "./ai-empty-state";
 export { AIExecutiveSummary } from "./ai-executive-summary";
 export { AIGenerationProgress, AIGenerationProgressAuto } from "./ai-generation-progress";
 export { AIVersionHistory } from "./ai-version-history";
+export type { AIVersionEntry } from "./ai-version-history";
 export { AIReportLayout } from "./ai-report-layout";
 export { AIStudioLayout } from "./ai-studio-layout";
 export { AIMobileOutputSheet } from "./ai-mobile-output-sheet";

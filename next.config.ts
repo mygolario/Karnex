@@ -55,6 +55,16 @@ const nextConfig: NextConfig = {
         destination: "/dashboard/copilot",
         permanent: true,
       },
+      {
+        source: "/dashboard/location",
+        destination: "/dashboard/competitors",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/location/:path*",
+        destination: "/dashboard/competitors",
+        permanent: true,
+      },
     ];
   },
 
@@ -110,7 +120,7 @@ const nextConfig: NextConfig = {
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: blob: https: http:",
           "font-src 'self' data:",
-          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.ingest.de.sentry.io https://*.sentry.io https://openrouter.ai https://nominatim.openstreetmap.org https://overpass-api.de http://127.0.0.1:7443 ws://127.0.0.1:7443",
+          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.ingest.de.sentry.io https://*.sentry.io https://openrouter.ai",
           "frame-ancestors 'none'",
           "base-uri 'self'",
           "form-action 'self'",
