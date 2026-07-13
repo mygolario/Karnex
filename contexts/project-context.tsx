@@ -79,9 +79,6 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
       if (now - lastReplayAt < 3000) return;
       lastReplayAt = now;
 
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3355b'},body:JSON.stringify({sessionId:'c3355b',location:'project-context.tsx:handleOnline',message:'online handler fired',data:{online:navigator.onLine},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
-      // #endregion
 
       console.log("PWA: Device is online. Replaying queued mutations...");
       const { replayOfflineQueue } = await import("@/lib/offline-sync");

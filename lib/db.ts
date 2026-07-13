@@ -14,13 +14,9 @@ import type {
   FeatureMatrixRow,
 } from "@/lib/competitors/types";
 
-export type { IdeaValidationRecord, ValidationBrief };
-export type {
-  CompetitorIntel,
-  CompetitorIntelItem,
-  CompetitorPosition,
-  FeatureMatrixRow,
-};
+// Do NOT `export type { ... }` from this "use server" file — Next.js 16.1.x
+// incorrectly registers those as Server Actions → ReferenceError at runtime.
+// Import types from @/lib/validation/types or @/lib/competitors/types instead.
 
 // User Profile Structure (Enhanced)
 export interface UserProfile {

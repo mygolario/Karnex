@@ -15,11 +15,16 @@ const prismaClientSingleton = () => {
   
   const isLocalhost = connectionString.includes('localhost') || connectionString.includes('127.0.0.1')
   
-  const pool = new Pool({ 
+  // Serverless (Vercel): default Pool max=10 per isolate exhausts Supabase
+  // session limits (EMAXCONNSESSION). Keep one connection per isolate.
+  const pool = new Pool({
     connectionString,
     ssl: isLocalhost ? false : { rejectUnauthorized: false },
+    max: 1,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 10_000,
   })
-  
+
   // Log connection errors but don't crash the server — the pool will reconnect automatically
   pool.on('error', (err) => {
     console.error('Unexpected error on idle client', err)

@@ -283,9 +283,6 @@ export default function RoadmapPage() {
 
   const handleSetDueDate = useCallback(
     (date: string) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'roadmap/page.tsx:handleSetDueDate',message:'due date selected',data:{date,selectedStepTitle:selectedStep?.title,selectedStepDueDate:selectedStep?.dueDate},timestamp:Date.now(),hypothesisId:'B'})}).catch(()=>{});
-      // #endregion
       if (selectedStep) updateStepMeta(selectedStep, { dueDate: date });
     },
     [selectedStep, updateStepMeta]
@@ -293,9 +290,6 @@ export default function RoadmapPage() {
 
   const handleSaveNotes = useCallback(
     (notes: string) => {
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'roadmap/page.tsx:handleSaveNotes',message:'save notes called',data:{notesLen:notes.length,selectedStepTitle:selectedStep?.title,selectedStepNotesLen:selectedStep?.notes?.length??0},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
-      // #endregion
       if (selectedStep) updateStepMeta(selectedStep, { notes });
     },
     [selectedStep, updateStepMeta]

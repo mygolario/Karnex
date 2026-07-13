@@ -182,9 +182,6 @@ export function StepSlideOver({
   };
 
   const handleSaveNotes = async () => {
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'step-slide-over.tsx:handleSaveNotes',message:'save notes click',data:{hasOnSaveNotes:!!onSaveNotes,notesLen:notes.length,stepTitle:step?.title,stepNotesLen:step?.notes?.length??0},timestamp:Date.now(),hypothesisId:'E'})}).catch(()=>{});
-    // #endregion
     if (!onSaveNotes) return;
     setIsSavingNotes(true);
     await new Promise((r) => setTimeout(r, 300));

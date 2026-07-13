@@ -97,11 +97,6 @@ function MobilePanelToggle() {
 }
 
 function CanvasPageContent() {
-  // #region agent log
-  useEffect(() => {
-    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b69372'},body:JSON.stringify({sessionId:'b69372',location:'canvas/page.tsx:CanvasPageContent',message:'CanvasPageContent mounted',data:{},timestamp:Date.now(),hypothesisId:'H5'})}).catch(()=>{});
-  }, []);
-  // #endregion
   const boardRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const viewMode = useCanvasStore((s) => s.viewMode);

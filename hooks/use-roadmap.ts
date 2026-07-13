@@ -370,9 +370,6 @@ export function useRoadmap(): UseRoadmapReturn {
       meta: { dueDate?: string; assignee?: string; notes?: string }
     ) => {
       if (!plan) {
-        // #region agent log
-        fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'use-roadmap.ts:updateStepMeta',message:'early return no plan',data:{meta},timestamp:Date.now(),hypothesisId:'C'})}).catch(()=>{});
-        // #endregion
         return;
       }
       const stepName = getStepTitle(step);
@@ -388,9 +385,6 @@ export function useRoadmap(): UseRoadmapReturn {
           return s;
         }),
       })) as RoadmapPhase[];
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'use-roadmap.ts:updateStepMeta',message:'updating step meta',data:{stepName,meta,matchCount,roadmapPhases:roadmap.length},timestamp:Date.now(),hypothesisId:'C'})}).catch(()=>{});
-      // #endregion
       updateActiveProject({ roadmap: newRoadmap });
     },
     [plan, roadmap, getStepTitle, updateActiveProject]
@@ -451,11 +445,6 @@ export function useRoadmap(): UseRoadmapReturn {
         return pB - pA;
       })
       .slice(0, 3);
-    // #region agent log
-    const keys = result.map((s, i) => s.id ?? `missing-${i}`);
-    const duplicateKeys = keys.filter((k, i) => keys.indexOf(k) !== i);
-    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b9e3e7'},body:JSON.stringify({sessionId:'b9e3e7',location:'use-roadmap.ts:topPrioritySteps',message:'topPrioritySteps key analysis',data:{count:result.length,ids:result.map(s=>s.id??null),titles:result.map(s=>s.title),missingIdCount:result.filter(s=>!s.id).length,duplicateKeys},timestamp:Date.now(),hypothesisId:'A,B'})}).catch(()=>{});
-    // #endregion
     return result;
   }, [flatSteps, getStepStatus, isStepUnlocked]);
 
@@ -490,9 +479,6 @@ export function useRoadmap(): UseRoadmapReturn {
         { projectName: plan?.projectName, projectType: plan?.projectType },
         false
       );
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0aaf34'},body:JSON.stringify({sessionId:'0aaf34',location:'use-roadmap.ts:generateBriefing',message:'briefing API result',data:{success:result?.success,hasReply:!!result?.reply,error:result?.error,replyLen:result?.reply?.length??0},timestamp:Date.now(),hypothesisId:'F'})}).catch(()=>{});
-      // #endregion
       if (result.success && result.reply) {
         setAiInsight(result.reply);
         return result.reply;

@@ -171,16 +171,10 @@ export function StepDetails() {
                 onClick={async () => {
                   const idea = buildIdeaContext(p);
                   if (!idea) return;
-                  // #region agent log
-                  fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e3898a'},body:JSON.stringify({sessionId:'e3898a',location:'step-details.tsx:onClick',message:'suggest-name click',data:{projectName:projectName.trim(),ideaLength:idea.length,ideaPreview:idea.slice(0,200),pillar:p.id,runId:'post-fix'},timestamp:Date.now(),hypothesisId:'H3-H4'})}).catch(()=>{});
-                  // #endregion
                   setSuggestingNames(true);
                   setNameSuggestions([]);
                   const res = await suggestProjectNameAction(idea);
                   setSuggestingNames(false);
-                  // #region agent log
-                  fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'e3898a'},body:JSON.stringify({sessionId:'e3898a',location:'step-details.tsx:onClick:response',message:'suggest-name response',data:{success:res.success,names:res.data?.names,isLimitError:res.isLimitError,error:res.error,runId:'post-fix'},timestamp:Date.now(),hypothesisId:'H1-H5'})}).catch(()=>{});
-                  // #endregion
                   if (res.success && res.data?.names?.length) {
                     setNameSuggestions(res.data.names);
                   } else if (res.isLimitError) {

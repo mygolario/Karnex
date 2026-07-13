@@ -16,9 +16,6 @@ export default function DashboardError({
   useEffect(() => {
     Sentry.captureException(error);
     console.error("[Dashboard Error]", error);
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b69372'},body:JSON.stringify({sessionId:'b69372',location:'error.tsx:useEffect',message:'DashboardError caught',data:{errorMessage:error.message,errorName:error.name,digest:error.digest},timestamp:Date.now(),hypothesisId:'H1,H5'})}).catch(()=>{});
-    // #endregion
   }, [error]);
 
   return (

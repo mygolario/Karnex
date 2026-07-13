@@ -33,18 +33,12 @@ export function RoadmapDailyBriefing({
     const cacheKey = `karnex-briefing-${today}`;
 
     const cached = sessionStorage.getItem(cacheKey);
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0aaf34'},body:JSON.stringify({sessionId:'0aaf34',location:'roadmap-daily-briefing.tsx:useEffect',message:'briefing effect run',data:{hasCached:!!cached,cacheLen:cached?.length??0,isOpen},timestamp:Date.now(),hypothesisId:'E,G'})}).catch(()=>{});
-    // #endregion
     if (cached) {
       setBriefing(cached);
     } else {
       setIsLoading(true);
       onGenerateBriefing()
         .then((result) => {
-          // #region agent log
-          fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'0aaf34'},body:JSON.stringify({sessionId:'0aaf34',location:'roadmap-daily-briefing.tsx:onGenerate',message:'briefing generate done',data:{hasResult:!!result,resultLen:result?.length??0},timestamp:Date.now(),hypothesisId:'F,H'})}).catch(()=>{});
-          // #endregion
           if (result) {
             sessionStorage.setItem(cacheKey, result);
             setBriefing(result);

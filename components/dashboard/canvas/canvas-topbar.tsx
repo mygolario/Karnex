@@ -22,14 +22,8 @@ import { TourBeaconAnchor } from "@/components/tour/tour-beacon-anchor";
 import { useProject } from "@/contexts/project-context";
 import { toast } from "sonner";
 
-// #region agent log
-fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b69372'},body:JSON.stringify({sessionId:'b69372',location:'canvas-topbar.tsx:module',message:'canvas-topbar module evaluated',data:{hasNetworkImport:false,version:'no-network-import'},timestamp:Date.now(),hypothesisId:'H1,H2'})}).catch(()=>{});
-// #endregion
 
 export function CanvasTopBar() {
-  // #region agent log
-  fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'b69372'},body:JSON.stringify({sessionId:'b69372',location:'canvas-topbar.tsx:CanvasTopBar',message:'CanvasTopBar render',data:{},timestamp:Date.now(),hypothesisId:'H5'})}).catch(()=>{});
-  // #endregion
   const { activeProject: plan } = useProject();
   const { saveStatus, undo, redo, canUndo, canRedo } = useCanvasActions();
   const canvasState = useCanvasStore((s) => s.canvasState);

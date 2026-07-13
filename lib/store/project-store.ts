@@ -41,9 +41,6 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     if (!silent) {
       set({ loading: true });
     }
-    // #region agent log
-    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'c3355b'},body:JSON.stringify({sessionId:'c3355b',location:'project-store.ts:refreshProjects-start',message:'refreshProjects called',data:{silent,hadActiveProject:!!get().activeProject?.id},timestamp:Date.now(),hypothesisId:'H2'})}).catch(()=>{});
-    // #endregion
     try {
       const res = await fetch("/api/projects", { cache: "no-store" })
         .then((r) => r.json())
@@ -159,10 +156,6 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     if (!activeProject?.id) return;
 
     const updatedProject = { ...activeProject, ...updates };
-    // #region agent log
-    const roadmapSample = (updates as { roadmap?: { steps?: unknown[] }[] }).roadmap?.[0]?.steps?.[0];
-    fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'project-store.ts:updateActiveProject',message:'optimistic update',data:{updateKeys:Object.keys(updates),hasRoadmap:!!(updates as {roadmap?:unknown}).roadmap,roadmapSample,online:typeof navigator!=='undefined'?navigator.onLine:true},timestamp:Date.now(),hypothesisId:'D'})}).catch(()=>{});
-    // #endregion
     set({
       activeProject: updatedProject,
       projects: get().projects.map((p) =>
@@ -178,13 +171,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
     try {
       await savePlanToCloud(userId, updates as Partial<BusinessPlan>, true, activeProject.id);
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'project-store.ts:updateActiveProject',message:'cloud save success',data:{updateKeys:Object.keys(updates)},timestamp:Date.now(),hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
     } catch (err) {
-      // #region agent log
-      fetch('http://127.0.0.1:7443/ingest/9ae0ee8b-1865-4481-b3b2-37ccf5719385',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6ea816'},body:JSON.stringify({sessionId:'6ea816',location:'project-store.ts:updateActiveProject',message:'cloud save failed',data:{error:String(err),updateKeys:Object.keys(updates)},timestamp:Date.now(),hypothesisId:'D'})}).catch(()=>{});
-      // #endregion
       console.error("Failed to save project updates, queuing offline", err);
       const { addUpdateProjectToQueue } = await import("@/lib/offline-sync");
       addUpdateProjectToQueue(userId, activeProject.id, updates);
