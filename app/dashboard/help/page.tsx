@@ -272,9 +272,9 @@ export default function HelpCenterPage() {
     },
     {
       icon: <Megaphone size={20} />,
-      title: "سیستم بازاریابی و رشد",
-      description: "برنامه استراتژیک برای جذب اولین کاربران و مشتریان با روش‌های مدرن دیجیتال مارکتینگ.",
-      href: "/dashboard/marketing",
+      title: "برنامه رشد",
+      description: "مسیر جذب کاربر و رشد استارتاپ با کمک هوش مصنوعی.",
+      href: "/dashboard/growth",
       variant: "primary" as const
     }
   ];

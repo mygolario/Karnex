@@ -115,13 +115,13 @@ export function useRoadmap(): UseRoadmapReturn {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const saved = localStorage.getItem(VIEW_STORAGE_KEY) as RoadmapView | null;
-    if (saved && ["journey", "kanban", "list", "calendar", "analytics", "gantt"].includes(saved)) {
+    const launchAllowed: RoadmapView[] = ["journey", "list", "calendar"];
+    if (saved && launchAllowed.includes(saved)) {
       setViewState(saved);
+    } else if (saved) {
+      setViewState("journey");
     }
-    const savedSprint = localStorage.getItem(SPRINT_MODE_KEY);
-    if (savedSprint === "true") {
-      setSprintModeState(true);
-    }
+    // Sprint mode off for focused launch UX
   }, []);
 
   const setView = useCallback((v: RoadmapView) => {

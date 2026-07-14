@@ -14,6 +14,7 @@ import {
   Currency
 } from '../payment/types';
 import { getPlanById } from '../payment/pricing';
+import { resolveFeatureTier } from '../payment/types';
 
 // === Subscription Management ===
 
@@ -72,7 +73,7 @@ export async function getUserTier(userId: string): Promise<PlanTier> {
     return 'free';
   }
   
-  return subscription.tier;
+  return resolveFeatureTier(subscription.tier || subscription.planId || 'free');
 }
 
 /**
@@ -186,7 +187,7 @@ export async function reactivateSubscription(userId: string): Promise<void> {
  */
 export async function getUserFeatures(userId: string): Promise<FeatureFlags> {
   const tier = await getUserTier(userId);
-  return DEFAULT_FEATURES[tier];
+  return DEFAULT_FEATURES[resolveFeatureTier(tier)];
 }
 
 /**

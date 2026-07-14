@@ -333,7 +333,7 @@ export async function generatePlanAction(data: any): Promise<{
     if (!session?.user?.id) return { error: "Unauthorized" };
 
     // AI Limit Check
-    const { errorResponse, rollback } = await checkAILimit();
+    const { errorResponse, rollback } = await checkAILimit('generate-plan');
     if (errorResponse) {
         return { 
             error: 'AI_LIMIT_REACHED', 
@@ -397,9 +397,9 @@ ${formattedAnswers}
         roadmapUser,
         {
           systemPrompt: system,
-          maxTokens: 32000,
+          maxTokens: 16000,
           temperature: 0.6,
-          timeoutMs: 120000,
+          timeoutMs: 90000,
           modelOverride: TIER_DEFAULT,
         },
         RoadmapOnlySchema,

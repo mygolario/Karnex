@@ -32,6 +32,7 @@ import {
   exportRoadmapAsPDF,
 } from "@/lib/roadmap/export";
 import { getRankTitle } from "@/lib/roadmap/themes";
+import { LAUNCH_CONFIG } from "@/lib/launch/config";
 
 const RoadmapKanban = dynamic(
   () => import("@/components/dashboard/roadmap/roadmap-kanban").then((m) => m.RoadmapKanban),
@@ -416,7 +417,8 @@ export default function RoadmapPage() {
         />
       )}
 
-      {/* Gamification HUD */}
+      {/* Gamification HUD — hidden for focused launch */}
+      {!LAUNCH_CONFIG.roadmap.hideGamification && (
       <GamificationHud
         state={gamification}
         badges={gamification.badges}
@@ -425,6 +427,7 @@ export default function RoadmapPage() {
         setShowLevelUp={gamification.setShowLevelUp}
         projectType={plan.projectType}
       />
+      )}
 
       {/* Toolbar */}
       <div data-tour-id="roadmap-toolbar">

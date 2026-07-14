@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
-import { randomBytes } from "crypto";
 
 /**
  * GET /api/user/security — security summary (2FA status, connected accounts, password set).
@@ -30,28 +29,15 @@ export async function GET() {
 }
 
 /**
- * PATCH /api/user/security — toggle 2FA.
- * Body: { enableTwoFactor: boolean }
- *
- * NOTE: This stores a placeholder TOTP secret. A full TOTP/QR + backup-code
- * implementation would use an OTP library (e.g. otplib) and verify the code;
- * kept minimal here to avoid adding dependencies without confirmation.
+ * PATCH /api/user/security — reserved for future real TOTP 2FA.
+ * Placeholder 2FA is disabled for launch (do not store fake secrets).
  */
-export async function PATCH(req: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  const body = await req.json().catch(() => ({}));
-
-  if (typeof body.enableTwoFactor === "boolean") {
-    const secret = body.enableTwoFactor ? randomBytes(20).toString("hex") : null;
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { twoFactorEnabled: body.enableTwoFactor, twoFactorSecret: secret },
-    });
-    return NextResponse.json({ twoFactorEnabled: body.enableTwoFactor });
-  }
-
-  return NextResponse.json({ error: "No valid fields" }, { status: 400 });
+export async function PATCH() {
+  return NextResponse.json(
+    {
+      error: "TWO_FACTOR_COMING_SOON",
+      message: "تأیید دو مرحله‌ای به‌زودی فعال می‌شود.",
+    },
+    { status: 501 },
+  );
 }

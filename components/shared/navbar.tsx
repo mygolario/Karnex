@@ -84,17 +84,16 @@ export function Navbar() {
           <div className="hidden lg:flex items-center">
             <div className="flex items-center bg-muted/50 rounded-2xl p-1.5 border border-border/50">
               
-              {/* Pillars */}
               <Link
-                href="/#pillars"
+                href="/#how-it-works"
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
               >
-                مسیرها
+                چطور کار می‌کند
               </Link>
 
               {/* Features */}
               <Link
-                href="/#features"
+                href="/#showcase"
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
               >
                 امکانات
@@ -124,6 +123,20 @@ export function Navbar() {
                 className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
               >
                 سوالات
+              </Link>
+
+              <Link
+                href="/help"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
+              >
+                راهنما
+              </Link>
+
+              <Link
+                href="/about"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground transition-all"
+              >
+                درباره ما
               </Link>
 
               {/* Contact */}
@@ -208,7 +221,7 @@ export function Navbar() {
               {/* Quick Links */}
               <div className="mb-4 space-y-1">
                 <Link
-                  href="/#pillars"
+                  href="/#how-it-works"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors"
                 >
@@ -216,7 +229,7 @@ export function Navbar() {
                   <span className="font-medium text-foreground text-sm">مسیرها</span>
                 </Link>
                 <Link
-                  href="/#features"
+                  href="/#showcase"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors"
                 >

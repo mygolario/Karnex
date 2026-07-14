@@ -27,7 +27,7 @@ interface ActionResponse<T> {
 export async function suggestAudienceAction(productIdea: string): Promise<ActionResponse<{ audiences: string[], revenueModels: string[] }>> {
   let rollback = async () => {};
   try {
-    const limitResult = await checkAILimit();
+    const limitResult = await checkAILimit('suggest-audience');
     if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
     rollback = limitResult.rollback;
 
@@ -74,7 +74,7 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
 export async function suggestProjectNameAction(idea: string): Promise<ActionResponse<{ names: string[] }>> {
   let rollback = async () => {};
   try {
-    const limitResult = await checkAILimit();
+    const limitResult = await checkAILimit('suggest-name');
     if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
     rollback = limitResult.rollback;
 
@@ -193,7 +193,7 @@ function generateFallbackNames(idea: string): string[] {
 export async function breakTaskAction(taskName: string): Promise<ActionResponse<{ subTasks: string[] }>> {
   let rollback = async () => {};
   try {
-    const limitResult = await checkAILimit();
+    const limitResult = await checkAILimit('break-task');
     if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
     rollback = limitResult.rollback;
 
@@ -249,7 +249,7 @@ export async function analyzeCompetitorsAction(
         // incremented the monthly quota and records usage aggregated there —
         // skip a second charge and a second usage record to avoid double counting.
         if (!options?.skipLimitCheck) {
-            const limitResult = await checkAILimit();
+            const limitResult = await checkAILimit('analyze-competitors');
             if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
             rollback = limitResult.rollback;
             usageUserId = limitResult.user?.id;
@@ -303,7 +303,7 @@ export async function analyzeCompetitorsAction(
 export async function generatePitchDeckAction(data: { idea: string, wizardAnswers?: any, projectContext?: any }): Promise<ActionResponse<{ slides: any[] }>> {
     let rollback = async () => {};
     try {
-        const limitResult = await checkAILimit();
+        const limitResult = await checkAILimit('generate-pitch-deck');
         if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
         rollback = limitResult.rollback;
 
@@ -379,7 +379,7 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
 export async function generateSmartCanvasAction(data: { idea: string, answers: Record<string, string>, type: 'lean' | 'brand' }): Promise<ActionResponse<Record<string, string[]>>> {
     let rollback = async () => {};
     try {
-        const limitResult = await checkAILimit();
+        const limitResult = await checkAILimit('generate-smart-canvas');
         if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
         rollback = limitResult.rollback;
 

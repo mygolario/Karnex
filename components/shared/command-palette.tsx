@@ -97,12 +97,12 @@ export function CommandPalette() {
     //   category: "navigation",
     // },
     {
-      id: "marketing",
-      title: "بازاریابی",
-      subtitle: "استراتژی‌های رشد",
+      id: "growth",
+      title: "برنامه رشد",
+      subtitle: "مسیر جذب و رشد استارتاپ",
       icon: <Megaphone size={20} />,
-      action: () => router.push("/dashboard/marketing"),
-      keywords: ["marketing", "growth", "strategy", "بازاریابی"],
+      action: () => router.push("/dashboard/growth"),
+      keywords: ["marketing", "growth", "strategy", "رشد", "بازاریابی"],
       category: "navigation",
     },
     {

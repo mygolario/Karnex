@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Bot,
   Map,
-  TrendingUp,
+  Presentation,
   LayoutGrid,
   Sparkles,
   ArrowLeft,
@@ -33,9 +33,9 @@ const hotspots = [
   {
     x: "50%",
     y: "60%",
-    icon: TrendingUp,
-    title: "آنالیتیکس",
-    description: "ردیابی پیشرفت",
+    icon: Presentation,
+    title: "پیچ‌دک",
+    description: "ارائه برای سرمایه‌گذار",
     color: "from-blue-500 to-cyan-600",
   },
   {
@@ -50,7 +50,7 @@ const hotspots = [
 
 export const ProductShowcase = () => {
   return (
-    <section className="py-24 lg:py-32 relative overflow-hidden bg-muted/20">
+    <section id="showcase" className="py-24 lg:py-32 relative overflow-hidden bg-muted/20">
       {/* Background */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />
       <div className="absolute top-1/2 start-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[120px]" />

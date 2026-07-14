@@ -7,8 +7,7 @@ import {
   Calendar, Video, DollarSign,
   Crown, LucideIcon,
   ChevronDown, FolderKanban, Check,
-  Activity, Package, Wallet, ShoppingCart, Megaphone, Star, Calculator,
-  Waves, Receipt, Gift, Ticket, CalendarCheck, FileText, Share2, Users, Heart,
+  Activity, Wallet, Receipt,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -19,6 +18,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTourStore } from "@/lib/tour/store";
 import { TOUR_VERSION } from "@/lib/tour/registry";
+import { isLaunchNavRoute } from "@/lib/launch/config";
+import type { ProjectType } from "@/app/new-project/genesis-constants";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "desktop" | "mobile";
@@ -69,7 +70,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
     { icon: Target, label: "تحلیل کسب‌وکار", href: "/dashboard/canvas" },
   ];
 
-  // --- Project-Specific Routes ---
+  // --- Project-Specific Routes (launch-scoped) ---
   const startupRoutes: Route[] = [
     { icon: Presentation, label: "پیچ‌دک", href: "/dashboard/pitch-deck" },
     { icon: Target, label: "اعتبارسنجی", href: "/dashboard/validation" },
@@ -80,21 +81,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
     { icon: Target, label: "تحلیل رقبا", href: "/dashboard/competitors" },
     { icon: Activity, label: "سلامت کسب‌وکار", href: "/dashboard/health" },
     { icon: Wallet, label: "سود و زیان", href: "/dashboard/finance" },
-    { icon: Waves, label: "جریان نقدی", href: "/dashboard/cashflow" },
     { icon: Receipt, label: "هزینه‌ها", href: "/dashboard/expenses" },
-    { icon: Receipt, label: "برآورد مالیات", href: "/dashboard/tax" },
-    { icon: Package, label: "موجودی و انبار", href: "/dashboard/inventory" },
-    { icon: ShoppingCart, label: "صندوق فروش", href: "/dashboard/sales" },
-    { icon: Users, label: "کارکنان و شیفت", href: "/dashboard/staff" },
-    { icon: Heart, label: "باشگاه مشتریان", href: "/dashboard/loyalty" },
-    { icon: Megaphone, label: "تخفیف و کمپین", href: "/dashboard/promotions" },
-    { icon: Share2, label: "پیام گروهی", href: "/dashboard/broadcast" },
-    { icon: Gift, label: "معرفی دوستان", href: "/dashboard/referral" },
-    { icon: Ticket, label: "کوپن و QR", href: "/dashboard/coupons" },
-    { icon: CalendarCheck, label: "نوبت‌دهی", href: "/dashboard/appointments" },
-    { icon: Star, label: "نظرات مشتریان", href: "/dashboard/reviews" },
-    { icon: Calculator, label: "قیمت‌گذاری", href: "/dashboard/pricing" },
-    { icon: FileText, label: "مرور ماهانه", href: "/dashboard/monthly-review" },
     { icon: Target, label: "اهداف KPI", href: "/dashboard/goals" },
   ];
   const creatorRoutes: Route[] = [
@@ -103,11 +90,20 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
     { icon: DollarSign, label: "تعرفه اسپانسری", href: "/dashboard/sponsor-rates" },
   ];
 
+  const projectType = (plan?.projectType || "startup") as ProjectType;
+
   const specializedRoutes = [
     ...(isStartup ? startupRoutes : []),
     ...(isTraditional ? traditionalRoutes : []),
     ...(isCreator ? creatorRoutes : []),
-  ].filter(route => !route.hidden);
+  ].filter(
+    (route) =>
+      !route.hidden && isLaunchNavRoute(route.href, projectType),
+  );
+
+  const visibleCommonRoutes = commonRoutes.filter((route) =>
+    isLaunchNavRoute(route.href, projectType),
+  );
 
   const baseClasses = "flex flex-col h-full bg-card border-l border-border";
   const positionClasses = variant === "desktop"
@@ -233,7 +229,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
             مسیر اصلی
           </p>
           <div className="space-y-1">
-            {commonRoutes.map((route) => (
+            {visibleCommonRoutes.map((route) => (
               <SidebarLink key={route.href} route={route} pathname={pathname} />
             ))}
           </div>
@@ -295,7 +291,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
                 <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 text-center">
                   <div className="text-xs text-primary font-bold flex items-center justify-center gap-1.5">
                     <Crown className="w-4 h-4 fill-primary/10" />
-                    <span>پلن {toPersianDigits(usage.tier === 'pro' ? 'حرفه‌ای' : usage.tier === 'plus' ? 'پلاس' : 'رایگان')} — نامحدود</span>
+                    <span>پلن {toPersianDigits(usage.tier === 'pro' ? 'تیم' : usage.tier === 'plus' ? 'پرو' : 'رایگان')} — نامحدود</span>
                   </div>
                 </div>
               );

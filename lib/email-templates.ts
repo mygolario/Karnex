@@ -233,7 +233,7 @@ const emailLayout = (content: string, title: string, gradientType: GradientType 
                     <div class="footer">
                         <p>
                             <a href="https://www.karnex.ir/dashboard" target="_blank">پیشخوان کاربری</a> | 
-                            <a href="https://www.karnex.ir/dashboard/help" target="_blank">مرکز پشتیبانی</a> | 
+                            <a href="https://www.karnex.ir/help" target="_blank">مرکز پشتیبانی</a> | 
                             <a href="https://www.karnex.ir" target="_blank">وب‌سایت اصلی</a>
                         </p>
                         <p style="margin-top: 15px;">© ${currentYear} Karnex. تمامی حقوق محفوظ است.</p>
@@ -286,35 +286,35 @@ const getOnboardingSteps = (role?: string) => {
  */
 export const getWelcomeTemplate = (name: string, userRole?: string) => {
   const roleText = userRole === 'creator' ? 'تولیدکننده محتوا' 
-                 : userRole === 'startup' ? 'استارتاپ خلاق' 
+                 : userRole === 'startup' ? 'بنیان‌گذار استارتاپ' 
                  : userRole === 'traditional' ? 'کسب‌وکار سنتی' 
-                 : '';
-  const roleSection = roleText ? `<p style="font-weight: 500;">کارنکس مسیر طلایی پیش روی شما را به عنوان <strong>${roleText}</strong> بهینه‌سازی کرده است.</p>` : '';
+                 : 'بنیان‌گذار';
+  const roleSection = `<p style="font-weight: 500;">مسیر پیشنهادی ما برای <strong>${roleText}</strong>: بوم، نقشه راه، پیچ‌دک و دستیار هوشمند.</p>`;
 
   const content = `
     <h2 style="color: #ec4899; font-size: 20px; font-weight: 800; margin-top: 0;">سلام ${name} عزیز، به کارنکس خوش آمدید!</h2>
-    <p>بسیار خوشحالیم که شما را در جمع کارآفرینان و مدیران آینده کارنکس داریم. هدف ما تسریع، ساده‌سازی و جهت‌دهی صحیح به ایده‌های کسب‌وکار شما با قدرت هوش مصنوعی بومی است.</p>
+    <p>خوشحالیم که اینجایی. کارنکس هم‌بنیان‌گذار هوشمند توست — مخصوص استارتاپ‌های ایرانی.</p>
     
     ${roleSection}
 
     <div style="background-color: #fff5f8; border: 1px solid #ffe4e6; border-radius: 12px; padding: 20px; margin: 25px 0;">
-        <h3 style="margin-top: 0; color: #e11d48; font-size: 16px;">🚀 اولین گام‌های پیشنهادی شما:</h3>
+        <h3 style="margin-top: 0; color: #e11d48; font-size: 16px;">🚀 اولین گام‌ها:</h3>
         <ul style="margin: 0; padding-right: 20px; color: #4f46e5; line-height: 2;">
-            ${getOnboardingSteps(userRole)}
+            ${getOnboardingSteps(userRole || 'startup')}
         </ul>
     </div>
 
-    <p>برای شروع همین حالا می‌توانید وارد پنل خود شده و فرآیند خلق ایده جدید را آغاز کنید:</p>
+    <p>الان می‌تونی وارد پیشخوان بشی و اولین پروژه‌ات را بسازی:</p>
 
     <div class="bulletproof-button-container">
         <!--[if mso]>
-        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://www.karnex.ir/dashboard" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="20%" stroke="f" fillcolor="#ec4899">
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://www.karnex.ir/new-project" style="height:50px;v-text-anchor:middle;width:220px;" arcsize="20%" stroke="f" fillcolor="#ec4899">
           <w:anchorlock/>
-          <center style="color:#ffffff;font-family:Tahoma,sans-serif;font-size:15px;font-weight:bold;">ورود به پیشخوان کارنکس</center>
+          <center style="color:#ffffff;font-family:Tahoma,sans-serif;font-size:15px;font-weight:bold;">ساخت اولین پروژه</center>
         </v:roundrect>
         <![endif]-->
         <!--[if !mso]><!-->
-        <a href="https://www.karnex.ir/dashboard" class="bulletproof-button">ورود به پیشخوان کارنکس</a>
+        <a href="https://www.karnex.ir/new-project" class="bulletproof-button">ساخت اولین پروژه</a>
         <!--<![endif]-->
     </div>
   `;
@@ -534,13 +534,13 @@ export const getContactUserTemplate = (name: string) => {
     
     <div class="bulletproof-button-container">
         <!--[if mso]>
-        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://www.karnex.ir/dashboard/help" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="20%" stroke="f" fillcolor="#4b5563">
+        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="https://www.karnex.ir/help" style="height:50px;v-text-anchor:middle;width:200px;" arcsize="20%" stroke="f" fillcolor="#4b5563">
           <w:anchorlock/>
           <center style="color:#ffffff;font-family:Tahoma,sans-serif;font-size:15px;font-weight:bold;">مشاهده بخش راهنما</center>
         </v:roundrect>
         <![endif]-->
         <!--[if !mso]><!-->
-        <a href="https://www.karnex.ir/dashboard/help" class="bulletproof-button" style="background: linear-gradient(135deg, #4b5563, #1f2937); background-color: #4b5563;">مشاهده بخش راهنما</a>
+        <a href="https://www.karnex.ir/help" class="bulletproof-button" style="background: linear-gradient(135deg, #4b5563, #1f2937); background-color: #4b5563;">مشاهده بخش راهنما</a>
         <!--<![endif]-->
     </div>
   `;

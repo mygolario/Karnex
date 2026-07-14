@@ -30,8 +30,7 @@ export function AccountOverview({ bundle, onNavigate }: AccountSectionProps & { 
   // Account health checklist
   const checks = [
     { label: "پروفایل کامل", ok: !!(bundle.account.firstName && bundle.account.bio), target: "profile" as AccountSectionId },
-    { label: "رمز عبور", ok: true, target: "security" as AccountSectionId },
-    { label: "تأیید دو مرحله‌ای", ok: !!bundle.account.twoFactorEnabled, target: "security" as AccountSectionId },
+    { label: "رمز عبور / ورود امن", ok: true, target: "security" as AccountSectionId },
     { label: "کانال متصل", ok: !!(bundle.profile?.channelLinks && Object.values(bundle.profile.channelLinks).some(Boolean)), target: "profile" as AccountSectionId },
     { label: "شخصی‌سازی دستیار", ok: !!bundle.copilotProfile?.preferredTone, target: "ai" as AccountSectionId },
   ];

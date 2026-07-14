@@ -5,7 +5,7 @@ import { recordAiUsage } from '@/lib/copilot/usage-tracking';
 import { MODEL_WHISPER_LARGE_V3 } from '@/lib/openrouter';
 
 export async function POST(req: Request) {
-  const limitResult = await checkAILimit();
+  const limitResult = await checkAILimit('stt');
   if (limitResult.errorResponse) return limitResult.errorResponse;
   const rollback = limitResult.rollback;
   const userId = limitResult.user?.id;

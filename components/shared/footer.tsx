@@ -16,22 +16,22 @@ export function Footer() {
 
   const footerLinks = {
     product: [
-      { label: "مسیرها", href: "/#pillars" },
-      { label: "امکانات", href: "/#features" },
+      { label: "چطور کار می‌کند", href: "/#how-it-works" },
+      { label: "امکانات", href: "/#showcase" },
       { label: "نسخه موبایل", href: "/mobile-app" },
-      { label: "نحوه کار", href: "/#how-it-works" },
       { label: "تعرفه‌ها", href: "/#pricing" },
       { label: "سوالات متداول", href: "/#faq" },
     ],
     company: [
+      { label: "درباره ما", href: "/about" },
       { label: "ارتباط با ما", href: "/contact" },
       { label: "قوانین استفاده", href: "/terms" },
       { label: "حریم خصوصی", href: "/privacy" },
     ],
     support: [
+      { label: "راهنما", href: "/help" },
       { label: "پشتیبانی", href: "/contact#support" },
-      { label: "راهنمای شروع", href: "/#how-it-works" },
-      { label: "تماس با فروش", href: "/contact?subject=اشتراک اولترا" },
+      { label: "ارتقا به تیم", href: "/pricing" },
     ],
   };
 
@@ -62,7 +62,7 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-gray-400 text-sm leading-relaxed mb-6 max-w-xs">
-              دستیار هوشمند کارآفرینان. از ایده تا درآمد، ما کنارتونیم.
+              هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی. از ایده تا درآمد.
             </p>
 
             {/* Social links */}

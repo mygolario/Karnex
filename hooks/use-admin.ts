@@ -5,8 +5,10 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "").split(",").map(e => e.trim()).filter(Boolean);
-
+/**
+ * Admin gate — fetches /api/admin/me (server checks role + ADMIN_EMAILS).
+ * Never reads ADMIN_EMAILS in the browser.
+ */
 export function useAdmin() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -17,25 +19,35 @@ export function useAdmin() {
     if (authLoading) return;
 
     if (!user) {
+      setIsAdmin(false);
       setChecking(false);
       return;
     }
 
-    if (user.email && ADMIN_EMAILS.includes(user.email)) {
-      setIsAdmin(true);
-      setChecking(false);
-    } else {
-      setIsAdmin(false);
-      setChecking(false);
-      // Optional: Auto redirect if strictly using this hook for protection
-      // But we might want to handle redirect in the component
-    }
+    let cancelled = false;
+    setChecking(true);
+
+    fetch("/api/admin/me")
+      .then((r) => (r.ok ? r.json() : { isAdmin: false }))
+      .then((data: { isAdmin?: boolean }) => {
+        if (!cancelled) setIsAdmin(Boolean(data.isAdmin));
+      })
+      .catch(() => {
+        if (!cancelled) setIsAdmin(false);
+      })
+      .finally(() => {
+        if (!cancelled) setChecking(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [user, authLoading]);
 
   const protectAdminRoute = () => {
     if (!checking && !isAdmin) {
-       toast.error("دسترسی غیرمجاز. این بخش مخصوص مدیریت است. ⛔");
-       router.push("/dashboard");
+      toast.error("دسترسی غیرمجاز. این بخش مخصوص مدیریت است.");
+      router.push("/dashboard");
     }
   };
 

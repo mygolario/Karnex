@@ -16,7 +16,7 @@ const organizationSchema = {
   alternateName: "Karnex",
   url: SITE_URL,
   logo: `${SITE_URL}/logo-light.png`,
-  description: "دستیار هوشمند کارآفرینی - با کارنکس ایده خود را به کسب‌وکار تبدیل کنید",
+  description: "هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی — از ایده تا بوم، نقشه راه و پیچ‌دک",
   sameAs: SOCIAL_URLS,
   contactPoint: {
     "@type": "ContactPoint",
@@ -32,7 +32,7 @@ const websiteSchema = {
   alternateName: "Karnex",
   url: SITE_URL,
   inLanguage: "fa-IR",
-  description: "با کارنکس، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید",
+  description: "هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی",
 };
 
 const softwareSchema = {
@@ -48,7 +48,7 @@ const softwareSchema = {
     priceCurrency: "IRR",
     description: "شروع رایگان",
   },
-  description: "دستیار هوشمند راه‌اندازی کسب‌وکار با کارنکس",
+  description: "هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی با بوم، نقشه راه و پیچ‌دک",
 };
 
 type JsonLdProps = {

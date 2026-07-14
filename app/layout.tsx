@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     default: 'کارنکس | دستیار هوشمند کارآفرینی',
     template: '%s | کارنکس',
   },
-  description: 'با دستیار کارنکس، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
+  description: 'هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی — بوم کسب‌وکار، نقشه راه، پیچ‌دک و دستیار AI.',
   keywords: [
     'کارآفرینی',
     'استارتاپ',
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#7c3aed' },
+    { media: '(prefers-color-scheme: light)', color: '#ec4899' },
     { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
   ],
 };
@@ -85,7 +85,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#7c3aed',
+  themeColor: '#ec4899',
 };
 
 const vazirmatn = localFont({

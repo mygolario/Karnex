@@ -47,7 +47,7 @@ function ContactPageInner() {
     setMousePosition({ x: clientX - left, y: clientY - top });
   };
 
-  // Pre-fill subject from URL query param (e.g. from Ultra plan CTA)
+  // Pre-fill subject from URL query param (e.g. from pricing CTA)
   useEffect(() => {
     const subject = searchParams.get("subject");
     if (subject) {
@@ -348,7 +348,7 @@ function ContactPageInner() {
                 
                 {/* Help Center Navigation Card */}
                 <a 
-                  href="/dashboard/help" 
+                  href="/help" 
                   className="block p-6 rounded-2xl border border-border bg-card/40 hover:bg-card hover:border-primary/30 transition-all duration-300 group hover:shadow-lg hover:shadow-primary/5 cursor-pointer"
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -361,7 +361,7 @@ function ContactPageInner() {
                     <ArrowLeft className="w-4 h-4 text-muted-foreground group-hover:translate-x-[-4px] transition-transform" />
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                    آموزش‌های تصویری پلتفرم، فیلم‌های مستند و راهنمای کامل گام‌به‌گام کار با هوش مصنوعی کارنکس.
+                    راهنمای شروع، سوالات متداول و معرفی ابزارهای اصلی کارنکس — بدون نیاز به ورود.
                   </p>
                 </a>
 
@@ -374,7 +374,7 @@ function ContactPageInner() {
                     پشتیبانی تلفنی ویژه
                   </h4>
                   <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                    ساعات کاری شنبه تا چهارشنبه ۹ تا ۱۷ آماده دریافت تماس‌های کاربران نسخه پرو هستیم.
+                    ساعات کاری شنبه تا چهارشنبه ۹ تا ۱۷ آماده دریافت تماس‌های کاربران پلن تیم هستیم.
                     <span className="block mt-2 font-semibold text-foreground">۰۲۱-۹۱۰۱۵۶۷۸</span>
                   </p>
                 </div>

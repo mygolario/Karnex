@@ -30,13 +30,6 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   let rollback = async () => {};
   try {
-    const limitResult = await checkAILimit();
-    if (limitResult.errorResponse) return limitResult.errorResponse;
-    rollback = limitResult.rollback;
-
-    const session = await auth();
-    const userId = session?.user?.id;
-
     const body = await req.json();
     const {
       action,
@@ -48,7 +41,22 @@ export async function POST(req: Request) {
       modelOverride,
       activeProject,
       modifier,
+      deep,
     } = body;
+
+    const creditFeature =
+      deep && action === "market-research"
+        ? "market-research-deep"
+        : typeof action === "string"
+          ? action
+          : "default";
+
+    const limitResult = await checkAILimit(creditFeature);
+    if (limitResult.errorResponse) return limitResult.errorResponse;
+    rollback = limitResult.rollback;
+
+    const session = await auth();
+    const userId = session?.user?.id;
 
     const genCtx = buildGenerateContext(activeProject, userId, modifier);
 

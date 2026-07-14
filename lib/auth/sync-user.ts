@@ -84,5 +84,21 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
     console.error("Failed to seed welcome notifications on user sync:", seedErr);
   }
 
+  // Welcome email — best-effort, never block signup
+  try {
+    const { sendEmail } = await import("@/lib/email");
+    const { getWelcomeTemplate } = await import("@/lib/email-templates");
+    const display = name || "کاربر";
+    await sendEmail({
+      to: supabaseUser.email,
+      subject: "به کارنکس خوش آمدید — هم‌بنیان‌گذار هوشمند شما",
+      templateName: "welcome",
+      htmlContent: getWelcomeTemplate(display, "startup"),
+      name: display,
+    });
+  } catch (emailErr) {
+    console.error("Failed to send welcome email on user sync:", emailErr);
+  }
+
   return newUser;
 }

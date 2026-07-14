@@ -1,5 +1,5 @@
 import "server-only";
-import { callOpenRouter } from "@/lib/openrouter";
+import { callOpenRouter, TIER_FAST } from "@/lib/openrouter";
 import type { GeneratedInsight } from "./insights";
 
 /**
@@ -24,6 +24,8 @@ export async function enrichInsightsWithLLM(
         "تو تحلیل‌گر کارنکس هستی. فقط JSON آرایه با همان titleها و body بهبودیافته.",
       maxTokens: 1200,
       temperature: 0.5,
+      modelOverride: TIER_FAST,
+      singleModel: true,
     }
   );
 

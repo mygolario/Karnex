@@ -8,16 +8,19 @@ export async function GET(
 ) {
   try {
     const { token } = await params;
+    if (!token || token.length < 8) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
 
-    const projects = await prisma.project.findMany({
-      where: { deletedAt: null },
+    const project = await prisma.project.findFirst({
+      where: {
+        deletedAt: null,
+        data: {
+          path: ["shareTokens", "pitch-deck"],
+          equals: token,
+        },
+      },
       select: { id: true, projectName: true, data: true },
-    });
-
-    const project = projects.find((p) => {
-      const data = (p.data ?? {}) as Record<string, unknown>;
-      const shareTokens = (data.shareTokens ?? {}) as Record<string, string>;
-      return shareTokens["pitch-deck"] === token;
     });
 
     if (!project) {

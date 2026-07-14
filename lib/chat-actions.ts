@@ -11,7 +11,7 @@ export async function chatAction(message: string, planContext: any, generateFoll
   let rollback = async () => {};
   try {
     // === AI Usage Limit Check ===
-    const limitResult = await checkAILimit();
+    const limitResult = await checkAILimit('chat-action');
     if (limitResult.errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
     rollback = limitResult.rollback;
 
@@ -110,7 +110,7 @@ export async function advisorChatAction(message: string, projectContext: any, co
   let rollback = async () => {};
   try {
     // === AI Usage Limit Check ===
-    const limitResult = await checkAILimit();
+    const limitResult = await checkAILimit('advisor-chat');
     if (limitResult.errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
     rollback = limitResult.rollback;
 

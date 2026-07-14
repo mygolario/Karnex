@@ -1,22 +1,25 @@
 /**
  * Pricing Plans Configuration
- * 
- * Central configuration for all pricing plans.
- * 4 tiers: Free, Plus, Pro, Ultra
- * All features unlocked — only project count and AI requests are limited.
+ *
+ * Launch tiers (display): رایگان / پرو / تیم
+ * Internal plan ids kept for payment + subscription compatibility:
+ *   free → رایگان
+ *   plus → پرو (hero paid)
+ *   pro  → تیم
+ * ultra remains in feature map for legacy subscribers but is not sold.
  */
 
 import { PricingPlan, PlanTier } from './types';
 import { toPersianDigits } from '@/lib/utils';
 
-// Pricing plans (prices in Toman)
+/** Plans shown on marketing / checkout (Ultra not sold at launch) */
 export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'free',
     name: 'رایگان',
     nameEn: 'Free',
     tier: 'free',
-    description: 'شروع کنید و امتحان کنید',
+    description: 'یک پروژه واقعی بساز و قدرت کارنکس را حس کن',
     price: {
       monthly: 0,
       yearly: 0,
@@ -24,88 +27,77 @@ export const PRICING_PLANS: PricingPlan[] = [
     currency: 'IRR',
     features: [
       { name: '۱ پروژه فعال', included: true, limit: 1 },
-      { name: '۲۰ درخواست AI در ماه', included: true, limit: 20 },
-      { name: 'دسترسی به تمام امکانات', included: true },
-      { name: 'تمام حالت‌های داشبورد', included: true },
+      { name: '۴۰ واحد اعتبار AI در ماه', included: true, limit: 40, tooltip: 'درخواست‌های سنگین چند واحد مصرف می‌کنند' },
+      { name: 'بوم، نقشه راه، پیچ‌دک و کوپایلوت', included: true },
+      { name: 'پشتیبانی جامعه', included: true },
     ],
   },
   {
     id: 'plus',
-    name: 'پلاس',
-    nameEn: 'Plus',
+    name: 'پرو',
+    nameEn: 'Pro',
     tier: 'plus',
-    description: 'برای کارآفرینان جدی',
+    description: 'برای بنیان‌گذار جدی',
     price: {
       monthly: 299000,
       yearly: 2870400, // 239,200 × 12 (20% off)
     },
     currency: 'IRR',
+    highlighted: true,
+    badge: 'محبوب‌ترین',
     features: [
-      { name: '۵ پروژه فعال', included: true, limit: 5 },
-      { name: '۱۰۰ درخواست AI در ماه', included: true, limit: 100 },
-      { name: 'دسترسی به تمام امکانات', included: true },
-      { name: 'تمام حالت‌های داشبورد', included: true },
+      { name: '۳ پروژه فعال', included: true, limit: 3 },
+      { name: '۱۰۰ واحد اعتبار AI در ماه', included: true, limit: 100, tooltip: 'درخواست‌های سنگین چند واحد مصرف می‌کنند' },
+      { name: 'همه ابزارهای استارتاپ', included: true },
+      { name: 'تحلیل رقبا و تحقیق بازار', included: true },
     ],
   },
   {
     id: 'pro',
-    name: 'پرو',
-    nameEn: 'Pro',
+    name: 'تیم',
+    nameEn: 'Team',
     tier: 'pro',
-    description: 'محبوب‌ترین انتخاب',
+    description: 'برای هم‌بنیان‌گذاران و تیم کوچک',
     price: {
       monthly: 699000,
       yearly: 6710400, // 559,200 × 12 (20% off)
     },
     currency: 'IRR',
-    highlighted: true,
-    badge: 'محبوب‌ترین',
     features: [
-      { name: '۱۵ پروژه فعال', included: true, limit: 15 },
-      { name: '۵۰۰ درخواست AI در ماه', included: true, limit: 500 },
-      { name: 'دسترسی به تمام امکانات', included: true },
-      { name: 'تمام حالت‌های داشبورد', included: true },
+      { name: '۸ پروژه فعال', included: true, limit: 8 },
+      { name: '۳۵۰ واحد اعتبار AI در ماه', included: true, limit: 350, tooltip: 'درخواست‌های سنگین چند واحد مصرف می‌کنند' },
+      { name: 'تحقیق بازار عمیق', included: true },
       { name: 'پشتیبانی اولویت‌دار', included: true },
-    ],
-  },
-  {
-    id: 'ultra',
-    name: 'اولترا',
-    nameEn: 'Ultra',
-    tier: 'ultra',
-    description: 'بدون محدودیت',
-    price: {
-      monthly: 1490000,
-      yearly: 14304000, // 1,192,000 × 12 (20% off)
-    },
-    currency: 'IRR',
-    features: [
-      { name: 'پروژه نامحدود', included: true, limit: 'نامحدود' },
-      { name: '۲,۰۰۰ درخواست AI در ماه', included: true, limit: 2000 },
-      { name: 'دسترسی به تمام امکانات', included: true },
-      { name: 'تمام حالت‌های داشبورد', included: true },
-      { name: 'پشتیبانی اولویت‌دار', included: true },
-      { name: 'مشاوره اختصاصی', included: true },
     ],
   },
 ];
 
-// Helper functions
+/** Purchasable / active plan lookup — ultra is not sold */
 export function getPlanById(planId: string): PricingPlan | undefined {
-  return PRICING_PLANS.find(p => p.id === planId);
+  return PRICING_PLANS.find((p) => p.id === planId);
+}
+
+/** Display helper for legacy ultra subscriptions */
+export function getPlanForDisplay(planId: string): PricingPlan | undefined {
+  if (planId === 'ultra') {
+    return PRICING_PLANS.find((p) => p.id === 'pro');
+  }
+  return getPlanById(planId);
 }
 
 export function getPlanByTier(tier: PlanTier): PricingPlan | undefined {
-  return PRICING_PLANS.find(p => p.tier === tier);
+  if (tier === 'ultra') return PRICING_PLANS.find((p) => p.id === 'pro');
+  if (tier === 'team') return PRICING_PLANS.find((p) => p.id === 'pro');
+  return PRICING_PLANS.find((p) => p.tier === tier);
 }
 
 export function getHighlightedPlan(): PricingPlan | undefined {
-  return PRICING_PLANS.find(p => p.highlighted);
+  return PRICING_PLANS.find((p) => p.highlighted);
 }
 
 export function formatPrice(amount: number, showCurrency = true): string {
   if (amount === 0) return 'رایگان';
-  
+
   const formatted = toPersianDigits(new Intl.NumberFormat('en-US').format(amount));
   return showCurrency ? `${formatted} تومان` : formatted;
 }

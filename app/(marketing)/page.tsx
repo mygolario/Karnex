@@ -6,30 +6,13 @@ import { HeroSection } from "@/components/marketing/hero-section";
 import { JsonLd } from "@/components/shared/json-ld";
 import { FAQ_ITEMS } from "@/lib/marketing/faq-data";
 
-const StatsBar = dynamic(
-  () => import("@/components/marketing/stats-bar").then((m) => m.StatsBar),
-  { loading: () => <div className="min-h-[100px]" /> }
-);
-const PillarsSection = dynamic(
-  () => import("@/components/marketing/pillars-section").then((m) => m.PillarsSection),
-  { loading: () => <div className="min-h-[400px]" /> }
-);
-const FeaturesSection = dynamic(
-  () => import("@/components/marketing/features-section").then((m) => m.FeaturesSection),
-  { loading: () => <div className="min-h-[400px]" /> }
-);
-
-const ProductShowcase = dynamic(
-  () => import("@/components/marketing/product-showcase").then((m) => m.ProductShowcase),
-  { loading: () => <div className="min-h-[400px]" /> }
-);
 const HowItWorksSection = dynamic(
   () => import("@/components/marketing/how-it-works-section").then((m) => m.HowItWorksSection),
   { loading: () => <div className="min-h-[400px]" /> }
 );
-const Testimonials = dynamic(
-  () => import("@/components/marketing/testimonials").then((m) => m.Testimonials),
-  { loading: () => <div className="min-h-[300px]" /> }
+const ProductShowcase = dynamic(
+  () => import("@/components/marketing/product-showcase").then((m) => m.ProductShowcase),
+  { loading: () => <div className="min-h-[400px]" /> }
 );
 const PricingSection = dynamic(
   () => import("@/components/marketing/pricing-section").then((m) => m.PricingSection),
@@ -48,14 +31,14 @@ const CTASection = dynamic(
 );
 
 export const metadata: Metadata = {
-  title: "کارنکس | دستیار هوشمند کارآفرینی",
+  title: "کارنکس | هم‌بنیان‌گذار هوشمند استارتاپ",
   description:
-    "با دستیار کارنکس، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.",
+    "کارنکس هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی است. از ایده تا بوم کسب‌وکار، نقشه راه و پیچ‌دک — با هوش مصنوعی.",
   alternates: { canonical: "/" },
   openGraph: {
-    title: "کارنکس | دستیار هوشمند کارآفرینی",
+    title: "کارنکس | هم‌بنیان‌گذار هوشمند استارتاپ",
     description:
-      "با دستیار کارنکس، ایده خود را به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.",
+      "ایده با تو، مسیرش با کارنکس. بوم، نقشه راه، پیچ‌دک و کوپایلوت برای بنیان‌گذاران ایرانی.",
     url: "https://www.karnex.ir",
     type: "website",
   },
@@ -75,12 +58,8 @@ export default function MarketingPage() {
 
       <main id="main-content">
         <HeroSection />
-        <StatsBar />
-        <PillarsSection />
-        <FeaturesSection />
-        <ProductShowcase />
         <HowItWorksSection />
-        <Testimonials />
+        <ProductShowcase />
         <PricingSection />
         <FAQ />
         <TrustLinksSection />

@@ -4,20 +4,14 @@ import { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { Rocket, Plus } from "lucide-react";
+import { Rocket, Plus, Map, LayoutGrid, Bot, Presentation } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { calculateProjectScore } from "@/lib/scoring";
 import { FocusHero } from "@/components/dashboard/overview/focus-hero";
-import { StatsStrip } from "@/components/dashboard/overview/stats-strip";
-import { QuickAccessGrid } from "@/components/dashboard/overview/quick-access-grid";
-import { KarnexScore } from "@/components/dashboard/karnex-score";
-import { RecentActivity } from "@/components/dashboard/overview/recent-activity";
-import { AIInsightsWidget } from "@/components/dashboard/overview/ai-insights-widget";
-import { UpcomingTasks } from "@/components/dashboard/overview/upcoming-tasks";
 import { SetupChecklist } from "@/components/tour/setup-checklist";
+import { UpcomingTasks } from "@/components/dashboard/overview/upcoming-tasks";
+import { cn } from "@/lib/utils";
 
-// Helper to get step title
 function getStepTitle(step: unknown): string {
   if (typeof step === "string") return step;
   if (step && typeof step === "object" && "title" in step) {
@@ -26,43 +20,57 @@ function getStepTitle(step: unknown): string {
   return "";
 }
 
-// Animation variants
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.1 } }
+  show: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 const itemVariants: Variants = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
+  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
 };
+
+const QUICK_LINKS = [
+  {
+    href: "/dashboard/roadmap",
+    label: "نقشه راه",
+    desc: "گام بعدی را انجام بده",
+    icon: Map,
+  },
+  {
+    href: "/dashboard/canvas",
+    label: "بوم کسب‌وکار",
+    desc: "مدل کسب‌وکارت را بساز",
+    icon: LayoutGrid,
+  },
+  {
+    href: "/dashboard/copilot",
+    label: "دستیار کارنکس",
+    desc: "با AI جلو برو",
+    icon: Bot,
+  },
+  {
+    href: "/dashboard/pitch-deck",
+    label: "پیچ‌دک",
+    desc: "ارائه برای سرمایه‌گذار",
+    icon: Presentation,
+    startupOnly: true,
+  },
+] as const;
 
 export default function DashboardOverviewPage() {
   const { userProfile } = useAuth();
   const { activeProject: plan, loading } = useProject();
   const [greeting, setGreeting] = useState("سلام");
-  const [actionStreak, setActionStreak] = useState(0);
 
-    useEffect(() => {
+  useEffect(() => {
     const hour = new Date().getHours();
     if (hour < 5) setGreeting("شب بخیر");
     else if (hour < 12) setGreeting("صبح بخیر");
     else if (hour < 17) setGreeting("روز بخیر");
     else setGreeting("عصر بخیر");
-
-    // Server-backed streak (was previously Math.random — see plan cleanup).
-    fetch("/api/user/gamification")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => {
-        if (d?.gamification) {
-          // Use level as a stable progress signal in place of the fake streak.
-          setActionStreak(d.gamification.level || 0);
-        }
-      })
-      .catch(() => {});
   }, []);
 
-  // Empty state
   if (!loading && !plan) {
     return (
       <motion.div
@@ -71,120 +79,116 @@ export default function DashboardOverviewPage() {
         className="min-h-[80vh] flex items-center justify-center"
       >
         <div className="text-center max-w-md relative p-8">
-            <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full opacity-50" />
-            <div className="relative z-10 glass-panel p-10 rounded-[2.5rem] border border-white/20 shadow-2xl">
-                 <div className="w-24 h-24 bg-gradient-to-tr from-primary to-violet-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-primary/30 rotate-3 hover:rotate-6 transition-transform">
-                    <Rocket size={48} className="text-white" />
-                 </div>
-                 <h2 className="text-2xl font-black text-foreground mb-3">شروع یک ماجراجویی جدید</h2>
-                 <p className="text-muted-foreground mb-8 text-base">اولین پروژه خود را بسازید و مسیر موفقیت را آغاز کنید.</p>
-                 <Link href="/new-project">
-                    <Button size="lg" className="w-full text-base h-12 rounded-xl font-bold">
-                        <Plus size={20} className="ms-2" />
-                        ساخت پروژه جدید
-                    </Button>
-                 </Link>
+          <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full opacity-50" />
+          <div className="relative z-10 glass-panel p-10 rounded-[2.5rem] border border-white/20 shadow-2xl">
+            <div className="w-24 h-24 bg-gradient-to-tr from-primary to-violet-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-primary/30">
+              <Rocket size={48} className="text-white" />
             </div>
+            <h2 className="text-2xl font-black text-foreground mb-3">اولین پروژه‌ات را بساز</h2>
+            <p className="text-muted-foreground mb-8 text-base">
+              با نقشه راه و هم‌بنیان‌گذار هوشمند کارنکس شروع کن.
+            </p>
+            <Link href="/new-project">
+              <Button size="lg" className="w-full text-base h-12 rounded-xl font-bold">
+                <Plus size={20} className="ms-2" />
+                ساخت پروژه جدید
+              </Button>
+            </Link>
+          </div>
         </div>
       </motion.div>
     );
   }
 
-  // Loading skeleton
   if (loading) {
-     return <div className="space-y-8 animate-pulse p-6">
+    return (
+      <div className="space-y-8 animate-pulse p-6">
         <div className="h-12 w-48 bg-muted rounded-xl mb-8" />
-        <div className="h-[400px] w-full bg-muted/50 rounded-[2.5rem]" />
-        <div className="h-32 w-full bg-muted/50 rounded-2xl" />
-        <div className="grid grid-cols-4 gap-4 h-40">
-            {[1,2,3,4].map(i => <div key={i} className="bg-muted/30 rounded-2xl" />)}
+        <div className="h-[280px] w-full bg-muted/50 rounded-[2.5rem]" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-32">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-muted/30 rounded-2xl" />
+          ))}
         </div>
-     </div>
+      </div>
+    );
   }
 
-  const roadmap = plan?.roadmap as unknown as Array<{ steps: unknown[]; phase?: string; title?: string }> | undefined;
+  const roadmap = plan?.roadmap as unknown as
+    | Array<{ steps: unknown[]; phase?: string; title?: string }>
+    | undefined;
 
-  // Calculate Stats
-  const totalSteps = roadmap?.reduce((acc: number, p) => acc + (p.steps?.length || 0), 0) || 1;
-  const completedCount = plan?.completedSteps?.length || 0;
-  const progressPercent = Math.round((completedCount / totalSteps) * 100);
-  const scoreResult = plan ? calculateProjectScore(plan) : { total: 0, grade: 'N/A' };
-
-  // Find next step
   const nextStep = roadmap?.flatMap((p) => p.steps || []).find((s) => {
     const name = getStepTitle(s);
     return !plan?.completedSteps?.includes(name);
   });
   const nextStepName = nextStep ? getStepTitle(nextStep) : null;
 
+  const links = QUICK_LINKS.filter(
+    (l) => !("startupOnly" in l && l.startupOnly) || plan?.projectType === "startup",
+  );
+
   return (
     <motion.div
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="space-y-8 pb-20 max-w-7xl mx-auto px-4 sm:px-6 pt-6"
+      className="space-y-8 pb-20 max-w-5xl mx-auto px-4 sm:px-6 pt-6"
     >
-      {/* ═══ 1. Greeting Header ═══ */}
       <motion.div variants={itemVariants} className="flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
         <div>
-           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              {new Date().toLocaleDateString('fa-IR', { weekday: 'long', day: 'numeric', month: 'long' })}
-           </div>
-           <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tight">
-             {greeting}، <span className="text-primary">{userProfile?.full_name?.split(' ')[0] || "دوست عزیز"}</span>
-           </h1>
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground mb-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            {new Date().toLocaleDateString("fa-IR", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+            })}
+          </div>
+          <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
+            {greeting}،{" "}
+            <span className="text-primary">
+              {userProfile?.full_name?.split(" ")[0] || "دوست عزیز"}
+            </span>
+          </h1>
         </div>
-
-        {/* Project Context Pill */}
         <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-full border border-border/50">
-           <span className="text-xs text-muted-foreground">پروژه فعال:</span>
-           <span className="text-sm font-bold text-foreground">{plan?.projectName}</span>
+          <span className="text-xs text-muted-foreground">پروژه:</span>
+          <span className="text-sm font-bold text-foreground">{plan?.projectName}</span>
         </div>
       </motion.div>
 
-      {/* ═══ 2. Focus Hero ═══ */}
       <motion.div variants={itemVariants}>
-         <FocusHero nextStepName={nextStepName} />
+        <FocusHero nextStepName={nextStepName} />
       </motion.div>
 
-      {/* ═══ Setup Checklist ═══ */}
       <motion.div variants={itemVariants}>
-         <SetupChecklist />
+        <SetupChecklist />
       </motion.div>
 
-      {/* ═══ 3. Stats Strip ═══ */}
       <motion.div variants={itemVariants}>
-         <StatsStrip
-            progress={progressPercent}
-            score={scoreResult.grade}
-            completedCount={completedCount}
-            totalSteps={totalSteps}
-            streak={actionStreak}
-         />
+        <h2 className="text-sm font-bold text-muted-foreground mb-3 px-1">دسترسی سریع</h2>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                "group rounded-2xl border border-border/60 bg-card p-4 transition-all",
+                "hover:border-primary/40 hover:shadow-md",
+              )}
+            >
+              <link.icon className="w-5 h-5 text-primary mb-3 group-hover:scale-110 transition-transform" />
+              <p className="font-bold text-sm text-foreground">{link.label}</p>
+              <p className="text-xs text-muted-foreground mt-1">{link.desc}</p>
+            </Link>
+          ))}
+        </div>
       </motion.div>
 
-      {/* ═══ 4. Karnex Score + Achievements ═══ */}
       <motion.div variants={itemVariants}>
-        <KarnexScore compact={false} />
+        <UpcomingTasks plan={plan} />
       </motion.div>
-
-      {/* ═══ 5. Two-column: Recent Activity + AI Insights ═══ */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-         <RecentActivity plan={plan} />
-         <AIInsightsWidget />
-      </motion.div>
-
-      {/* ═══ 6. Quick Access Grid ═══ */}
-      <motion.div variants={itemVariants}>
-         <QuickAccessGrid projectType={plan?.projectType} />
-      </motion.div>
-
-      {/* ═══ 7. Upcoming Tasks ═══ */}
-      <motion.div variants={itemVariants}>
-         <UpcomingTasks plan={plan} />
-      </motion.div>
-
     </motion.div>
   );
 }

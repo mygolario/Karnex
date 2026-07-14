@@ -5,21 +5,11 @@ import {
   Sparkles,
   Play,
   Rocket,
-  Store,
-  Video,
   TrendingUp,
   Map,
   Bot,
 } from "lucide-react";
 import Link from "next/link";
-
-/* ── Trust avatars (gradient circles with initials) ── */
-const trustAvatars = [
-  { initials: "ع", color: "from-violet-500 to-purple-600" },
-  { initials: "س", color: "from-emerald-500 to-teal-600" },
-  { initials: "م", color: "from-amber-500 to-orange-600" },
-  { initials: "ز", color: "from-pink-500 to-rose-600" },
-];
 
 export const HeroSection = () => {
   return (
@@ -78,10 +68,9 @@ export const HeroSection = () => {
 
             {/* Subheadline */}
             <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed animate-fade-in-up [animation-delay:200ms] opacity-0">
-              هم‌بنیان‌گذار هوشمند شما — مسیر اختصاصی برای{" "}
-              <span className="text-startup font-bold">استارتاپ‌ها</span>،{" "}
-              <span className="text-traditional font-bold">کسب‌وکارهای سنتی</span> و{" "}
-              <span className="text-creator font-bold">تولیدکنندگان محتوا</span>.
+              هم‌بنیان‌گذار هوشمند برای{" "}
+              <span className="text-primary font-bold">استارتاپ‌های ایرانی</span>
+              {" "}— از ایده تا بوم کسب‌وکار، نقشه راه و پیچ‌دک سرمایه‌گذار.
             </p>
 
             {/* Dual CTAs */}
@@ -109,30 +98,13 @@ export const HeroSection = () => {
               </Link>
             </div>
 
-            {/* Trust line */}
-            <div className="flex items-center gap-4 justify-center lg:justify-start animate-fade-in-up [animation-delay:400ms] opacity-0">
-              {/* Avatar stack */}
-              <div className="flex -space-x-3 space-x-reverse">
-                {trustAvatars.map((avatar, i) => (
-                  <div
-                    key={i}
-                    className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatar.color} flex items-center justify-center text-white font-bold text-sm border-2 border-background`}
-                  >
-                    {avatar.initials}
-                  </div>
-                ))}
-              </div>
-              <div className="text-start">
-                <div className="flex items-center gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <svg key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  مورد اعتماد <span className="font-bold text-foreground">۲,۰۰۰+</span> کارآفرین
-                </p>
+            {/* Trust line — honest, no fake user counts */}
+            <div className="flex items-center gap-3 justify-center lg:justify-start animate-fade-in-up [animation-delay:400ms] opacity-0">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/50 border border-border/50 text-sm text-muted-foreground">
+                <Rocket className="w-4 h-4 text-primary shrink-0" />
+                <span>
+                  ساخته‌شده برای بنیان‌گذاران ایرانی — شروع رایگان، بدون کارت
+                </span>
               </div>
             </div>
           </div>
@@ -234,12 +206,12 @@ export const HeroSection = () => {
           </div>
         </div>
 
-        {/* Three Pillars — compact inline row */}
+        {/* Startup core tools — mobile */}
         <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto mt-16 lg:hidden animate-fade-in-up [animation-delay:500ms] opacity-0">
           {[
-            { icon: Rocket, title: "استارتاپ", color: "bg-startup" },
-            { icon: Store, title: "سنتی", color: "bg-traditional" },
-            { icon: Video, title: "محتوا", color: "bg-creator" },
+            { icon: Map, title: "نقشه راه", color: "bg-primary" },
+            { icon: Bot, title: "کوپایلوت", color: "bg-ai" },
+            { icon: TrendingUp, title: "رشد", color: "bg-secondary" },
           ].map((p) => (
             <div
               key={p.title}

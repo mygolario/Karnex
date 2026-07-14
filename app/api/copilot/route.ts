@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     const userId = session.user.id;
 
     // === AI Usage Limit Check ===
-    const limitResult = await checkAILimit();
+    const limitResult = await checkAILimit('copilot');
     if (limitResult.errorResponse) return limitResult.errorResponse;
     rollback = limitResult.rollback;
 
@@ -219,9 +219,8 @@ export async function POST(req: Request) {
                   sendJSON({ type: "status", content: "درحال تحلیل نتایج ابزار..." });
               }
 
-              // Agentic loop call: non-streaming, with tools (always hard tier for tool-use).
-              // web_search plugin lets the model ground answers that don't route through
-              // the grounded search_competitors tool (e.g. market trend questions).
+              // Enable web_search only when tools aren't available (insights mode /
+              // no tool set) — otherwise competitor/market tools already ground answers.
               const { response: loopRes, model: loopModel } = await callCopilotChat({
                   messages: currentMessages,
                   tools: activeTools,
@@ -229,7 +228,7 @@ export async function POST(req: Request) {
                   temperature: 0.7,
                   signal: clientSignal,
                   tier: "hard",
-                  webSearch: true,
+                  webSearch: activeTools.length === 0,
               });
               lastModelUsed = loopModel;
 

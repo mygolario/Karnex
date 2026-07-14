@@ -8,7 +8,8 @@
 
 // === Plan & Pricing Types ===
 
-export type PlanTier = 'free' | 'plus' | 'pro' | 'ultra';
+/** Launch sells free / plus(پرو) / pro(تیم). ultra + team kept for legacy mapping. */
+export type PlanTier = 'free' | 'plus' | 'pro' | 'ultra' | 'team';
 export type BillingCycle = 'monthly' | 'yearly';
 export type Currency = 'IRR' | 'USD' | 'EUR';
 
@@ -147,8 +148,8 @@ export interface Transaction {
 // === Feature Access Types ===
 
 /**
- * Simplified feature flags — all features are unlocked for all tiers.
- * Only project count and AI request count are limited.
+ * Launch limits: project count + weighted AI credits (see lib/ai/credit-weights.ts).
+ * aiRequestsPerMonth = monthly credit budget (not raw HTTP count).
  */
 export interface FeatureFlags {
   projectLimit: number | 'unlimited';
@@ -157,30 +158,58 @@ export interface FeatureFlags {
   dedicatedConsulting: boolean;
 }
 
-// Default feature flags per tier (Option A — Recommended)
+/**
+ * Normalize legacy / alias plan ids to the launch feature map key.
+ * plus = پرو, pro = تیم, ultra|team → pro limits.
+ */
+export function resolveFeatureTier(planIdOrTier: string): PlanTier {
+  switch (planIdOrTier) {
+    case 'free':
+      return 'free';
+    case 'plus':
+      return 'plus';
+    case 'pro':
+    case 'team':
+    case 'ultra':
+      return 'pro';
+    default:
+      return 'free';
+  }
+}
+
 export const DEFAULT_FEATURES: Record<PlanTier, FeatureFlags> = {
   free: {
     projectLimit: 1,
-    aiRequestsPerMonth: 20,
+    aiRequestsPerMonth: 40,
     prioritySupport: false,
     dedicatedConsulting: false,
   },
+  /** پرو — hero paid plan */
   plus: {
-    projectLimit: 5,
+    projectLimit: 3,
     aiRequestsPerMonth: 100,
     prioritySupport: false,
     dedicatedConsulting: false,
   },
+  /** تیم */
   pro: {
-    projectLimit: 15,
-    aiRequestsPerMonth: 500,
+    projectLimit: 8,
+    aiRequestsPerMonth: 350,
     prioritySupport: true,
     dedicatedConsulting: false,
   },
-  ultra: {
-    projectLimit: 'unlimited',
-    aiRequestsPerMonth: 2000,
+  /** Legacy alias → same as تیم */
+  team: {
+    projectLimit: 8,
+    aiRequestsPerMonth: 350,
     prioritySupport: true,
-    dedicatedConsulting: true,
+    dedicatedConsulting: false,
+  },
+  /** Legacy ultra subscribers → تیم limits (no fake consulting) */
+  ultra: {
+    projectLimit: 8,
+    aiRequestsPerMonth: 350,
+    prioritySupport: true,
+    dedicatedConsulting: false,
   },
 };

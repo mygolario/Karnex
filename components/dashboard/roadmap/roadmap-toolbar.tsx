@@ -39,6 +39,7 @@ import {
   CATEGORY_CONFIG,
   StepStatus,
 } from "@/lib/roadmap/constants";
+import { LAUNCH_CONFIG } from "@/lib/launch/config";
 
 interface ToolbarProps {
   view: RoadmapView;
@@ -61,6 +62,8 @@ const VIEW_ICONS: Record<RoadmapView, React.ElementType> = {
   gantt: GanttChartSquare,
 };
 
+const LAUNCH_HIDDEN_VIEWS = new Set<string>(LAUNCH_CONFIG.roadmap.hideViews);
+
 export function RoadmapToolbar({
   view,
   onViewChange,
@@ -78,7 +81,9 @@ export function RoadmapToolbar({
     filter.category !== "all" ||
     filter.search.trim() !== "";
 
-  const views = Object.keys(VIEW_LABELS) as RoadmapView[];
+  const views = (Object.keys(VIEW_LABELS) as RoadmapView[]).filter(
+    (v) => !LAUNCH_HIDDEN_VIEWS.has(v),
+  );
 
   return (
     <div className="flex flex-col gap-3">
