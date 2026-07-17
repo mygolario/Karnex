@@ -321,7 +321,7 @@ function normalizeRoadmapOnly(parsed: unknown) {
   return plan;
 }
 
-export async function generatePlanAction(data: any): Promise<{
+export async function generateCorePlanAction(data: any): Promise<{
   success?: boolean;
   plan?: any;
   error?: string;
@@ -368,22 +368,56 @@ export async function generatePlanAction(data: any): Promise<{
       return await runWithAiUsage(
         { userId: session.user.id, feature: "generatePlan" },
         async () => {
-      const coreUser = `${userWithKb}\n\n⚠️ مرحله ۱: فقط overview، businessModelCanvas، brandKit، marketingStrategy و competitors را کامل تولید کن. فیلد roadmap را حتماً به صورت آرایه خالی [] برگردان.`;
+          const coreUser = `${userWithKb}\n\n⚠️ مرحله ۱: فقط overview، businessModelCanvas، brandKit، marketingStrategy و competitors را کامل تولید کن. فیلد roadmap را حتماً به صورت آرایه خالی [] برگردان.`;
 
-      const corePlan = await callAIWithValidation(
-        coreUser,
-        {
-          systemPrompt: system,
-          maxTokens: 12000,
-          temperature: 0.6,
-          timeoutMs: 90000,
-          modelOverride: TIER_DEFAULT,
-        },
-        BusinessPlanCoreSchema,
-        1
+          const corePlan = await callAIWithValidation(
+            coreUser,
+            {
+              systemPrompt: system,
+              maxTokens: 12000,
+              temperature: 0.6,
+              timeoutMs: 90000,
+              modelOverride: TIER_DEFAULT,
+            },
+            BusinessPlanCoreSchema,
+            1
+          );
+
+          return { success: true as const, plan: corePlan };
+        }
       );
+    } catch (parseError: any) {
+      console.error("AI Validation / Parse Core Plan Error:", parseError);
+      await rollback();
+      return { error: 'Failed to generate structured plan core. Check console logs for details.' };
+    }
+}
 
-      const roadmapUser = `اطلاعات پروژه:
+export async function generateRoadmapAction(data: any): Promise<{
+  success?: boolean;
+  roadmap?: any;
+  error?: string;
+  message?: string;
+}> {
+    const { idea, projectType, genesisAnswers, corePlan } = data;
+    
+    const session = await auth();
+    if (!session?.user?.id) return { error: "Unauthorized" };
+
+    const formattedAnswers = genesisAnswers 
+      ? Object.entries(genesisAnswers).map(([key, val]) => `- ${key}: ${val}`).join('\n') 
+      : 'None provided';
+
+    const { system } = getPrompt("generatePlan", {
+      projectType,
+      idea,
+      audience: "",
+      budget: "",
+      formattedAnswers,
+      businessGlossary: ""
+    });
+
+    const roadmapUser = `اطلاعات پروژه:
 - نوع پروژه: ${projectType}
 - ایده: ${idea}
 - نام پروژه: ${corePlan.projectName}
@@ -393,41 +427,33 @@ ${formattedAnswers}
 
 فقط JSON با یک کلید roadmap تولید کن که دقیقاً ۱۶ فاز (هفته ۱ تا ۱۶) داشته باشد. همان قوانین گام‌ها، dependsOn، و بازبینی هفته‌های ۴، ۸، ۱۲ و ۱۶ از دستورالعمل اصلی پیروی کن.`;
 
-      const roadmapResult = await callAIWithValidation(
-        roadmapUser,
-        {
-          systemPrompt: system,
-          maxTokens: 16000,
-          temperature: 0.6,
-          timeoutMs: 90000,
-          modelOverride: TIER_DEFAULT,
-        },
-        RoadmapOnlySchema,
-        2,
-        normalizeRoadmapOnly
-      );
+    try {
+      return await runWithAiUsage(
+        { userId: session.user.id, feature: "generatePlan" },
+        async () => {
+          const roadmapResult = await callAIWithValidation(
+            roadmapUser,
+            {
+              systemPrompt: system,
+              maxTokens: 16000,
+              temperature: 0.6,
+              timeoutMs: 90000,
+              modelOverride: TIER_DEFAULT,
+            },
+            RoadmapOnlySchema,
+            2,
+            normalizeRoadmapOnly
+          );
 
-      const structuredPlan = {
-        ...corePlan,
-        roadmap: roadmapResult.roadmap,
-      };
-
-      if (structuredPlan && typeof structuredPlan === 'object') {
-        delete (structuredPlan as any).reasoning;
-      }
-
-      // Normalize full plan structure
-      const normalized = normalizeProjectPlan(structuredPlan);
-
-      return { success: true as const, plan: normalized };
+          return { success: true as const, roadmap: roadmapResult.roadmap };
         }
       );
     } catch (parseError: any) {
-      console.error("AI Validation / Parse Error:", parseError);
-      await rollback();
-      return { error: 'Failed to generate structured plan. Check console logs for details.' };
+      console.error("AI Validation / Parse Roadmap Error:", parseError);
+      return { error: 'Failed to generate structured roadmap. Check console logs for details.' };
     }
 }
+
 
 export async function getProjectMembersAction(projectId: string) {
   try {

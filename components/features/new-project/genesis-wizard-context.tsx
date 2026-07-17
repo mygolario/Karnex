@@ -278,8 +278,9 @@ export function GenesisWizardProvider({
     setError("");
 
     try {
-      const { generatePlanAction } = await import("@/lib/project-actions");
-      const result = await generatePlanAction({
+      const { generateCorePlanAction, generateRoadmapAction } = await import("@/lib/project-actions");
+      
+      const coreResult = await generateCorePlanAction({
         projectType: pillar,
         idea: projectVision,
         projectName,
@@ -288,13 +289,27 @@ export function GenesisWizardProvider({
         budget: "",
       });
 
-      if (result.error) {
-        throw new Error(result.error);
+      if (coreResult.error) {
+        throw new Error(coreResult.error);
       }
 
-      const data = result.plan;
+      const corePlan = coreResult.plan;
+
+      const roadmapResult = await generateRoadmapAction({
+        projectType: pillar,
+        idea: projectVision,
+        projectName,
+        genesisAnswers: answers,
+        corePlan,
+      });
+
+      if (roadmapResult.error) {
+        throw new Error(roadmapResult.error);
+      }
+
       const completePlan = {
-        ...data,
+        ...corePlan,
+        roadmap: roadmapResult.roadmap,
         projectName,
         projectType: pillar,
         ideaInput: projectVision,
