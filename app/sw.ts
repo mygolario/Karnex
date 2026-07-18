@@ -12,11 +12,17 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+/**
+ * App Router soft navigations use RSC GET flights (RSC: 1), not mode=navigate.
+ * defaultCache NetworkFirst on those (and HTML) causes Workbox `no-response`
+ * when the network misses — breaking /dashboard/* and /new-project client nav.
+ * Keep POST + navigate + RSC/Action on NetworkOnly ahead of defaultCache.
+ * Do not enable navigationPreload with NetworkOnly navigate (known no-response).
+ */
 const serwist = new Serwist({
   precacheEntries: self.__WB_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
-  // navigationPreload + NetworkOnly navigate caused no-response on dashboard reloads.
   navigationPreload: false,
   fallbacks: {
     entries: [
@@ -29,6 +35,23 @@ const serwist = new Serwist({
   runtimeCaching: [
     {
       matcher: ({ request }) => request.method === "POST",
+      handler: new NetworkOnly(),
+    },
+    {
+      matcher: ({ request, url }) =>
+        request.mode === "navigate" && !url.pathname.startsWith("/_next"),
+      handler: new NetworkOnly(),
+    },
+    {
+      matcher: ({ request }) => {
+        const headers = request.headers;
+        return (
+          headers.get("RSC") === "1" ||
+          headers.get("Next-Router-Prefetch") === "1" ||
+          headers.get("Next-Router-State-Tree") != null ||
+          headers.get("Next-Action") != null
+        );
+      },
       handler: new NetworkOnly(),
     },
     {

@@ -6,12 +6,31 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useProject } from "@/contexts/project-context";
 import { PitchDeckBuilder } from "@/components/features/pitch-deck/pitch-deck-builder";
+import { EmptyProjectState } from "@/components/dashboard/empty-project-state";
+import { Loader2 } from "lucide-react";
 
 export default function PitchDeckPage() {
-  const { activeProject: plan } = useProject();
+  const { activeProject: plan, loading } = useProject();
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!plan) {
+    return (
+      <EmptyProjectState
+        title="برای پیچ‌دک به پروژه نیاز داری"
+        description="اول یک پروژه استارتاپی بساز تا سازنده پیچ‌دک فعال شود."
+      />
+    );
+  }
 
   // Project Type Guard
-  if (plan?.projectType !== "startup") {
+  if (plan.projectType !== "startup") {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Card className="p-8 text-center max-w-md">
