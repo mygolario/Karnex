@@ -20,6 +20,7 @@ export function StepReview() {
     projectVision,
     answers,
     isGenerating,
+    generatingPhase,
     generate,
     goToStep,
     retreat,
@@ -149,7 +150,7 @@ export function StepReview() {
           {isGenerating ? (
             <>
               <span className="ms-2 animate-spin border-2 border-white/40 border-t-white rounded-full w-5 h-5" />
-              در حال ساخت...
+              {generatingPhase || "در حال ساخت..."}
             </>
           ) : (
             <>

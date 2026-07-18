@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import { callOpenRouter, parseJsonFromAI } from './openrouter';
 
+export {
+  normalizeRoadmapOnly,
+  normalizeRoadmapChunk1to8,
+  normalizeRoadmapChunk9to16,
+} from './roadmap-normalize';
+export type { NormalizeRoadmapOptions } from './roadmap-normalize';
+
 // ============================================
 // 1. Zod Schemas for AI Shapes
 // ============================================
@@ -134,12 +141,12 @@ export const BrandKitSchema = z.object({
 });
 
 export const RoadmapStepSchema = z.object({
-  title: z.string(),
-  description: z.string().optional().default(''),
-  estimatedHours: z.union([z.number(), z.string()]).transform(val => Number(val) || 0).default(0),
-  priority: z.string().default('medium'),
-  category: z.string().default('general'),
-  status: z.string().default('todo'),
+  title: z.string().default("گام"),
+  description: z.string().optional().default(""),
+  estimatedHours: z.coerce.number().optional().default(0),
+  priority: z.string().default("medium"),
+  category: z.string().default("general"),
+  status: z.string().default("todo"),
   checklist: z.array(z.string()).default([]),
   tips: z.array(z.string()).default([]),
   resources: z.array(z.string()).optional().default([]),
@@ -147,10 +154,10 @@ export const RoadmapStepSchema = z.object({
 });
 
 export const RoadmapPhaseSchema = z.object({
-  phase: z.string(),
-  weekNumber: z.number().int().min(1).max(16),
-  theme: z.string().optional().default(''),
-  icon: z.string().optional().default(''),
+  phase: z.string().default("فاز"),
+  weekNumber: z.coerce.number().int().min(1).max(16),
+  theme: z.string().optional().default(""),
+  icon: z.string().optional().default(""),
   steps: z.array(RoadmapStepSchema).default([]),
 });
 
@@ -193,6 +200,14 @@ export const RoadmapOnlySchema = z.object({
   ),
 });
 
+/** Schema for an 8-week roadmap chunk (weeks 1–8 or 9–16). */
+export const RoadmapChunkSchema = z.object({
+  roadmap: z.array(RoadmapPhaseSchema).default([]).refine(
+    (r) => r.length === 8,
+    { message: "هر بخش نقشه راه باید دقیقاً ۸ فاز داشته باشد" }
+  ),
+});
+
 // ============================================
 // 2. Recursive Self-Healing Retry Helper
 // ============================================
@@ -212,22 +227,42 @@ export async function callAIWithValidation<T>(
 ): Promise<T> {
   const result = await callOpenRouter(prompt, {
     ...options,
-    responseFormat: { type: 'json_object' }
+    responseFormat: { type: "json_object" },
   });
 
   if (!result.success) {
     throw new Error(`AI generation request failed: ${result.error}`);
   }
 
-  const content = result.content || '';
+  if (result.finishReason === "length" && retriesRemaining > 0) {
+    console.warn(
+      "⚠️ Model hit max_tokens (finish_reason=length), retrying with compact output instruction..."
+    );
+    const compactPrompt = `${prompt}\n\n⚠️ SYSTEM DIRECTION: Your previous response was truncated (hit the token limit). Produce a SHORTER valid JSON response: fewer words per field, keep required structure, do not omit required keys.`;
+    return callAIWithValidation(
+      compactPrompt,
+      options,
+      schema,
+      retriesRemaining - 1,
+      preprocess
+    );
+  }
+
+  const content = result.content || "";
   let parsed: any;
   try {
     parsed = parseJsonFromAI(content);
   } catch (err: any) {
     if (retriesRemaining > 0) {
       console.warn("⚠️ JSON syntax parse failed, retrying auto-correction turn...");
-      const correctionPrompt = `${prompt}\n\n⚠️ SYSTEM DIRECTION: Your previous response was not valid JSON: "${err.message}". Correct it and output strictly valid JSON conforming to the schema rules.`;
-      return callAIWithValidation(correctionPrompt, options, schema, retriesRemaining - 1, preprocess);
+      const correctionPrompt = `${prompt}\n\n⚠️ SYSTEM DIRECTION: Your previous response was not valid JSON: "${err.message}". Correct it and output strictly valid JSON conforming to the schema rules. Keep the response compact.`;
+      return callAIWithValidation(
+        correctionPrompt,
+        options,
+        schema,
+        retriesRemaining - 1,
+        preprocess
+      );
     }
     throw err;
   }
@@ -241,16 +276,22 @@ export async function callAIWithValidation<T>(
     return validation.data;
   }
 
-  // If Zod validation fails
   if (retriesRemaining > 0) {
     const errorDetails = JSON.stringify(validation.error.format());
-    console.warn(`⚠️ Zod validation checks failed, retrying auto-correction. Error details: ${errorDetails}`);
+    console.warn(
+      `⚠️ Zod validation checks failed, retrying auto-correction. Error details: ${errorDetails}`
+    );
     const correctionPrompt = `${prompt}\n\n⚠️ SYSTEM DIRECTION: Your previous response failed structural validation with the following errors:
 ${errorDetails}
-Please fix the JSON output to strictly match the requested structure and return valid JSON.`;
-    return callAIWithValidation(correctionPrompt, options, schema, retriesRemaining - 1, preprocess);
+Please fix the JSON output to strictly match the requested structure and return valid compact JSON.`;
+    return callAIWithValidation(
+      correctionPrompt,
+      options,
+      schema,
+      retriesRemaining - 1,
+      preprocess
+    );
   }
 
-  // Throw validation error if out of retries
   throw validation.error;
 }

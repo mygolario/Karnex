@@ -7,7 +7,16 @@ import { callOpenRouter, parseJsonFromAI, TIER_DEFAULT } from "@/lib/openrouter"
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { runWithAiUsage } from "@/lib/ai-usage-context";
 import { getPrompt } from "@/lib/prompts/registry";
-import { callAIWithValidation, BusinessPlanCoreSchema, RoadmapOnlySchema } from "@/lib/ai-validation";
+import {
+  callAIWithValidation,
+  BusinessPlanCoreSchema,
+  RoadmapChunkSchema,
+} from "@/lib/ai-validation";
+import {
+  normalizeRoadmapOnly,
+  normalizeRoadmapChunk1to8,
+  normalizeRoadmapChunk9to16,
+} from "@/lib/roadmap-normalize";
 import fs from 'fs';
 import path from 'path';
 
@@ -297,30 +306,6 @@ function normalizeProjectPlan(plan: any): any {
   return plan;
 }
 
-function normalizeRoadmapOnly(parsed: unknown) {
-  const plan =
-    parsed && typeof parsed === "object"
-      ? (parsed as Record<string, unknown>)
-      : { roadmap: [] };
-  if (!Array.isArray(plan.roadmap)) {
-    plan.roadmap = [];
-  }
-  const roadmap = plan.roadmap as Array<Record<string, unknown>>;
-  while (roadmap.length < 16) {
-    roadmap.push({
-      phase: `هفته ${roadmap.length + 1}: فاز جدید`,
-      weekNumber: roadmap.length + 1,
-      theme: "",
-      icon: "",
-      steps: [],
-    });
-  }
-  if (roadmap.length > 16) {
-    plan.roadmap = roadmap.slice(0, 16);
-  }
-  return plan;
-}
-
 export async function generateCorePlanAction(data: any): Promise<{
   success?: boolean;
   plan?: any;
@@ -393,65 +378,140 @@ export async function generateCorePlanAction(data: any): Promise<{
     }
 }
 
+/**
+ * Generate one 8-week roadmap chunk. Used by the wizard for progress UX
+ * (weeks 1–8 then 9–16) and by generateRoadmapAction as a sequential merge.
+ */
+export async function generateRoadmapChunkAction(data: {
+  idea: string;
+  projectType: string;
+  genesisAnswers?: Record<string, string>;
+  corePlan: any;
+  weekStart: number;
+  weekEnd: number;
+}): Promise<{
+  success?: boolean;
+  roadmap?: any;
+  error?: string;
+  message?: string;
+}> {
+  const { idea, projectType, genesisAnswers, corePlan, weekStart, weekEnd } = data;
+
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Unauthorized" };
+
+  if (
+    !((weekStart === 1 && weekEnd === 8) || (weekStart === 9 && weekEnd === 16))
+  ) {
+    return { error: "Invalid roadmap chunk range" };
+  }
+
+  const formattedAnswers = genesisAnswers
+    ? Object.entries(genesisAnswers)
+        .map(([key, val]) => `- ${key}: ${val}`)
+        .join("\n")
+    : "None provided";
+
+  const { system, user } = getPrompt("generateRoadmap", {
+    projectType,
+    idea,
+    projectName: corePlan?.projectName ?? "",
+    overview: corePlan?.overview ?? "",
+    formattedAnswers,
+    weekStart: String(weekStart),
+    weekEnd: String(weekEnd),
+  });
+
+  const preprocess =
+    weekStart === 1 ? normalizeRoadmapChunk1to8 : normalizeRoadmapChunk9to16;
+
+  try {
+    return await runWithAiUsage(
+      { userId: session.user.id, feature: "generatePlan" },
+      async () => {
+        const chunkResult = await callAIWithValidation(
+          user,
+          {
+            systemPrompt: system,
+            maxTokens: 8000,
+            temperature: 0.6,
+            timeoutMs: 60000,
+            modelOverride: TIER_DEFAULT,
+          },
+          RoadmapChunkSchema,
+          1,
+          preprocess
+        );
+
+        return { success: true as const, roadmap: chunkResult.roadmap };
+      }
+    );
+  } catch (parseError: any) {
+    console.error(
+      `AI Validation / Parse Roadmap Chunk ${weekStart}-${weekEnd} Error:`,
+      parseError
+    );
+    return {
+      error: "Failed to generate structured roadmap. Check console logs for details.",
+    };
+  }
+}
+
 export async function generateRoadmapAction(data: any): Promise<{
   success?: boolean;
   roadmap?: any;
   error?: string;
   message?: string;
 }> {
-    const { idea, projectType, genesisAnswers, corePlan } = data;
-    
-    const session = await auth();
-    if (!session?.user?.id) return { error: "Unauthorized" };
+  const { idea, projectType, genesisAnswers, corePlan } = data;
 
-    const formattedAnswers = genesisAnswers 
-      ? Object.entries(genesisAnswers).map(([key, val]) => `- ${key}: ${val}`).join('\n') 
-      : 'None provided';
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Unauthorized" };
 
-    const { system } = getPrompt("generatePlan", {
-      projectType,
+  try {
+    const first = await generateRoadmapChunkAction({
       idea,
-      audience: "",
-      budget: "",
-      formattedAnswers,
-      businessGlossary: ""
+      projectType,
+      genesisAnswers,
+      corePlan,
+      weekStart: 1,
+      weekEnd: 8,
+    });
+    if (first.error || !first.roadmap) {
+      return {
+        error:
+          first.error ||
+          "Failed to generate structured roadmap. Check console logs for details.",
+      };
+    }
+
+    const second = await generateRoadmapChunkAction({
+      idea,
+      projectType,
+      genesisAnswers,
+      corePlan,
+      weekStart: 9,
+      weekEnd: 16,
+    });
+    if (second.error || !second.roadmap) {
+      return {
+        error:
+          second.error ||
+          "Failed to generate structured roadmap. Check console logs for details.",
+      };
+    }
+
+    const merged = normalizeRoadmapOnly({
+      roadmap: [...first.roadmap, ...second.roadmap],
     });
 
-    const roadmapUser = `اطلاعات پروژه:
-- نوع پروژه: ${projectType}
-- ایده: ${idea}
-- نام پروژه: ${corePlan.projectName}
-- خلاصه: ${corePlan.overview}
-- پاسخ‌های تکمیلی:
-${formattedAnswers}
-
-فقط JSON با یک کلید roadmap تولید کن که دقیقاً ۱۶ فاز (هفته ۱ تا ۱۶) داشته باشد. همان قوانین گام‌ها، dependsOn، و بازبینی هفته‌های ۴، ۸، ۱۲ و ۱۶ از دستورالعمل اصلی پیروی کن.`;
-
-    try {
-      return await runWithAiUsage(
-        { userId: session.user.id, feature: "generatePlan" },
-        async () => {
-          const roadmapResult = await callAIWithValidation(
-            roadmapUser,
-            {
-              systemPrompt: system,
-              maxTokens: 16000,
-              temperature: 0.6,
-              timeoutMs: 90000,
-              modelOverride: TIER_DEFAULT,
-            },
-            RoadmapOnlySchema,
-            2,
-            normalizeRoadmapOnly
-          );
-
-          return { success: true as const, roadmap: roadmapResult.roadmap };
-        }
-      );
-    } catch (parseError: any) {
-      console.error("AI Validation / Parse Roadmap Error:", parseError);
-      return { error: 'Failed to generate structured roadmap. Check console logs for details.' };
-    }
+    return { success: true as const, roadmap: merged.roadmap };
+  } catch (parseError: any) {
+    console.error("AI Validation / Parse Roadmap Error:", parseError);
+    return {
+      error: "Failed to generate structured roadmap. Check console logs for details.",
+    };
+  }
 }
 
 

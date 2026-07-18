@@ -30,6 +30,8 @@ interface GenesisDraft {
 interface GenesisWizardState extends GenesisDraft {
   isGenerating: boolean;
   isCreating: boolean;
+  /** Human-readable phase while generating (Persian). */
+  generatingPhase: string;
   error: string;
   /** True when a recoverable draft was found on mount (drives the resume modal). */
   hasResumableDraft: boolean;
@@ -136,6 +138,7 @@ export function GenesisWizardProvider({
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [generatingPhase, setGeneratingPhase] = useState("");
   const [error, setError] = useState("");
   const [showLimitModal, setShowLimitModal] = useState(false);
 
@@ -275,11 +278,15 @@ export function GenesisWizardProvider({
   const generate = useCallback(async () => {
     if (!user || !pillar) return;
     setIsGenerating(true);
+    setGeneratingPhase("در حال ساخت بوم و برند...");
     setError("");
 
     try {
-      const { generateCorePlanAction, generateRoadmapAction } = await import("@/lib/project-actions");
-      
+      const {
+        generateCorePlanAction,
+        generateRoadmapChunkAction,
+      } = await import("@/lib/project-actions");
+
       const coreResult = await generateCorePlanAction({
         projectType: pillar,
         idea: projectVision,
@@ -295,21 +302,46 @@ export function GenesisWizardProvider({
 
       const corePlan = coreResult.plan;
 
-      const roadmapResult = await generateRoadmapAction({
+      setGeneratingPhase("در حال ساخت هفته‌های ۱–۸...");
+      const chunk1 = await generateRoadmapChunkAction({
         projectType: pillar,
         idea: projectVision,
-        projectName,
         genesisAnswers: answers,
         corePlan,
+        weekStart: 1,
+        weekEnd: 8,
       });
 
-      if (roadmapResult.error) {
-        throw new Error(roadmapResult.error);
+      if (chunk1.error || !chunk1.roadmap) {
+        throw new Error(
+          chunk1.error ||
+            "Failed to generate structured roadmap. Check console logs for details."
+        );
       }
+
+      setGeneratingPhase("در حال ساخت هفته‌های ۹–۱۶...");
+      const chunk2 = await generateRoadmapChunkAction({
+        projectType: pillar,
+        idea: projectVision,
+        genesisAnswers: answers,
+        corePlan,
+        weekStart: 9,
+        weekEnd: 16,
+      });
+
+      if (chunk2.error || !chunk2.roadmap) {
+        throw new Error(
+          chunk2.error ||
+            "Failed to generate structured roadmap. Check console logs for details."
+        );
+      }
+
+      // Chunks are already normalized to 8 phases each with correct weekNumbers.
+      const roadmap = [...chunk1.roadmap, ...chunk2.roadmap];
 
       const completePlan = {
         ...corePlan,
-        roadmap: roadmapResult.roadmap,
+        roadmap,
         projectName,
         projectType: pillar,
         ideaInput: projectVision,
@@ -317,6 +349,7 @@ export function GenesisWizardProvider({
       };
 
       setIsGenerating(false);
+      setGeneratingPhase("");
       setIsCreating(true);
 
       const createPromise = createNewProject(completePlan);
@@ -341,6 +374,7 @@ export function GenesisWizardProvider({
       }
       setIsGenerating(false);
       setIsCreating(false);
+      setGeneratingPhase("");
     }
   }, [user, pillar, projectVision, projectName, answers, createNewProject, router]);
 
@@ -353,6 +387,7 @@ export function GenesisWizardProvider({
     activeSubStep,
     isGenerating,
     isCreating,
+    generatingPhase,
     error,
     hasResumableDraft,
     showLimitModal,

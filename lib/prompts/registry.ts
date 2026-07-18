@@ -7,6 +7,7 @@ import generateSmartCanvas from "./generate-smart-canvas.json";
 import chatAction from "./chat-action.json";
 import advisorChat from "./advisor-chat.json";
 import generatePlan from "./generate-plan.json";
+import generateRoadmap from "./generate-roadmap.json";
 import copilotSystem from "./copilot-system.json";
 import validateIdea from "./validate-idea.json";
 import generateGrowthPlan from "./generate-growth-plan.json";
@@ -30,6 +31,7 @@ export const Prompts = {
   chatAction,
   advisorChat,
   generatePlan,
+  generateRoadmap,
   copilotSystem,
   validateIdea,
   generateGrowthPlan,
