@@ -13,28 +13,38 @@ interface VoiceInputProps {
     disabled?: boolean;
 }
 
-// Check if browser supports speech recognition
-const isSpeechSupported = typeof window !== "undefined" && (
-    "SpeechRecognition" in window ||
-    "webkitSpeechRecognition" in window
-);
-
 export function VoiceInput({ onTranscript, onListening, className, disabled }: VoiceInputProps) {
     const [isListening, setIsListening] = useState(false);
     const [isSupported, setIsSupported] = useState(true);
+    const [isTranscribing, setIsTranscribing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [transcript, setTranscript] = useState("");
     
-    // Use a ref to keep the instance stable across renders
+    // Ref instances
     const recognitionRef = useRef<any>(null);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
+    const transcriptRef = useRef("");
+
+    // Sync transcript state to ref for callbacks
+    useEffect(() => {
+        transcriptRef.current = transcript;
+    }, [transcript]);
 
     useEffect(() => {
-        if (!isSpeechSupported) {
-            setIsSupported(false);
+        const hasSpeech = typeof window !== "undefined" && (
+            "SpeechRecognition" in window ||
+            "webkitSpeechRecognition" in window
+        );
+        const hasMedia = typeof navigator !== "undefined" && navigator.mediaDevices && typeof MediaRecorder !== "undefined";
+        
+        setIsSupported(hasSpeech || hasMedia);
+
+        if (!hasSpeech) {
             return;
         }
 
-        // Initialize only once
+        // Initialize SpeechRecognition only once if supported
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
         
@@ -42,69 +52,20 @@ export function VoiceInput({ onTranscript, onListening, className, disabled }: V
         recognition.interimResults = true;
         recognition.lang = "fa-IR"; // Persian
 
-        recognition.onresult = (event: any) => {
-            let finalTranscript = "";
-            let interimTranscript = "";
-
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-                const t = event.results[i][0].transcript;
-                if (event.results[i].isFinal) {
-                    finalTranscript += t;
-                } else {
-                    interimTranscript += t;
-                }
-            }
-
-            if (finalTranscript) {
-                // Update local transcript state for display
-                setTranscript(prev => prev + finalTranscript);
-                // Also immediately verify if we want to stream chunks, 
-                // but usually we wait for stop.
-            } else if (interimTranscript) {
-                // Just for display
-                setTranscript(prev => {
-                    // This creates a visual glitch if we append interim to final in the same state string 
-                    // without separating them.
-                    // Better approach: keep them separate or just show interim-only if final is empty?
-                    // For simplicity in this UI, we just overwrite 'transcript' with valid text? 
-                    // No, let's just use the current logic but be careful.
-                    // Actually, the previous logic was appending final to state.
-                    // Interim updates purely local display if we want.
-                    return prev; // We rely on final results mostly for clarity? 
-                    // Let's stick to the simpler version: JUST use the interim for live feedback if needed 
-                    // but for the final output we want the accumulated finalized text.
-                });
-                
-                // For the "live preview" popup, we essentially want (final + interim).
-                // But managing that complexity is tricky. 
-                // Let's simplify: Just allow onresult to update a 'liveTranscript' state.
-            }
-        };
-
-        // We need a specific listener for onresult that handles the state update correctly
-        // to avoid closure staleness if we used 'transcript' state inside.
-        // But 'setTranscript' with callback is fine.
-
         recognition.onerror = (event: any) => {
             console.error("Speech recognition error:", event.error);
             if (event.error === "not-allowed") {
                 setError("دسترسی به میکروفون داده نشد");
             } else if (event.error === "no-speech") {
-                // User was silent, just stop without error usually, or prompt.
-                // setError("صدایی شنیده نشد"); 
+                // Ignore no speech to prevent annoying alerts
             } else {
                 setError("خطا در تشخیص صدا");
             }
-            // If error occurs, we must ensure state sync
             setIsListening(false);
             onListening?.(false);
         };
 
         recognition.onend = () => {
-            // This fires when the engine stops.
-            // If we EXPECTED it to be listening (e.g. it stopped due to silence but we want continuous),
-            // we could restart. But browsers block auto-restart often.
-            // Better to sync state.
             setIsListening(false);
             onListening?.(false);
         };
@@ -112,46 +73,50 @@ export function VoiceInput({ onTranscript, onListening, className, disabled }: V
         recognitionRef.current = recognition;
 
         return () => {
-             // Cleanup on unmount
              if (recognitionRef.current) {
                  recognitionRef.current.abort();
              }
         };
-    }, []); // Empty dependency array = init once!
+    }, [onListening]);
 
-    // We can't use 'transcript' state easily inside onresult because of closure.
-    // So we'll redefine the onresult handler every render? No, that breaks the instance.
-    // WE need to maintain the current transcript in a ref if we want to append.
-    // OR just use functional state updates.
-    
-    // Refine onresult logic for the Effect:
+    // Set up SpeechRecognition onresult callback
     useEffect(() => {
         if (!recognitionRef.current) return;
         
         recognitionRef.current.onresult = (event: any) => {
              let finalChunk = "";
-             let interimChunk = "";
-
              for (let i = event.resultIndex; i < event.results.length; i++) {
                 if (event.results[i].isFinal) {
                     finalChunk += event.results[i][0].transcript;
-                } else {
-                    interimChunk += event.results[i][0].transcript;
                 }
              }
 
              if (finalChunk) {
-                 setTranscript(prev => prev + " " + finalChunk); // Append space
+                 setTranscript(prev => prev + " " + finalChunk);
              }
-             // We could expose interimChunk to UI via another state if we wanted "real-time" visuals
         };
     }, []);
 
+    // SpeechRecognition onend sender
+    useEffect(() => {
+        if (recognitionRef.current) {
+            recognitionRef.current.onend = () => {
+                setIsListening(false);
+                onListening?.(false);
+                
+                const text = transcriptRef.current;
+                if (text && text.trim()) {
+                    onTranscript(text.trim());
+                }
+            };
+        }
+    }, [onTranscript, onListening]);
 
+    // SpeechRecognition controls
     const startListening = () => {
         if (!recognitionRef.current || disabled) return;
         setError(null);
-        setTranscript(""); // Clear previous
+        setTranscript("");
         
         try {
             recognitionRef.current.start();
@@ -165,47 +130,111 @@ export function VoiceInput({ onTranscript, onListening, className, disabled }: V
     const stopListening = () => {
         if (!recognitionRef.current) return;
         recognitionRef.current.stop();
-        // State update happens in onend or manual? 
-        // Better to set it here purely for immediate UI feedback, 
-        // but real "stop" happens in onend. 
-        // However, we want to send the message NOW usually?
-        // No, we must wait for the final result processing which happens AFTER stop() is called.
-        // So we should trigger the "send" logic in 'onend' OR just wait a tiny bit?
-        // Actually, if we just call onTranscript with the CURRENT state, we miss the final processing chunk.
-        
-        // Strategy: 
-        // 1. Call .stop()
-        // 2. Wait for 'onend' event.
-        // 3. In 'onend', read the FINAL transcript and send it.
     };
-    
-    // We need a way to pass the transcript to the parent when stopped.
-    // The problem is 'onend' closes over the 'transcript' state from the initial render (empty).
-    // So we use a Ref for the transcript to access it in onend.
-    const transcriptRef = useRef("");
-    useEffect(() => { transcriptRef.current = transcript; }, [transcript]);
 
-    useEffect(() => {
-        if (recognitionRef.current) {
-            recognitionRef.current.onend = () => {
-                setIsListening(false);
-                onListening?.(false);
-                
-                // Send what we have
-                const text = transcriptRef.current;
-                if (text && text.trim()) {
-                    onTranscript(text.trim());
+    // Fallback MediaRecorder recording
+    const startRecording = async () => {
+        if (disabled) return;
+        setError(null);
+        setTranscript("");
+        audioChunksRef.current = [];
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = mediaRecorder;
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
                 }
             };
-        }
-    }, [onTranscript, onListening]); // Update handler if props change
 
+            mediaRecorder.onstop = async () => {
+                stream.getTracks().forEach(track => track.stop());
+
+                const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+                
+                setIsTranscribing(true);
+                setError(null);
+
+                try {
+                    const formData = new FormData();
+                    formData.append("file", audioBlob, "audio.webm");
+
+                    const res = await fetch("/api/stt", {
+                        method: "POST",
+                        body: formData
+                    });
+
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({}));
+                        throw new Error(errorData.error || "خطا در تبدیل صدا به متن");
+                    }
+
+                    const data = await res.json();
+                    if (data.transcript && data.transcript.trim()) {
+                        setTranscript(data.transcript.trim());
+                        onTranscript(data.transcript.trim());
+                    } else {
+                        setError("صدایی تشخیص داده نشد");
+                    }
+                } catch (err: any) {
+                    console.error("STT transcribing error:", err);
+                    setError(err.message || "خطا در پردازش صدا");
+                } finally {
+                    setIsTranscribing(false);
+                    setIsListening(false);
+                    onListening?.(false);
+                }
+            };
+
+            mediaRecorder.start();
+            setIsListening(true);
+            onListening?.(true);
+        } catch (err: any) {
+            console.error("Microphone access error:", err);
+            setError("دسترسی به میکروفون داده نشد یا مسدود است");
+            setIsListening(false);
+            onListening?.(false);
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+            mediaRecorderRef.current.stop();
+        }
+    };
 
     const toggleListening = () => {
+        const hasSpeech = typeof window !== "undefined" && (
+            "SpeechRecognition" in window ||
+            "webkitSpeechRecognition" in window
+        );
         if (isListening) {
-             stopListening();
+             if (hasSpeech) {
+                 stopListening();
+             } else {
+                 stopRecording();
+             }
         } else {
-             startListening();
+             if (hasSpeech) {
+                 startListening();
+             } else {
+                 startRecording();
+             }
+        }
+    };
+
+    const stopActiveSession = () => {
+        const hasSpeech = typeof window !== "undefined" && (
+            "SpeechRecognition" in window ||
+            "webkitSpeechRecognition" in window
+        );
+        if (hasSpeech) {
+            stopListening();
+        } else {
+            stopRecording();
         }
     };
 
@@ -216,7 +245,7 @@ export function VoiceInput({ onTranscript, onListening, className, disabled }: V
                 size="icon"
                 disabled
                 className={cn("text-muted-foreground", className)}
-                title="مرورگر شما از تشخیص صدا پشتیبانی نمی‌کند"
+                title="مرورگر شما از ضبط یا تشخیص صدا پشتیبانی نمی‌کند"
             >
                 <MicOff size={20} />
             </Button>
@@ -229,15 +258,18 @@ export function VoiceInput({ onTranscript, onListening, className, disabled }: V
                 variant={isListening ? "destructive" : "ghost"}
                 size="icon"
                 onClick={toggleListening}
-                disabled={disabled}
+                disabled={disabled || isTranscribing}
                 className={cn(
                     "relative transition-all",
                     isListening && "animate-pulse shadow-lg shadow-red-500/30",
+                    isTranscribing && "cursor-not-allowed opacity-80",
                     className
                 )}
                 title={isListening ? "توقف ضبط" : "ضبط صدا"}
             >
-                {isListening ? (
+                {isTranscribing ? (
+                    <Loader2 size={20} className="animate-spin text-primary" />
+                ) : isListening ? (
                     <motion.div
                         animate={{ scale: [1, 1.2, 1] }}
                         transition={{ duration: 1, repeat: Infinity }}
@@ -254,27 +286,36 @@ export function VoiceInput({ onTranscript, onListening, className, disabled }: V
                         initial={{ scale: 0 }}
                         animate={{ scale: [1, 1.5, 1] }}
                         transition={{ duration: 1.5, repeat: Infinity }}
-                        className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"
+                        className="absolute -top-1 -end-1 w-3 h-3 bg-red-500 rounded-full"
                     />
                 )}
             </Button>
 
             {/* Transcript popup */}
             <AnimatePresence>
-                {isListening && (
+                {(isListening || isTranscribing) && (
                     <motion.div
                         initial={{ opacity: 0, y: 10, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                        className="absolute bottom-full mb-2 right-0 w-64 bg-card border border-border rounded-xl p-3 shadow-xl z-50"
+                        className="absolute bottom-full mb-2 end-0 w-64 bg-card border border-border rounded-xl p-3 shadow-xl z-50"
                     >
                         <div className="flex items-center gap-2 mb-2">
-                            <motion.div
-                                animate={{ opacity: [0.3, 1, 0.3] }}
-                                transition={{ duration: 1.5, repeat: Infinity }}
-                                className="w-2 h-2 bg-red-500 rounded-full"
-                            />
-                            <span className="text-xs font-bold text-muted-foreground">در حال گوش دادن...</span>
+                            {isTranscribing ? (
+                                <>
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                                    <span className="text-xs font-bold text-muted-foreground">درحال تبدیل صدا به متن...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <motion.div
+                                        animate={{ opacity: [0.3, 1, 0.3] }}
+                                        transition={{ duration: 1.5, repeat: Infinity }}
+                                        className="w-2 h-2 bg-red-500 rounded-full"
+                                    />
+                                    <span className="text-xs font-bold text-muted-foreground">در حال گوش دادن...</span>
+                                </>
+                            )}
                         </div>
 
                         {transcript ? (
@@ -283,20 +324,22 @@ export function VoiceInput({ onTranscript, onListening, className, disabled }: V
                             </p>
                         ) : (
                             <p className="text-sm text-muted-foreground/50 italic" dir="rtl">
-                                صحبت کنید...
+                                {isTranscribing ? "درحال ارسال فایل به سرور..." : "صحبت کنید..."}
                             </p>
                         )}
                         
-                        <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/50">
-                             <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-6 text-[10px] text-red-500 hover:text-red-600 px-2"
-                                onClick={(e) => { e.stopPropagation(); stopListening(); }}
-                             >
-                                 توقف و ارسال
-                             </Button>
-                        </div>
+                        {!isTranscribing && (
+                            <div className="flex items-center justify-between mt-3 pt-2 border-t border-border/50">
+                                 <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-6 text-[10px] text-red-500 hover:text-red-600 px-2"
+                                    onClick={(e) => { e.stopPropagation(); stopActiveSession(); }}
+                                 >
+                                     توقف و ارسال
+                                 </Button>
+                            </div>
+                        )}
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -308,7 +351,8 @@ export function VoiceInput({ onTranscript, onListening, className, disabled }: V
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute bottom-full mb-2 right-0 bg-destructive text-destructive-foreground text-xs px-3 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap z-50"
+                        className="absolute bottom-full mb-2 end-0 bg-destructive text-destructive-foreground text-xs px-3 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap z-50"
+                        onClick={() => setError(null)}
                     >
                         <AlertCircle size={14} />
                         {error}

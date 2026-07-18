@@ -14,6 +14,7 @@ import {
   Currency
 } from '../payment/types';
 import { getPlanById } from '../payment/pricing';
+import { resolveFeatureTier } from '../payment/types';
 
 // === Subscription Management ===
 
@@ -45,7 +46,7 @@ export async function getUserSubscription(userId: string): Promise<Subscription 
       billingCycle: data.billingCycle as BillingCycle,
       currentPeriodStart: data.startDate, // aligned with previous schema 'startDate' vs 'currentPeriodStart'
       currentPeriodEnd: data.endDate ?? null,
-      cancelAtPeriodEnd: false, // Add this to schema if missing, or default false
+      cancelAtPeriodEnd: data.cancelAtPeriodEnd ?? false,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };
@@ -72,7 +73,7 @@ export async function getUserTier(userId: string): Promise<PlanTier> {
     return 'free';
   }
   
-  return subscription.tier;
+  return resolveFeatureTier(subscription.tier || subscription.planId || 'free');
 }
 
 /**
@@ -106,8 +107,8 @@ export async function createSubscription(
       billingCycle,
       startDate: now,
       endDate: periodEnd,
+      provider: 'zibal',
       updatedAt: now,
-      // tier is derived from planId, not stored redundantly usually, but interface needs it
     },
     create: {
       userId,
@@ -116,6 +117,7 @@ export async function createSubscription(
       billingCycle,
       startDate: now,
       endDate: periodEnd,
+      provider: 'zibal',
     }
   });
   
@@ -150,7 +152,7 @@ export async function updateSubscription(
   };
 
   if (updates.status) dbUpdates.status = updates.status;
-  // if (updates.cancelAtPeriodEnd !== undefined) dbUpdates.cancelAtPeriodEnd = updates.cancelAtPeriodEnd;
+  if (updates.cancelAtPeriodEnd !== undefined) dbUpdates.cancelAtPeriodEnd = updates.cancelAtPeriodEnd;
   if (updates.currentPeriodEnd) dbUpdates.endDate = updates.currentPeriodEnd;
   if (updates.planId) dbUpdates.planId = updates.planId;
  
@@ -185,7 +187,7 @@ export async function reactivateSubscription(userId: string): Promise<void> {
  */
 export async function getUserFeatures(userId: string): Promise<FeatureFlags> {
   const tier = await getUserTier(userId);
-  return DEFAULT_FEATURES[tier];
+  return DEFAULT_FEATURES[resolveFeatureTier(tier)];
 }
 
 /**

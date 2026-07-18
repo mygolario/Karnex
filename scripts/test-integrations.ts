@@ -53,26 +53,28 @@ async function testZibal() {
   }
 }
 
-async function testBrevo() {
-  console.log("\n--- Testing Brevo Email Sending ---");
+async function testResend() {
+  console.log("\n--- Testing Resend Email Sending ---");
+  const { getVerificationTemplate } = await import("@/lib/email-templates");
+  const emailHtml = getVerificationTemplate("853194");
   const success = await sendEmail({
     to: TEST_EMAIL,
-    subject: "Karnex Integration Test",
-    htmlContent: "<h1>Integration Works!</h1><p>This is a test email from the Karnex agent verification process.</p>",
+    subject: "Karnex Integration Test - New Template",
+    htmlContent: emailHtml,
     templateName: 'verification', 
     name: "Karnex Admin"
   });
 
   if (success) {
-    console.log(`✅ Brevo Email Sent Successfully to ${TEST_EMAIL}`);
+    console.log(`✅ Resend Email Sent Successfully to ${TEST_EMAIL}`);
   } else {
-    console.error("❌ Brevo Email Failed.");
+    console.error("❌ Resend Email Failed.");
   }
 }
 
 async function runRefTests() {
   await testZibal();
-  await testBrevo();
+  await testResend();
 }
 
 runRefTests();

@@ -28,12 +28,12 @@ export function HoverExplainer({ text, title, description, children, className }
       {children || <HelpCircle size={14} className="text-muted-foreground hover:text-primary transition-colors" />}
       
       {show && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="absolute bottom-full start-1/2 -translate-x-1/2 mb-2 z-50 animate-in fade-in slide-in-from-bottom-2 duration-200">
           <div className="bg-foreground text-background text-xs px-3 py-2 rounded-lg shadow-xl max-w-xs leading-relaxed whitespace-normal">
             {title && <div className="font-bold mb-1 border-b border-white/20 pb-1">{title}</div>}
             {description || text}
           </div>
-          <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground" />
+          <div className="absolute top-full start-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-foreground" />
         </div>
       )}
     </span>

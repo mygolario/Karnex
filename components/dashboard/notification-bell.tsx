@@ -97,24 +97,79 @@ export function NotificationBell({ notifications: initialNotifications, classNam
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
+  const fetchNotifications = async () => {
+    try {
+      const res = await fetch("/api/notifications");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.notifications) {
+          const mapped = data.notifications.map((n: any) => ({
+            ...n,
+            timestamp: new Date(n.createdAt)
+          }));
+          setNotifications(mapped);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+    }
+  };
+
   useEffect(() => {
-    setNotifications(initialNotifications || getDefaultNotifications());
+    if (initialNotifications) {
+      setNotifications(initialNotifications);
+      return;
+    }
+
+    fetchNotifications();
+
+    // Poll every 60 seconds
+    const interval = setInterval(fetchNotifications, 60000);
+    return () => clearInterval(interval);
   }, [initialNotifications]);
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const markAsRead = (id: string) => {
+  const markAsRead = async (id: string) => {
+    // Optimistic UI update
     setNotifications(prev => 
       prev.map(n => n.id === id ? { ...n, read: true } : n)
     );
+    try {
+      await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "markAsRead", id }),
+      });
+    } catch (err) {
+      console.error("Failed to mark notification as read on server:", err);
+    }
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
+    // Optimistic UI update
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    try {
+      await fetch("/api/notifications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "markAllAsRead" }),
+      });
+    } catch (err) {
+      console.error("Failed to mark all notifications as read on server:", err);
+    }
   };
 
-  const removeNotification = (id: string) => {
+  const removeNotification = async (id: string) => {
+    // Optimistic UI update
     setNotifications(prev => prev.filter(n => n.id !== id));
+    try {
+      await fetch(`/api/notifications?id=${id}`, {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.error("Failed to delete notification on server:", err);
+    }
   };
 
   const formatTime = (date: Date): string => {
@@ -139,7 +194,7 @@ export function NotificationBell({ notifications: initialNotifications, classNam
       >
         <Bell size={20} className="text-foreground" />
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
+          <span className="absolute -top-0.5 -end-0.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center animate-pulse">
             {unreadCount > 9 ? "۹+" : unreadCount}
           </span>
         )}
@@ -155,7 +210,7 @@ export function NotificationBell({ notifications: initialNotifications, classNam
           />
           
           {/* Panel */}
-          <div className="absolute left-0 top-full mt-2 w-80 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200">
+          <div className="absolute end-0 top-full mt-2 w-80 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="font-bold text-foreground">اعلان‌ها</h3>

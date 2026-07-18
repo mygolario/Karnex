@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const cardVariants = cva(
-  "rounded-2xl transition-all duration-300",
+  "rounded-card transition-all duration-300",
   {
     variants: {
       variant: {
@@ -12,9 +12,9 @@ const cardVariants = cva(
         elevated:
           "bg-card text-card-foreground shadow-lg hover:shadow-xl border-t border-white/20",
         glass:
-          "card-glass text-foreground",
+          "bg-glass-premium border border-glass-premium text-foreground shadow-glass-premium backdrop-blur-premium",
         gradient:
-          "bg-gradient-to-br from-primary via-purple-600 to-secondary text-white border-0",
+          "bg-gradient-to-br from-brand-primary via-purple-600 to-brand-secondary text-white border-0",
         ghost:
           "bg-transparent text-foreground border-0 shadow-none",
         muted:
@@ -138,9 +138,9 @@ const CardIcon = React.forwardRef<
   }
 >(({ className, variant = "primary", ...props }, ref) => {
   const variants = {
-    primary: "bg-primary/10 text-primary",
-    secondary: "bg-secondary/10 text-secondary",
-    accent: "bg-accent/10 text-accent",
+    primary: "bg-brand-primary/10 text-brand-primary",
+    secondary: "bg-brand-secondary/10 text-brand-secondary",
+    accent: "bg-brand-accent/10 text-brand-accent",
     muted: "bg-muted text-muted-foreground",
   };
   
@@ -148,7 +148,7 @@ const CardIcon = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "inline-flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
+        "inline-flex h-12 w-12 items-center justify-center rounded-btn transition-colors",
         variants[variant],
         className
       )}

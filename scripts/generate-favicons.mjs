@@ -19,6 +19,7 @@ const SOURCE_IMAGE = path.join(iconsDir, 'icon-512x512.png');
 const SIZES = [
   { size: 16, name: 'favicon-16x16.png', dir: publicDir },
   { size: 32, name: 'favicon-32x32.png', dir: publicDir },
+  { size: 48, name: 'favicon.ico', dir: publicDir },
   { size: 180, name: 'apple-touch-icon.png', dir: publicDir },
 ];
 

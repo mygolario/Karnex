@@ -75,7 +75,7 @@ export function FeedbackWidget() {
   const FloatingButton = (
     <button
       onClick={() => setIsOpen(true)}
-      className="fixed bottom-6 left-6 z-50 w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-full shadow-lg shadow-emerald-500/30 flex items-center justify-center hover:scale-110 transition-transform animate-in slide-in-from-bottom-4"
+      className="fixed bottom-6 start-6 z-50 w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 text-white rounded-full shadow-lg shadow-emerald-500/30 flex items-center justify-center hover:scale-110 transition-transform animate-in slide-in-from-bottom-4"
       title="ارسال بازخورد"
     >
       <MessageSquarePlus size={24} />
@@ -93,7 +93,7 @@ export function FeedbackWidget() {
       >
         <button 
           onClick={() => setIsOpen(false)}
-          className="absolute left-4 top-4 text-muted-foreground hover:text-foreground"
+          className="absolute start-4 top-4 text-muted-foreground hover:text-foreground"
         >
           <X size={20} />
         </button>

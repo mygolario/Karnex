@@ -100,7 +100,7 @@ export function ColorMoodBoard({
                   )}
                   
                   {/* Copy Button */}
-                  <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur-md px-5 py-3 rounded-2xl text-black font-mono font-bold shadow-2xl flex items-center gap-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+                  <div className="absolute bottom-4 end-4 bg-white/90 backdrop-blur-md px-5 py-3 rounded-2xl text-black font-mono font-bold shadow-2xl flex items-center gap-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
                     <span className="text-lg">{color.hex}</span>
                     <button 
                       onClick={() => copyToClipboard(color.hex)} 

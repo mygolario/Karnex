@@ -5,7 +5,12 @@ import { getContactAdminTemplate, getContactUserTemplate } from '@/lib/email-tem
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, email, subject, message } = body;
+    const { name, email, subject, message, website } = body;
+
+    // Honeypot field — bots fill hidden inputs
+    if (website) {
+      return NextResponse.json({ success: true });
+    }
 
     // Basic Validation
     if (!name || !email || !subject || !message) {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useAuth } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ShieldCheck } from "lucide-react";
@@ -12,7 +12,7 @@ import { formatPricePersian } from "@/lib/payment/gateways/zarinpal";
 function CheckoutContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session, status } = useSession();
+  const { user, loading: authLoading } = useAuth();
   
   const planId = searchParams.get("plan");
   const cycle = searchParams.get("cycle") || "monthly";
@@ -32,13 +32,13 @@ function CheckoutContent() {
 
   // Redirect if not logged in
   useEffect(() => {
-    if (status === "loading") return;
+    if (authLoading) return;
     
-    if (status === "unauthenticated" || !session?.user) {
+    if (!user) {
       const returnUrl = encodeURIComponent(`/checkout?plan=${planId}&cycle=${cycle}`);
       router.push(`/login?callbackUrl=${returnUrl}`); // Changed to /login standard NextAuth
     }
-  }, [status, session, planId, cycle, router]);
+  }, [authLoading, user, planId, cycle, router]);
 
   const handlePayment = async () => {
     setLoading(true);
@@ -73,7 +73,7 @@ function CheckoutContent() {
     }
   };
 
-  if (status === "loading" || !plan) {
+  if (authLoading || !plan) {
     return (
       <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -85,7 +85,7 @@ function CheckoutContent() {
   const monthlyPrice = plan.price.monthly;
   const yearlyPrice = plan.price.yearly;
   
-  const finalPrice = isAnnual ? yearlyPrice * 12 : monthlyPrice;
+  const finalPrice = isAnnual ? yearlyPrice : monthlyPrice;
   const originalPrice = isAnnual ? monthlyPrice * 12 : monthlyPrice;
   const savings = originalPrice - finalPrice;
 

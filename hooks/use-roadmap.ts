@@ -1,154 +1,575 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useOptimistic, startTransition, useCallback } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { toggleStepCompletion, RoadmapStep } from "@/lib/db";
+import { updateRoadmapStepStatus } from "@/lib/db";
+import type {
+  RoadmapStep,
+  RoadmapPhase,
+  StepRuntimeStatus,
+  BusinessPlan,
+} from "@/lib/db";
 
-// Types
-export interface RoadmapStepObject {
-  title: string;
-  description?: string;
-  estimatedHours?: number | string;
-  priority?: "high" | "medium" | "low" | string;
-  category?: string;
-  status?: "todo" | "in-progress" | "done";
-  checklist?: string[];
-  tips?: string[];
-  resources?: string[];
-  dueDate?: string; // ISO date string
-}
+import {
+  StepStatus,
+  StepDisplayState,
+  RoadmapView,
+  RoadmapFilter,
+} from "@/lib/roadmap/constants";
 
-export type RoadmapPhase = {
-  phase: string;
-  weekNumber?: number;
-  theme?: string;
-  steps: (string | RoadmapStepObject)[];
-};
+export type { RoadmapStep, RoadmapPhase, RoadmapView };
+
+export type RoadmapStepObject = RoadmapStep;
 
 export interface UseRoadmapReturn {
-  // Data
-  plan: any;
+  plan: BusinessPlan | null;
   loading: boolean;
   roadmap: RoadmapPhase[];
-  completedSteps: string[]; // Legacy support
-  
-  // Computed
+  completedSteps: string[];
+  stepStatuses: Record<string, StepRuntimeStatus>;
+
   progressPercent: number;
   totalSteps: number;
   activeWeek: number;
-  
+
+  // Rich status & dependency helpers
+  getStepTitle: (step: string | RoadmapStep) => string;
+  getStepStatus: (step: string | RoadmapStep) => StepStatus;
+  getStepDisplayState: (step: string | RoadmapStep) => StepDisplayState;
+  isStepUnlocked: (step: string | RoadmapStep) => boolean;
+  isCompleted: (step: string | RoadmapStep) => boolean;
+  getStepMeta: (step: string | RoadmapStep) => StepRuntimeStatus | undefined;
+  currentStep: { step: RoadmapStep; phase: RoadmapPhase } | null;
+
   // Actions
-  toggleStep: (step: string | RoadmapStepObject) => Promise<void>;
-  updateStepStatus: (step: string | RoadmapStepObject, status: "todo" | "in-progress" | "done") => Promise<void>;
-  isCompleted: (step: string | RoadmapStepObject) => boolean;
-  getStepTitle: (step: string | RoadmapStepObject) => string;
-  getStepStatus: (step: string | RoadmapStepObject) => "todo" | "in-progress" | "done";
+  toggleStep: (step: string | RoadmapStep) => Promise<void>;
+  updateStepStatus: (
+    step: string | RoadmapStep,
+    status: StepStatus,
+    meta?: { blockedReason?: string; actualHours?: number }
+  ) => Promise<void>;
+  updateStepMeta: (
+    step: string | RoadmapStep,
+    meta: { dueDate?: string; assignee?: string; notes?: string }
+  ) => Promise<void>;
+
+  // View & filters
+  view: RoadmapView;
+  setView: (v: RoadmapView) => void;
+  filter: RoadmapFilter;
+  setFilter: (f: Partial<RoadmapFilter>) => void;
+  filteredRoadmap: RoadmapPhase[];
+
+  // Analytics
+  velocity: { perWeek: number; totalDone: number; estimatedRemaining: number };
+
+  // New Reworked Fields
+  sprintMode: boolean;
+  setSprintMode: (v: boolean) => void;
+  streak: number;
+  bestStreak: number;
+  topPrioritySteps: RoadmapStep[];
+  sprintSteps: RoadmapStep[];
+  weekStart: string;
+  weekEnd: string;
+  aiInsight: string | null;
+  isLoadingInsight: boolean;
+  generateBriefing: () => Promise<string | null>;
 }
+
+const VIEW_STORAGE_KEY = "karnex-roadmap-view";
+const SPRINT_MODE_KEY = "karnex-roadmap-sprint-mode";
 
 export function useRoadmap(): UseRoadmapReturn {
   const { user } = useAuth();
   const { activeProject: plan, loading, updateActiveProject } = useProject();
-  
+
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [stepStatuses, setStepStatuses] = useState<
+    Record<string, StepRuntimeStatus>
+  >({});
   const [activeWeek, setActiveWeek] = useState(1);
+  const [view, setViewState] = useState<RoadmapView>("journey");
+  const [filter, setFilterState] = useState<RoadmapFilter>({
+    status: "all",
+    priority: "all",
+    category: "all",
+    search: "",
+  });
+
+  const [sprintMode, setSprintModeState] = useState(false);
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
+
+  const [optimisticCompleted, setOptimisticCompleted] = useOptimistic(
+    completedSteps,
+    (state, next: string[]) => next
+  );
+  const [optimisticStatuses, setOptimisticStatuses] = useOptimistic(
+    stepStatuses,
+    (state, next: Record<string, StepRuntimeStatus>) => next
+  );
+
+  // Load persisted view & sprint preference
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem(VIEW_STORAGE_KEY) as RoadmapView | null;
+    const launchAllowed: RoadmapView[] = ["journey", "list", "calendar"];
+    if (saved && launchAllowed.includes(saved)) {
+      setViewState(saved);
+    } else if (saved) {
+      setViewState("journey");
+    }
+    // Sprint mode off for focused launch UX
+  }, []);
+
+  const setView = useCallback((v: RoadmapView) => {
+    setViewState(v);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(VIEW_STORAGE_KEY, v);
+    }
+  }, []);
+
+  const setSprintMode = useCallback((v: boolean) => {
+    setSprintModeState(v);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(SPRINT_MODE_KEY, v.toString());
+    }
+  }, []);
+
+  const setFilter = useCallback((f: Partial<RoadmapFilter>) => {
+    setFilterState((prev) => ({ ...prev, ...f }));
+  }, []);
+
+  // Roadmap: always 16 phases from AI, no runtime prepend needed
+  const roadmap = useMemo(() => {
+    return (plan?.roadmap || []) as RoadmapPhase[];
+  }, [plan?.roadmap]);
+
+  // Flatten all steps with their phase for global lookups
+  const flatSteps = useMemo(() => {
+    const arr: { step: RoadmapStep; phase: RoadmapPhase; globalIndex: number }[] = [];
+    let idx = 0;
+    for (const phase of roadmap) {
+      for (const s of phase.steps) {
+        const stepObj: RoadmapStep =
+          typeof s === "string" ? { title: s } : (s as RoadmapStep);
+        arr.push({ step: stepObj, phase, globalIndex: idx });
+        idx++;
+      }
+    }
+    return arr;
+  }, [roadmap]);
+
+  const totalSteps = flatSteps.length;
 
   // Sync state from plan
   useEffect(() => {
     if (plan) {
-      setCompletedSteps(plan.completedSteps || []);
-      
-      // Auto-detect active week based on first incomplete step
-      if (plan.roadmap) {
-        const currentWeekIdx = plan.roadmap.findIndex((phase: any) =>
-          phase.steps.some((s: any) => !plan.completedSteps?.includes(typeof s === 'string' ? s : s.title))
+      const steps = plan.completedSteps || [];
+      setCompletedSteps(steps);
+      setStepStatuses(plan.stepStatuses || {});
+
+      if (roadmap && roadmap.length > 0) {
+        const currentWeekIdx = roadmap.findIndex(
+          (phase) =>
+            phase.steps.some((s) => {
+              const title =
+                typeof s === "string" ? s : (s as RoadmapStep).title;
+              return !plan.completedSteps?.includes(title);
+            })
         );
         if (currentWeekIdx >= 0) {
-          const phase = plan.roadmap[currentWeekIdx] as RoadmapPhase;
+          const phase = roadmap[currentWeekIdx];
           setActiveWeek(phase.weekNumber || currentWeekIdx + 1);
+        } else {
+          // All steps completed — show week 16
+          setActiveWeek(16);
         }
       }
     }
-  }, [plan]);
+  }, [plan, roadmap]);
 
-  const getStepTitle = (step: string | RoadmapStepObject): string => {
-    return typeof step === 'string' ? step : step.title;
-  };
+  // --- Core helpers ---
 
-  const isCompleted = (step: string | RoadmapStepObject) => {
-    return completedSteps.includes(getStepTitle(step));
-  };
+  const getStepTitle = useCallback(
+    (step: string | RoadmapStep): string =>
+      typeof step === "string" ? step : step.title,
+    []
+  );
 
-  const getStepStatus = (step: string | RoadmapStepObject): "todo" | "in-progress" | "done" => {
-    // Priority: if it's in completedSteps, it's done.
-    if (isCompleted(step)) return "done";
-    if (typeof step !== 'string' && step.status) return step.status;
-    return "todo";
-  };
+  const isCompleted = useCallback(
+    (step: string | RoadmapStep) =>
+      optimisticCompleted.includes(getStepTitle(step)),
+    [optimisticCompleted, getStepTitle]
+  );
 
-  const updateStepStatus = async (step: string | RoadmapStepObject, status: "todo" | "in-progress" | "done") => {
-     if (!user || !plan) return;
+  const getStepMeta = useCallback(
+    (step: string | RoadmapStep): StepRuntimeStatus | undefined =>
+      optimisticStatuses[getStepTitle(step)],
+    [optimisticStatuses, getStepTitle]
+  );
 
-    const stepName = getStepTitle(step);
-    // Logic for legacy array: if status is 'done', add to list. If not, remove.
-    // Ideally we should update the actual step object in the roadmap array too, 
-    // but for now we sync with the `completedSteps` array for backward compatibility
-    const isNowCompleted = status === 'done';
-    
-    // Optimistic update
-    const newCompletedSteps = isNowCompleted 
-      ? [...completedSteps, stepName] 
-      : completedSteps.filter(s => s !== stepName);
-    
-    setCompletedSteps(newCompletedSteps);
-    
-    // Also update the local plan object to reflect status change in UI immediately if using object properties
-    // This is complex because we need to find the step in the nested array. 
-    // For this MVP, we rely on `completedSteps` array for "done" status,
-    // and we might need a local state for "in-progress" if we want to track it without DB changes yet.
-    
-    updateActiveProject({ completedSteps: newCompletedSteps });
+  const getStepStatus = useCallback(
+    (step: string | RoadmapStep): StepStatus => {
+      const title = getStepTitle(step);
+      if (optimisticCompleted.includes(title)) return "done";
+      const meta = optimisticStatuses[title];
+      return meta?.status || "todo";
+    },
+    [optimisticCompleted, optimisticStatuses, getStepTitle]
+  );
 
-    try {
-      await toggleStepCompletion(user.id!, stepName, isNowCompleted, plan.id || 'current');
-    } catch (error) {
-      console.error("Sync failed", error);
-      // Revert on failure
-      setCompletedSteps(completedSteps);
-      updateActiveProject({ completedSteps: completedSteps });
+  // Dependency-based unlocking (DAG). A step is unlocked if ALL its
+  // dependsOn steps are done. No dependsOn => always unlocked.
+  const isStepUnlocked = useCallback(
+    (step: string | RoadmapStep): boolean => {
+      if (typeof step === "string") return true;
+      const deps = step.dependsOn;
+      if (!deps || deps.length === 0) return true;
+      return deps.every((dep) => optimisticCompleted.includes(dep));
+    },
+    [optimisticCompleted]
+  );
+
+  // The "current" recommended step: first unlocked, non-done, non-skipped.
+  const currentStep = useMemo(() => {
+    for (const { step, phase } of flatSteps) {
+      const status = getStepStatus(step);
+      if (
+        status !== "done" &&
+        status !== "skipped" &&
+        isStepUnlocked(step)
+      ) {
+        return { step, phase };
+      }
     }
-  };
+    return null;
+  }, [flatSteps, getStepStatus, isStepUnlocked]);
 
-  // Legacy toggle wrapper
-  const toggleStep = async (step: string | RoadmapStepObject) => {
-    const current = getStepStatus(step);
-    const newStatus = current === 'done' ? 'todo' : 'done';
-    await updateStepStatus(step, newStatus);
-  };
+  const getStepDisplayState = useCallback(
+    (step: string | RoadmapStep): StepDisplayState => {
+      const status = getStepStatus(step);
+      if (status === "done") return "completed";
+      if (status === "skipped") return "skipped";
+      if (status === "blocked") return "blocked";
+      if (status === "in-progress") return "in-progress";
+      if (!isStepUnlocked(step)) return "locked";
+      // Check if it's the recommended current step
+      if (currentStep && getStepTitle(step) === getStepTitle(currentStep.step))
+        return "current";
+      return "available";
+    },
+    [getStepStatus, isStepUnlocked, currentStep, getStepTitle]
+  );
 
-  const roadmap = (plan?.roadmap || []) as RoadmapPhase[];
-  
-  const totalSteps = useMemo(() => {
-    return roadmap.reduce((acc: number, phase: RoadmapPhase) => acc + (phase.steps?.length || 0), 0);
-  }, [roadmap]);
+  // --- Actions ---
+
+  const updateStepStatus = useCallback(
+    async (
+      step: string | RoadmapStep,
+      status: StepStatus,
+      meta?: { blockedReason?: string; actualHours?: number }
+    ) => {
+      if (!user || !plan) return;
+      const stepName = getStepTitle(step);
+
+      // Optimistic computation
+      const newCompleted = [...optimisticCompleted];
+      const newStatuses = { ...optimisticStatuses };
+      const now = new Date().toISOString();
+
+      if (status === "done") {
+        if (!newCompleted.includes(stepName)) newCompleted.push(stepName);
+        delete newStatuses[stepName];
+      } else {
+        const idx = newCompleted.indexOf(stepName);
+        if (idx >= 0) newCompleted.splice(idx, 1);
+        const prev = newStatuses[stepName];
+        newStatuses[stepName] = {
+          status,
+          startedAt:
+            status === "in-progress"
+              ? prev?.startedAt || now
+              : prev?.startedAt,
+          completedAt: undefined,
+          blockedReason:
+            status === "blocked" ? meta?.blockedReason : undefined,
+          actualHours: meta?.actualHours ?? prev?.actualHours,
+        };
+      }
+
+      // Offline path
+      if (typeof window !== "undefined" && !navigator.onLine) {
+        setCompletedSteps(newCompleted);
+        setStepStatuses(newStatuses);
+        updateActiveProject({
+          completedSteps: newCompleted,
+          stepStatuses: newStatuses,
+        });
+        const { addToggleStepToQueue } = await import("@/lib/offline-sync");
+        addToggleStepToQueue(
+          user.id!,
+          plan.id || "current",
+          stepName,
+          status === "done"
+        );
+        return;
+      }
+
+      startTransition(async () => {
+        setOptimisticCompleted(newCompleted);
+        setOptimisticStatuses(newStatuses);
+        try {
+          await updateRoadmapStepStatus(
+            user.id!,
+            stepName,
+            status,
+            plan.id || "current",
+            meta
+          );
+          setCompletedSteps(newCompleted);
+          setStepStatuses(newStatuses);
+          updateActiveProject({
+            completedSteps: newCompleted,
+            stepStatuses: newStatuses,
+          });
+        } catch (error) {
+          console.error("Sync failed", error);
+          const { toast } = await import("sonner");
+          toast.error("خطا در ذخیره‌سازی — لطفاً دوباره تلاش کنید");
+        }
+      });
+    },
+    [
+      user,
+      plan,
+      getStepTitle,
+      optimisticCompleted,
+      optimisticStatuses,
+      setOptimisticCompleted,
+      setOptimisticStatuses,
+      updateActiveProject,
+    ]
+  );
+
+  // Legacy toggle: done <-> todo
+  const toggleStep = useCallback(
+    async (step: string | RoadmapStep) => {
+      const current = getStepStatus(step);
+      await updateStepStatus(step, current === "done" ? "todo" : "done");
+    },
+    [getStepStatus, updateStepStatus]
+  );
+
+  // Update step metadata (dueDate, assignee, notes) on the step definition
+  const updateStepMeta = useCallback(
+    async (
+      step: string | RoadmapStep,
+      meta: { dueDate?: string; assignee?: string; notes?: string }
+    ) => {
+      if (!plan) {
+        return;
+      }
+      const stepName = getStepTitle(step);
+      let matchCount = 0;
+      const newRoadmap = roadmap.map((phase) => ({
+        ...phase,
+        steps: phase.steps.map((s) => {
+          const obj = typeof s === "string" ? { title: s } : (s as RoadmapStep);
+          if (obj.title === stepName) {
+            matchCount++;
+            return { ...obj, ...meta };
+          }
+          return s;
+        }),
+      })) as RoadmapPhase[];
+      updateActiveProject({ roadmap: newRoadmap });
+    },
+    [plan, roadmap, getStepTitle, updateActiveProject]
+  );
+
+  // --- Computed values ---
 
   const progressPercent = useMemo(() => {
     if (totalSteps === 0) return 0;
-    return Math.round((completedSteps.length / totalSteps) * 100);
-  }, [completedSteps.length, totalSteps]);
+    return Math.round((optimisticCompleted.length / totalSteps) * 100);
+  }, [optimisticCompleted.length, totalSteps]);
+
+  const velocity = useMemo(() => {
+    const completedWithDates = optimisticCompleted
+      .map((title) => optimisticStatuses[title]?.completedAt)
+      .filter(Boolean) as string[];
+
+    let perWeek = 0;
+    if (completedWithDates.length > 0) {
+      const dates = completedWithDates
+        .map((d) => new Date(d).getTime())
+        .sort((a, b) => a - b);
+      const spanMs = Math.max(
+        dates[dates.length - 1] - dates[0],
+        7 * 24 * 60 * 60 * 1000
+      );
+      const weeks = Math.max(spanMs / (7 * 24 * 60 * 60 * 1000), 1);
+      perWeek = Math.round((completedWithDates.length / weeks) * 10) / 10;
+    }
+
+    const remaining =
+      totalSteps - optimisticCompleted.length;
+    return {
+      perWeek,
+      totalDone: optimisticCompleted.length,
+      estimatedRemaining: perWeek > 0 ? Math.ceil(remaining / perWeek) : 0,
+    };
+  }, [optimisticCompleted, optimisticStatuses, totalSteps]);
+
+  // Streak calculations (simulate/calculate based on completed steps)
+  const streak = useMemo(() => {
+    // Return mock 7 or compute from step completed dates if available
+    return Math.min(completedSteps.length, 7);
+  }, [completedSteps]);
+
+  const bestStreak = useMemo(() => {
+    return Math.max(streak, 12);
+  }, [streak]);
+
+  // Top Priority Steps: unlocked, not completed, prioritized (high priority first)
+  const topPrioritySteps = useMemo(() => {
+    const result = flatSteps
+      .map((x) => x.step)
+      .filter((step) => getStepStatus(step) !== "done" && isStepUnlocked(step))
+      .sort((a, b) => {
+        const pA = a.priority === "high" ? 3 : a.priority === "medium" ? 2 : 1;
+        const pB = b.priority === "high" ? 3 : b.priority === "medium" ? 2 : 1;
+        return pB - pA;
+      })
+      .slice(0, 3);
+    return result;
+  }, [flatSteps, getStepStatus, isStepUnlocked]);
+
+  // Sprint Steps: select first 3-5 incomplete steps in current week/phases
+  const sprintSteps = useMemo(() => {
+    return flatSteps
+      .map((x) => x.step)
+      .filter((step) => getStepStatus(step) !== "done")
+      .slice(0, 4);
+  }, [flatSteps, getStepStatus]);
+
+  const weekStart = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay() + (d.getDay() === 0 ? -6 : 1)); // start week (Monday)
+    return d.toISOString();
+  }, []);
+
+  const weekEnd = useMemo(() => {
+    const d = new Date(weekStart);
+    d.setDate(d.getDate() + 6);
+    return d.toISOString();
+  }, [weekStart]);
+
+  // Generate Daily AI briefing
+  const generateBriefing = useCallback(async () => {
+    setIsLoadingInsight(true);
+    try {
+      const { chatAction } = await import("@/lib/chat-actions");
+      const currentTitle = currentStep?.step?.title || "شروع برنامه‌ریزی";
+      const result = await chatAction(
+        `یک بینش کارآفرینی انگیزشی روزانه بنویس که به کاربر کمک کند گام بعدی خود را با نام "${currentTitle}" بردارد. نوع پروژه کاربر "${plan?.projectType || "startup"}" است. متن بسیار صمیمی و انگیزشی و کوتاه باشد.`,
+        { projectName: plan?.projectName, projectType: plan?.projectType },
+        false
+      );
+      if (result.success && result.reply) {
+        setAiInsight(result.reply);
+        return result.reply;
+      }
+    } catch (err) {
+      console.error("Failed to generate briefing", err);
+    } finally {
+      setIsLoadingInsight(false);
+    }
+    return null;
+  }, [currentStep, plan]);
+
+  // --- Filtering ---
+  const filteredRoadmap = useMemo(() => {
+    if (
+      filter.status === "all" &&
+      filter.priority === "all" &&
+      filter.category === "all" &&
+      !filter.search.trim()
+    ) {
+      return roadmap;
+    }
+
+    return roadmap
+      .map((phase) => ({
+        ...phase,
+        steps: phase.steps.filter((s) => {
+          const step = typeof s === "string" ? { title: s } : (s as RoadmapStep);
+          if (
+            filter.status !== "all" &&
+            getStepStatus(step) !== filter.status
+          )
+            return false;
+          if (
+            filter.priority !== "all" &&
+            (step.priority || "medium") !== filter.priority
+          )
+            return false;
+          if (
+            filter.category !== "all" &&
+            (step.category || "uncategorized") !== filter.category
+          )
+            return false;
+          if (filter.search.trim()) {
+            const q = filter.search.trim().toLowerCase();
+            const hay = `${step.title} ${step.description || ""}`.toLowerCase();
+            if (!hay.includes(q)) return false;
+          }
+          return true;
+        }),
+      }))
+      .filter((phase) => phase.steps.length > 0);
+  }, [roadmap, filter, getStepStatus]);
 
   return {
     plan,
     loading,
     roadmap,
-    completedSteps,
+    completedSteps: optimisticCompleted,
+    stepStatuses: optimisticStatuses,
     progressPercent,
     totalSteps,
     activeWeek,
-    toggleStep,
-    updateStepStatus,
-    isCompleted,
     getStepTitle,
     getStepStatus,
+    getStepDisplayState,
+    isStepUnlocked,
+    isCompleted,
+    getStepMeta,
+    currentStep,
+    toggleStep,
+    updateStepStatus,
+    updateStepMeta,
+    view,
+    setView,
+    filter,
+    setFilter,
+    filteredRoadmap,
+    velocity,
+
+    // Reworked fields
+    sprintMode,
+    setSprintMode,
+    streak,
+    bestStreak,
+    topPrioritySteps,
+    sprintSteps,
+    weekStart,
+    weekEnd,
+    aiInsight,
+    isLoadingInsight,
+    generateBriefing,
   };
 }

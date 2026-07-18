@@ -8,8 +8,8 @@
  */
 
 import prisma from '@/lib/prisma';
-import { DEFAULT_FEATURES, PlanTier } from '@/lib/payment/types';
-
+import { DEFAULT_FEATURES, PlanTier, resolveFeatureTier } from '@/lib/payment/types';
+import { auth } from '@/lib/auth/session';
 export interface UsageCheckResult {
   allowed: boolean;
   used: number;
@@ -32,25 +32,32 @@ function getCurrentMonth(): string {
 }
 
 /**
- * Get user's current tier from subscription
+ * Get user's current tier from subscription (normalized for launch feature map)
  */
 async function getUserPlanTier(userId: string): Promise<PlanTier> {
   const sub = await prisma.subscription.findUnique({
     where: { userId },
-    select: { planId: true, status: true }
+    select: { planId: true, status: true, endDate: true }
   });
   
   if (!sub || sub.status !== 'active') {
     return 'free';
   }
+
+  if (sub.endDate && sub.endDate < new Date()) {
+    return 'free';
+  }
   
-  return (sub.planId as PlanTier) || 'free';
+  return resolveFeatureTier(sub.planId || 'free');
 }
 
 /**
- * Check if user can make another AI request
+ * Check if user can spend `credits` AI credits (default 1).
  */
-export async function checkAIRequestLimit(userId: string): Promise<UsageCheckResult> {
+export async function checkAIRequestLimit(
+  userId: string,
+  creditsNeeded = 1,
+): Promise<UsageCheckResult> {
   const tier = await getUserPlanTier(userId);
   const limits = DEFAULT_FEATURES[tier];
   const limit = limits.aiRequestsPerMonth;
@@ -66,14 +73,14 @@ export async function checkAIRequestLimit(userId: string): Promise<UsageCheckRes
     select: { credits: true }
   });
 
-  const credits = (user?.credits as any) || {};
-  const aiUsage = credits.aiRequests || {};
-  const used = (aiUsage[currentMonth] as number) || 0;
+  const credits = (user?.credits as Record<string, unknown>) || {};
+  const aiUsage = (credits.aiRequests as Record<string, number>) || {};
+  const used = aiUsage[currentMonth] || 0;
   
   const remaining = Math.max(0, limit - used);
   
   return {
-    allowed: used < limit,
+    allowed: used + creditsNeeded <= limit,
     used,
     limit,
     remaining,
@@ -81,26 +88,58 @@ export async function checkAIRequestLimit(userId: string): Promise<UsageCheckRes
 }
 
 /**
- * Increment AI request count for the current month
+ * Increment AI credit usage for the current month
  */
-export async function incrementAIUsage(userId: string): Promise<void> {
+export async function incrementAIUsage(userId: string, amount = 1): Promise<void> {
   const currentMonth = getCurrentMonth();
+  const delta = Math.max(1, Math.floor(amount));
   
-  // Fetch current credits to update specifically the month key
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { credits: true }
   });
 
-  const credits = (user?.credits as any) || {};
-  const aiUsage = credits.aiRequests || {};
-  const currentCount = (aiUsage[currentMonth] as number) || 0;
+  const credits = (user?.credits as Record<string, unknown>) || {};
+  const aiUsage = (credits.aiRequests as Record<string, number>) || {};
+  const currentCount = aiUsage[currentMonth] || 0;
   
   const newCredits = {
     ...credits,
     aiRequests: {
       ...aiUsage,
-      [currentMonth]: currentCount + 1
+      [currentMonth]: currentCount + delta
+    }
+  };
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { credits: newCredits }
+  });
+}
+
+/**
+ * Decrement AI credit usage (refund on failure)
+ */
+export async function decrementAIUsage(userId: string, amount = 1): Promise<void> {
+  const currentMonth = getCurrentMonth();
+  const delta = Math.max(1, Math.floor(amount));
+  
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { credits: true }
+  });
+
+  const credits = (user?.credits as Record<string, unknown>) || {};
+  const aiUsage = (credits.aiRequests as Record<string, number>) || {};
+  const currentCount = aiUsage[currentMonth] || 0;
+  
+  if (currentCount <= 0) return;
+
+  const newCredits = {
+    ...credits,
+    aiRequests: {
+      ...aiUsage,
+      [currentMonth]: Math.max(0, currentCount - delta)
     }
   };
 
@@ -115,7 +154,7 @@ export async function incrementAIUsage(userId: string): Promise<void> {
  */
 export async function checkProjectLimit(userId: string): Promise<UsageCheckResult> {
   const tier = await getUserPlanTier(userId);
-  const limits = DEFAULT_FEATURES[tier];
+  const limits = DEFAULT_FEATURES[resolveFeatureTier(tier)];
   const limit = limits.projectLimit;
   
   if (limit === 'unlimited') {
@@ -148,4 +187,18 @@ export async function getUsageSummary(userId: string): Promise<UsageSummary> {
   ]);
   
   return { ai, projects, tier };
+}
+
+export async function getMyUsageSummaryAction(): Promise<{ success: boolean; summary?: UsageSummary; error?: string }> {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized' };
+    }
+    const summary = await getUsageSummary(session.user.id);
+    return { success: true, summary };
+  } catch (error) {
+    console.error("Failed to get usage summary:", error);
+    return { success: false, error: 'Failed to fetch usage summary' };
+  }
 }

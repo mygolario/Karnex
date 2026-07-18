@@ -226,7 +226,7 @@ export default function MenuPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pb-24 md:pb-0">
         {[
           { label: "تعداد آیتم‌ها", value: totalItems, icon: ClipboardList, color: "text-blue-500" },
           { label: "دسته‌بندی‌ها", value: categories.length, icon: GripVertical, color: "text-emerald-500" },

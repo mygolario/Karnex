@@ -1,6 +1,6 @@
 "use client";
 
-import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
+import { PageTourHelp } from "@/components/tour/page-tour-help";
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";

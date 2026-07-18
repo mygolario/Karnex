@@ -1,9 +1,20 @@
 /* === Vazirmatn Font Import === */
-/* Font imported in layout.tsx via next/font/google */
+
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
 
 /* ================================================
    KARNEX DESIGN SYSTEM v2.0 - Bold & Dynamic
@@ -63,6 +74,33 @@
     --glass-bg: rgba(255, 255, 255, 0.8);
     --glass-border: rgba(255, 255, 255, 0.4);
     --glass-blur: 20px;
+
+    /* === Unified Brand Design Tokens === */
+    --brand-primary: 330 81% 60%;
+    --brand-secondary: 25 95% 53%;
+    --brand-accent: 350 89% 60%;
+
+    /* === Copilot AI Signature Color (Violet/Indigo) === */
+    /* Distinct from primary pink — used for AI avatars, orbs, thinking states */
+    --ai: 256 89% 66%;          /* #7c6cf0 */
+    --ai-foreground: 0 0% 100%;
+    --ai-muted: 256 89% 96%;     /* light tint for AI backgrounds */
+    --ai-border: 256 89% 80%;    /* AI element borders */
+    --ai-glow: 256 89% 66%;     /* for shadows/glows */
+
+    /* Pillar accent tokens */
+    --pillar-startup: 239 84% 67%;
+    --pillar-traditional: 160 84% 39%;
+    --pillar-creator: 346 77% 60%;
+    
+    --radius-card: 1.25rem;
+    --radius-btn: 0.75rem;
+    --radius-input: 0.75rem;
+
+    --glass-premium-bg: rgba(255, 255, 255, 0.45);
+    --glass-premium-border: rgba(255, 255, 255, 0.40);
+    --glass-premium-blur: 20px;
+    --glass-premium-glow: 0 8px 32px 0 rgba(236, 72, 153, 0.08);
   }
 
   .dark {
@@ -108,6 +146,23 @@
     /* Glass */
     --glass-bg: rgba(0, 0, 0, 0.8);
     --glass-border: rgba(255, 255, 255, 0.1);
+
+    /* === Unified Brand Design Tokens === */
+    --brand-primary: 330 85% 65%;
+    --brand-secondary: 25 100% 60%;
+    --brand-accent: 350 90% 65%;
+
+    /* === Copilot AI Signature Color (Violet/Indigo) — Dark === */
+    --ai: 256 90% 72%;
+    --ai-foreground: 0 0% 0%;
+    --ai-muted: 256 40% 15%;
+    --ai-border: 256 40% 30%;
+    --ai-glow: 256 90% 72%;
+
+    --glass-premium-bg: rgba(0, 0, 0, 0.55);
+    --glass-premium-border: rgba(255, 255, 255, 0.08);
+    --glass-premium-blur: 20px;
+    --glass-premium-glow: 0 8px 32px 0 rgba(236, 72, 153, 0.12);
   }
 
   /* === Persian Typography === */
@@ -685,11 +740,11 @@
 
   /* RTL icon positioning */
   [dir="rtl"] .icon-start {
-    @apply mr-0 ml-2;
+    @apply me-0 ms-2;
   }
 
   [dir="rtl"] .icon-end {
-    @apply ml-0 mr-2;
+    @apply ms-0 me-2;
   }
 }
 
@@ -1317,6 +1372,14 @@
   }
 }
 
+/* === Canvas Command Palette Items === */
+.cmd-item {
+  @apply flex items-center gap-2 px-2.5 py-2 rounded-lg text-sm cursor-pointer transition-colors text-muted-foreground hover:bg-muted hover:text-foreground;
+  &[data-selected="true"] {
+    @apply bg-primary/10 text-foreground;
+  }
+}
+
 /* === No Scrollbar Utility === */
 .no-scrollbar {
   -ms-overflow-style: none;
@@ -1339,5 +1402,267 @@
       0 0 0 2px hsl(var(--background)),
       0 0 0 4px hsl(var(--primary)),
       0 0 20px hsl(var(--primary) / 0.3);
+  }
+}
+
+/* ================================================
+   COPILOT WORKSPACE — Phase 2 Design System
+   ================================================ */
+
+@layer components {
+  /* AI gradient orb avatar */
+  .ai-orb {
+    background: linear-gradient(135deg, hsl(var(--ai)) 0%, hsl(280 85% 60%) 100%);
+    box-shadow: 0 0 12px hsl(var(--ai-glow) / 0.3);
+  }
+
+  .ai-orb-glow {
+    background: linear-gradient(135deg, hsl(var(--ai)) 0%, hsl(280 85% 60%) 100%);
+    box-shadow:
+      0 0 12px hsl(var(--ai-glow) / 0.4),
+      0 0 24px hsl(var(--ai-glow) / 0.2);
+  }
+
+  /* Glass surface for copilot panes */
+  .copilot-pane {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  /* Conversation hover */
+  .conversation-item {
+    transition: all 0.2s ease;
+  }
+  .conversation-item:hover {
+    background: hsl(var(--muted) / 0.5);
+  }
+  .conversation-item.active {
+    background: hsl(var(--ai) / 0.08);
+    border-inline-start: 3px solid hsl(var(--ai));
+  }
+
+  /* AI message content */
+  .ai-message {
+    color: hsl(var(--foreground));
+    line-height: 2;
+  }
+  .ai-message p {
+    margin-bottom: 0.75rem;
+  }
+  .ai-message p:last-child {
+    margin-bottom: 0;
+  }
+  .ai-message ul,
+  .ai-message ol {
+    margin: 0.5rem 0 0.75rem 0;
+    padding-inline-start: 1.5rem;
+  }
+  .ai-message li {
+    margin-bottom: 0.25rem;
+  }
+  .ai-message strong {
+    font-weight: 700;
+    color: hsl(var(--foreground));
+  }
+  .ai-message code {
+    background: hsl(var(--muted));
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    direction: ltr;
+    display: inline-block;
+  }
+  .ai-message pre {
+    background: hsl(var(--muted));
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 0.5rem 0 0.75rem 0;
+    direction: ltr;
+  }
+}
+
+@layer utilities {
+  /* Copilot workspace scrollbars */
+  .copilot-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.2) transparent;
+  }
+  .copilot-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  .copilot-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .copilot-scroll::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 3px;
+  }
+  .copilot-scroll::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.4);
+  }
+}
+
+/* ================================================
+   REWORKED CANVAS — Cyber-Pastel Styles & Helpers
+   ================================================ */
+
+.canvas-grid-bg {
+  background-image: radial-gradient(circle, hsl(var(--border) / 0.55) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+.dark .canvas-grid-bg {
+  background-image: radial-gradient(circle, hsl(var(--border) / 0.2) 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
+}
+
+.cyber-pastel-card {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.dark .cyber-pastel-card {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4), 0 0 14px -1px var(--glow-color, rgba(168, 85, 247, 0.1));
+}
+
+@keyframes border-pulse {
+  0%, 100% {
+    border-color: rgba(168, 85, 247, 0.45);
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.15);
+  }
+  50% {
+    border-color: rgba(236, 72, 153, 0.75);
+    box-shadow: 0 0 16px rgba(236, 72, 153, 0.35);
+  }
+}
+
+.ai-glow-card {
+  animation: border-pulse 5s infinite ease-in-out;
+}
+
+.pillar-startup-accent {
+  border-left: 4px solid hsl(var(--pillar-startup));
+  background: hsl(var(--pillar-startup) / 0.06);
+}
+.pillar-traditional-accent {
+  border-left: 4px solid hsl(var(--pillar-traditional));
+  background: hsl(var(--pillar-traditional) / 0.06);
+}
+.pillar-creator-accent {
+  border-left: 4px solid hsl(var(--pillar-creator));
+  background: hsl(var(--pillar-creator) / 0.06);
+}
+
+.ai-output-shell {
+  box-shadow: 0 1px 3px hsl(var(--foreground) / 0.04);
+}
+
+.canvas-arrow-path {
+  stroke: hsl(var(--muted-foreground) / 0.65);
+  stroke-width: 2.5;
+  fill: none;
+  stroke-linecap: round;
+  transition: stroke 0.2s ease, stroke-width 0.2s ease, stroke-dasharray 0.2s ease;
+}
+
+.canvas-arrow-path:hover {
+  stroke: hsl(var(--primary));
+  stroke-width: 3.5;
+  cursor: pointer;
+}
+
+.canvas-arrow-head {
+  fill: hsl(var(--muted-foreground) / 0.65);
+  transition: fill 0.2s ease;
+}
+
+.canvas-arrow-path:hover + .canvas-arrow-head,
+.canvas-arrow-head:hover {
+  fill: hsl(var(--primary));
+}
+
+.connection-handle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: hsl(var(--background));
+  border: 2.5px solid hsl(var(--primary));
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+  z-index: 50;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s ease;
+}
+
+.connection-handle:hover {
+  transform: scale(1.45);
+  background-color: hsl(var(--primary));
+  cursor: crosshair;
+}
+
+/* === Mobile / PWA Utilities === */
+@layer utilities {
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-x {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .min-h-dvh {
+    min-height: 100dvh;
+  }
+
+  .h-dvh {
+    height: 100dvh;
+  }
+
+  .mobile-page {
+    @apply px-4 py-3;
+  }
+
+  .mobile-immersive {
+    @apply p-0 m-0 max-w-none;
+  }
+
+  .mobile-scroll-x {
+    @apply overflow-x-auto snap-x snap-mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Dashboard mobile page patterns */
+  .mobile-page .overflow-x-auto,
+  .mobile-page table {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-page .grid-cols-3,
+  .mobile-page .grid-cols-4,
+  .mobile-page .grid-cols-5,
+  .mobile-page .grid-cols-6 {
+    @apply grid-cols-2;
+  }
+
+  @media (max-width: 767px) {
+    .mobile-page [class*="max-w-7xl"],
+    .mobile-page [class*="max-w-[1600px]"],
+    .mobile-page [class*="max-w-5xl"] {
+      max-width: none;
+    }
+
+    .mobile-page .kanban-column,
+    .mobile-page [data-kanban-col] {
+      min-width: 280px;
+    }
   }
 }

@@ -1,10 +1,22 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
-import { auth } from "@/auth";
+import { Prisma } from "../prisma/client";
+import { auth } from "@/lib/auth/session";
+import type {
+  IdeaValidationRecord,
+  ValidationBrief,
+} from "@/lib/validation/types";
+import type {
+  CompetitorIntel,
+  CompetitorIntelItem,
+  CompetitorPosition,
+  FeatureMatrixRow,
+} from "@/lib/competitors/types";
 
-// Define the Data Structure (TypeScript Interface)
+// Do NOT `export type { ... }` from this "use server" file — Next.js 16.1.x
+// incorrectly registers those as Server Actions → ReferenceError at runtime.
+// Import types from @/lib/validation/types or @/lib/competitors/types instead.
 
 // User Profile Structure (Enhanced)
 export interface UserProfile {
@@ -19,7 +31,7 @@ export interface UserProfile {
   bio?: string;
   avatar_url?: string; 
   subscription: {
-    planId: 'free' | 'plus' | 'pro';
+    planId: 'free' | 'plus' | 'pro' | 'ultra';
     status: 'active' | 'expired' | 'canceled';
     startDate?: string;
     endDate?: string;
@@ -43,11 +55,23 @@ export interface UserProfile {
 // ... existing interfaces (Keep them as is for now, will map to JSONB)
 // Roadmap Step detailed structure
 export interface RoadmapStep {
+  id?: string;
   title: string;
   category?: string;
   description?: string;
-  priority?: string;
+  priority?: "high" | "medium" | "low" | string;
   estimatedHours?: string | number;
+  actualHours?: number;
+  status?: "todo" | "in-progress" | "done" | string;
+  checklist?: string[];
+  tips?: string[];
+  resources?: string[];
+  dueDate?: string;
+  dependsOn?: string[];
+  assignee?: string;
+  tags?: string[];
+  cost?: string;
+  notes?: string;
 }
 
 // Roadmap Phase structure
@@ -56,6 +80,16 @@ export interface RoadmapPhase {
   steps: (string | RoadmapStep)[];
   weekNumber?: number;
   theme?: string;
+  icon?: string;
+}
+
+// Runtime status metadata stored per step (keyed by step title)
+export interface StepRuntimeStatus {
+  status: "todo" | "in-progress" | "blocked" | "skipped";
+  startedAt?: string;
+  completedAt?: string;
+  blockedReason?: string;
+  actualHours?: number;
 }
 
 // Logo concept structure
@@ -73,12 +107,13 @@ export interface SubTask {
   order?: number; // Added order
 }
 
-// Competitor structure
+// Competitor structure (legacy projection for score / pitch / export)
 export interface Competitor {
   name: string;
   strength: string;
   weakness: string;
   channel: string;
+  isIranian?: boolean;
 }
 
 // Legal advice structure
@@ -261,6 +296,7 @@ export interface PitchDeckSlide {
   bullets: string[];
   notes?: string;
   isHidden?: boolean;
+  metadata?: Record<string, any>;
 }
 
 // SWOT Analysis structure (For Traditional Businesses)
@@ -342,11 +378,52 @@ export interface CapTable {
 export interface ContentPost {
   id: string;
   title: string;
-  platform: 'instagram' | 'youtube' | 'linkedin' | 'twitter' | 'blog';
-  type: 'post' | 'reel' | 'story' | 'video' | 'thread';
+  platform: 'instagram' | 'youtube' | 'linkedin' | 'twitter' | 'tiktok' | 'telegram' | 'blog' | 'podcast';
+  type: 'post' | 'reel' | 'story' | 'video' | 'thread' | 'short' | 'episode' | 'article';
   status: 'idea' | 'scripting' | 'filming' | 'editing' | 'scheduled' | 'published';
-  date: string; // ISO date string
+  date: string; // ISO date string (Gregorian stored, Jalali displayed)
+  publishTime?: string; // "HH:MM" format
   notes?: string;
+  caption?: string; // Caption draft
+  tags?: string[]; // e.g. ["آموزشی", "ترند"]
+  priority?: 'high' | 'medium' | 'low';
+  collaborator?: string;
+  estimatedHours?: number;
+  thumbnailUrl?: string;
+  hashtags?: string[];
+  checklist?: {
+    script: boolean;
+    filmed: boolean;
+    edited: boolean;
+    captionReady: boolean;
+    hashtagsReady: boolean;
+    thumbnailReady: boolean;
+  };
+  isRecurring?: boolean;
+  recurringTemplateId?: string;
+}
+
+export interface RecurringTemplate {
+  id: string;
+  dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6; // 0=Saturday (Jalali week start)
+  platform: ContentPost['platform'];
+  type: ContentPost['type'];
+  defaultTitle?: string;
+  defaultTags?: string[];
+  isActive: boolean;
+}
+
+export interface HashtagSet {
+  id: string;
+  name: string;
+  tags: string[];
+}
+
+export interface ContentStreak {
+  current: number;
+  best: number;
+  lastPublishedWeek?: string; // ISO week string e.g. "2024-W03"
+  thisWeekPublished: number;
 }
 
 // GeneratedDocument Removed
@@ -422,10 +499,114 @@ export interface Customer {
 
 // --- Location Analyzer Structures ---
 
+export type LocationConfidenceLevel = "real" | "inferred" | "ai";
+
 export interface LocationAnalysis {
   id?: string;
   city: string;
   address: string;
+  coordinates?: { lat: number; lon: number };
+  
+  // Custom user inputs for personalization
+  inputs?: {
+    footfallDependency?: "high" | "destination";
+    priceTier?: "budget" | "mid" | "premium";
+    rentBudget?: number;
+    businessCategory?: string;
+    businessDescription?: string;
+  };
+
+  businessDescription?: string;
+  aiCategory?: { label: string; slug: string; confidence: number };
+
+  executiveSummary?: {
+    narrative: string;
+    evidenceLinks?: Array<{ tab: string; label: string }>;
+  };
+
+  fitScoreBreakdown?: Array<{
+    key: string;
+    label: string;
+    score: number;
+    confidence: LocationConfidenceLevel;
+    reason: string;
+  }>;
+
+  verdictDetails?: {
+    dealBreakers: string[];
+    topReasons: string[];
+  };
+
+  catchment?: {
+    radiusM: number;
+    poiDensity: number;
+    transitStops: number;
+    confidence: LocationConfidenceLevel;
+    summary?: string;
+  };
+
+  cohortFit?: {
+    score: number;
+    summary: string;
+    confidence: LocationConfidenceLevel;
+    tags?: string[];
+  };
+
+  seasonality?: Array<{ month: string; index: number; note?: string }>;
+
+  cannibalization?: {
+    hasOverlap: boolean;
+    distanceM?: number;
+    summary: string;
+    confidence?: LocationConfidenceLevel;
+  };
+
+  supplyChain?: {
+    score: number;
+    confidence: LocationConfidenceLevel;
+    items: Array<{ name: string; distance: string; relevance: string }>;
+  };
+
+  rentBenchmark?: {
+    min: number;
+    max: number;
+    median: number;
+    confidence: LocationConfidenceLevel;
+    negotiationTips: string[];
+  };
+
+  storefront?: {
+    photoDataUrl?: string;
+    visibilityAssessment?: string;
+    onSiteChecklist?: Array<{ id: string; label: string; checked: boolean }>;
+  };
+
+  footfallTier?: "real" | "inferred" | "ai";
+
+  osmMeta?: {
+    landmark?: string;
+    buildingTags?: string[];
+    mapillaryUrl?: string;
+    categorySlug?: string;
+  };
+
+  openingReadinessChecked?: string[];
+
+  financialLab?: {
+    monthlyPnL?: Array<{
+      month: number;
+      revenue: number;
+      cogs: number;
+      labor: number;
+      rent: number;
+      utilities: number;
+      marketing: number;
+      net: number;
+    }>;
+    roiPercent?: number;
+    paybackMonths?: number;
+    sensitivity?: { rentDelta: number; footfallDelta: number };
+  };
   
   // Core Metrics
   score: number;
@@ -433,6 +614,67 @@ export interface LocationAnalysis {
   locationConfidence?: string;
   anchorLandmark?: string;
   
+  // NEW: AI Verdict — the single most important decision signal
+  verdict?: {
+    decision: "go" | "caution" | "no-go";
+    headline: string;
+    confidence: number;
+  };
+
+  // NEW: Business category (echoed for personalization)
+  businessCategory?: string;
+
+  // NEW: Location DNA personality archetype
+  locationDNA?: {
+    archetype: string;
+    archetypeIcon: string;
+    tags: string[];
+    story: string;
+  };
+
+  // NEW: Survival probability (category-specific)
+  survivalProbability?: {
+    score: number;
+    label: string;
+    categoryInsight: string;
+  };
+
+  // NEW: 12-month revenue projection (3 scenarios)
+  revenueProjection?: Array<{
+    month: number;
+    label: string;
+    pessimistic: number;
+    realistic: number;
+    optimistic: number;
+    milestone?: string;
+  }>;
+
+  // NEW: Street-level intelligence chips
+  streetIntelligence?: Array<{
+    type: "parking" | "direction" | "transit" | "visibility" | "construction" | "shade";
+    label: string;
+    value: string;
+    sentiment: "positive" | "neutral" | "negative";
+  }>;
+
+  // NEW: Smart alternative locations (if score is low)
+  alternatives?: Array<{
+    name: string;
+    estimatedScore: number;
+    reason: string;
+    distance: string;
+  }>;
+
+  // NEW: Opening readiness checklist (category-specific)
+  openingReadiness?: Array<{
+    id: string;
+    title: string;
+    desc: string;
+    category: "legal" | "financial" | "physical" | "marketing" | "operational";
+    isRequired: boolean;
+    estimatedDays?: number;
+  }>;
+
   metrics?: {
     footfallIndex: "High" | "Medium" | "Low";
     spendPower: "High" | "Medium" | "Low";
@@ -448,6 +690,7 @@ export interface LocationAnalysis {
   // Market & Competitors
   competitorAnalysis?: {
     saturationLevel?: string;
+    saturationPercentage?: number;
     marketGap?: string;
     competitorCount?: number;
     directCompetitors?: Array<{
@@ -455,6 +698,7 @@ export interface LocationAnalysis {
         distance: string;
         strength: string;
         weakness: string;
+        coordinates?: { lat: number; lon: number };
         scores?: {
           product: number;
           marketing: number;
@@ -464,9 +708,14 @@ export interface LocationAnalysis {
     }>;
   };
 
-  // Financials
+  // Financials & Rent feasibility
   rentEstimate: string;
   successMatch: { label: string; color: string };
+  financialSim?: {
+    breakEvenTransactions: number;
+    rentToRevenueRatio: number;
+    estimatedMonthlyRevenue: string;
+  };
 
   // Strategy
   swot: {
@@ -478,7 +727,7 @@ export interface LocationAnalysis {
   aiInsight: string;
   recommendations?: Array<{ title: string; desc: string }>;
 
-  // NEW: Intelligence Hub Fields
+  // Intelligence Hub Fields
   neighborhoodProfile?: string;
   marketGapCards?: Array<{
     title: string;
@@ -486,9 +735,11 @@ export interface LocationAnalysis {
     potential: "High" | "Medium" | "Low";
   }>;
   prioritizedRecommendations?: Array<{
+    id: string;
     title: string;
     desc: string;
     urgency: "فوری" | "مهم" | "پیشنهادی";
+    cost: "کم‌هزینه" | "متوسط" | "سرمایه‌گذاری";
   }>;
   riskBreakdown?: {
     financial: number;
@@ -497,6 +748,8 @@ export interface LocationAnalysis {
     market: number;
   };
   peakHours?: string;
+  hourlyFootfall?: Array<{ hour: string; trafficIndex: number }>;
+  legalChecklist?: Array<{ title: string; desc: string; isRequired: boolean }>;
   
   createdAt: string;
 }
@@ -524,6 +777,9 @@ export interface BusinessPlan {
   swotAnalysis?: SWOTAnalysis; // Traditional
   brandCanvas?: BrandCanvas; // Creator
   contentCalendar?: ContentPost[]; // Creator (Moved to top level)
+  recurringTemplates?: RecurringTemplate[]; // Creator: recurring post templates
+  hashtagBank?: HashtagSet[]; // Creator: saved hashtag sets
+  contentStreak?: ContentStreak; // Creator: streak tracking
   financials?: {
     runway?: RunwayCalculation;
     breakEven?: BreakEvenAnalysis;
@@ -537,6 +793,8 @@ export interface BusinessPlan {
   roadmap: RoadmapPhase[];
   marketingStrategy: string[];
   competitors: Competitor[];
+  /** Rich competitor workspace; `competitors` is the active projection for legacy readers */
+  competitorIntel?: CompetitorIntel;
   legalAdvice?: LegalAdvice;
   mediaKit?: MediaKit; // Creator
   permits?: PermitItem[]; // Traditional
@@ -547,8 +805,13 @@ export interface BusinessPlan {
   projectType: 'startup' | 'traditional' | 'creator';
   genesisAnswers?: Record<string, any>;
   completedSteps?: string[];
+  stepStatuses?: Record<string, StepRuntimeStatus>;
+  canvasConnections?: any[];
+  canvasViewMode?: string;
   // growth removed
-  // ideaValidation removed
+  ideaValidation?: IdeaValidationRecord;
+  ideaValidationHistory?: IdeaValidationRecord[];
+  ideaValidationBrief?: ValidationBrief;
   // documents removed
   assistantData?: AssistantData; // NEW: Assistant Data
   // storefront removed
@@ -557,6 +820,7 @@ export interface BusinessPlan {
   campaigns?: Campaign[]; // NEW: Campaigns Data
   locationAnalysis?: LocationAnalysis; // NEW: Location Data
   locationHistory?: LocationAnalysis[]; // NEW: Location Analysis History
+  locationReadinessChecked?: Record<string, string[]>;
   subTasks?: SubTask[];
   createdAt: string;
   updatedAt?: string;
@@ -643,8 +907,8 @@ export const createUserProfile = async (userData: { uid: string, email?: string 
 };
 
 export const getUserProfile = async (userId: string): Promise<UserProfile | null> => {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
+  const user = await prisma.user.findFirst({
+    where: { id: userId, deletedAt: null },
     include: {
         subscriptions: true
     }
@@ -666,6 +930,23 @@ export const updateUserProfile = async (userId: string, updates: Partial<UserPro
     // Prisma doesn't do deep merge on JSON natively.
     if (updates.credits) prismaUpdates.credits = updates.credits;
     if (updates.avatar_url) prismaUpdates.image = updates.avatar_url;
+    if (updates.phone_number !== undefined) prismaUpdates.phoneNumber = updates.phone_number;
+    if (updates.bio !== undefined) prismaUpdates.bio = updates.bio;
+    if (updates.birth_date !== undefined) {
+        if (updates.birth_date) {
+            try {
+                const { parse } = require('date-fns-jalali');
+                const englishDigitsStr = updates.birth_date.replace(/[۰-۹]/g, (d: string) =>
+                  String("۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+                );
+                prismaUpdates.birthDate = parse(englishDigitsStr, 'yyyy/MM/dd', new Date());
+            } catch (e) {
+                prismaUpdates.birthDate = new Date(updates.birth_date);
+            }
+        } else {
+            prismaUpdates.birthDate = null;
+        }
+    }
     
     await prisma.user.update({
         where: { id: userId },
@@ -693,6 +974,9 @@ function mapPrismaUserToProfile(user: any): UserProfile {
         last_name: user.lastName || "",
         full_name: user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim(),
         avatar_url: user.image,
+        phone_number: user.phoneNumber || "",
+        bio: user.bio || "",
+        birth_date: user.birthDate ? require('date-fns-jalali').format(user.birthDate, 'yyyy/MM/dd') : "",
         credits: user.credits as any || { aiTokens: 0, projectsUsed: 0 },
         settings: user.settings as any || { emailNotifications: true, theme: 'system' },
         subscription: activeSub as any,
@@ -730,7 +1014,17 @@ export const createProject = async (userId: string, planData: any) => {
 
 export const getUserProjects = async (userId: string): Promise<BusinessPlan[]> => {
   const projects = await prisma.project.findMany({
-      where: { userId },
+      where: {
+          deletedAt: null,
+          OR: [
+              { userId },
+              {
+                  members: {
+                      some: { userId }
+                  }
+              }
+          ]
+      },
       orderBy: { updatedAt: 'desc' }
   });
 
@@ -749,11 +1043,21 @@ export const getUserProjects = async (userId: string): Promise<BusinessPlan[]> =
 };
 
 export const getPlanFromCloud = async (userId: string, projectId: string) => {
-  const project = await prisma.project.findUnique({
-      where: { id: projectId }
+  const project = await prisma.project.findFirst({
+      where: { id: projectId, deletedAt: null },
+      include: {
+          members: {
+              where: { userId }
+          }
+      }
   });
 
   if (!project) return null;
+
+  const isOwner = project.userId === userId;
+  const isMember = project.members && project.members.length > 0;
+
+  if (!isOwner && !isMember) return null;
 
   const dbData = project.data as any || {};
   return {
@@ -768,14 +1072,33 @@ export const getPlanFromCloud = async (userId: string, projectId: string) => {
 };
 
 export const savePlanToCloud = async (userId: string, planData: any, merge: boolean = true, projectId: string) => {
-    // 1. Fetch current if merge needed
+    // 1. Fetch current to verify ownership or membership edit rights
     let currentData = {};
+    const current = await prisma.project.findFirst({
+        where: { id: projectId, deletedAt: null },
+        select: { 
+            data: true, 
+            userId: true,
+            members: {
+                where: { userId }
+            }
+        }
+    });
+
+    if (!current) {
+        throw new Error("Project not found");
+    }
+
+    const isOwner = current.userId === userId;
+    const membership = current.members?.[0];
+    const hasWriteAccess = isOwner || (membership && (membership.role === 'admin' || membership.role === 'editor'));
+
+    if (!hasWriteAccess) {
+        throw new Error("Unauthorized: You do not have edit access to this project");
+    }
+
     if (merge) {
-        const current = await prisma.project.findUnique({
-            where: { id: projectId },
-            select: { data: true }
-        });
-        if (current) currentData = current.data as any;
+        currentData = current.data as any;
     }
 
     // 2. Prepare update
@@ -851,20 +1174,39 @@ export const saveSWOT = async (userId: string, swot: SWOTAnalysis, projectId: st
     return savePlanToCloud(userId, { swotAnalysis: swot }, true, projectId);
 };
 
+export const saveCompetitorIntel = async (
+  userId: string,
+  competitorIntel: CompetitorIntel,
+  competitors: Competitor[],
+  projectId: string,
+  extra?: { swotAnalysis?: SWOTAnalysis; pitchDeck?: PitchDeckSlide[] }
+) => {
+  return savePlanToCloud(
+    userId,
+    {
+      competitorIntel,
+      competitors,
+      ...(extra?.swotAnalysis ? { swotAnalysis: extra.swotAnalysis } : {}),
+      ...(extra?.pitchDeck ? { pitchDeck: extra.pitchDeck } : {}),
+    },
+    true,
+    projectId
+  );
+};
+
 export const saveBrandCanvas = async (userId: string, canvas: BrandCanvas, projectId: string) => {
     return savePlanToCloud(userId, { brandCanvas: canvas }, true, projectId);
 };
 
 export const deleteProject = async (userId: string, projectId: string) => {
-  await prisma.project.delete({
-      where: {
-          id: projectId,
-          // userId check is handled by Prisma implicit? No, explicit where needed.
-          // But delete can only be by unique ID. 
-          // To ensure safety, we should findFirst({ where: { id, userId }}).delete()
-          // Or just update Auth rules.
-          // For now, trusting ID.
-      }
+  const project = await prisma.project.findFirst({
+      where: { id: projectId, userId, deletedAt: null }
+  });
+  if (!project) throw new Error("Unauthorized or project not found");
+
+  await prisma.project.update({
+      where: { id: projectId },
+      data: { deletedAt: new Date() }
   });
   return true;
 };
@@ -961,6 +1303,47 @@ export const toggleStepCompletion = async (userId: string, stepName: string, isC
   }
   
   return savePlanToCloud(userId, { completedSteps }, true, projectId);
+};
+
+// Persist richer per-step status metadata alongside the completed list.
+// `completedSteps` remains the source of truth for "done"; `stepStatuses`
+// carries in-progress / blocked / skipped state + timestamps.
+export const updateRoadmapStepStatus = async (
+  userId: string,
+  stepName: string,
+  status: "todo" | "in-progress" | "blocked" | "skipped" | "done",
+  projectId: string,
+  meta?: { blockedReason?: string; actualHours?: number }
+) => {
+  const current = await getPlanFromCloud(userId, projectId);
+  if (!current) throw new Error("Project not found");
+
+  let completedSteps: string[] = [...(current.completedSteps || [])];
+  const stepStatuses: Record<string, StepRuntimeStatus> = {
+    ...(current.stepStatuses || {}),
+  };
+  const now = new Date().toISOString();
+
+  if (status === "done") {
+    if (!completedSteps.includes(stepName)) completedSteps.push(stepName);
+    stepStatuses[stepName] = {
+      ...(stepStatuses[stepName] || {}),
+      status: "todo",
+      completedAt: now,
+      actualHours: meta?.actualHours ?? stepStatuses[stepName]?.actualHours,
+    };
+  } else {
+    completedSteps = completedSteps.filter((s) => s !== stepName);
+    const prev = stepStatuses[stepName];
+    stepStatuses[stepName] = {
+      status,
+      startedAt: status === "in-progress" ? prev?.startedAt || now : prev?.startedAt,
+      blockedReason: status === "blocked" ? meta?.blockedReason : undefined,
+      actualHours: meta?.actualHours ?? prev?.actualHours,
+    };
+  }
+
+  return savePlanToCloud(userId, { completedSteps, stepStatuses }, true, projectId);
 };
 
 // --- Gamification ---

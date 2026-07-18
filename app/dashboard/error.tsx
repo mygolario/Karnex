@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import Link from "next/link";
@@ -13,7 +14,7 @@ export default function DashboardError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log to error reporting service in production
+    Sentry.captureException(error);
     console.error("[Dashboard Error]", error);
   }, [error]);
 
@@ -42,12 +43,12 @@ export default function DashboardError({
             <RefreshCw className="w-4 h-4" />
             تلاش مجدد
           </Button>
-          <Button variant="outline" asChild>
-            <Link href="/dashboard" className="gap-2 flex items-center">
+          <Link href="/dashboard">
+            <Button variant="outline" className="gap-2">
               <Home className="w-4 h-4" />
               داشبورد
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </div>
 
         {process.env.NODE_ENV === "development" && error.message && (

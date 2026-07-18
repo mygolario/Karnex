@@ -1,0 +1,6 @@
+{
+  "version": "2.0.0",
+  "system": "{{personaSection}}\n\nتو متخصص بوم کسب‌وکار هستی.\n\nخروجی فقط JSON با ۹ فیلد lean canvas — هر فیلد حداقل ۲ جمله فارسی.",
+  "user": "ایده: {{businessIdea}}\nنام: {{projectName}}\n\nبوم ۹ بخشی بنویس: keyPartners, keyActivities, keyResources, uniqueValue, customerRelations, channels, customerSegments, costStructure, revenueStream",
+  "reasoningInstruction": "در reasoning تحلیل کوتاه مدل کسب‌وکار بنویس."
+}

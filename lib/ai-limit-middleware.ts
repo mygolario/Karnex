@@ -1,63 +1,113 @@
 /**
  * AI Rate Limit Middleware Helper
- * 
- * Reusable helper to add auth + AI usage limit checks to any API route.
- * Returns the authenticated user if allowed, or null with an error response.
+ *
+ * Auth + weighted AI credit checks for API routes.
  */
 
 import { NextResponse } from 'next/server';
-import { auth } from '@/auth';
-import { checkAIRequestLimit, incrementAIUsage } from '@/lib/usage-tracker';
+import { auth } from '@/lib/auth/session';
+import { getAiCreditCost } from '@/lib/ai/credit-weights';
+import {
+  checkAIRequestLimit,
+  incrementAIUsage,
+  decrementAIUsage,
+} from '@/lib/usage-tracker';
 
 export interface AILimitCheckResult {
   user: { id: string; email?: string } | null;
   errorResponse: NextResponse | null;
+  rollback: () => Promise<void>;
+  creditsCharged: number;
 }
 
 /**
- * Check AI request limits for the current user.
- * Returns the authenticated user if allowed, or an error response if not.
- * 
- * Usage in API routes:
- * ```ts
- * const { user, errorResponse } = await checkAILimit();
- * if (errorResponse) return errorResponse;
- * // user is authenticated and within limits
- * ```
+ * Check AI credit limits for the current user.
+ * @param featureOrAction - maps to weighted credit cost (see lib/ai/credit-weights.ts)
  */
-export async function checkAILimit(): Promise<AILimitCheckResult> {
+export async function checkAILimit(featureOrAction?: string): Promise<AILimitCheckResult> {
+  const noopRollback = async () => {};
+  const creditsNeeded = getAiCreditCost(featureOrAction);
+
   try {
     const session = await auth();
     const user = session?.user;
-    
+
     if (!user || !user.id) {
       return {
         user: null,
-        errorResponse: NextResponse.json({ error: 'Unauthorized. Please log in to use AI features.' }, { status: 401 })
+        errorResponse: NextResponse.json({ error: 'Unauthorized. Please log in to use AI features.' }, { status: 401 }),
+        rollback: noopRollback,
+        creditsCharged: 0,
       };
     }
 
-    const usageCheck = await checkAIRequestLimit(user.id);
+    const userId = user.id;
+
+    let usageCheck;
+    try {
+      usageCheck = await checkAIRequestLimit(userId, creditsNeeded);
+    } catch (dbError) {
+      console.error('AI limit check DB error (failing closed):', dbError);
+      return {
+        user: { id: userId, email: user.email || undefined },
+        errorResponse: NextResponse.json({
+          error: 'AI_LIMIT_CHECK_UNAVAILABLE',
+          message: 'به دلیل مشکل موقت در سرور، امکان بررسی سقف استفاده از هوش مصنوعی نیست. لطفاً کمی بعد تلاش کنید.',
+        }, { status: 503 }),
+        rollback: noopRollback,
+        creditsCharged: 0,
+      };
+    }
+
     if (!usageCheck.allowed) {
       return {
-        user: { id: user.id, email: user.email || undefined },
+        user: { id: userId, email: user.email || undefined },
         errorResponse: NextResponse.json({
           error: 'AI_LIMIT_REACHED',
-          message: `شما به سقف ${usageCheck.limit} درخواست AI در ماه رسیده‌اید. برای ادامه، پلن خود را ارتقا دهید.`,
+          message: `شما به سقف ${usageCheck.limit} واحد اعتبار AI در ماه رسیده‌اید. برای ادامه، پلن خود را ارتقا دهید.`,
           limitReached: true,
           used: usageCheck.used,
           limit: usageCheck.limit,
+          creditsNeeded,
         }, { status: 429 }),
+        rollback: noopRollback,
+        creditsCharged: 0,
       };
     }
 
-    // Increment usage counter
-    await incrementAIUsage(user.id);
+    let incrementFailed = false;
+    try {
+      await incrementAIUsage(userId, creditsNeeded);
+    } catch (dbError) {
+      console.error('AI usage increment failed (allowing request):', dbError);
+      incrementFailed = true;
+    }
 
-    return { user: { id: user.id, email: user.email || undefined }, errorResponse: null };
+    const rollback = async () => {
+      if (incrementFailed) return;
+      try {
+        await decrementAIUsage(userId, creditsNeeded);
+      } catch (e) {
+        console.error('AI usage rollback failed:', e);
+      }
+    };
+
+    return {
+      user: { id: userId, email: user.email || undefined },
+      errorResponse: null,
+      rollback,
+      creditsCharged: incrementFailed ? 0 : creditsNeeded,
+    };
   } catch (error) {
-    console.error('AI limit check error:', error);
-    // On error, allow the request (fail open)
-    return { user: null, errorResponse: null };
+    console.error('AI limit check unexpected error (failing closed):', error);
+    return {
+      user: null,
+      errorResponse: NextResponse.json({
+        error: 'AI_LIMIT_CHECK_UNAVAILABLE',
+        message: 'به دلیل مشکل موقت در سرور، امکان بررسی سقف استفاده از هوش مصنوعی نیست. لطفاً کمی بعد تلاش کنید.',
+      }, { status: 503 }),
+      rollback: noopRollback,
+      creditsCharged: 0,
+    };
   }
 }

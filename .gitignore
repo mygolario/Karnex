@@ -15,6 +15,7 @@
 
 # next.js
 /.next/
+/.next-corrupted*/
 /out/
 
 # production
@@ -32,6 +33,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -57,3 +59,12 @@ set_envs.ps1
 
 # Build artifacts
 /public/sw.js
+
+.vercel
+
+# Supabase CLI local state (may contain project connection hints)
+supabase/.temp/
+
+.vercel
+.env*
+.agents/

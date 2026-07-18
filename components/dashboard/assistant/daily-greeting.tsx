@@ -65,8 +65,8 @@ export function DailyGreeting({
         >
             {/* Background decorations */}
             <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
-            <div className="absolute -top-20 -right-20 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
-            <div className="absolute -bottom-20 -left-20 w-60 h-60 bg-secondary/20 rounded-full blur-3xl" />
+            <div className="absolute -top-20 -end-20 w-60 h-60 bg-white/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 -start-20 w-60 h-60 bg-secondary/20 rounded-full blur-3xl" />
 
             <div className="relative z-10">
                 {/* Top bar with stats */}

@@ -24,6 +24,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import enhanceBioPrompt from "@/lib/prompts/enhance-bio.json";
 import {
   Select,
   SelectContent,
@@ -131,7 +132,7 @@ export default function MediaKitPage() {
 
         const res = await fetch("/api/ai-generate", {
             method: "POST",
-            body: JSON.stringify({ prompt, systemPrompt: "You are an expert copywriter for influencers." })
+            body: JSON.stringify({ prompt, systemPrompt: enhanceBioPrompt.system })
         });
 
         if (res.status === 429) {

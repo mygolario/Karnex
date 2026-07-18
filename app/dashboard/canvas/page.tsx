@@ -1,22 +1,24 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import { useProject } from "@/contexts/project-context";
-import { CanvasProvider } from "@/components/dashboard/canvas/canvas-context";
-import { CanvasBoard } from "@/components/dashboard/canvas/dnd-board";
-import { 
-  Loader2, LayoutGrid, Sparkles, Search, Eye, Download
-} from "lucide-react";
+import { CanvasProvider } from "@/components/dashboard/canvas/canvas-provider";
+import { CanvasTopBar } from "@/components/dashboard/canvas/canvas-topbar";
+import { CanvasToolbar } from "@/components/dashboard/canvas/canvas-toolbar";
+import { CanvasBoard } from "@/components/dashboard/canvas/canvas-board";
+import { CanvasRightPanel } from "@/components/dashboard/canvas/canvas-right-panel";
+import { CanvasMinimap } from "@/components/dashboard/canvas/canvas-minimap";
+import { CanvasCommandPalette } from "@/components/dashboard/canvas/canvas-command-palette";
+import { CanvasExportDialog } from "@/components/dashboard/canvas/canvas-export-dialog";
+import { CanvasWizard } from "@/components/dashboard/canvas/canvas-wizard";
+import { Loader2, ZoomIn, ZoomOut, Maximize2, PanelRightOpen, Mouse } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-
-import { useState, useCallback } from "react";
-import { toPng } from 'html-to-image';
-// We need to keep some AI logic or move it to context. For now, let's keep it minimal and assume futurerefactor moves it.
-// Actually, the AI logic (autoFillCanvas etc) depends on state which is now in Context.
-// So we should ideally move that logic to the Context or a hook.
-// But for this step, let's just render the Provider and Board, and maybe add the Header back.
-// Wait, the Header buttons need access to the context to add cards (Auto Fill). 
-// So the Header should be inside the Provider.
+import { useCanvasStore } from "@/lib/canvas/store";
+import { CanvasViewportProvider, useCanvasViewport } from "@/components/dashboard/canvas/canvas-viewport-context";
+import { PageTourHelp } from "@/components/tour/page-tour-help";
+import { useImmersivePage } from "@/hooks/use-immersive-page";
+import { useIsMobile } from "@/hooks/use-is-mobile";
+import { cn } from "@/lib/utils";
 
 export default function CanvasPage() {
   const { activeProject: plan, loading } = useProject();
@@ -29,96 +31,123 @@ export default function CanvasPage() {
     );
   }
 
-  // We wrap everything in CanvasProvider so children can access state
   return (
     <CanvasProvider>
-        <CanvasPageContent plan={plan} />
+      <CanvasViewportProvider>
+        <CanvasPageContent />
+      </CanvasViewportProvider>
     </CanvasProvider>
   );
 }
 
-import { useCanvas } from "@/components/dashboard/canvas/canvas-context";
-import { useCanvasWizard } from "@/hooks/use-canvas-wizard";
-import { CanvasWizard } from "@/components/dashboard/canvas/canvas-wizard";
+function ZoomControls({ mobile }: { mobile?: boolean }) {
+  const { zoomIn, zoomOut, zoomReset } = useCanvasViewport();
+  const viewport = useCanvasStore((s) => s.viewport);
+  const scrollZoomEnabled = useCanvasStore((s) => s.scrollZoomEnabled);
+  const setScrollZoomEnabled = useCanvasStore((s) => s.setScrollZoomEnabled);
 
-import { PageTourHelp } from "@/components/features/onboarding/page-tour-help";
-
-function CanvasHeader({ plan, onOpenWizard }: { plan: any, onOpenWizard: () => void }) {
-    const { isSaving } = useCanvas();
-    
-    return (
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4" data-tour-id="canvas-header">
-        <div className="flex items-center gap-4">
-          <PageTourHelp tourId="canvas" />
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
-            <LayoutGrid size={28} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-foreground">
-              تحلیل کسب و کار
-            </h1>
-            <p className="text-muted-foreground text-sm">
-              نقشه‌ای یک‌صفحه‌ای که در یک نگاه نشان می‌دهد ایده شما چطور کار می‌کند و چگونه به درآمد می‌رسد.
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-            <Button 
-                id="ai-auto-fill"
-                variant="default" // Primary action
-                size="sm" 
-                onClick={onOpenWizard}
-                className="shadow-lg shadow-primary/20"
-            >
-                <Sparkles size={16} className="ml-2" />
-                راهنمای هوشمند
-            </Button>
-        </div>
+  return (
+    <div className={cn(
+      "absolute z-20 flex gap-1 bg-background/90 backdrop-blur-xl border border-border rounded-xl p-1 shadow-lg canvas-export-exclude",
+      mobile ? "bottom-3 end-3 flex-row items-center" : "bottom-3 start-3 flex-col"
+    )}>
+      <Button
+        variant={scrollZoomEnabled ? "secondary" : "ghost"}
+        size="icon"
+        className="h-8 w-8 mobile-touch-target"
+        onClick={() => setScrollZoomEnabled(!scrollZoomEnabled)}
+        title={scrollZoomEnabled ? "غیرفعال کردن زوم با اسکرول" : "فعال کردن زوم با اسکرول"}
+      >
+        <Mouse size={15} />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomIn} title="بزرگ‌نمایی (+)">
+        <ZoomIn size={15} />
+      </Button>
+      <div className="text-center text-[10px] font-bold text-muted-foreground tabular-nums py-0.5 px-1">
+        {Math.round(viewport.zoom * 100)}%
       </div>
-    );
+      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomOut} title="کوچک‌نمایی (-)">
+        <ZoomOut size={15} />
+      </Button>
+      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomReset} title="بازنشانی نما (0)">
+        <Maximize2 size={15} />
+      </Button>
+    </div>
+  );
 }
 
-function CanvasPageContent({ plan }: { plan: any }) {
-    const { handleSmartWizardComplete } = useCanvas();
-    const wizard = useCanvasWizard({
-        onComplete: handleSmartWizardComplete
-    });
+function MobilePanelToggle() {
+  const setRightPanelOpen = useCanvasStore((s) => s.setRightPanelOpen);
+  const rightPanelOpen = useCanvasStore((s) => s.rightPanelOpen);
+  const selectedCardIds = useCanvasStore((s) => s.selectedCardIds);
 
-    // Mapping for Focus Mode:
-    // The wizard steps rely on IDs like "customer_segments"
-    // The Board uses IDs like "customerSegments" (camelCase)
-    // We need to map them if they differ.
-    // Checking `dnd-board.tsx`: 
-    // BMC_LAYOUT uses camelCase: customerSegments, valueProposition, etc.
-    // Checking `use-canvas-wizard.ts`:
-    // It uses snake_case: customer_segments, value_propositions.
-    // We need a mapper.
+  if (selectedCardIds.length === 0 && !rightPanelOpen) return null;
 
-    const activeSectionId = wizard.isOpen ? wizard.currentStep.id : undefined;
+  return (
+    <Button
+      variant="default"
+      size="sm"
+      className="absolute bottom-3 start-3 z-20 shadow-lg mobile-touch-target"
+      onClick={() => setRightPanelOpen(true)}
+    >
+      <PanelRightOpen size={16} className="me-1" />
+      جزئیات
+    </Button>
+  );
+}
 
-    return (
-        <div className="max-w-7xl mx-auto space-y-6 pb-12">
-            <CanvasHeader plan={plan} onOpenWizard={wizard.openWizard} />
-            
-            <div id="bmc-canvas" className="bg-card border border-border rounded-3xl p-4 md:p-6 overflow-x-auto min-h-[800px]" data-tour-id="canvas-board">
-                <CanvasBoard highlightedSectionId={activeSectionId} />
-            </div>
+function CanvasPageContent() {
+  const boardRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
+  const viewMode = useCanvasStore((s) => s.viewMode);
+  useImmersivePage(isMobile);
 
-            <CanvasWizard 
-                isOpen={wizard.isOpen}
-                currentStep={wizard.currentStep}
-                currentStepIndex={wizard.currentStepIndex}
-                totalSteps={wizard.totalSteps}
-                currentInput={wizard.currentInput}
-                onInputChange={wizard.setCurrentInput}
-                onNext={wizard.nextStep}
-                onSkip={wizard.skipStep}
-                onPrev={wizard.prevStep}
-                onClose={wizard.closeWizard}
-            />
+  useEffect(() => {
+    if (viewMode === "freeform") {
+      useCanvasStore.setState({ viewMode: "grid" });
+    }
+  }, [viewMode]);
+
+  return (
+    <div
+      className={cn(
+        "flex flex-col mobile-immersive -mx-4 -mt-3",
+        isMobile ? "h-[calc(100dvh-3.5rem)]" : "h-[calc(100vh-3.5rem)]"
+      )}
+      data-tour-id="canvas-page"
+    >
+      <CanvasTopBar />
+
+      <div className="flex flex-1 overflow-hidden relative">
+        <div className="hidden md:flex">
+          <CanvasToolbar />
         </div>
-    )
+
+        <div className="relative flex-1 overflow-hidden">
+          <CanvasBoard boardRef={boardRef} />
+          <div className="hidden md:block">
+            <CanvasMinimap />
+          </div>
+          <ZoomControls mobile={isMobile} />
+          {isMobile && <MobilePanelToggle />}
+
+          <div className="absolute top-3 end-3 z-10 canvas-export-exclude">
+            <PageTourHelp tourId="canvas" />
+          </div>
+        </div>
+
+        <CanvasRightPanel />
+      </div>
+
+      {isMobile && (
+        <div className="md:hidden border-t border-border bg-card/95 backdrop-blur-xl px-2 py-1.5 safe-bottom">
+          <CanvasToolbar mobile />
+        </div>
+      )}
+
+      <CanvasCommandPalette />
+      <CanvasExportDialog />
+      <CanvasWizard />
+    </div>
+  );
 }
-
-

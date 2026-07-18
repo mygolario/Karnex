@@ -1,0 +1,1109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- NextAuth Models ---
+
+model User {
+  id             String    @id @default(cuid())
+  supabaseUserId String?   @unique
+  name           String?
+  email          String?   @unique
+  emailVerified  DateTime?
+  image          String?
+  role           String?   @default("user") // "user" | "admin"
+  password       String? // For credentials provider
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime? // For soft deletes
+
+  // Profile fields (mapped from existing UserProfile)
+  firstName   String?
+  lastName    String?
+  phoneNumber String?
+  birthDate   DateTime?
+  bio         String?
+
+  // Extensible account profile data (creator channel links, location, pronouns,
+  // timezone, display name, default project type, dashboard layout, etc.)
+  // See lib/account/types.ts for the shape.
+  profile Json?
+
+  // Settings & Credits (stored as JSON to avoid too many columns)
+  credits  Json? @default("{\"aiTokens\": 10, \"projectsUsed\": 0}")
+  settings Json? @default("{\"emailNotifications\": true, \"theme\": \"system\", \"language\": \"fa\", \"accent\": \"pink\", \"density\": \"comfortable\", \"dateFormat\": \"jalali\"}")
+
+  // Two-factor auth
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+
+  // Relations
+  accounts           Account[]
+  sessions           Session[]
+  projects           Project[]
+  mediaItems         MediaItem[]
+  subscriptions      Subscription[]
+  transactions       Transaction[]
+  feedbacks          Feedback[]
+  projectMemberships ProjectMember[]
+
+  // Copilot Rework Relations
+  userProfile         UserProfile?
+  chatConversations   ChatConversation[]
+  aiActionLogs        AiActionLog[]
+  aiInsights          AiInsight[]
+  aiUsages            AiUsage[]
+  customerBotChannels CustomerBotChannel[]
+
+  // Account Center Relations
+  userSessions       UserSession[]
+  userApiKeys        UserApiKey[]
+  userIntegrations   UserIntegration[]
+  dataExportRequests DataExportRequest[]
+  loginEvents        LoginEvent[]
+
+  // Product Tour Relations
+  tourProgress  TourProgress?
+  notifications Notification[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// --- Application Models ---
+
+model Project {
+  id          String  @id @default(cuid())
+  userId      String
+  projectName String
+  tagline     String?
+  description String? @db.Text
+
+  // The entire Business Plan structure is stored here as JSONB
+  // This preserves the flexibility of the existing NoSQL-like structure
+  data Json
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // For soft deletes
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members  ProjectMember[]
+  canvases Canvas[]
+  scripts  Script[]
+
+  // Copilot Rework Relations
+  projectMemory       ProjectMemory?
+  chatConversations   ChatConversation[]
+  artifacts           Artifact[]
+  aiActionLogs        AiActionLog[]
+  aiInsights          AiInsight[]
+  aiUsages            AiUsage[]
+  customerBotChannels CustomerBotChannel[]
+
+  // Traditional Pillar Revamp — operations + finance
+  products             Product[]
+  suppliers            Supplier[]
+  stockTransactions    StockTransaction[]
+  businessTransactions BusinessTransaction[]
+  staffMembers         Staff[]
+  loyaltyAccounts      LoyaltyAccount[]
+  orders               Order[]
+  promotions           Promotion[]
+  coupons              Coupon[]
+  reviews              Review[]
+  referrals            Referral[]
+  broadcasts           Broadcast[]
+  appointments         Appointment[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Subscription {
+  id                String    @id @default(cuid())
+  userId            String    @unique // One active subscription per user usually, or remove unique if key-based
+  planId            String // "free", "plus", "pro"
+  status            String // "active", "expired", "canceled"
+  billingCycle      String? // "monthly", "yearly"
+  startDate         DateTime  @default(now())
+  endDate           DateTime?
+  autoRenew         Boolean   @default(false)
+  cancelAtPeriodEnd Boolean   @default(false)
+  provider          String? // "zibal", "manual"
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([userId, status])
+}
+
+model Transaction {
+  id          String  @id @default(cuid())
+  userId      String
+  planId      String?
+  amount      Float
+  currency    String  @default("IRR")
+  status      String // "pending", "completed", "failed"
+  gateway     String // "zibal"
+  trackId     String? // Gateway tracking ID (authority)
+  refId       String? // Reference ID after success
+  cardPan     String?
+  description String?
+  metadata    Json?
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+  refundedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([trackId])
+  @@index([status])
+  @@index([userId, status])
+}
+
+model MediaItem {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String?
+  url         String
+  category    String // "logo", "pattern", etc.
+  subcategory String?
+  prompt      String?  @db.Text
+  model       String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([projectId])
+}
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  type      String // "auth", "project", "error"
+  action    String
+  details   String?  @db.Text
+  userId    String?
+  userEmail String?
+  ip        String?
+  timestamp DateTime @default(now())
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String?
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  userId    String
+  projectId String
+  role      String   @default("editor") // "admin" | "editor" | "viewer"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@index([userId])
+  @@index([projectId])
+}
+
+// --- Canvas Models ---
+
+model Canvas {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name      String   @default("بوم کسب‌وکار")
+  type      String   @default("BMC") // BMC | LEAN | BRAND | SWOT | EMPATHY | VPC | OKR
+  layout    Json?
+  viewport  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cards    Card[]
+  comments Comment[]
+  versions CanvasVersion[]
+
+  @@index([projectId])
+}
+
+model Card {
+  id        String   @id @default(cuid())
+  canvasId  String
+  canvas    Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  section   String
+  order     Int      @default(0)
+  x         Float?
+  y         Float?
+  width     Float?
+  height    Float?
+  content   String   @db.Text
+  cardType  String   @default("NOTE") // NOTE | CHECKLIST | IMAGE | LINK | METRIC | VOTE
+  color     String   @default("blue")
+  metadata  Json?
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([canvasId, section])
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  canvasId     String
+  canvas       Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  cardId       String?
+  authorId     String
+  authorName   String?
+  authorAvatar String?
+  body         String   @db.Text
+  resolved     Boolean  @default(false)
+  parentId     String?
+  createdAt    DateTime @default(now())
+
+  @@index([canvasId])
+  @@index([cardId])
+}
+
+model CanvasVersion {
+  id        String   @id @default(cuid())
+  canvasId  String
+  canvas    Canvas   @relation(fields: [canvasId], references: [id], onDelete: Cascade)
+  name      String?
+  snapshot  Json
+  createdBy String?
+  createdAt DateTime @default(now())
+
+  @@index([canvasId])
+}
+
+// ====================================================================
+// COPILOT REWORK — Phase 1 Models
+// Personalization, persistent chat, artifacts, audit, insights,
+// usage tracking, and multi-channel customer bot.
+// ====================================================================
+
+// --- Personalization & Memory ---
+
+model UserProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role           String? // "founder" | "student" | "marketer" | "consultant" | ...
+  industry       String?
+  businessStage  String? // "idea" | "validation" | "mvp" | "launch" | "growth"
+  goals          Json? // string[]
+  preferredTone  String  @default("balanced") // "formal" | "casual" | "balanced"
+  expertiseLevel String  @default("beginner") // "beginner" | "intermediate" | "expert"
+  language       String  @default("fa")
+
+  // AI-maintained learned preferences & long-term memory entries
+  // learnedPreferences: { prefersBullets, formalityScore, ... }
+  // memoryEntries: [{ id, content, category, createdAt }]
+  learnedPreferences Json?
+  memoryEntries      Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- Product Tour (server-backed progress, survives device/browser changes) ---
+
+model TourProgress {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  completedTours          Json @default("[]") // string[]
+  skippedTours            Json @default("[]") // string[]
+  completedChecklistItems Json @default("[]") // string[]
+  dismissedBeacons        Json @default("[]") // string[]
+
+  persona          String? // "founder" | "creator" | "marketer" | "general"
+  experienceLevel  String? // "beginner" | "intermediate" | "pro"
+  primaryGoal      String? // "validate-idea" | "grow-audience" | "raise-funding" | "launch-product" | "just-exploring"
+  hasSeenWelcome   Boolean @default(false)
+  disableAutoStart Boolean @default(false)
+
+  lastSeenWhatsNewVersion String?
+  lastKnownProjectType    String?
+  lastKnownPlan           String?
+
+  xp             Int       @default(0)
+  level          Int       @default(1)
+  streak         Int       @default(0)
+  lastActiveDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model ProjectMemory {
+  id        String  @id @default(cuid())
+  projectId String  @unique
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Structured facts the AI extracts/updates across sessions
+  // decisions:     [{ id, content, date }]
+  // openQuestions: [{ id, question, status }]
+  // risks:         [{ id, content, severity }]
+  // keyFacts:      [{ id, key, value }]
+  decisions     Json?
+  openQuestions Json?
+  risks         Json?
+  keyFacts      Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// --- Chat Persistence ---
+
+model ChatConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title   String
+  mode    String  @default("cofounder") // "cofounder" | "customer_bot"
+  persona String? // "startup" | "traditional" | "creator"
+  model   String?
+  pinned  Boolean @default(false)
+
+  lastMessagePreview String?
+  lastMessageAt      DateTime?
+
+  messages     ChatMessage[]
+  artifacts    Artifact[]
+  aiActionLogs AiActionLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([pinned])
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role    String // "user" | "assistant" | "system" | "tool"
+  content String @db.Text
+
+  // toolCalls: [{ id, name, args, result, status }]
+  // artifacts: [{ id, type, refId, summary }]
+  // followUps: string[]
+  toolCalls Json?
+  artifacts Json?
+  followUps Json?
+
+  // Branching support
+  parentMessageId String?
+  parentMessage   ChatMessage?  @relation("MessageBranch", fields: [parentMessageId], references: [id], onDelete: SetNull)
+  children        ChatMessage[] @relation("MessageBranch")
+
+  feedback AiFeedback?
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+  @@index([parentMessageId])
+}
+
+model AiFeedback {
+  id        String      @id @default(cuid())
+  messageId String      @unique
+  message   ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  rating String // "up" | "down"
+  reason String? @db.Text
+
+  createdAt DateTime @default(now())
+}
+
+// --- Artifacts (versioned, live-editable outputs) ---
+
+model Artifact {
+  id             String            @id @default(cuid())
+  projectId      String
+  project        Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  conversationId String?
+  conversation   ChatConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  type  String // "lean_canvas" | "pitch_slide" | "swot" | "roadmap" | "brand_kit" | "plan" | "competitor_matrix"
+  refId String? // reference to the concrete artifact (slide id, canvas section, etc.)
+  data  Json
+
+  version  Int     @default(1)
+  parentId String? // previous version id
+
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([conversationId])
+  @@index([type])
+}
+
+// --- Audit & Trust ---
+
+model AiActionLog {
+  id             String            @id @default(cuid())
+  userId         String
+  user           User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project?          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  conversationId String?
+  conversation   ChatConversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+
+  toolName    String
+  args        Json?
+  result      Json?
+  status      String @default("success") // "success" | "error" | "reverted"
+  undoPayload Json? // data needed to revert the action
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([projectId])
+}
+
+model AiInsight {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  type          String // "gap" | "competitor" | "streak" | "decision" | "summary"
+  priority      String @default("info") // "info" | "warning" | "urgent"
+  title         String
+  body          String @db.Text
+  payload       Json? // structured insight data
+  actionPayload Json? // one-click action definition ({ type, label, ... })
+
+  status       String    @default("unread") // "unread" | "read" | "dismissed" | "snoozed"
+  snoozedUntil DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([status])
+}
+
+model AiUsage {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId      String?
+  project        Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  conversationId String?
+
+  model    String
+  provider String @default("openrouter")
+  feature  String // "copilot_chat" | "ai_generate" | "tool_call" | "customer_bot" | ...
+
+  promptTokens     Int   @default(0)
+  completionTokens Int   @default(0)
+  totalTokens      Int   @default(0)
+  costUsd          Float @default(0)
+
+  success      Boolean @default(true)
+  errorMessage String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([createdAt])
+}
+
+// --- Customer Bot (multi-channel auto-responder) ---
+
+model CustomerBotChannel {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  provider    String // "whatsapp" | "telegram" | "instagram"
+  credentials Json? // encrypted credentials (token, verifyToken, phoneId, etc.)
+  config      Json? // auto-reply settings, brand voice, confidence threshold, handoff config
+  isActive    Boolean @default(false)
+
+  conversations CustomerBotConversation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+model CustomerBotConversation {
+  id        String             @id @default(cuid())
+  channelId String
+  channel   CustomerBotChannel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  externalId     String // customer's id on the channel
+  customerName   String?
+  customerHandle String?
+
+  status             String    @default("open") // "open" | "resolved" | "handed_off"
+  lastMessagePreview String?
+  lastMessageAt      DateTime?
+
+  messages CustomerBotMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([channelId])
+  @@index([status])
+}
+
+model CustomerBotMessage {
+  id             String                  @id @default(cuid())
+  conversationId String
+  conversation   CustomerBotConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  role    String // "customer" | "bot" | "agent"
+  content String @db.Text
+
+  externalId String?
+  metadata   Json?
+  isRead     Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+}
+
+model Script {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  title    String
+  content  String  @db.Text
+  scenes   Json? // For A/V mode: Array of objects { id, visual, audio }
+  template String  @default("viral-hook")
+  duration String  @default("60s")
+  audience String?
+  status   String  @default("draft") // "draft" | "recording" | "recorded" | "published"
+  folder   String? // Folder name or platform grouping (e.g. YouTube, Reels)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+// ====================================================================
+// ACCOUNT CENTER — unified account, settings, security, integrations
+// ====================================================================
+
+model UserSession {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Supabase access-token jti or a random session token id
+  token      String    @unique
+  device     String? // "Chrome on macOS", "iPhone Safari"
+  platform   String? // "web" | "ios" | "android"
+  ip         String?
+  location   String? // best-effort city/country
+  userAgent  String?   @db.Text
+  lastActive DateTime  @default(now())
+  expiresAt  DateTime?
+
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  @@index([userId])
+  @@index([lastActive])
+}
+
+model LoginEvent {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // "success" | "failed"
+  status    String
+  method    String? // "google" | "password" | "2fa"
+  ip        String?
+  userAgent String? @db.Text
+  location  String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model UserApiKey {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label     String
+  // SHA-256 hash of the raw key; raw key only shown once at creation
+  keyHash   String    @unique
+  prefix    String // first 8 chars for display, e.g. "kex_abc"
+  scopes    Json? // string[]
+  lastUsed  DateTime?
+  createdAt DateTime  @default(now())
+  revokedAt DateTime?
+
+  @@index([userId])
+}
+
+model UserIntegration {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider          String // "youtube" | "google_calendar" | "instagram" | "telegram" | "zapier"
+  providerAccountId String?
+  // encrypted credentials/tokens (access/refresh tokens, channel id, scopes)
+  credentials       Json?
+  metadata          Json? // channel title, profile picture, scopes, etc.
+  isConnected       Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+model DataExportRequest {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // "pending" | "processing" | "ready" | "failed" | "expired"
+  status    String  @default("pending")
+  format    String  @default("json") // "json" | "zip"
+  url       String? // signed download URL once ready
+  sizeBytes Int?
+  error     String?
+
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
+
+  @@index([userId])
+}
+
+/// Persian Knowledge Base chunk for RAG (scraped Iranian gov/regulatory sites).
+/// The `embedding` column uses pgvector and is managed via a raw SQL migration
+/// (Prisma represents it as Unsupported until first-class vector support lands).
+model KbChunk {
+  id         String                       @id @default(cuid())
+  source     String // "enamad" | "nic" | "samandehi" | "intamedia" | "qds" | "tax" | "kargozarsalari"
+  url        String
+  section    String?
+  text       String
+  chunkIndex Int                          @default(0)
+  verified   Boolean                      @default(false)
+  embedding  Unsupported("vector(1024)")?
+
+  createdAt DateTime @default(now())
+
+  @@index([source])
+  @@index([verified])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // "info" | "success" | "warning" | "promo" | "achievement"
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  action    Json? // Optional: { label: String, href: String }
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// ====================================================================
+// TRADITIONAL PILLAR REVAMP — operations + finance relational tables
+// High-volume transactional data for the new flagship features:
+// Inventory & Stock Manager, P&L / Income Tracker, Business Health.
+// Config/drafts still live in Project.data JSONB (see lib/db.ts).
+// ====================================================================
+
+model Product {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name       String
+  sku        String?
+  category   String?
+  unit       String   @default("عدد") // "عدد" | "کیلوگرام" | "لیتر" | ...
+  cost       Float    @default(0) // purchase/COGS cost per unit (Toman)
+  price      Float    @default(0) // sell price per unit (Toman)
+  stock      Float    @default(0) // current on-hand quantity
+  lowStockAt Float    @default(0) // reorder threshold
+  supplierId String?
+  metadata   Json? // barcode, description, image, etc.
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  transactions StockTransaction[]
+
+  @@index([projectId])
+  @@index([projectId, category])
+}
+
+model StockTransaction {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  type      String // "in" | "out" | "adjust"
+  qty       Float // signed delta applied to stock (in: +, out: -, adjust: sets absolute via metadata)
+  unitCost  Float? // cost per unit at time of transaction (for COGS on "in")
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([productId])
+  @@index([createdAt])
+}
+
+model Supplier {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  name      String
+  contact   String? // phone / email / handle
+  address   String?
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+/// Unified income/expense/COGS ledger entry for the P&L / Income Tracker.
+/// type: "income" | "expense" | "cogs"
+/// category: free-form label e.g. "rent" | "utilities" | "salaries" | "sales" | ...
+model BusinessTransaction {
+  id        String  @id @default(cuid())
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  type      String
+  category  String
+  amount    Float // Toman
+  date      DateTime @default(now())
+  note      String?
+  metadata  Json? // receipt url, linked order id, recurring rule, etc.
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([projectId, type])
+  @@index([projectId, date])
+  @@index([projectId, category])
+}
+
+// --- Phase 2: Staff + Loyalty ---
+
+model Staff {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name       String
+  role       String?
+  phone      String?
+  hourlyRate Float?
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  shifts     Shift[]
+  attendance AttendanceEntry[]
+
+  @@index([projectId])
+}
+
+model Shift {
+  id        String   @id @default(cuid())
+  staffId   String
+  staff     Staff    @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  projectId String
+  startAt   DateTime
+  endAt     DateTime
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([staffId])
+  @@index([projectId])
+  @@index([startAt])
+}
+
+model AttendanceEntry {
+  id        String    @id @default(cuid())
+  staffId   String
+  staff     Staff     @relation(fields: [staffId], references: [id], onDelete: Cascade)
+  projectId String
+  checkIn   DateTime
+  checkOut  DateTime?
+  note      String?
+  createdAt DateTime  @default(now())
+
+  @@index([staffId])
+  @@index([projectId])
+}
+
+model LoyaltyAccount {
+  id           String   @id @default(cuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  customerId   String
+  customerName String?
+  phone        String?
+  points       Int      @default(0)
+  tier         String?  @default("bronze")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  transactions PointTransaction[]
+
+  @@unique([projectId, customerId])
+  @@index([projectId])
+}
+
+model PointTransaction {
+  id        String         @id @default(cuid())
+  accountId String
+  account   LoyaltyAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  projectId String
+  delta     Int
+  reason    String?
+  createdAt DateTime       @default(now())
+
+  @@index([accountId])
+  @@index([projectId])
+}
+
+// --- Phase 3: Sales + Promotions + Reviews ---
+
+model Order {
+  id            String   @id @default(cuid())
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  customerId    String?
+  customerName  String?
+  paymentMethod String? // cash | card | transfer
+  total         Float    @default(0)
+  note          String?
+  createdAt     DateTime @default(now())
+
+  items OrderItem[]
+
+  @@index([projectId])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String?
+  name      String
+  qty       Float   @default(1)
+  unitPrice Float   @default(0)
+  lineTotal Float   @default(0)
+
+  @@index([orderId])
+}
+
+model Promotion {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title       String
+  type        String // discount | bogo | flash
+  discountPct Float?
+  code        String?
+  startsAt    DateTime?
+  endsAt      DateTime?
+  active      Boolean   @default(true)
+  copy        String?   @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([projectId])
+}
+
+model Coupon {
+  id          String    @id @default(cuid())
+  projectId   String
+  project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  code        String
+  discountPct Float?
+  discountAmt Float?
+  maxUses     Int?
+  usedCount   Int       @default(0)
+  expiresAt   DateTime?
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+
+  redemptions CouponRedemption[]
+
+  @@unique([projectId, code])
+  @@index([projectId])
+}
+
+model CouponRedemption {
+  id         String   @id @default(cuid())
+  couponId   String
+  coupon     Coupon   @relation(fields: [couponId], references: [id], onDelete: Cascade)
+  projectId  String
+  customerId String?
+  createdAt  DateTime @default(now())
+
+  @@index([couponId])
+  @@index([projectId])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  author    String?
+  rating    Int
+  body      String?  @db.Text
+  source    String? // google | direct | maps
+  reply     String?  @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+  @@index([rating])
+}
+
+// --- Phase 4: Referral, Broadcast, Appointments ---
+
+model Referral {
+  id           String   @id @default(cuid())
+  projectId    String
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  code         String
+  referrerId   String?
+  referrerName String?
+  refereeId    String?
+  status       String   @default("pending") // pending | converted | rewarded
+  rewardPoints Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@unique([projectId, code])
+  @@index([projectId])
+}
+
+model Broadcast {
+  id             String    @id @default(cuid())
+  projectId      String
+  project        Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  channel        String // sms | whatsapp | telegram
+  title          String
+  body           String    @db.Text
+  status         String    @default("draft") // draft | scheduled | sent
+  scheduledAt    DateTime?
+  sentAt         DateTime?
+  recipientCount Int       @default(0)
+  createdAt      DateTime  @default(now())
+
+  @@index([projectId])
+}
+
+model Appointment {
+  id            String    @id @default(cuid())
+  projectId     String
+  project       Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  customerName  String
+  customerPhone String?
+  service       String?
+  startAt       DateTime
+  endAt         DateTime?
+  status        String    @default("booked") // booked | done | cancelled | no_show
+  note          String?
+  createdAt     DateTime  @default(now())
+
+  @@index([projectId])
+  @@index([startAt])
+}

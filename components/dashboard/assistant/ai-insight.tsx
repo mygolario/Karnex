@@ -75,7 +75,7 @@ export function AIInsightCard({ insights, onAction, onDismiss }: AIInsightCardPr
             className={`relative overflow-visible rounded-2xl bg-gradient-to-br ${categoryColors[currentInsight.category]} border p-4`}
         >
             {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-transparent rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute top-0 end-0 w-32 h-32 bg-gradient-to-br from-amber-500/10 to-transparent rounded-full blur-2xl pointer-events-none" />
 
             <div className="relative z-10">
                 {/* Header */}

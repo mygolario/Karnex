@@ -1,337 +1,376 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { 
-  CheckCircle2, 
-  Circle, 
-  Lock, 
-  MapPin, 
-  Flag, 
-  Star,
-  ChevronRight,
-  Trophy
+import {
+  CheckCircle2,
+  Lock,
+  Flag,
+  Trophy,
+  Link2,
+  SkipForward,
+  AlertCircle,
+  Loader2,
+  Sparkles,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import type { RoadmapPhase, RoadmapStepObject } from "@/hooks/use-roadmap";
+import { cn, toPersianDigits } from "@/lib/utils";
+import { Progress } from "@/components/ui/progress";
+import { StepCard } from "./step-card";
+import type { RoadmapStep, RoadmapPhase, SubTask } from "@/lib/db";
+import { StepDisplayState } from "@/lib/roadmap/constants";
+import { getRoadmapTheme } from "@/lib/roadmap/themes";
 
 interface RoadmapJourneyProps {
   roadmap: RoadmapPhase[];
   completedSteps: string[];
-  onToggleStep: (step: string | RoadmapStepObject) => void;
-  onOpenStepDetail: (step: string | RoadmapStepObject, phase?: RoadmapPhase) => void;
-  getStepTitle: (step: string | RoadmapStepObject) => string;
+  getStepDisplayState: (step: string | RoadmapStep) => StepDisplayState;
+  onToggleStep: (step: string | RoadmapStep) => void;
+  onOpenStepDetail: (step: string | RoadmapStep, phase?: RoadmapPhase) => void;
+  subTasks?: SubTask[];
+  projectType?: string;
 }
 
 export function RoadmapJourney({
   roadmap,
   completedSteps,
+  getStepDisplayState,
   onToggleStep,
   onOpenStepDetail,
-  getStepTitle,
+  subTasks,
+  projectType = "startup",
 }: RoadmapJourneyProps) {
-  
-  // Helper to determine step state
-  const getStepState = (step: string | RoadmapStepObject, index: number, allSteps: (string | RoadmapStepObject)[]) => {
-    const title = getStepTitle(step);
-    const isCompleted = completedSteps.includes(title);
-    
-    // Check if previous step is completed (to unlock current)
-    // For the very first step of the very first phase, it's always unlocked
-    // We need to flatten roadmap to check global index, or just check if this step is completed
-    // Simply: if completed -> done. If not completed but previous is -> current. Else -> locked.
-    
-    if (isCompleted) return "completed";
-    
-    // Find absolute index of this step in the entire roadmap
-    let flatIndex = 0;
-    let found = false;
-    for (const phase of roadmap) {
-       for (const s of phase.steps) {
-          if (getStepTitle(s) === title) {
-             found = true;
-             break;
-          }
-          flatIndex++;
-       }
-       if (found) break;
-    }
+  const theme = getRoadmapTheme(projectType);
 
-    // Determine if unlocked
-    // If it's the first step overall, it's unlocked (current)
-    if (flatIndex === 0) return "current";
+  const getSubTasks = (title: string) =>
+    subTasks?.filter((s) => s.parentStep === title);
 
-    // Check if the step immediately preceding this one is completed
-    // We need to find the step at flatIndex - 1
-    let seekIndex = 0;
-    let prevStepTitle = "";
-    for (const phase of roadmap) {
-       for (const s of phase.steps) {
-          if (seekIndex === flatIndex - 1) {
-             prevStepTitle = getStepTitle(s);
-          }
-          seekIndex++;
-       }
-    }
-    
-    if (completedSteps.includes(prevStepTitle)) return "current";
-    
-    return "locked";
-  };
+  const totalPhases = roadmap.length;
+  const completedPhases = roadmap.filter((phase) =>
+    phase.steps.every((s) => {
+      const title = typeof s === "string" ? s : (s as RoadmapStep).title;
+      return completedSteps.includes(title);
+    })
+  ).length;
 
   return (
-    <div className="relative w-full max-w-4xl mx-auto py-12 px-4">
-      {/* Central Path Line (The "Journey") */}
-      <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/20 via-primary/50 to-primary/20 -translate-x-1/2 hidden md:block" />
-      
-      {/* Mobile Path Line */}
-      <div className="absolute left-8 top-0 bottom-0 w-1 bg-gradient-to-b from-primary/20 via-primary/50 to-primary/20 md:hidden" />
+    <div className="relative w-full max-w-4xl mx-auto py-8 px-4">
+      {/* Central path line (Glowing River Timeline Line) */}
+      <div
+        className={cn(
+          "absolute start-4 md:start-1/2 top-0 bottom-0 w-1.5 -translate-x-1/2 hidden md:block rounded-full bg-gradient-to-b",
+          theme.timelineGradient
+        )}
+        style={{
+          boxShadow: `0 0 15px ${theme.timelineGlow}`,
+        }}
+      />
+      <div
+        className={cn(
+          "absolute start-8 top-0 bottom-0 w-1.5 md:hidden rounded-full bg-gradient-to-b",
+          theme.timelineGradient
+        )}
+        style={{
+          boxShadow: `0 0 10px ${theme.timelineGlow}`,
+        }}
+      />
 
-      {/* Start Point */}
-      <div className="relative z-10 flex justify-center mb-16 md:mb-24">
-         <motion.div 
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-primary text-primary-foreground px-6 py-3 rounded-full font-bold shadow-lg shadow-primary/20 flex items-center gap-2 border-4 border-background"
-         >
-            <Flag size={20} className="fill-current" />
-            <span>شروع نقشه راه</span>
-         </motion.div>
+      {/* Start flag */}
+      <div className="relative z-10 flex justify-center mb-16 md:mb-20">
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="bg-primary text-primary-foreground px-6 py-3 rounded-full font-black shadow-lg shadow-primary/20 flex items-center gap-2 border-4 border-background"
+        >
+          <Flag size={20} className="fill-current" />
+          <span>شروع ماجراجویی نقشه راه</span>
+        </motion.div>
       </div>
 
-      <div className="space-y-24">
-        {roadmap.map((phase, phaseIndex) => (
-          <div key={phaseIndex} className="relative">
-            
-            {/* Phase Marker */}
-            <div className="sticky top-24 z-20 flex justify-center mb-12 pointer-events-none">
-                <span className="bg-background/80 backdrop-blur border border-primary/20 text-primary px-4 py-1.5 rounded-full text-sm font-bold shadow-sm">
-                   فصل {phaseIndex + 1}: {phase.phase}
-                </span>
-            </div>
+      <div className="space-y-20">
+        {roadmap.map((phase, phaseIndex) => {
+          const phaseSteps = phase.steps;
+          const phaseDone = phaseSteps.filter((s) => {
+            const title =
+              typeof s === "string" ? s : (s as RoadmapStep).title;
+            return completedSteps.includes(title);
+          }).length;
+          const phaseTotal = phaseSteps.length;
+          const phaseProgress =
+            phaseTotal > 0 ? Math.round((phaseDone / phaseTotal) * 100) : 0;
+          const isPhaseComplete = phaseDone === phaseTotal && phaseTotal > 0;
 
-            <div className="space-y-12">
-               {phase.steps.map((step, stepIndex) => {
-                  const title = getStepTitle(step);
-                  const state = getStepState(step, stepIndex, phase.steps); // Note: localized index, but logic handles global
+          return (
+            <div key={phaseIndex} className="relative">
+              {/* Phase marker */}
+              <div className="sticky top-24 z-20 flex justify-center mb-10 pointer-events-none">
+                <div className="flex flex-col items-center gap-2">
+                  <span
+                    className={cn(
+                      "px-5 py-2 rounded-full text-xs font-bold shadow-md border backdrop-blur-md transition-all duration-300",
+                      isPhaseComplete
+                        ? "bg-emerald-500/10 border-emerald-500/35 text-emerald-600 dark:text-emerald-400"
+                        : "bg-background/95 border-primary/20 text-primary"
+                    )}
+                  >
+                    {isPhaseComplete && "✅ "}
+                    فصل {toPersianDigits(phaseIndex + 1)}: {phase.phase}
+                  </span>
+                  {phaseTotal > 0 && (
+                    <div className="flex items-center gap-2 bg-background/80 backdrop-blur-md rounded-full px-3 py-1 border border-border/40 shadow-sm">
+                      <Progress
+                        value={phaseProgress}
+                        className="h-1.5 w-24"
+                        indicatorClassName={
+                          isPhaseComplete ? "bg-emerald-500" : "bg-primary"
+                        }
+                      />
+                      <span className="text-[10px] text-muted-foreground font-bold font-mono">
+                        {toPersianDigits(phaseDone)}/{toPersianDigits(phaseTotal)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Steps */}
+              <div className="space-y-10">
+                {phaseSteps.map((s, stepIndex) => {
+                  const step =
+                    typeof s === "string"
+                      ? { title: s }
+                      : (s as RoadmapStep);
+                  const state = getStepDisplayState(step);
+                  const stepSubs = getSubTasks(step.title);
                   const isLeft = stepIndex % 2 === 0;
 
                   return (
-                     <motion.div
-                        key={title}
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-100px" }}
+                    <motion.div
+                      key={step.title}
+                      initial={{ opacity: 0, y: 24 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ duration: 0.4 }}
+                      className={cn(
+                        "relative flex items-center md:gap-12",
+                        "md:flex-row flex-col-reverse items-start md:items-center ps-16 md:ps-0"
+                      )}
+                    >
+                      {/* Desktop: alternating layout */}
+                      <div
                         className={cn(
-                           "relative flex items-center md:gap-12",
-                           // Mobile: always left aligned content (timeline on left)
-                           "md:flex-row flex-col-reverse items-start md:items-center pl-16 md:pl-0"
+                          "hidden md:block flex-1 text-start pe-8",
+                          !isLeft && "order-3 ps-8 text-end pe-0"
                         )}
-                     >
-                        {/* Desktop: Alternating Layout */}
-                        {/* Left Side Content (for Left items) */}
-                        <div className={cn(
-                           "hidden md:block flex-1 text-left pr-8",
-                           !isLeft && "order-3 pl-8 text-right pr-0" // Swap for Right items
-                        )}>
-                           {isLeft ? (
-                              <StepCard 
-                                 step={step} 
-                                 state={state} 
-                                 onClick={() => onOpenStepDetail(step, phase)}
-                              />
-                           ) : (
-                               <MissionBadge index={stepIndex + 1 + (phaseIndex * 5)} isLeft={false} />
-                           )}
-                        </div>
+                      >
+                        {isLeft ? (
+                          <div className="space-y-2">
+                            <StepCard
+                              step={step}
+                              state={state}
+                              onClick={() => onOpenStepDetail(step, phase)}
+                              onQuickToggle={(e) => {
+                                e.stopPropagation();
+                                if (state !== "locked") onToggleStep(step);
+                              }}
+                              subTasks={stepSubs}
+                              projectType={projectType}
+                            />
+                            {state === "locked" && step.dependsOn && (
+                              <DependencyHint deps={step.dependsOn} />
+                            )}
+                          </div>
+                        ) : (
+                          <MissionNumber
+                            index={stepIndex + 1 + phaseIndex * 5}
+                            isLeft={false}
+                          />
+                        )}
+                      </div>
 
-                        {/* Center Node (The Milestone) */}
-                        <div className={cn(
-                           "absolute md:static left-5 md:left-auto md:order-2 flex-shrink-0 z-10 w-6 h-6 rounded-full border-4 border-background shadow-sm transition-all duration-500",
-                           state === "completed" ? "bg-emerald-500 scale-125 shadow-emerald-500/30" :
-                           state === "current" ? "bg-blue-500 scale-150 animate-pulse shadow-blue-500/30" :
-                           "bg-muted-foreground/30 scale-100"
-                        )}>
-                           {state === "completed" && <CheckCircle2 size={14} className="text-white absolute -top-5 left-1/2 -translate-x-1/2 opacity-0 animate-in fade-in slide-in-from-bottom-2" />}
-                        </div>
+                      {/* Center node */}
+                      <div
+                        className={cn(
+                          "absolute md:static start-5 md:start-auto md:order-2 flex-shrink-0 z-10 w-8 h-8 rounded-full border-4 border-background shadow-md transition-all duration-500 flex items-center justify-center cursor-pointer",
+                          state === "completed" &&
+                            "bg-emerald-500 scale-125 shadow-emerald-500/30",
+                          state === "current" &&
+                            "bg-blue-600 scale-150 shadow-blue-500/30 ring-4 ring-blue-500/20",
+                          state === "in-progress" &&
+                            "bg-blue-400 scale-125 shadow-blue-400/30",
+                          state === "blocked" &&
+                            "bg-red-500 scale-110 shadow-red-500/30",
+                          state === "skipped" &&
+                            "bg-muted-foreground/30 scale-90",
+                          (state === "locked" || state === "available") &&
+                            "bg-muted-foreground/20 scale-100"
+                        )}
+                        onClick={() => onOpenStepDetail(step, phase)}
+                      >
+                        {state === "completed" && (
+                          <CheckCircle2
+                            size={16}
+                            className="text-white"
+                          />
+                        )}
+                        {state === "current" && (
+                          <Sparkles size={14} className="text-white animate-pulse" />
+                        )}
+                        {state === "in-progress" && (
+                          <Loader2 size={14} className="text-white animate-spin" />
+                        )}
+                        {state === "blocked" && (
+                          <AlertCircle size={14} className="text-white" />
+                        )}
+                        {state === "skipped" && (
+                          <SkipForward size={14} className="text-white" />
+                        )}
+                        {state === "locked" && (
+                          <Lock size={12} className="text-muted-foreground" />
+                        )}
+                      </div>
 
-                        {/* Right Side Content (for Left items, empty/meta) */}
-                         <div className={cn(
-                           "hidden md:block flex-1 pl-8",
-                           !isLeft && "order-1 pr-8 pl-0 text-left" // Swap for Right items
-                        )}>
-                           {isLeft ? (
-                              <MissionBadge index={stepIndex + 1 + (phaseIndex * 5)} isLeft={true} />
-                           ) : (
-                              <StepCard 
-                                 step={step} 
-                                 state={state} 
-                                 onClick={() => onOpenStepDetail(step, phase)}
-                              />
-                           )}
-                        </div>
+                      {/* Desktop right side */}
+                      <div
+                        className={cn(
+                          "hidden md:block flex-1 ps-8",
+                          !isLeft && "order-1 pe-8 ps-0 text-start"
+                        )}
+                      >
+                        {isLeft ? (
+                          <MissionNumber
+                            index={stepIndex + 1 + phaseIndex * 5}
+                            isLeft={true}
+                          />
+                        ) : (
+                          <div className="space-y-2">
+                            <StepCard
+                              step={step}
+                              state={state}
+                              onClick={() => onOpenStepDetail(step, phase)}
+                              onQuickToggle={(e) => {
+                                e.stopPropagation();
+                                if (state !== "locked") onToggleStep(step);
+                              }}
+                              subTasks={stepSubs}
+                              projectType={projectType}
+                            />
+                            {state === "locked" && step.dependsOn && (
+                              <DependencyHint deps={step.dependsOn} />
+                            )}
+                          </div>
+                        )}
+                      </div>
 
-                        {/* Mobile Content (Always visible) */}
-                        <div className="md:hidden w-full">
-                           <StepCard 
-                                 step={step} 
-                                 state={state} 
-                                 onClick={() => onOpenStepDetail(step, phase)}
-                              />
+                      {/* Mobile */}
+                      <div className="md:hidden w-full">
+                        <div className="space-y-2">
+                          <StepCard
+                            step={step}
+                            state={state}
+                            onClick={() => onOpenStepDetail(step, phase)}
+                            onQuickToggle={(e) => {
+                              e.stopPropagation();
+                              if (state !== "locked") onToggleStep(step);
+                            }}
+                            subTasks={stepSubs}
+                            projectType={projectType}
+                          />
+                          {state === "locked" && step.dependsOn && (
+                            <DependencyHint deps={step.dependsOn} />
+                          )}
                         </div>
-
-                     </motion.div>
+                      </div>
+                    </motion.div>
                   );
-               })}
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Final Trophy */}
+      {/* Final trophy */}
       <div className="relative z-10 flex justify-center mt-24">
-         <motion.div 
-            initial={{ scale: 0, rotate: -180 }}
-            whileInView={{ scale: 1, rotate: 0 }}
-             viewport={{ once: true }}
-            className="bg-gradient-to-br from-yellow-400 to-amber-600 text-white p-6 rounded-full shadow-2xl shadow-amber-500/40 border-8 border-background relative"
-         >
-            <Trophy size={48} className="fill-current" />
+        <motion.div
+          initial={{ scale: 0, rotate: -180 }}
+          whileInView={{ scale: 1, rotate: 0 }}
+          viewport={{ once: true }}
+          className={cn(
+            "p-7 rounded-full shadow-2xl border-8 border-background relative transition-all",
+            completedSteps.length > 0
+              ? "bg-gradient-to-br from-yellow-400 to-amber-600 text-white shadow-amber-500/40"
+              : "bg-muted text-muted-foreground shadow-none"
+          )}
+        >
+          <Trophy size={54} className="fill-current" />
+          {completedSteps.length > 0 && (
             <div className="absolute inset-0 bg-white/30 blur-xl rounded-full animate-pulse" />
-         </motion.div>
+          )}
+        </motion.div>
       </div>
       <div className="text-center mt-6">
-         <h3 className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-yellow-600">
-            پیروزی نهایی
-         </h3>
-         <p className="text-muted-foreground mt-2">پایان نقشه راه</p>
+        <h3
+          className={cn(
+            "text-2xl font-black",
+            completedSteps.length > 0
+              ? "bg-clip-text text-transparent bg-gradient-to-r from-amber-500 to-yellow-600"
+              : "text-muted-foreground"
+          )}
+        >
+          پیروزی نهایی
+        </h3>
+        <p className="text-muted-foreground mt-2 text-sm">
+          {completedSteps.length > 0
+            ? "پایان نقشه راه"
+            : "با تکمیل مراحل به پیروزی نهایی می‌رسید"}
+        </p>
       </div>
-
     </div>
   );
 }
 
-// Category Translation Map
-const CATEGORY_MAP: Record<string, string> = {
-  "product": "محصول",
-  "tech": "فنی",
-  "marketing": "بازاریابی",
-  "legal": "حقوقی",
-  "design": "طراحی",
-  "content": "محتوا",
-  "sales": "فروش",
-  "finance": "مالی",
-  "hr": "منابع انسانی",
-  "operations": "عملیات",
-  "strategy": "استراتژی",
-  "startup": "استارتاپ",
-  "growth": "رشد",
-  "launch": "راه‌اندازی",
-};
-
-function StepCard({ 
-   step, 
-   state,
-   onClick
-}: { 
-   step: string | RoadmapStepObject; 
-   state: "locked" | "current" | "completed";
-   onClick: () => void;
-}) {
-   const title = typeof step === 'string' ? step : step.title;
-   const desc = typeof step !== 'string' ? step.description : null;
-   const rawCategory = typeof step !== 'string' ? step.category : null;
-   // Translate category or fallback to original
-   const category = rawCategory ? (CATEGORY_MAP[rawCategory.toLowerCase()] || rawCategory) : null;
-
-   return (
-      <Card 
-         onClick={onClick}
-         className={cn(
-            "p-5 cursor-pointer transition-all duration-300 group border-l-4 overflow-hidden relative",
-            state === "locked" && "opacity-60 bg-muted/50 border-l-muted hover:opacity-80",
-            state === "current" && "bg-gradient-to-br from-card to-blue-500/5 border-l-blue-500 shadow-lg shadow-blue-500/5 hover:-translate-y-1 hover:shadow-xl",
-            state === "completed" && "bg-gradient-to-br from-emerald-50 to-emerald-100/20 border-l-emerald-500 grayscale-[0.3] hover:grayscale-0 dark:from-emerald-950/20 dark:to-emerald-900/10"
-         )}
-      >
-         {/* Background Decoration */}
-         {state === "current" && (
-            <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all" />
-         )}
-
-         <div className="flex justify-between items-start gap-3 relative z-10">
-            <div>
-               <div className="flex items-center gap-2 mb-2">
-                  {category && (
-                     <Badge variant="secondary" className="text-[10px] px-1.5 h-5">
-                        {category}
-                     </Badge>
-                  )}
-                  {state === "current" && (
-                     <Badge className="bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 text-[10px] h-5 border-0">
-                        در حال انجام
-                     </Badge>
-                  )}
-                  {state === "completed" && (
-                     <Badge className="bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 text-[10px] h-5 border-0">
-                        تکمیل شده
-                     </Badge>
-                  )}
-               </div>
-               
-               <h4 className={cn(
-                  "font-bold text-lg leading-tight mb-1 group-hover:text-primary transition-colors",
-                  state === "completed" && "line-through text-muted-foreground decoration-emerald-500/50"
-               )}>
-                  {title}
-               </h4>
-               
-               {desc && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                     {desc}
-                  </p>
-               )}
-            </div>
-            
-            <div className={cn(
-               "w-8 h-8 rounded-full flex items-center justify-center transition-colors",
-               state === "locked" ? "bg-muted text-muted-foreground" :
-               state === "completed" ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40" :
-               "bg-blue-100 text-blue-600 dark:bg-blue-900/40 group-hover:bg-blue-600 group-hover:text-white"
-            )}>
-               {state === "locked" ? <Lock size={14} /> : 
-                state === "completed" ? <CheckCircle2 size={16} /> :
-                <ChevronRight size={18} className="rtl:rotate-180" />}
-            </div>
-         </div>
-      </Card>
-   );
+function DependencyHint({ deps }: { deps: string[] }) {
+  return (
+    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground ps-2">
+      <Link2 size={12} />
+      <span>پیش‌نیازها:</span>
+      <span className="line-clamp-1 font-bold">
+        {deps.slice(0, 2).join("، ")}
+        {deps.length > 2 && ` +${toPersianDigits(deps.length - 2)}`}
+      </span>
+    </div>
+  );
 }
 
-function MissionBadge({ index, isLeft }: { index: number; isLeft: boolean }) {
-    return (
-        <div className={cn(
-            "flex items-center gap-3 opacity-60 hover:opacity-100 transition-all duration-300 group",
-            !isLeft ? "flex-row text-left dir-ltr" : "flex-row-reverse text-right"
-        )}>
-            {/* Dashed Connector */}
-            <div className={cn(
-                "h-[2px] w-8 md:w-16 bg-gradient-to-r from-border/50 to-transparent dashed-line",
-                !isLeft ? "bg-gradient-to-r" : "bg-gradient-to-l"
-            )} />
-
-            {/* Pill Badge */}
-            <div className="flex items-center gap-2.5 border border-border/60 bg-card/50 rounded-2xl px-3 py-1.5 backdrop-blur-md shadow-sm group-hover:bg-card group-hover:shadow-md group-hover:border-primary/20 transition-all">
-                <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
-                    <span className="text-xs font-bold text-primary font-mono">
-                        {index}
-                    </span>
-                </div>
-                <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                    ماموریت
-                </span>
-            </div>
+function MissionNumber({
+  index,
+  isLeft,
+}: {
+  index: number;
+  isLeft: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-3 opacity-60 hover:opacity-100 transition-all duration-300 group",
+        !isLeft ? "flex-row text-start" : "flex-row-reverse text-end"
+      )}
+    >
+      <div
+        className={cn(
+          "h-[2px] w-8 md:w-16 bg-gradient-to-r from-border/50 to-transparent",
+          !isLeft ? "bg-gradient-to-r" : "bg-gradient-to-l"
+        )}
+      />
+      <div className="flex items-center gap-2 border border-border/60 bg-card/50 rounded-2xl px-3 py-1.5 backdrop-blur-md shadow-sm group-hover:bg-card group-hover:shadow-md group-hover:border-primary/20 transition-all">
+        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 group-hover:scale-110 transition-all">
+          <span className="text-xs font-bold text-primary font-mono">
+            {toPersianDigits(index)}
+          </span>
         </div>
-    );
+        <span className="text-xs font-bold text-muted-foreground group-hover:text-foreground transition-colors">
+          ماموریت
+        </span>
+      </div>
+    </div>
+  );
 }

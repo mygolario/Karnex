@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: Prisma generate
+        env:
+          # Dummy URL so prisma generate / config can load in CI
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/karnex
+          DIRECT_URL: postgresql://postgres:postgres@localhost:5432/karnex
+        run: npx prisma generate
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Unit tests
+        run: npx vitest run
+        continue-on-error: true

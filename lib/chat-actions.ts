@@ -1,76 +1,54 @@
 "use server";
 
-import { callOpenRouter } from '@/lib/openrouter';
+import { callOpenRouter, TIER_DEFAULT } from '@/lib/openrouter';
 import { checkAILimit } from '@/lib/ai-limit-middleware';
+import { runWithAiUsage } from '@/lib/ai-usage-context';
+import { getPrompt } from '@/lib/prompts/registry';
+import { CHAT_PERSONAS } from '@/lib/prompts/persona-packs';
+import type { ProjectType } from '@/lib/account/types';
 
 export async function chatAction(message: string, planContext: any, generateFollowUps: boolean = false) {
+  let rollback = async () => {};
   try {
     // === AI Usage Limit Check ===
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
+    const limitResult = await checkAILimit('chat-action');
+    if (limitResult.errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
+    rollback = limitResult.rollback;
 
     // Contextual System Prompt
-    const projectType = planContext?.projectType || 'startup';
+    const projectType = (planContext?.projectType || 'startup') as ProjectType;
     
-    let personaInstructions = "";
+    const personaInstructions = CHAT_PERSONAS[projectType] || CHAT_PERSONAS.startup;
 
-    if (projectType === 'startup') {
-      personaInstructions = `
-        ROLE: You are an expert Venture Capitalist (VC) and Startup Mentor.
-        TONE: Professional, insightful, slightly critical but constructive. Push for growth and scalability.
-        FOCUS:
-        - Ask about "Unfair Advantage", "CAC/LTV", and "Product-Market Fit".
-        - Focus on scalability and high growth.
-        - Encourage testing assumptions (Lean Startup methodology).
-      `;
-    } else if (projectType === 'traditional') {
-      personaInstructions = `
-        ROLE: You are a Senior Business Consultant for Brick-and-Mortar/Service Businesses.
-        TONE: Experienced, risk-averse, practical, and rigorous.
-        FOCUS:
-        - Focus on "Profitability", "Cash Flow", and "Operational Efficiency".
-        - Warn against unnecessary risks.
-        - Advise on permits, location, and solid unit economics.
-      `;
-    } else if (projectType === 'creator') {
-      personaInstructions = `
-        ROLE: You are a Top Talent Manager and Personal Brand Strategist.
-        TONE: Energetic, hype-focused, trend-savvy, and motivational.
-        FOCUS:
-        - Focus on "Audience Engagement", "Personal Brand", and "Content Strategy".
-        - Differentiate between "Vanity Metrics" and real influence.
-        - Advise on monetization (sponsorships, digital products).
-      `;
-    }
+    const projectName = planContext?.projectName || 'Unknown';
+    const overview = planContext?.overview || 'Unknown';
+    const audience = planContext?.audience || 'Unknown';
+    const budget = planContext?.budget || 'Unknown';
+    const followUpBlock = generateFollowUps ? '\nدر آخر ۳ سوال پیگیری بنویس با فرمت:\n---FOLLOWUPS---\n- سوال ۱\n- سوال ۲\n- سوال ۳' : '';
 
-    const systemPrompt = `
-      ${personaInstructions}
-      
-      CONTEXT - USER'S CURRENT PROJECT:
-      Project Name: ${planContext?.projectName || 'Unknown'}
-      Business Idea: ${planContext?.overview || 'Unknown'}
-      Target Audience: ${planContext?.audience || 'Unknown'}
-      Current Budget: ${planContext?.budget || 'Unknown'}
-      Project Type: ${projectType}
-      
-      GENERAL INSTRUCTIONS:
-      1. Answer the user's question specifically for *their* project type. Don't give generic advice.
-      2. Keep answers concise (max 3-4 sentences) unless asked for more.
-      3. Reply in PERSIAN (Farsi).
-      
-      User Question: ${message}
-      ${generateFollowUps ? '\nدر آخر ۳ سوال پیگیری بنویس با فرمت:\n---FOLLOWUPS---\n- سوال ۱\n- سوال ۲\n- سوال ۳' : ''}
-    `;
-
-    const result = await callOpenRouter(`${message}\n\n(پاسخ فارسی بده)`, {
-      systemPrompt,
-      maxTokens: 800,
-      temperature: 0.5,
-      // User request: Use gpt-4o-mini specifically for Assistant
-      modelOverride: "openai/gpt-4o-mini"
+    const { system, user } = getPrompt("chatAction", {
+      projectName,
+      overview,
+      audience,
+      budget,
+      projectType,
+      personaInstructions,
+      message,
+      followUpBlock
     });
 
+    const result = await runWithAiUsage(
+      { userId: limitResult.user?.id || "anonymous", feature: "chatAction" },
+      () => callOpenRouter(user, {
+        systemPrompt: system,
+        maxTokens: 800,
+        temperature: 0.5,
+        modelOverride: TIER_DEFAULT
+      })
+    );
+
     if (!result.success) {
+      await rollback();
       return {
         reply: "متاسفانه سرویس در دسترس نیست. لطفا دقایقی دیگر تلاش کنید.",
         followUps: []
@@ -107,6 +85,7 @@ export async function chatAction(message: string, planContext: any, generateFoll
 
   } catch (error) {
     console.error("Chat Error:", error);
+    await rollback();
     return { error: 'Chat failed' };
   }
 }
@@ -128,10 +107,12 @@ export interface AdvisorChatResult {
 }
 
 export async function advisorChatAction(message: string, projectContext: any, conversationHistory: Message[]): Promise<AdvisorChatResult> {
+  let rollback = async () => {};
   try {
     // === AI Usage Limit Check ===
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
+    const limitResult = await checkAILimit('advisor-chat');
+    if (limitResult.errorResponse) return { error: "AI_LIMIT_REACHED", status: 429 };
+    rollback = limitResult.rollback;
 
     // Calculate project progress
     const totalSteps = projectContext?.roadmap?.reduce((acc: any, p: any) => acc + p.steps.length, 0) || 0;
@@ -167,24 +148,7 @@ export async function advisorChatAction(message: string, projectContext: any, co
 
     const projectSummary = buildProjectSummary();
 
-    // CRITICAL: Very explicit Persian-only system prompt
-    const systemPrompt = `تو دستیار هوشمند کارنکس هستی.
-
-قانون مهم: فقط به زبان فارسی پاسخ بده. هیچ کلمه انگلیسی یا زبان دیگر استفاده نکن.
-
-پروژه کاربر: ${projectSummary}
-
-وظایف:
-- پاسخ کوتاه و مفید بده
-- نکات عملی پیشنهاد کن
-- در آخر ۲ سوال پیگیری بنویس
-
-فرمت:
-[پاسخ فارسی]
-
----FOLLOWUPS---
-- سوال ۱
-- سوال ۲`;
+    const { system, user: userTemplate } = getPrompt("advisorChat", { projectSummary });
 
     // Build conversation context
     let fullPrompt = message;
@@ -198,13 +162,17 @@ export async function advisorChatAction(message: string, projectContext: any, co
       fullPrompt = `کاربر: ${message}\n\nدستیار (فقط فارسی):`;
     }
 
-    const result = await callOpenRouter(fullPrompt, {
-      systemPrompt,
-      maxTokens: 1024,
-      temperature: 0.5, // Lower temperature for more consistent output
-    });
+    const result = await runWithAiUsage(
+      { userId: limitResult.user?.id || "anonymous", feature: "advisorChat" },
+      () => callOpenRouter(fullPrompt, {
+        systemPrompt: system,
+        maxTokens: 1024,
+        temperature: 0.5, // Lower temperature for more consistent output
+      })
+    );
 
     if (!result.success) {
+      await rollback();
       return {
         reply: "متاسفانه در حال حاضر امکان پاسخگویی نیست. لطفا دقایقی دیگر تلاش کنید.",
         followUps: ["دوباره تلاش کن", "به صفحه اصلی برگرد"]
@@ -251,6 +219,7 @@ export async function advisorChatAction(message: string, projectContext: any, co
 
   } catch (error) {
     console.error("Advisor Chat Error:", error);
+    await rollback();
     return { error: 'Advisor chat failed' };
   }
 }

@@ -92,9 +92,9 @@ export function RateCardCalculator() {
                                 type="number"
                                 value={pkg.price}
                                 onChange={(e) => updatePackage(idx, 'price', parseInt(e.target.value))}
-                                className="pl-12 text-left font-mono"
+                                className="ps-12 text-start font-mono"
                             />
-                            <span className="absolute left-3 top-2.5 text-xs text-muted-foreground">تومان</span>
+                            <span className="absolute start-3 top-2.5 text-xs text-muted-foreground">تومان</span>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => removePackage(idx)} className="text-muted-foreground hover:text-red-500">
                             <Trash2 size={18} />

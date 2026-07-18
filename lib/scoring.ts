@@ -1,4 +1,5 @@
 import { BusinessPlan } from "./db";
+import { hasActiveCompetitors } from "@/lib/competitors/normalize";
 
 export interface ScoreResult {
   total: number;
@@ -71,8 +72,8 @@ export const calculateProjectScore = (plan: BusinessPlan): ScoreResult => {
 
   // 3. Market & Money (30 pts)
   // Competitors (10)
-  if (plan.competitors && plan.competitors.length > 0) market += 10;
-  else suggestions.push("حداقل یک رقیب را تحلیل کنید.");
+  if (hasActiveCompetitors(plan)) market += 10;
+  else suggestions.push("حداقل یک رقیب را در تحلیل رقبا ثبت کنید.");
 
   // Marketing (10)
   if (plan.marketingStrategy && plan.marketingStrategy.length >= 2) market += 10;

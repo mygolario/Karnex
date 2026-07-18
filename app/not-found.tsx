@@ -22,7 +22,7 @@ export default function NotFound() {
       </p>
 
       <Button asChild size="lg" className="rounded-xl gap-2">
-        <Link href="/dashboard">
+        <Link href="/dashboard" className="inline-flex items-center gap-2">
           بازگشت به داشبورد
           <ArrowLeft size={18} />
         </Link>

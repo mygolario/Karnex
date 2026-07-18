@@ -1,32 +1,37 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Lock, Eye, EyeOff, Loader2, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
+import { createClient } from "@/lib/supabase/client";
 
 function ResetPasswordForm() {
-  const searchParams = useSearchParams();
   const router = useRouter();
-  const token = searchParams.get("token") || "";
-  const email = searchParams.get("email") || "";
+  const supabase = createClient();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
 
   useEffect(() => {
-    if (!token || !email) {
-      setError("لینک بازیابی نامعتبر است. لطفاً دوباره درخواست دهید.");
-    }
-  }, [token, email]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setHasSession(!!session);
+      if (!session) {
+        setError("لینک بازیابی نامعتبر یا منقضی شده است. لطفاً دوباره درخواست دهید.");
+      }
+      setLoading(false);
+    });
+  }, [supabase.auth]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,16 +46,11 @@ function ResetPasswordForm() {
       return;
     }
 
-    setLoading(true);
+    setSubmitting(true);
     try {
-      const res = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "خطا در تنظیم رمز عبور");
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+      if (updateError) {
+        setError(updateError.message || "خطا در تنظیم رمز عبور");
       } else {
         setSuccess(true);
         setTimeout(() => router.push("/login"), 3000);
@@ -58,9 +58,17 @@ function ResetPasswordForm() {
     } catch {
       setError("خطای اتصال. لطفاً دوباره تلاش کنید.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4" dir="rtl">
@@ -79,46 +87,50 @@ function ResetPasswordForm() {
             <Image src="/logo.png" alt="لوگوی کارنکس" width={44} height={44} className="rounded-xl" />
             <span className="text-xl font-black">کارنکس</span>
           </Link>
-          <h1 className="text-3xl font-bold text-foreground mb-2">تنظیم رمز عبور جدید</h1>
-          <p className="text-muted-foreground">رمز عبور جدید خود را وارد کنید</p>
+          <h1 className="text-2xl font-bold">تنظیم رمز عبور جدید</h1>
         </div>
 
-        <Card className="border-none shadow-2xl bg-card/50 backdrop-blur-sm p-8">
+        <Card className="p-6 border-none shadow-xl bg-card/80 backdrop-blur-sm">
           {success ? (
             <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto">
-                <CheckCircle2 className="w-8 h-8 text-emerald-500" />
-              </div>
-              <h2 className="text-xl font-bold text-foreground">رمز عبور تغییر کرد!</h2>
-              <p className="text-muted-foreground">در حال انتقال به صفحه ورود...</p>
+              <CheckCircle2 className="w-12 h-12 text-emerald-500 mx-auto" />
+              <p className="text-emerald-600 font-medium">رمز عبور با موفقیت تغییر کرد!</p>
+              <p className="text-sm text-muted-foreground">در حال انتقال به صفحه ورود...</p>
+            </div>
+          ) : !hasSession ? (
+            <div className="text-center space-y-4">
+              <AlertCircle className="w-12 h-12 text-destructive mx-auto" />
+              <p className="text-destructive">{error}</p>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/login">بازگشت به ورود</Link>
+              </Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-lg flex items-center gap-2">
-                  <AlertCircle size={16} className="shrink-0" />
+                  <AlertCircle size={16} />
                   {error}
                 </div>
               )}
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground/80">رمز عبور جدید</label>
-                <div className="relative group">
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                <label className="text-sm font-medium">رمز عبور جدید</label>
+                <div className="relative">
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-muted/30 border border-border rounded-xl px-10 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
-                    placeholder="حداقل ۶ کاراکتر"
+                    className="w-full bg-muted/30 border border-border rounded-xl px-10 py-3 outline-none focus:ring-2 focus:ring-primary/20 text-left"
                     dir="ltr"
                     required
-                    disabled={!token || !email}
+                    minLength={6}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -126,42 +138,28 @@ function ResetPasswordForm() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground/80">تکرار رمز عبور</label>
-                <div className="relative group">
-                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-muted/30 border border-border rounded-xl px-10 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-left"
-                    placeholder="تکرار رمز عبور"
-                    dir="ltr"
-                    required
-                    disabled={!token || !email}
-                  />
-                </div>
+                <label className="text-sm font-medium">تکرار رمز عبور</label>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full bg-muted/30 border border-border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary/20 text-left"
+                  dir="ltr"
+                  required
+                  minLength={6}
+                />
               </div>
 
-              <Button
-                type="submit"
-                className="w-full h-12 bg-gradient-to-r from-primary to-purple-600 rounded-xl"
-                disabled={loading || !token || !email}
-              >
-                {loading ? (
-                  <Loader2 className="animate-spin" />
-                ) : (
-                  <span className="flex items-center gap-2">
-                    تغییر رمز عبور
-                    <ArrowLeft size={18} />
-                  </span>
-                )}
+              <Button type="submit" className="w-full h-11" disabled={submitting}>
+                {submitting ? <Loader2 className="animate-spin" /> : "ذخیره رمز جدید"}
               </Button>
 
-              <div className="text-center text-sm text-muted-foreground">
-                <Link href="/login" className="text-primary hover:underline">
+              <Button asChild variant="ghost" className="w-full">
+                <Link href="/login">
+                  <ArrowLeft className="ms-2 h-4 w-4" />
                   بازگشت به ورود
                 </Link>
-              </div>
+              </Button>
             </form>
           )}
         </Card>
@@ -172,7 +170,13 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin w-8 h-8 text-primary" /></div>}>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      }
+    >
       <ResetPasswordForm />
     </Suspense>
   );

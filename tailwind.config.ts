@@ -18,8 +18,8 @@ const config: Config = {
     },
     extend: {
       fontFamily: {
-        sans: ["Vazirmatn", "system-ui", "sans-serif"],
-        vazir: ["Vazirmatn", "system-ui", "sans-serif"],
+        sans: ["var(--font-vazirmatn)", "system-ui", "sans-serif"],
+        vazir: ["var(--font-vazirmatn)", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -71,6 +71,19 @@ const config: Config = {
           light: "#fbbf24",
           dark: "#d97706",
         },
+        // Brand design tokens
+        brand: {
+          primary: "hsl(var(--brand-primary))",
+          secondary: "hsl(var(--brand-secondary))",
+          accent: "hsl(var(--brand-accent))",
+        },
+        // Copilot AI signature color (violet/indigo)
+        ai: {
+          DEFAULT: "hsl(var(--ai))",
+          foreground: "hsl(var(--ai-foreground))",
+          muted: "hsl(var(--ai-muted))",
+          border: "hsl(var(--ai-border))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -78,6 +91,21 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
         xl: "var(--radius-xl)",
         "2xl": "var(--radius-2xl)",
+        card: "var(--radius-card)",
+        btn: "var(--radius-btn)",
+        input: "var(--radius-input)",
+      },
+      backgroundColor: {
+        "glass-premium": "var(--glass-premium-bg)",
+      },
+      borderColor: {
+        "glass-premium": "var(--glass-premium-border)",
+      },
+      backdropBlur: {
+        premium: "var(--glass-premium-blur)",
+      },
+      boxShadow: {
+        "glass-premium": "var(--glass-premium-glow)",
       },
       keyframes: {
         "accordion-down": {
@@ -114,6 +142,16 @@ const config: Config = {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-5px)" },
         },
+        // Copilot thinking orb pulse
+        "ai-pulse": {
+          "0%, 100%": { opacity: "0.4", transform: "scale(0.8)" },
+          "50%": { opacity: "1", transform: "scale(1)" },
+        },
+        // Typing dots bounce
+        "typing-dot": {
+          "0%, 60%, 100%": { transform: "translateY(0)", opacity: "0.4" },
+          "30%": { transform: "translateY(-4px)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -125,6 +163,8 @@ const config: Config = {
         "scale-in": "scale-in 0.3s ease-out forwards",
         "bounce-gentle": "bounce-gentle 2s ease-in-out infinite",
         "spin-slow": "spin 3s linear infinite",
+        "ai-pulse": "ai-pulse 1.4s ease-in-out infinite",
+        "typing-dot": "typing-dot 1.4s ease-in-out infinite",
       },
     },
   },

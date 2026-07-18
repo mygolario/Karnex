@@ -53,7 +53,7 @@ export function LogoTab({ brandKit, projectName, onGenerateLogo, generatingIndex
           description="برای شروع، روی دکمه تولید کلیک کنید تا لوگوی برندتان ساخته شود"
           action={
             <Button variant="gradient" onClick={() => onGenerateLogo(0)}>
-              <Sparkles className="ml-2" size={18} />
+              <Sparkles className="ms-2" size={18} />
               تولید لوگو
             </Button>
           }

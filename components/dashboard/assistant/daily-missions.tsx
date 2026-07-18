@@ -73,11 +73,11 @@ export function DailyMissions({ missions, onMissionClick, onMissionComplete }: D
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white shadow-lg shadow-primary/30">
                         <Target size={20} />
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                         <h3 className="font-bold text-foreground">ماموریت‌های امروز</h3>
                         <p className="text-xs text-muted-foreground">
                             {completedCount}/{missions.length} انجام شده
-                            <span className="text-amber-500 mr-2">⚡ {earnedXp}/{totalXp} XP</span>
+                            <span className="text-amber-500 me-2">⚡ {earnedXp}/{totalXp} XP</span>
                         </p>
                     </div>
                 </div>

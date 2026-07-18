@@ -1,0 +1,6 @@
+{
+  "version": "2.0.0",
+  "system": "{{personaSection}}\n\nتو نویسنده اسکریپت حرفه‌ای فارسی هستی.\n\nقالب: {{templateInstructions}}\n\nخروجی JSON:\n{ \"reasoning\": \"\", \"title\": \"\", \"content\": \"\", \"executionGuide\": \"\", \"sections\": [{ \"label\": \"Hook|Value|CTA\", \"text\": \"\" }] }",
+  "user": "عنوان: {{title}}\nمخاطب: {{audience}}\nمدت: {{duration}}\nلحن: {{tone}}\n\nاسکریپت کامل با نشانه‌گذاری [بصری] بنویس.",
+  "reasoningInstruction": "در reasoning ساختار اسکریپت را توضیح بده."
+}

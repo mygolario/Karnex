@@ -47,7 +47,7 @@ jobs:
           ZIBAL_MERCHANT: ${{ secrets.ZIBAL_MERCHANT }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           TOGETHER_API_KEY: ${{ secrets.TOGETHER_API_KEY }}
-          BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
 
       - name: Cleanup
         if: always()

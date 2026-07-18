@@ -27,13 +27,16 @@ export function NetworkStatus() {
   if (isOnline) return null; // Don't show anything if online (unintrusive)
 
   return (
-    <div className={cn(
-      "fixed top-4 left-1/2 -translate-x-1/2 z-50",
+    <div
+      role="status"
+      aria-live="polite"
+      className={cn(
+      "fixed top-4 start-1/2 -translate-x-1/2 z-50",
       "flex items-center gap-2 px-4 py-2 rounded-full shadow-lg",
       "bg-red-500 text-white animate-in slide-in-from-top-4"
     )}>
       <WifiOff size={16} />
-      <span className="text-sm font-bold">شما آفلاین هستید (ذخیره داخلی فعال است)</span>
+      <span className="text-sm font-semibold text-white">حالت آفلاین — تغییرات ذخیره می‌شوند</span>
     </div>
   );
 }

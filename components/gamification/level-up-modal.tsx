@@ -5,14 +5,17 @@ import { Award, Star, X } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { getRankTitle } from "@/lib/roadmap/themes";
 
 interface LevelUpModalProps {
     isOpen: boolean;
     onClose: () => void;
     level: number;
+    projectType?: string;
 }
 
-export function LevelUpModal({ isOpen, onClose, level }: LevelUpModalProps) {
+export function LevelUpModal({ isOpen, onClose, level, projectType }: LevelUpModalProps) {
+    const rankTitle = getRankTitle(level, projectType);
 
     useEffect(() => {
         if (isOpen) {
@@ -68,13 +71,13 @@ export function LevelUpModal({ isOpen, onClose, level }: LevelUpModalProps) {
                     {/* Close Button */}
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+                        className="absolute top-4 end-4 text-slate-400 hover:text-white transition-colors"
                     >
                         <X size={20} />
                     </button>
 
                     {/* Glow Effect */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-amber-500/10 blur-[60px] pointer-events-none" />
+                    <div className="absolute top-0 start-1/2 -translate-x-1/2 w-full h-full bg-amber-500/10 blur-[60px] pointer-events-none" />
 
                     {/* Content */}
                     <div className="relative z-10 flex flex-col items-center gap-4">
@@ -102,7 +105,7 @@ export function LevelUpModal({ isOpen, onClose, level }: LevelUpModalProps) {
                         </div>
 
                         <p className="text-slate-300 text-sm">
-                            تبریک! شما به سطح {level} «بنیان‌گذار» رسیدید. ویژگی‌های جدیدی برای شما باز شد.
+                            تبریک! شما به سطح {level} «{rankTitle}» رسیدید. ویژگی‌های جدیدی برای شما باز شد.
                         </p>
 
                         <div className="grid grid-cols-3 gap-2 w-full mt-4">

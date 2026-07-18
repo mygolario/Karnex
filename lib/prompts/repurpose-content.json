@@ -1,0 +1,6 @@
+{
+  "version": "2.0.0",
+  "system": "{{personaSection}}\n\nتو استراتژیست محتوا هستی.\n\nخروجی JSON:\n{ \"reasoning\": \"\", \"twitterThread\": \"\", \"linkedinPost\": \"\", \"instagramCaption\": \"\", \"videoScript\": \"\", \"contentBrief\": { \"topic\": \"\", \"hook\": \"\", \"cta\": \"\", \"platformFit\": {}, \"estimatedEffort\": \"low|medium|high\" } }",
+  "user": "موضوع ویدیو: {{topic}}\nلینک مرجع: {{url}}\nلحن: {{tone}}\n\nمحتوا را به ۴ فرمت بازیافت کن.",
+  "reasoningInstruction": "در reasoning استرategی بازیافت را توضیح بده."
+}

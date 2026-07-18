@@ -1,5 +1,5 @@
 
-const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
+const RESEND_API_URL = "https://api.resend.com/emails";
 
 export type EmailTemplate = 
   | 'welcome' 
@@ -8,7 +8,8 @@ export type EmailTemplate =
   | 'subscription_success' 
   | 'contact'
   | 'plan_activation'
-  | 'invoice';
+  | 'invoice'
+  | 'invitation';
 
 interface SendEmailParams {
   to: string;
@@ -20,38 +21,32 @@ interface SendEmailParams {
 }
 
 export const sendEmail = async ({ to, subject, htmlContent, name, cc }: SendEmailParams) => {
-  const apiKey = process.env.BREVO_API_KEY;
+  const apiKey = process.env.RESEND_API_KEY;
 
   if (!apiKey) {
-    console.warn("⚠️ BREVO_API_KEY is missing. Email not sent.");
+    console.warn("⚠️ RESEND_API_KEY is missing. Email not sent.");
     return false;
   }
 
-
-
   try {
-    const res = await fetch(BREVO_API_URL, {
+    const res = await fetch(RESEND_API_URL, {
       method: "POST",
       headers: {
-        "accept": "application/json",
-        "api-key": apiKey.trim(),
-        "content-type": "application/json",
+        "Authorization": `Bearer ${apiKey.trim()}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        sender: {
-          name: "Karnex Support",
-          email: "support@karnex.ir"
-        },
-        to: [{ email: to, name: name || to }],
-        cc: cc ? [{ email: cc }] : undefined,
+        from: "Karnex Support <support@karnex.ir>",
+        to: [to],
+        cc: cc ? [cc] : undefined,
         subject: subject,
-        htmlContent: htmlContent,
+        html: htmlContent,
       })
     });
 
     if (!res.ok) {
       const errorData = await res.json();
-      console.error("Brevo API Error:", errorData);
+      console.error("Resend API Error:", errorData);
       return false;
     }
 

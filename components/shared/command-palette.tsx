@@ -97,12 +97,12 @@ export function CommandPalette() {
     //   category: "navigation",
     // },
     {
-      id: "marketing",
-      title: "بازاریابی",
-      subtitle: "استراتژی‌های رشد",
+      id: "growth",
+      title: "برنامه رشد",
+      subtitle: "مسیر جذب و رشد استارتاپ",
       icon: <Megaphone size={20} />,
-      action: () => router.push("/dashboard/marketing"),
-      keywords: ["marketing", "growth", "strategy", "بازاریابی"],
+      action: () => router.push("/dashboard/growth"),
+      keywords: ["marketing", "growth", "strategy", "رشد", "بازاریابی"],
       category: "navigation",
     },
     {
@@ -110,7 +110,7 @@ export function CommandPalette() {
       title: "تنظیمات",
       subtitle: "مدیریت حساب کاربری",
       icon: <Settings size={20} />,
-      action: () => router.push("/dashboard/settings"),
+      action: () => router.push("/dashboard/account"),
       keywords: ["settings", "account", "profile", "تنظیمات"],
       category: "navigation",
     },
@@ -280,7 +280,7 @@ export function CommandPalette() {
                         transition={{ delay: index * 0.03 }}
                         onClick={() => executeCommand(command)}
                         className={cn(
-                          "w-full flex items-center gap-4 p-3 rounded-xl text-right transition-all duration-150",
+                          "w-full flex items-center gap-4 p-3 rounded-xl text-end transition-all duration-150",
                           index === selectedIndex
                             ? "bg-primary/10 text-primary"
                             : "hover:bg-muted/50 text-foreground"

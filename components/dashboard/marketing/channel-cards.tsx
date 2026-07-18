@@ -87,7 +87,7 @@ export function ChannelCards({ channels = defaultChannels }: ChannelCardsProps) 
 
     return (
         <Card variant="default" className="relative overflow-hidden">
-            <div className="absolute bottom-0 right-0 w-40 h-40 bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-3xl translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute bottom-0 end-0 w-40 h-40 bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-3xl translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
             <div className="flex items-center gap-3 mb-6">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/20">

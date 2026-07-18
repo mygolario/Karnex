@@ -107,6 +107,34 @@ export default function TermsPage() {
               </div>
             </div>
           </section>
+
+          <div className="h-px bg-border/50" />
+
+          <section className="relative">
+             <div className="flex items-start gap-4">
+              <div className="shrink-0 p-2 bg-emerald-500/10 rounded-lg mt-1">
+                <Shield className="w-6 h-6 text-emerald-500" />
+              </div>
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-foreground">۵. اشتراک، لغو و استرداد</h2>
+                <div className="text-muted-foreground leading-loose text-lg text-justify space-y-3">
+                  <p>
+                    پلن رایگان بدون پرداخت فعال است. اشتراک‌های پولی (پرو و تیم) از طریق درگاه زیبال
+                    پرداخت می‌شوند و تا پایان دوره صورتحساب فعال می‌مانند.
+                  </p>
+                  <p>
+                    می‌توانید تمدید خودکار را هر زمان لغو کنید؛ دسترسی تا پایان دوره فعلی ادامه دارد.
+                    مبلغ دوره‌های شروع‌شده معمولاً قابل استرداد نیست، مگر در موارد خطای فنی درگاه
+                    یا تشخیص تیم پشتیبانی. برای درخواست، به{" "}
+                    <Link href="/contact" className="text-primary font-medium underline-offset-2 hover:underline">
+                      صفحه تماس
+                    </Link>{" "}
+                    پیام بدهید.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
         </motion.div>
         
         <div className="mt-12 text-center text-muted-foreground text-sm">

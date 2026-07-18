@@ -15,35 +15,35 @@ describe('Rate Limiter', () => {
     vi.useFakeTimers()
   })
 
-  it('should allow requests under the limit', () => {
-    const req = createMockRequest('192.168.1.1')
+  it('should allow requests under the limit', async () => {
+    const req = createMockRequest('192.168.1.10')
     
     // First request should be allowed
-    const result = rateLimiter(req)
+    const result = await rateLimiter(req)
     expect(result.allowed).toBe(true)
     expect(result.remaining).toBeGreaterThan(0)
   })
 
-  it('should track requests per IP', () => {
-    const req1 = createMockRequest('192.168.1.1')
-    const req2 = createMockRequest('192.168.1.2')
+  it('should track requests per IP', async () => {
+    const req1 = createMockRequest('192.168.1.21')
+    const req2 = createMockRequest('192.168.1.22')
     
     // Requests from different IPs should be tracked separately
-    const result1 = rateLimiter(req1)
-    const result2 = rateLimiter(req2)
+    const result1 = await rateLimiter(req1)
+    const result2 = await rateLimiter(req2)
     
     expect(result1.remaining).toBe(result2.remaining)
   })
 
-  it('should block after exceeding limit', () => {
-    const req = createMockRequest('192.168.1.100')
+  it('should block after exceeding limit', async () => {
+    const req = createMockRequest('192.168.1.30')
     
     // Make 31 requests (limit is 30)
     for (let i = 0; i < 30; i++) {
-      rateLimiter(req)
+      await rateLimiter(req)
     }
     
-    const result = rateLimiter(req)
+    const result = await rateLimiter(req)
     expect(result.allowed).toBe(false)
     expect(result.remaining).toBe(0)
   })

@@ -74,7 +74,7 @@ export function ClaimAccountModal({ isOpen, onClose }: ClaimAccountModalProps) {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700 block text-right">آدرس ایمیل</label>
+                <label htmlFor="email" className="text-sm font-medium text-gray-700 block text-end">آدرس ایمیل</label>
                 <input
                   id="email"
                   type="email"
@@ -82,11 +82,11 @@ export function ClaimAccountModal({ isOpen, onClose }: ClaimAccountModalProps) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full p-3 border border-gray-300 rounded-lg text-left ltr focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" 
+                  className="w-full p-3 border border-gray-300 rounded-lg text-start ltr focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all" 
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-gray-700 block text-right">رمز عبور</label>
+                <label htmlFor="password" className="text-sm font-medium text-gray-700 block text-end">رمز عبور</label>
                 <input
                   id="password"
                   type="password"
@@ -94,7 +94,7 @@ export function ClaimAccountModal({ isOpen, onClose }: ClaimAccountModalProps) {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full p-3 border border-gray-300 rounded-lg text-left ltr focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  className="w-full p-3 border border-gray-300 rounded-lg text-start ltr focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 />
               </div>
 

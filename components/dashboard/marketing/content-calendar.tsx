@@ -68,7 +68,7 @@ export function ContentCalendar({ onAddContent }: ContentCalendarProps) {
 
     return (
         <Card variant="default" className="relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-rose-500/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="absolute top-0 end-0 w-32 h-32 bg-gradient-to-br from-rose-500/10 to-transparent rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
             {/* Header */}
             <div className="flex items-center justify-between mb-6">

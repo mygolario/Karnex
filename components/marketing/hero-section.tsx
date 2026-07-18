@@ -1,233 +1,237 @@
 "use client";
 
-import { motion, useReducedMotion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Sparkles, Rocket, Store, Video } from "lucide-react";
+import {
+  Sparkles,
+  Play,
+  Rocket,
+  TrendingUp,
+  Map,
+  Bot,
+} from "lucide-react";
 import Link from "next/link";
 
-const PillarCard = ({ 
-  icon: Icon, 
-  title, 
-  color, 
-  delay 
-}: { 
-  icon: any; 
-  title: string; 
-  color: string; 
-  delay: number;
-}) => (
-  <motion.div
-    initial={{ opacity: 0, y: 30, rotateX: -15 }}
-    animate={{ opacity: 1, y: 0, rotateX: 0 }}
-    transition={{ delay, duration: 0.8 }}
-    whileHover={{ scale: 1.05, y: -5 }}
-    className={`relative group cursor-pointer`}
-  >
-    <div className={`absolute inset-0 ${color} rounded-3xl blur-xl opacity-30 group-hover:opacity-50 transition-opacity`} />
-    <div className="relative bg-card/80 backdrop-blur-xl border border-white/10 rounded-3xl p-6 flex items-center gap-4">
-      <div className={`w-14 h-14 rounded-2xl ${color} flex items-center justify-center shadow-lg`}>
-        <Icon className="w-7 h-7 text-white" />
-      </div>
-      <span className="font-bold text-lg text-foreground">{title}</span>
-    </div>
-  </motion.div>
-);
-
 export const HeroSection = () => {
-  const prefersReducedMotion = useReducedMotion();
-
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-      {/* === ADVANCED BACKGROUND === */}
+    <section className="relative min-h-screen flex items-center overflow-hidden pt-28 pb-16">
+      {/* ═══ Background ═══ */}
       <div className="absolute inset-0 -z-10">
-        {/* Base gradient */}
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/30" />
-        
-        {/* Animated mesh gradient - DESKTOP ONLY */}
-        {!prefersReducedMotion && (
-          <>
-            <motion.div
-              animate={{
-                background: [
-                  "radial-gradient(circle at 20% 50%, hsl(330 81% 60% / 0.15) 0%, transparent 50%)",
-                  "radial-gradient(circle at 80% 50%, hsl(330 81% 60% / 0.15) 0%, transparent 50%)",
-                  "radial-gradient(circle at 20% 50%, hsl(330 81% 60% / 0.15) 0%, transparent 50%)",
-                ],
-              }}
-              transition={{ duration: 10, repeat: Infinity }}
-              className="absolute inset-0"
-            />
-            <motion.div
-              animate={{
-                background: [
-                  "radial-gradient(circle at 80% 30%, hsl(25 95% 53% / 0.1) 0%, transparent 50%)",
-                  "radial-gradient(circle at 20% 70%, hsl(25 95% 53% / 0.1) 0%, transparent 50%)",
-                  "radial-gradient(circle at 80% 30%, hsl(25 95% 53% / 0.1) 0%, transparent 50%)",
-                ],
-              }}
-              transition={{ duration: 12, repeat: Infinity }}
-              className="absolute inset-0"
-            />
-          </>
-        )}
 
-        {/* Static gradient fallback for reduced motion */}
-        {prefersReducedMotion && (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(330_81%_60%_/0.1),transparent_70%)]" />
-        )}
-        
+        {/* Static mesh — hardware-optimized (replaces expensive animated gradient mesh) */}
+        <div className="absolute inset-0 hidden lg:block opacity-75">
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "radial-gradient(circle at 20% 50%, hsl(330 81% 60% / 0.12) 0%, transparent 50%)",
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "radial-gradient(circle at 80% 30%, hsl(25 95% 53% / 0.08) 0%, transparent 50%)",
+            }}
+          />
+        </div>
+
         {/* Grid pattern */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]" />
-        
-        {/* Floating orbs - Disabled for reduced motion */}
-        {!prefersReducedMotion && (
-          <>
-            <motion.div
-              animate={{ y: [0, -15, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute top-20 right-[15%] w-72 h-72 bg-primary/20 rounded-full blur-[100px]"
-            />
-            <motion.div
-              animate={{ y: [0, -15, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-              className="absolute bottom-40 left-[10%] w-96 h-96 bg-secondary/15 rounded-full blur-[120px]"
-            />
-          </>
-        )}
+
+        {/* Floating orbs with CSS animations */}
+        <div className="absolute top-20 right-[15%] w-72 h-72 bg-primary/20 rounded-full blur-[100px] animate-float" />
+        <div className="absolute bottom-40 left-[10%] w-96 h-96 bg-secondary/15 rounded-full blur-[120px] animate-float [animation-delay:2s]" />
       </div>
 
-      <div className="container relative z-10 px-4 md:px-6 py-20">
-        <div className="max-w-5xl mx-auto text-center">
-          
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-8"
-          >
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 backdrop-blur-sm">
-              <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-              <span className="font-bold text-sm bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                ایده با تو، مسیرش با کارنکس
-              </span>
+      <div className="container relative z-10 px-4 md:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center max-w-7xl mx-auto">
+          {/* ═══ Right column (text — first in RTL) ═══ */}
+          <div className="text-center lg:text-start">
+            {/* Badge */}
+            <div className="mb-6 animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-primary/10 to-secondary/10 border border-primary/20 backdrop-blur-sm">
+                <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+                <span className="font-bold text-sm bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                  ایده با تو، مسیرش با کارنکس
+                </span>
+              </div>
             </div>
-          </motion.div>
 
-          {/* Main Headline - Optimize LCP for Mobile */}
-          <motion.h1
-            initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[1.1] mb-8"
-          >
-            <span className="text-foreground">هم‌بنیان‌گذار</span>
-            <br />
-            <span className="relative">
+            {/* Headline */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight leading-[1.15] mb-6 animate-fade-in-up [animation-delay:100ms] opacity-0">
+              <span className="text-foreground">از ایده تا </span>
               <span className="bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-                هوشمند
+                درآمد
               </span>
-              {/* Underline decoration */}
-              <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
-                <motion.path
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: 1, delay: 0.8 }}
-                  d="M2 8C50 2 150 2 198 8"
-                  stroke="url(#gradient)"
-                  strokeWidth="4"
-                  strokeLinecap="round"
-                />
-                <defs>
-                  <linearGradient id="gradient" x1="0" y1="0" x2="200" y2="0">
-                    <stop offset="0%" stopColor="hsl(330 81% 60%)" />
-                    <stop offset="100%" stopColor="hsl(25 95% 53%)" />
-                  </linearGradient>
-                </defs>
-              </svg>
-            </span>
-          </motion.h1>
+              <br />
+              <span className="text-foreground">در یک پلتفرم</span>
+            </h1>
 
-          {/* Subheadline */}
-          <motion.p
-            initial={prefersReducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 leading-relaxed"
-          >
-            مسیر اختصاصی برای{" "}
-            <span className="text-startup font-bold">استارتاپ‌ها</span>،{" "}
-            <span className="text-traditional font-bold">کسب‌وکارهای سنتی</span> و{" "}
-            <span className="text-creator font-bold">تولید کنندگان محتوا</span>.
-            <br className="hidden md:block" />
-            از ایده تا اولین درآمد، ما کنارتونیم.
-          </motion.p>
+            {/* Subheadline */}
+            <p className="text-lg md:text-xl text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed animate-fade-in-up [animation-delay:200ms] opacity-0">
+              هم‌بنیان‌گذار هوشمند برای{" "}
+              <span className="text-primary font-bold">استارتاپ‌های ایرانی</span>
+              {" "}— از ایده تا بوم کسب‌وکار، نقشه راه و پیچ‌دک سرمایه‌گذار.
+            </p>
 
-          {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
-          >
-            <Link href="/signup">
-              <Button 
-                size="lg" 
-                className="h-16 px-10 text-lg rounded-2xl bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-2xl shadow-primary/25 hover:shadow-primary/40 hover:scale-105 transition-all font-bold"
-              >
-                شروع رایگان
-                <ArrowLeft className="mr-2 h-5 w-5" />
-              </Button>
-            </Link>
+            {/* Dual CTAs */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8 animate-fade-in-up [animation-delay:300ms] opacity-0">
+              <Link href="/signup">
+                <Button
+                  size="xl"
+                  rounded="lg"
+                  className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-2xl shadow-primary/25 hover:shadow-primary/40 hover:scale-105 transition-all font-bold gap-2"
+                >
+                  <Sparkles className="w-5 h-5" />
+                  شروع رایگان
+                </Button>
+              </Link>
+              <Link href="/#how-it-works">
+                <Button
+                  size="xl"
+                  variant="outline"
+                  rounded="lg"
+                  className="font-bold gap-2 h-[3.5rem]"
+                >
+                  <Play className="w-5 h-5" />
+                  چطور کار می‌کند؟
+                </Button>
+              </Link>
+            </div>
 
-          </motion.div>
+            {/* Trust line — honest, no fake user counts */}
+            <div className="flex items-center gap-3 justify-center lg:justify-start animate-fade-in-up [animation-delay:400ms] opacity-0">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-muted/50 border border-border/50 text-sm text-muted-foreground">
+                <Rocket className="w-4 h-4 text-primary shrink-0" />
+                <span>
+                  ساخته‌شده برای بنیان‌گذاران ایرانی — شروع رایگان، بدون کارت
+                </span>
+              </div>
+            </div>
+          </div>
 
-          {/* Three Pillars Preview */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
-            className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-3xl mx-auto"
-          >
-            <PillarCard 
-              icon={Rocket} 
-              title="استارتاپ" 
-              color="bg-startup" 
-              delay={0.7} 
-            />
-            <PillarCard 
-              icon={Store} 
-              title="کسب‌وکار سنتی" 
-              color="bg-traditional" 
-              delay={0.8} 
-            />
-            <PillarCard 
-              icon={Video} 
-              title="تولید کننده محتوا" 
-              color="bg-creator" 
-              delay={0.9} 
-            />
-          </motion.div>
+          {/* ═══ Left column (dashboard mockup) ═══ */}
+          <div className="relative hidden lg:block animate-fade-in-up [animation-delay:500ms] opacity-0">
+            {/* Glow behind mockup */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 blur-[80px] rounded-3xl" />
 
+            {/* Mockup card */}
+            <div className="relative bg-card/80 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl overflow-hidden">
+              {/* Window bar */}
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-border/50 bg-muted/30">
+                <div className="w-3 h-3 rounded-full bg-red-400" />
+                <div className="w-3 h-3 rounded-full bg-yellow-400" />
+                <div className="w-3 h-3 rounded-full bg-green-400" />
+                <span className="text-xs text-muted-foreground font-medium ms-2">app.karnex.ir/dashboard</span>
+              </div>
 
+              {/* Mockup content */}
+              <div className="p-6 space-y-4">
+                {/* Greeting */}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">سلام، علی 👋</p>
+                    <p className="text-lg font-bold text-foreground">بریم مسیرت رو ادامه بدیم</p>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                    <Bot className="w-5 h-5 text-white" />
+                  </div>
+                </div>
+
+                {/* Progress card */}
+                <div className="rounded-xl bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20 p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-bold text-foreground">پیشرفت مسیر</span>
+                    <span className="text-sm font-black text-primary">۶۸٪</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div
+                      style={{ width: "68%" }}
+                      className="h-full rounded-full bg-gradient-to-r from-primary to-secondary transition-[width] [transition-duration:1500ms] [transition-delay:800ms] ease-out"
+                    />
+                  </div>
+                </div>
+
+                {/* Mini cards row */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="rounded-xl border border-border/50 p-3">
+                    <TrendingUp className="w-5 h-5 text-emerald-500 mb-2" />
+                    <p className="text-lg font-black text-foreground">۱۲</p>
+                    <p className="text-[10px] text-muted-foreground">قدم کامل شده</p>
+                  </div>
+                  <div className="rounded-xl border border-border/50 p-3">
+                    <Map className="w-5 h-5 text-violet-500 mb-2" />
+                    <p className="text-lg font-black text-foreground">۴</p>
+                    <p className="text-[10px] text-muted-foreground">ابزار فعال</p>
+                  </div>
+                  <div className="rounded-xl border border-border/50 p-3">
+                    <Sparkles className="w-5 h-5 text-amber-500 mb-2" />
+                    <p className="text-lg font-black text-foreground">۸۵</p>
+                    <p className="text-[10px] text-muted-foreground">امتیاز کارنکس</p>
+                  </div>
+                </div>
+
+                {/* AI suggestion */}
+                <div className="rounded-xl bg-muted/40 p-4 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shrink-0">
+                    <Bot className="w-4 h-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-foreground mb-1">پیشنهاد دستیار کارنکس</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      گام بعدی: بوم مدل کسب‌وکارت رو کامل کن تا نقاط ضعفت رو پیدا کنیم.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Floating badge — bottom right */}
+            <div className="absolute -bottom-6 -end-6 bg-card border border-border rounded-2xl shadow-xl p-4 flex items-center gap-3 animate-float">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-emerald-500" />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">رشد این هفته</p>
+                <p className="text-sm font-black text-foreground">+۲۴٪ 🚀</p>
+              </div>
+            </div>
+
+            {/* Floating badge — top left */}
+            <div className="absolute -top-4 -start-4 bg-card border border-border rounded-2xl shadow-xl p-3 flex items-center gap-2 animate-float [animation-delay:1.5s]">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-xs font-bold text-foreground">AI دستیار فعال</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Startup core tools — mobile */}
+        <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto mt-16 lg:hidden animate-fade-in-up [animation-delay:500ms] opacity-0">
+          {[
+            { icon: Map, title: "نقشه راه", color: "bg-primary" },
+            { icon: Bot, title: "کوپایلوت", color: "bg-ai" },
+            { icon: TrendingUp, title: "رشد", color: "bg-secondary" },
+          ].map((p) => (
+            <div
+              key={p.title}
+              className="flex items-center gap-2 bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl p-3"
+            >
+              <div className={`w-8 h-8 rounded-lg ${p.color} flex items-center justify-center shrink-0`}>
+                <p.icon className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-sm font-bold text-foreground">{p.title}</span>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.5 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <motion.div
-          animate={{ y: [0, 8, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex items-start justify-center p-1"
-        >
+      <div className="absolute bottom-8 start-1/2 -translate-x-1/2 hidden md:block animate-fade-in-up [animation-delay:1500ms] opacity-0">
+        <div className="w-6 h-10 rounded-full border-2 border-muted-foreground/30 flex items-start justify-center p-1 animate-bounce-gentle">
           <div className="w-1.5 h-3 rounded-full bg-primary" />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </section>
   );
 };

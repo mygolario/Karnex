@@ -1,86 +1,93 @@
-'use client';
+import { getSiteUrl } from "@/lib/site-url";
 
-import Script from 'next/script';
+const SITE_URL = getSiteUrl();
 
-// Organization structured data for Karnex
+const SOCIAL_URLS = [
+  "https://instagram.com/karnex.ir",
+  "https://youtube.com/@karnex",
+  "https://twitter.com/karnex_ir",
+  "https://linkedin.com/company/karnex",
+];
+
 const organizationSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: 'کارنکس',
-  alternateName: 'Karnex',
-  url: 'https://www.karnex.ir',
-  logo: 'https://www.karnex.ir/logo-light.png',
-  description: 'دستیار هوشمند کارآفرینی - با کارنکس ایده خود را به کسب‌وکار تبدیل کنید',
-  sameAs: [],
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "کارنکس",
+  alternateName: "Karnex",
+  url: SITE_URL,
+  logo: `${SITE_URL}/logo-light.png`,
+  description: "هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی — از ایده تا بوم، نقشه راه و پیچ‌دک",
+  sameAs: SOCIAL_URLS,
   contactPoint: {
-    '@type': 'ContactPoint',
-    contactType: 'customer service',
-    availableLanguage: ['Persian', 'English'],
+    "@type": "ContactPoint",
+    contactType: "customer service",
+    availableLanguage: ["Persian", "English"],
   },
 };
 
-// WebSite schema for search features
 const websiteSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'WebSite',
-  name: 'کارنکس',
-  alternateName: 'Karnex',
-  url: 'https://www.karnex.ir',
-  inLanguage: 'fa-IR',
-  description: 'با کارنکس، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید',
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "کارنکس",
+  alternateName: "Karnex",
+  url: SITE_URL,
+  inLanguage: "fa-IR",
+  description: "هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی",
 };
 
-// SoftwareApplication schema for the SaaS platform
 const softwareSchema = {
-  '@context': 'https://schema.org',
-  '@type': 'SoftwareApplication',
-  name: 'کارنکس',
-  alternateName: 'Karnex',
-  applicationCategory: 'BusinessApplication',
-  operatingSystem: 'Web',
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "کارنکس",
+  alternateName: "Karnex",
+  applicationCategory: "BusinessApplication",
+  operatingSystem: "Web",
   offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'IRR',
-    description: 'شروع رایگان',
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "IRR",
+    description: "شروع رایگان",
   },
-  description: 'دستیار هوشمند راه‌اندازی کسب‌وکار با کارنکس',
-  aggregateRating: {
-    '@type': 'AggregateRating',
-    ratingValue: '4.8',
-    ratingCount: '500',
-    bestRating: '5',
-    worstRating: '1',
-  },
+  description: "هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی با بوم، نقشه راه و پیچ‌دک",
 };
 
-export function JsonLd() {
+type JsonLdProps = {
+  includeSoftware?: boolean;
+  faqItems?: { question: string; answer: string }[];
+};
+
+function JsonLdScript({ id, data }: { id: string; data: object }) {
+  return (
+    <script
+      id={id}
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+
+export function JsonLd({ includeSoftware = false, faqItems }: JsonLdProps) {
+  const faqSchema = faqItems?.length
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faqItems.map((item) => ({
+          "@type": "Question",
+          name: item.question,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: item.answer,
+          },
+        })),
+      }
+    : null;
+
   return (
     <>
-      <Script
-        id="organization-schema"
-        type="application/ld+json"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(organizationSchema),
-        }}
-      />
-      <Script
-        id="website-schema"
-        type="application/ld+json"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(websiteSchema),
-        }}
-      />
-      <Script
-        id="software-schema"
-        type="application/ld+json"
-        strategy="afterInteractive"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(softwareSchema),
-        }}
-      />
+      <JsonLdScript id="organization-schema" data={organizationSchema} />
+      <JsonLdScript id="website-schema" data={websiteSchema} />
+      {includeSoftware && <JsonLdScript id="software-schema" data={softwareSchema} />}
+      {faqSchema && <JsonLdScript id="faq-schema" data={faqSchema} />}
     </>
   );
 }

@@ -1,12 +1,9 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useCanvasStore } from "@/lib/canvas/store";
+import { getTemplate } from "@/lib/canvas/templates";
 
-import { useProject } from "@/contexts/project-context";
-
-// Define the steps for the Business Model Canvas (BMC)
-// Order based on standard "Storytelling" flow for BMC:
-// Customer Segments -> Value Prop -> Channels -> Relationships -> Revenue -> Key Resources -> Activities -> Partners -> Cost
 export const BMC_STEPS = [
   {
     id: "customerSegments",
@@ -83,14 +80,29 @@ export const BMC_STEPS = [
 ];
 
 export function useCanvasWizard({ onComplete }: { onComplete: (answers: Record<string, string>) => void }) {
+  const canvasType = useCanvasStore((s) => s.canvasType);
+  const templateSteps = useMemo(() => {
+    const template = getTemplate(canvasType);
+    return template.sections.map((s) => ({
+      id: s.id,
+      title: s.title,
+      question: `برای بخش «${s.title}» چه ایده‌ها یا اطلاعاتی دارید؟`,
+      description: s.description || "",
+      placeholder: "ایده‌ها و نکات خود را بنویسید...",
+      color: s.color,
+    }));
+  }, [canvasType]);
+
+  const steps = templateSteps.length > 0 ? templateSteps : BMC_STEPS;
+
   const [isOpen, setIsOpen] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [currentInput, setCurrentInput] = useState("");
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
-  const currentStep = useMemo(() => BMC_STEPS[currentStepIndex], [currentStepIndex]);
+  const currentStep = useMemo(() => steps[currentStepIndex], [currentStepIndex, steps]);
 
-  const progress = ((currentStepIndex + 1) / BMC_STEPS.length) * 100;
+  const progress = ((currentStepIndex + 1) / steps.length) * 100;
 
   const openWizard = () => {
     setIsOpen(true);
@@ -111,7 +123,7 @@ export function useCanvasWizard({ onComplete }: { onComplete: (answers: Record<s
     }
     setAnswers(newAnswers);
     
-    if (currentStepIndex < BMC_STEPS.length - 1) {
+    if (currentStepIndex < steps.length - 1) {
       setCurrentStepIndex((prev) => prev + 1);
       setCurrentInput("");
     } else {
@@ -122,7 +134,7 @@ export function useCanvasWizard({ onComplete }: { onComplete: (answers: Record<s
   };
 
   const skipStep = () => {
-    if (currentStepIndex < BMC_STEPS.length - 1) {
+    if (currentStepIndex < steps.length - 1) {
       setCurrentStepIndex((prev) => prev + 1);
       setCurrentInput("");
     } else {
@@ -145,7 +157,7 @@ export function useCanvasWizard({ onComplete }: { onComplete: (answers: Record<s
     isOpen,
     currentStep,
     currentStepIndex,
-    totalSteps: BMC_STEPS.length,
+    totalSteps: steps.length,
     progress,
     currentInput,
     setCurrentInput,

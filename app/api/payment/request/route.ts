@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth/session";
 import { zibalRequest } from '@/lib/zibal';
 import { getPlanById } from '@/lib/payment/pricing';
 import prisma from "@/lib/prisma";
@@ -20,7 +20,6 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { planId, billingCycle = 'monthly' } = body;
 
-    // Validate
     if (!planId) {
       return NextResponse.json({ error: 'planId is required' }, { status: 400 });
     }
@@ -30,33 +29,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 });
     }
 
-    // Calculate amount in Tomans
     const isAnnual = billingCycle === 'yearly';
-    const monthlyPrice = plan.price.monthly; // Already in Tomans
-
-    let finalAmountTomans: number;
-    if (isAnnual) {
-      // Yearly price is already total for 12 months in the plan config
-      finalAmountTomans = plan.price.yearly;
-    } else {
-      finalAmountTomans = monthlyPrice;
-    }
-
-    // Convert to Rials (Zibal expects Rials)
+    const finalAmountTomans = isAnnual ? plan.price.yearly : plan.price.monthly;
     const amountInRials = finalAmountTomans * 10;
 
-
-    // Build callback URL with metadata for the verify page
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://karnex.ir';
-    // Use the PAGE route, not the API route
-    const callbackUrl = `${baseUrl}/payment/verify?plan=${planId}&cycle=${billingCycle}&uid=${user.id}`;
-    
-    // Create description
-    const description = `خرید اشتراک ${plan.name} - ${isAnnual ? 'سالانه' : 'ماهانه'} - کارنکس`;
     const orderId = `${planId}_${Date.now()}`;
 
-    // Record pending transaction in DB using Prisma
-    // We create the transaction record before request to have a trace
+    // Clean callback URL — Zibal only appends trackId, success, status, orderId.
+    // All payment context is stored in the Transaction record before redirect.
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://www.karnex.ir';
+    const callbackUrl = `${baseUrl}/api/payment/verify`;
+    
+    const description = `خرید اشتراک ${plan.name} - ${isAnnual ? 'سالانه' : 'ماهانه'} - کارنکس`;
+
     const transaction = await prisma.transaction.create({
         data: {
             userId: user.id,
@@ -66,22 +51,19 @@ export async function POST(req: Request) {
             status: 'pending',
             gateway: 'zibal',
             description: description,
-            metadata: { billingCycle, orderId } // Save billing cycle for subscription activation
+            metadata: { billingCycle, orderId },
         }
     });
 
-
-    // Initiate Zibal payment
     const paymentUrl = await zibalRequest(
       amountInRials,
       description,
       callbackUrl,
-      undefined, // mobile
+      undefined,
       orderId
     );
 
     if (paymentUrl) {
-      // Extract trackId and update the transaction record
       const trackId = paymentUrl.split('/start/')[1];
       if (trackId) {
          await prisma.transaction.update({
@@ -94,7 +76,6 @@ export async function POST(req: Request) {
     } else {
       console.error("[Payment API] ❌ Zibal returned null URL");
 
-      // Mark transaction as failed
       await prisma.transaction.update({
           where: { id: transaction.id },
           data: { status: 'failed' }

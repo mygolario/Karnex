@@ -1,28 +1,72 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { 
-  Settings, LogOut, User, Crown, 
-  ChevronDown, CreditCard, Sparkles, CircleHelp
+import {
+  Settings, LogOut, User, Crown,
+  ChevronDown, Sparkles, ChevronLeft,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
-// import { CommandMenu } from "@/components/dashboard/command-menu";
+import { CommandMenu } from "@/components/dashboard/command-menu";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
 import { useAuth } from "@/contexts/auth-context";
-import { useProject } from "@/contexts/project-context";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { cn } from "@/lib/utils";
+import { TourLauncher } from "@/components/tour/tour-launcher";
+
+/* ── Breadcrumb map ── */
+const routeLabels: Record<string, string> = {
+  "/dashboard/overview": "پیشخوان",
+  "/dashboard/roadmap": "نقشه راه",
+  "/dashboard/canvas": "تحلیل کسب‌وکار",
+  "/dashboard/copilot": "دستیار کارنکس",
+  "/dashboard/pitch-deck": "پیچ‌دک",
+  "/dashboard/health": "سلامت کسب‌وکار",
+  "/dashboard/finance": "سود و زیان",
+  "/dashboard/cashflow": "جریان نقدی",
+  "/dashboard/expenses": "هزینه‌ها",
+  "/dashboard/tax": "برآورد مالیات",
+  "/dashboard/inventory": "موجودی و انبار",
+  "/dashboard/sales": "صندوق فروش",
+  "/dashboard/staff": "کارکنان و شیفت",
+  "/dashboard/loyalty": "باشگاه مشتریان",
+  "/dashboard/promotions": "تخفیف و کمپین",
+  "/dashboard/broadcast": "پیام گروهی",
+  "/dashboard/referral": "معرفی دوستان",
+  "/dashboard/coupons": "کوپن و QR",
+  "/dashboard/appointments": "نوبت‌دهی",
+  "/dashboard/reviews": "نظرات مشتریان",
+  "/dashboard/pricing": "قیمت‌گذاری",
+  "/dashboard/monthly-review": "مرور ماهانه",
+  "/dashboard/goals": "اهداف KPI",
+  "/dashboard/content-calendar": "تقویم محتوا",
+  "/dashboard/scripts": "اسکریپت‌نویسی",
+  "/dashboard/sponsor-rates": "تعرفه اسپانسری",
+  "/dashboard/account": "حساب کاربری",
+  "/dashboard/media-kit": "مدیاکیت",
+  "/dashboard/analytics": "آنالیتیکس",
+  "/dashboard/ideas": "ایده‌ها",
+  "/dashboard/validation": "اعتبارسنجی ایده",
+  "/dashboard/assistant": "دستیار",
+  "/dashboard/support": "پشتیبانی",
+  "/dashboard/help": "راهنما",
+  "/dashboard/followup": "پیگیری",
+  "/dashboard/customer-bot": "ربات مشتری",
+  "/dashboard/repurpose": "توزیع محتوا",
+  "/dashboard/menu": "منو",
+  "/dashboard/admin": "مدیریت",
+};
 
 export function DashboardHeader() {
   const { user, signOut, userProfile } = useAuth();
-  const { activeProject } = useProject();
   const router = useRouter();
+  const pathname = usePathname();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
@@ -38,58 +82,42 @@ export function DashboardHeader() {
     router.push('/');
   };
 
-  const getProjectTypeLabel = () => {
-    switch (activeProject?.projectType) {
-      case "startup": return "استارتاپ مدرن";
-      case "traditional": return "کسب‌وکار سنتی";
-      case "creator": return "تولید محتوا";
-      default: return "یک پروژه جدید بسازید";
-    }
-  };
-
-  // Mock notifications
-  const notifications = [
-    { id: 1, title: "بوم کسب‌وکار شما تکمیل شد", time: "۲ ساعت پیش", read: false },
-    { id: 2, title: "نقشه راه جدید آماده است", time: "دیروز", read: true },
-  ];
-
-  const unreadCount = notifications.filter(n => !n.read).length;
+  // Build breadcrumb
+  const currentLabel = routeLabels[pathname] || "داشبورد";
 
   return (
-    <header className="sticky top-0 z-40 h-16 px-6 flex items-center justify-between bg-background/80 backdrop-blur-xl border-b border-border/50">
-      {/* Left: Project Info (RTL: Right Side) */}
-      <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-40 h-16 px-4 md:px-6 flex items-center justify-between bg-background/80 backdrop-blur-xl border-b border-border/50">
+      {/* Left: Mobile Nav + Breadcrumbs */}
+      <div className="flex items-center gap-3">
         <MobileNav />
-        <div>
-          <h1 className="text-lg font-bold text-foreground">
-            {activeProject?.projectName || "داشبورد کارنکس"}
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            {getProjectTypeLabel()}
-          </p>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-muted-foreground hidden md:inline">داشبورد</span>
+          <ChevronLeft className="w-4 h-4 text-muted-foreground/50 hidden md:inline" />
+          <span className="font-bold text-foreground">{currentLabel}</span>
         </div>
       </div>
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
+        {/* Command Menu (desktop) */}
+        <div className="hidden md:block">
+          <CommandMenu />
+        </div>
+
+        {/* Notification Bell */}
+        <NotificationBell />
+
         {/* Theme Toggle */}
         <ThemeToggle />
 
-        {/* Help / Restart Tour Button */}
-        <button
-           onClick={() => window.dispatchEvent(new Event('restart-tour'))}
-           className="p-2 rounded-xl hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-colors"
-           title="راهنما و شروع مجدد تور"
-           data-tour-id="help-button"
-        >
-           <CircleHelp size={20} />
-        </button>
+        {/* Tour Launcher */}
+        <TourLauncher />
 
-        {/* User Avatar & Dropdown - Premium Design */}
+        {/* User Avatar & Dropdown */}
         <div className="relative" ref={userMenuRef}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2 p-1.5 pr-3 rounded-xl hover:bg-muted/80 transition-all duration-200 group"
+            className="flex items-center gap-2 p-1.5 pe-3 rounded-xl hover:bg-muted/80 transition-all duration-200 group"
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-primary/20">
               {(userProfile?.avatar_url || user?.image) ? (
@@ -98,7 +126,7 @@ export function DashboardHeader() {
                 (userProfile?.full_name?.[0] || user?.name?.[0] || "U")
               )}
             </div>
-            <div className="hidden md:block text-right">
+            <div className="hidden md:block text-end">
               <p className="text-sm font-semibold text-foreground leading-tight">
                 {userProfile?.full_name || user?.name || "کاربر"}
               </p>
@@ -108,8 +136,9 @@ export function DashboardHeader() {
                   (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus") && "text-purple-500"
                 )} />
                 <span className="text-[10px] text-muted-foreground">
-                  {userProfile?.subscription?.planId === "pro" ? "حرفه‌ای" : 
-                   userProfile?.subscription?.planId === "plus" ? "پلاس" : "رایگان"}
+                  {userProfile?.subscription?.planId === "pro" ? "حرفه‌ای" :
+                   userProfile?.subscription?.planId === "plus" ? "پلاس" :
+                   userProfile?.subscription?.planId === "ultra" ? "اولترا" : "رایگان"}
                 </span>
               </div>
             </div>
@@ -123,7 +152,7 @@ export function DashboardHeader() {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute left-0 top-full mt-2 w-72 bg-card border border-border rounded-2xl shadow-2xl shadow-black/10 overflow-hidden"
+                className="absolute end-0 top-full mt-2 w-72 bg-card border border-border rounded-2xl shadow-2xl shadow-black/10 overflow-hidden"
               >
                 {/* User Info Header */}
                 <div className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 border-b border-border">
@@ -143,15 +172,15 @@ export function DashboardHeader() {
                         {user?.email || "ایمیل ثبت نشده"}
                       </p>
                     </div>
-                    <div className={cn("px-2 py-1 rounded-lg border", 
-                      (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus") 
-                        ? "bg-purple-500/10 border-purple-500/20" 
+                    <div className={cn("px-2 py-1 rounded-lg border",
+                      (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus")
+                        ? "bg-purple-500/10 border-purple-500/20"
                         : "bg-yellow-500/10 border-yellow-500/20"
                     )}>
                       <div className="flex items-center gap-1">
                         <Crown size={12} className={cn(
-                          (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus") 
-                            ? "text-purple-500" 
+                          (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus")
+                            ? "text-purple-500"
                             : "text-yellow-500"
                         )} />
                         <span className={cn("text-[10px] font-bold",
@@ -159,8 +188,9 @@ export function DashboardHeader() {
                             ? "text-purple-600 dark:text-purple-400"
                             : "text-yellow-600 dark:text-yellow-400"
                         )}>
-                          {userProfile?.subscription?.planId === "pro" ? "حرفه‌ای" : 
-                           userProfile?.subscription?.planId === "plus" ? "پلاس" : "رایگان"}
+                          {userProfile?.subscription?.planId === "pro" ? "حرفه‌ای" :
+                           userProfile?.subscription?.planId === "plus" ? "پلاس" :
+                           userProfile?.subscription?.planId === "ultra" ? "اولترا" : "رایگان"}
                         </span>
                       </div>
                     </div>
@@ -170,25 +200,25 @@ export function DashboardHeader() {
                 {/* Menu Items */}
                 <div className="p-2">
                   <Link
-                    href="/dashboard/profile"
+                    href="/dashboard/account"
                     onClick={() => setShowUserMenu(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/80 transition-colors group"
                   >
                     <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-500">
                       <User size={16} />
                     </div>
-                    <span className="text-sm font-medium text-foreground">حساب کاربری</span>
+                    <span className="text-sm font-medium text-foreground">حساب کاربری و تنظیمات</span>
                   </Link>
 
                   <Link
-                    href="/dashboard/settings"
+                    href="/dashboard/account?section=integrations"
                     onClick={() => setShowUserMenu(false)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/80 transition-colors group"
                   >
                     <div className="w-8 h-8 rounded-lg bg-slate-500/10 flex items-center justify-center text-slate-500">
                       <Settings size={16} />
                     </div>
-                    <span className="text-sm font-medium text-foreground">تنظیمات</span>
+                    <span className="text-sm font-medium text-foreground">شخصی‌سازی و یکپارچه‌سازی</span>
                   </Link>
 
                   <Link
@@ -229,4 +259,3 @@ export function DashboardHeader() {
     </header>
   );
 }
-

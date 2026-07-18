@@ -169,7 +169,7 @@ export function PermitManager() {
                 لیست مجوزها
             </h3>
             <Button size="sm" onClick={() => setIsAdding(!isAdding)}>
-                <Plus size={16} className="mr-1" />
+                <Plus size={16} className="me-1" />
                 افزودن مجوز
             </Button>
         </div>

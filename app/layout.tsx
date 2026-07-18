@@ -1,24 +1,21 @@
-import type { Metadata } from 'next';
-import { Vazirmatn } from 'next/font/google';
+import type { Metadata, Viewport } from 'next';
+import localFont from 'next/font/local';
 import './globals.css';
 import { AuthProvider } from '@/contexts/auth-context';
 import { ProjectProvider } from '@/contexts/project-context';
 import { ThemeProvider } from '@/components/shared/theme-provider';
 import { JsonLd } from '@/components/shared/json-ld';
 import { NetworkStatus } from '@/components/shared/network-status';
-import { CookieBanner } from '@/components/shared/cookie-banner'; 
-import { GoogleAnalytics } from '@/components/shared/analytics';
-import { SessionProvider } from "next-auth/react";
+import { GoogleAnalytics, PerformanceMonitoring } from '@/components/shared/analytics';
 import { ToastProvider } from '@/components/ui/toast';
-
-const vazir = Vazirmatn({ subsets: ['arabic', 'latin'] });
+import { ClientHelpers } from '@/components/shared/client-helpers';
 
 export const metadata: Metadata = {
   title: {
     default: 'کارنکس | دستیار هوشمند کارآفرینی',
     template: '%s | کارنکس',
   },
-  description: 'با دستیار کارنکس، ایده خود را در ۳۰ ثانیه به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
+  description: 'هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی — بوم کسب‌وکار، نقشه راه، پیچ‌دک و دستیار AI.',
   keywords: [
     'کارآفرینی',
     'استارتاپ',
@@ -37,9 +34,6 @@ export const metadata: Metadata = {
   creator: 'Karnex',
   publisher: 'Karnex',
   metadataBase: new URL('https://www.karnex.ir'),
-  alternates: {
-    canonical: '/',
-  },
   robots: {
     index: true,
     follow: true,
@@ -69,7 +63,57 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.json',
   category: 'technology',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'کارنکس',
+  },
+  icons: {
+    icon: [
+      { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ec4899' },
+    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
+  ],
 };
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#ec4899',
+};
+
+const vazirmatn = localFont({
+  src: [
+    {
+      path: '../vazirmatn-v33.003/fonts/webfonts/Vazirmatn-Regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../vazirmatn-v33.003/fonts/webfonts/Vazirmatn-Medium.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../vazirmatn-v33.003/fonts/webfonts/Vazirmatn-SemiBold.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../vazirmatn-v33.003/fonts/webfonts/Vazirmatn-Bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-vazirmatn',
+  display: 'swap',
+});
 
 export default function RootLayout({
   children,
@@ -77,8 +121,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="fa" dir="rtl" suppressHydrationWarning>
-      <body className={`${vazir.className} theme-transition`}>
+    <html lang="fa" dir="rtl" suppressHydrationWarning className={vazirmatn.variable}>
+      <head />
+      <body className={`${vazirmatn.className} theme-transition`}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:start-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+        >
+          رفتن به محتوای اصلی
+        </a>
         <JsonLd />
         <ThemeProvider
           attribute="class"
@@ -86,18 +137,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          <SessionProvider>
-            <AuthProvider>
+          <AuthProvider>
               <ToastProvider>
                 <GoogleAnalytics />
+                <PerformanceMonitoring />
                 <ProjectProvider>
                   <NetworkStatus />
+                  <ClientHelpers />
                   {children}
-                  <CookieBanner />
                 </ProjectProvider>
               </ToastProvider>
-            </AuthProvider>
-          </SessionProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

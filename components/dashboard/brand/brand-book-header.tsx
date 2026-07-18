@@ -31,8 +31,8 @@ export function BrandBookHeader({
     <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white shadow-2xl shadow-purple-500/20">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20 bg-center" />
-      <div className="absolute -right-20 -top-20 w-80 h-80 bg-white/20 blur-[100px] rounded-full animate-float mix-blend-overlay" />
-      <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-yellow-300/20 blur-[100px] rounded-full animate-float mix-blend-overlay" style={{ animationDelay: "-2s" }} />
+      <div className="absolute -end-20 -top-20 w-80 h-80 bg-white/20 blur-[100px] rounded-full animate-float mix-blend-overlay" />
+      <div className="absolute -start-20 -bottom-20 w-80 h-80 bg-yellow-300/20 blur-[100px] rounded-full animate-float mix-blend-overlay" style={{ animationDelay: "-2s" }} />
       
       {/* AI Hero Image */}
       {heroImageUrl && (
@@ -48,7 +48,7 @@ export function BrandBookHeader({
       
       {/* Content */}
       <div className="relative z-10 p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8">
-        <div className="text-center md:text-right flex-1">
+        <div className="text-center md:text-end flex-1">
           <div className="flex items-center justify-center md:justify-start gap-4 mb-4">
             <motion.div 
               className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-inner border border-white/20"
@@ -57,7 +57,7 @@ export function BrandBookHeader({
             >
               <Palette size={32} />
             </motion.div>
-            <div className="text-right">
+            <div className="text-end">
               <div className="flex items-center gap-3">
                 <h1 className="text-4xl md:text-5xl font-black tracking-tight">هویت بصری برند</h1>
                 <Badge variant="outline" className="hidden md:flex bg-white/10 backdrop-blur border-white/20 text-white gap-1 px-3">

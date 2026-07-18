@@ -1,7 +1,18 @@
 "use server";
 
-import { callOpenRouter, parseJsonFromAI, TEXT_MODELS } from "@/lib/openrouter";
+import { callOpenRouter, parseJsonFromAI, TEXT_MODELS, TIER_DEFAULT, TIER_GROUNDED } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
+import { runWithAiUsage } from "@/lib/ai-usage-context";
+import { getPrompt } from "@/lib/prompts/registry";
+import {
+  callAIWithValidation,
+  SuggestAudienceSchema,
+  SuggestNameSchema,
+  BreakTaskSchema,
+  SwotCompetitorsSchema,
+  PitchDeckSchema,
+  SmartCanvasSchema
+} from "@/lib/ai-validation";
 
 // === Shared Types ===
 interface ActionResponse<T> {
@@ -14,26 +25,35 @@ interface ActionResponse<T> {
 // === Suggest Audience ===
 
 export async function suggestAudienceAction(productIdea: string): Promise<ActionResponse<{ audiences: string[], revenueModels: string[] }>> {
+  let rollback = async () => {};
   try {
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    const limitResult = await checkAILimit('suggest-audience');
+    if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    rollback = limitResult.rollback;
 
     if (!productIdea || productIdea.trim().length < 3) {
       return { success: true, data: { audiences: [], revenueModels: [] } };
     }
 
-    const systemPrompt = `تو مشاور کسب‌وکار هستی.
-قانون: فقط فارسی پاسخ بده.
-۴ مخاطب هدف و ۳ مدل درآمدی پیشنهاد کن.
-فقط JSON خروجی بده:
-{"audiences": ["مخاطب۱", "مخاطب۲", "مخاطب۳", "مخاطب۴"], "revenueModels": ["مدل۱", "مدل۲", "مدل۳"]}`;
+    const { system, user } = getPrompt("suggestAudience", { productIdea });
 
-    const result = await callOpenRouter(
-      `ایده: ${productIdea}`,
-      { systemPrompt, maxTokens: 200, temperature: 0.5, timeoutMs: 15000 }
-    );
-
-    if (!result.success) {
+    try {
+      const parsed = await runWithAiUsage(
+        { userId: limitResult.user?.id || "anonymous", feature: "suggestAudience" },
+        () => callAIWithValidation(
+          user,
+          { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 25000 },
+          SuggestAudienceSchema,
+          1
+        )
+      );
+      return {
+        success: true,
+        data: parsed
+      };
+    } catch (err) {
+      console.warn("AI Validation failed for suggestAudienceAction, using fallback:", err);
+      await rollback();
       return { 
         success: true, // Return fallback as success
         data: {
@@ -42,27 +62,9 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
         }
       };
     }
-
-    try {
-      const parsed = parseJsonFromAI(result.content!);
-      return {
-        success: true,
-        data: {
-            audiences: parsed.audiences || [],
-            revenueModels: parsed.revenueModels || []
-        }
-      };
-    } catch {
-       return { 
-        success: true, 
-        data: {
-            audiences: ["جوانان", "خانواده‌ها", "متخصصان", "کسب‌وکارها"],
-            revenueModels: ["فروش مستقیم", "اشتراکی", "فریمیوم"]
-        }
-      };
-    }
   } catch (error) {
     console.error("suggestAudienceAction error:", error);
+    await rollback();
     return { success: false, error: "Failed to suggest audience" };
   }
 }
@@ -70,79 +72,134 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
 // === Suggest Project Name ===
 
 export async function suggestProjectNameAction(idea: string): Promise<ActionResponse<{ names: string[] }>> {
+  let rollback = async () => {};
   try {
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    const limitResult = await checkAILimit('suggest-name');
+    if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    rollback = limitResult.rollback;
 
     if (!idea) return { success: true, data: { names: [] } };
 
-    const systemPrompt = `تو متخصص برندسازی ایرانی هستی.
-قانون: فقط فارسی پاسخ بده.
-۶ اسم خلاقانه فارسی برای این کسب‌وکار پیشنهاد کن.
-فقط JSON آرایه خروجی بده:
-["نام ۱", "نام ۲", "نام ۳", "نام ۴", "نام ۵", "نام ۶"]`;
-
-    const result = await callOpenRouter(
-      `ایده: ${idea}`,
-      { systemPrompt, maxTokens: 200, temperature: 0.7, timeoutMs: 15000 }
-    );
-
-    if (!result.success) {
-       return { success: true, data: { names: generateFallbackNames(idea) } };
-    }
+    const { system, user } = getPrompt("suggestName", { idea });
 
     try {
-      let content = result.content!;
-      content = content.replace(/```json/g, "").replace(/```/g, "").trim();
-      const names = JSON.parse(content);
-
-      if (Array.isArray(names) && names.length > 0) {
-        return { success: true, data: { names: names.slice(0, 6) } };
+      const parsed = await runWithAiUsage(
+        { userId: limitResult.user?.id || "anonymous", feature: "suggestName" },
+        () => callAIWithValidation(
+          user,
+          { systemPrompt: system, maxTokens: 800, temperature: 0.7, timeoutMs: 20000 },
+          SuggestNameSchema,
+          2
+        )
+      );
+      const names = (parsed.names || []).map((n) => n.trim()).filter(Boolean).slice(0, 6);
+      if (names.length < 3) {
+        throw new Error(`AI returned insufficient names (${names.length})`);
       }
-    } catch {
-       const matches = result.content!.match(/["']([^"']+)["']/g);
-       if (matches && matches.length > 0) {
-         const names = matches.map((m: string) => m.replace(/["']/g, "")).slice(0, 6);
-         return { success: true, data: { names } };
-       }
+      return {
+        success: true,
+        data: { names }
+      };
+    } catch (err) {
+      console.warn("AI Validation failed for suggestProjectNameAction, using fallback:", err);
+      await rollback();
+      const fallbackNames = generateFallbackNames(idea);
+      return { success: true, data: { names: fallbackNames } };
     }
-    
-    return { success: true, data: { names: generateFallbackNames(idea) } };
 
   } catch (error) {
     console.error("suggestProjectNameAction error:", error);
+    await rollback();
     return { success: false, error: "Failed to suggest name" };
   }
 }
 
+function extractContextLine(idea: string, prefix: string): string {
+  const line = idea.split("\n").find((l) => l.startsWith(prefix));
+  if (!line) return "";
+  return line.slice(prefix.length).replace(/^:\s*/, "").trim();
+}
+
+const GENERIC_STOP_WORDS = new Set([
+  "کسب‌وکار", "سنتی", "استارتاپ", "تولید", "محتوا", "دسته", "شرح",
+  "جزئیات", "سبک", "مرجع", "فعلی", "کاربر", "پروژه", "چشم‌انداز",
+  "مثلاً", "ارزش", "واقعی", "دنیای", "تمرکز", "ساخت", "برند", "نام",
+]);
+
 function generateFallbackNames(idea: string): string[] {
-  const words = idea.split(/\s+/).filter(w => w.length > 2);
-  const baseWord = words[0] || "پروژه";
-  const suffixes = ["پلاس", "نو", "یار", "لند", "باز", "مارکت"];
-  return suffixes.map((suffix, i) =>
-    i < 3 ? `${baseWord} ${suffix}` : `${baseWord}${suffix}`
-  );
+  const userName = extractContextLine(idea, "نام فعلی کاربر");
+  const vision = extractContextLine(idea, "چشم‌انداز پروژه");
+  const details = extractContextLine(idea, "جزئیات");
+
+  const suggestions: string[] = [];
+  const seen = new Set<string>();
+
+  const add = (name: string) => {
+    const cleaned = name.trim().replace(/\s+/g, " ");
+    if (cleaned.length >= 2 && !seen.has(cleaned)) {
+      seen.add(cleaned);
+      suggestions.push(cleaned);
+    }
+  };
+
+  if (userName) {
+    const words = userName.split(/\s+/).filter(Boolean);
+    const [w1, w2] = words;
+    add(userName);
+    if (w1 && w2) {
+      add(`${w2} ${w1}`);
+      add(`${w1}‌${w2}`);
+      add(`${w1}${w2}`);
+      add(`نو ${w1}`);
+      add(`${w1}ی`);
+      add(`${w2}ی`);
+    } else if (w1) {
+      add(`${w1}ی`);
+      add(`نو ${w1}`);
+      add(`${w1}‌پلاس`);
+      add(`${w1}کده`);
+      add(`${w1}‌ک`);
+      add(`${w1}‌گاه`);
+    }
+  }
+
+  const textPool = [vision, details].filter(Boolean).join(" ");
+  const keywords = textPool
+    .split(/[\s\n،.:]+/)
+    .map((w) => w.replace(/[^\p{L}\p{N}‌]/gu, ""))
+    .filter((w) => w.length > 2 && !GENERIC_STOP_WORDS.has(w));
+
+  for (const kw of keywords.slice(0, 4)) {
+    add(`${kw}ی`);
+    add(`نو ${kw}`);
+  }
+
+  if (suggestions.length < 3) {
+    const seed = keywords[0] || "برند";
+    add(`${seed}ی`);
+    add(`نو ${seed}`);
+    add(`${seed}‌پلاس`);
+    add(`${seed}کده`);
+    add(`${seed}‌ک`);
+    add(`${seed}‌گاه`);
+  }
+
+  const result = suggestions.slice(0, 6);
+  return result;
 }
 
 // === Break Task ===
 
 export async function breakTaskAction(taskName: string): Promise<ActionResponse<{ subTasks: string[] }>> {
+  let rollback = async () => {};
   try {
-    const { errorResponse } = await checkAILimit();
-    if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    const limitResult = await checkAILimit('break-task');
+    if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    rollback = limitResult.rollback;
 
     if (!taskName) return { success: false, error: 'Task name required' };
 
-    const systemPrompt = `تو مشاور کسب‌وکار هستی.
-قانون: فقط فارسی پاسخ بده.
-این کار را به ۳ گام کوچک تقسیم کن.
-فقط JSON خروجی بده:
-{"subTasks": ["گام ۱", "گام ۲", "گام ۳"]}`;
-
-    const result = await callOpenRouter(
-      `کار: "${taskName}" - به ۳ گام فارسی تقسیم کن`,
-      { systemPrompt, maxTokens: 200, temperature: 0.5, timeoutMs: 20000 }
-    );
+    const { system, user } = getPrompt("breakTask", { taskName });
 
     const fallback = [
         `تحقیق درباره ${taskName}`,
@@ -150,227 +207,169 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
         `بررسی نتیجه`
     ];
 
-    if (!result.success) {
-      return { success: true, data: { subTasks: fallback } };
-    }
-
     try {
-      const parsed = parseJsonFromAI(result.content!);
-      return { success: true, data: { subTasks: parsed.subTasks || [] } };
-    } catch {
+      const parsed = await runWithAiUsage(
+        { userId: limitResult.user?.id || "anonymous", feature: "breakTask" },
+        () => callAIWithValidation(
+          user,
+          { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 20000 },
+          BreakTaskSchema,
+          1
+        )
+      );
+      return { success: true, data: parsed };
+    } catch (err) {
+      console.warn("AI Validation failed for breakTaskAction, using fallback:", err);
+      await rollback();
       return { success: true, data: { subTasks: fallback } };
     }
 
   } catch (error) {
     console.error("breakTaskAction error:", error);
+    await rollback();
     return { success: false, error: "Failed to break task" };
   }
 }
 
 // === Analyze Competitors ===
 
-export async function analyzeCompetitorsAction(data: { projectName: string, projectIdea: string, audience: string }): Promise<ActionResponse<any>> {
+export async function analyzeCompetitorsAction(
+  data: {
+    projectName: string;
+    projectIdea: string;
+    audience: string;
+    contextBlock?: string;
+  },
+  options?: { skipLimitCheck?: boolean }
+): Promise<ActionResponse<any>> {
+    let rollback = async () => {};
+    let usageUserId: string | undefined;
     try {
-        const { errorResponse } = await checkAILimit();
-        if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+        // When invoked from the Copilot agent loop, the outer request already
+        // incremented the monthly quota and records usage aggregated there —
+        // skip a second charge and a second usage record to avoid double counting.
+        if (!options?.skipLimitCheck) {
+            const limitResult = await checkAILimit('analyze-competitors');
+            if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+            rollback = limitResult.rollback;
+            usageUserId = limitResult.user?.id;
+        }
 
         if (!process.env.OPENROUTER_API_KEY) {
-            return { success: true, data: getMockCompetitors() };
+            await rollback();
+            return { success: false, error: "OPENROUTER_API_KEY_MISSING" };
         }
 
-        const prompt = `
-        You are an Iranian market research expert. Analyze competitors for this startup idea:
-        
-        Project: ${data.projectName}
-        Idea: ${data.projectIdea}
-        Target Audience: ${data.audience}
-    
-        Find 5 real competitors (3 Iranian + 2 international). For each:
-        - name: company/product name
-        - channel: main platform (وب‌سایت, اینستاگرام, اپ, etc.)
-        - strength: one key strength in Persian
-        - weakness: one key weakness in Persian
-        - isIranian: boolean
-    
-        Also generate a SWOT analysis specifically for this new startup entering this market:
-        - strengths: 3 items (what advantages they have as a newcomer)
-        - weaknesses: 3 items (what challenges they face)
-        - opportunities: 3 items (market opportunities)
-        - threats: 3 items (potential threats)
-    
-        All text must be in Persian (فارسی).
-    
-        Return ONLY valid JSON:
-        {
-          "competitors": [...],
-          "swot": {
-            "strengths": [],
-            "weaknesses": [],
-            "opportunities": [],
-            "threats": []
-          }
-        }
-        `;
-
-        const models = TEXT_MODELS;
-        let response;
-        
-        for (const model of models) {
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 45000);
-
-                response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-                    method: "POST",
-                    headers: {
-                        "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": "https://karnex.ir",
-                        "X-Title": "Karnex"
-                    },
-                    body: JSON.stringify({
-                        model,
-                        messages: [
-                            { role: "system", content: "You are a market research analyst. Always respond with valid JSON only." },
-                            { role: "user", content: prompt }
-                        ],
-                        temperature: 0.7,
-                        response_format: { type: "json_object" }
-                    }),
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-
-                if (response.ok) break;
-            } catch (e: any) {
-                console.warn(`Model ${model} error:`, e.message);
-            }
-        }
-
-        if (!response?.ok) {
-            return { success: true, data: getMockCompetitors() };
-        }
-
-        const responseData = await response.json();
-        const content = responseData.choices?.[0]?.message?.content || "{}";
+        const { system, user } = getPrompt("analyzeCompetitors", {
+            projectName: data.projectName,
+            projectIdea: data.projectIdea,
+            audience: data.audience,
+            contextBlock: data.contextBlock || "",
+        });
 
         try {
-            const parsed = JSON.parse(content);
+            const runValidation = () => callAIWithValidation(
+                user,
+                {
+                    systemPrompt: system,
+                    maxTokens: 3500,
+                    temperature: 0.5,
+                    timeoutMs: 45000,
+                    // Grounded via Perplexity Sonar (built-in live web search).
+                    modelOverride: TIER_GROUNDED,
+                },
+                SwotCompetitorsSchema,
+                1
+            );
+            // Only record per-call usage on the direct (non-Copilot) path.
+            const parsed = usageUserId
+                ? await runWithAiUsage({ userId: usageUserId, feature: "analyzeCompetitors" }, runValidation)
+                : await runValidation();
             return { success: true, data: parsed };
-        } catch {
-            const jsonMatch = content.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                return { success: true, data: JSON.parse(jsonMatch[0]) };
-            }
-            return { success: true, data: getMockCompetitors() };
+        } catch (err) {
+            console.warn("AI Validation failed for analyzeCompetitorsAction:", err);
+            await rollback();
+            return { success: false, error: "AI_VALIDATION_FAILED" };
         }
 
     } catch (error) {
         console.error("analyzeCompetitorsAction error:", error);
-        return { success: true, data: getMockCompetitors() };
+        await rollback();
+        return { success: false, error: "ANALYZE_COMPETITORS_FAILED" };
     }
-}
-
-function getMockCompetitors() {
-    return {
-        competitors: [
-          { name: "رقیب ایرانی ۱", channel: "وب‌سایت", strength: "برند قوی", weakness: "قیمت بالا", isIranian: true },
-          { name: "رقیب ایرانی ۲", channel: "اینستاگرام", strength: "فعال در شبکه اجتماعی", weakness: "کیفیت ناپایدار", isIranian: true },
-          { name: "رقیب ایرانی ۳", channel: "اپ موبایل", strength: "تجربه کاربری خوب", weakness: "بدون وب‌سایت", isIranian: true },
-          { name: "Global Competitor", channel: "Website", strength: "تکنولوژی پیشرفته", weakness: "فارسی ندارد", isIranian: false },
-          { name: "International Player", channel: "App", strength: "سرمایه‌گذاری بالا", weakness: "درک بازار ایران ندارد", isIranian: false }
-        ],
-        swot: {
-          strengths: ["چابکی و سرعت تصمیم‌گیری", "درک عمیق بازار ایران", "هزینه‌های پایین"],
-          weaknesses: ["برند ناشناخته", "منابع مالی محدود", "تیم کوچک"],
-          opportunities: ["شکاف در بازار موجود", "رشد دیجیتالی ایران", "نیاز برآورده نشده مشتریان"],
-          threats: ["ورود رقبای بزرگ", "تغییرات اقتصادی", "تغییر رفتار مصرف‌کننده"]
-        }
-    };
 }
 // === Generate Pitch Deck ===
 
-export async function generatePitchDeckAction(data: { idea: string, wizardAnswers?: any }): Promise<ActionResponse<{ slides: any[] }>> {
+export async function generatePitchDeckAction(data: { idea: string, wizardAnswers?: any, projectContext?: any }): Promise<ActionResponse<{ slides: any[] }>> {
+    let rollback = async () => {};
     try {
-        const { errorResponse } = await checkAILimit();
-        if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+        const limitResult = await checkAILimit('generate-pitch-deck');
+        if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+        rollback = limitResult.rollback;
 
-        const { idea, wizardAnswers } = data;
-        const systemPrompt = `تو یک مشاور استارتاپ حرفه‌ای و متخصص جذب سرمایه هستی.
-        قانون: فقط فارسی پاسخ بده.
-        برای ایده استارتاپی زیر یک پیچ‌دک (Pitch Deck) کامل و حرفه‌ای ۱۰ اسلایدی بنویس.
-        
-        ${wizardAnswers ? `اطلاعات تکمیلی:
-        - تگ‌لاین: ${wizardAnswers.tagline}
-        - مشکل: ${wizardAnswers.problem}
-        - راهکار: ${wizardAnswers.solution}
-        - بازار هدف: ${wizardAnswers.market}
-        - مدل درآمدی: ${wizardAnswers.revenue}
-        - تیم: ${wizardAnswers.team}` : ''}
+        const { idea, wizardAnswers, projectContext } = data;
+        const wizardAnswersBlock = wizardAnswers ? `اطلاعات تکمیلی از فرم دستیار:
+        - تگ‌لاین: ${wizardAnswers.tagline || ''}
+        - مشکل: ${wizardAnswers.problem || ''}
+        - راهکار: ${wizardAnswers.solution || ''}
+        - بازار هدف: ${wizardAnswers.market || ''}
+        - مدل درآمدی: ${wizardAnswers.revenue || ''}
+        - تیم: ${wizardAnswers.team || ''}` : '';
 
-        خروجی باید دقیقاً یک آرایه JSON از اسلایدها باشد با ساختار زیر:
-        [
-            {
-                "id": "unique_id",
-                "type": "generic", 
-                "title": "عنوان اسلاید",
-                "bullets": ["نکته ۱", "نکته ۲", "نکته ۳"]
-            }
-        ]
-
-        اسلایدهای مورد نیاز:
-        1. عنوان (Title)
-        2. مشکل (Problem)
-        3. راهکار (Solution)
-        4. چرا الان؟ (Why Now)
-        5. اندازه بازار (Market Size)
-        6. محصول (Product)
-        7. مدل درآمدی (Business Model)
-        8. رقبا (Competition)
-        9. تیم (Team)
-        10. درخواست سرمایه (Ask)
-
-        تیترها جذاب و کوتاه باشند. بولت‌پوینت‌ها عمیق و قانع‌کننده باشند.`;
-
-        const result = await callOpenRouter(
-            `ایده: ${idea}`,
-            { systemPrompt, maxTokens: 2000, temperature: 0.7, timeoutMs: 40000 }
-        );
-
-        if (!result.success) {
-             return { success: false, error: "Failed to generate deck" };
+        let projectContextBlock = '';
+        if (projectContext) {
+            projectContextBlock = `اطلاعات پروژه‌ای فعلی در سیستم (از این اطلاعات برای شخصی‌سازی ارائه استفاده کن):
+- نام پروژه: ${projectContext.projectName || ''}
+- بوم ناب (Lean Canvas):
+  * ارزش پیشنهادی: ${projectContext.leanCanvas?.uniqueValue || ''}
+  * بخش مشتریان: ${projectContext.leanCanvas?.customerSegments || ''}
+  * مدل درآمدی: ${projectContext.leanCanvas?.revenueStream || ''}
+  * ساختار هزینه‌ها: ${projectContext.leanCanvas?.costStructure || ''}
+- لیست رقبا: ${Array.isArray(projectContext.competitors) ? projectContext.competitors.map((c: any) => `${c.name} (${c.strength || ''})`).join('، ') : ''}
+- نقشه راه فازها: ${Array.isArray(projectContext.roadmap) ? projectContext.roadmap.map((r: any) => `${r.title}`).join('، ') : ''}`;
         }
 
-        try {
-            const content = result.content!.replace(/```json/g, "").replace(/```/g, "").trim();
-            let slides = JSON.parse(content);
-            
-            // Ensure structure
-            if (!Array.isArray(slides)) {
-                // Try to find array in object
-                 const values = Object.values(slides);
-                 const foundArray = values.find(v => Array.isArray(v));
-                 if(foundArray) slides = foundArray;
-            }
+        const projectName = projectContext?.projectName || 'پروژه استارتاپی';
 
-            // Post-process to ensure IDs and types
+        const { system, user } = getPrompt("generatePitchDeck", { 
+            projectName, 
+            idea, 
+            projectContextBlock, 
+            wizardAnswersBlock 
+        });
+
+        try {
+            const parsed = await runWithAiUsage(
+                { userId: limitResult.user?.id || "anonymous", feature: "generatePitchDeck" },
+                () => callAIWithValidation(
+                    user,
+                    { systemPrompt: system, maxTokens: 3000, temperature: 0.7, timeoutMs: 30000 },
+                    PitchDeckSchema,
+                    1
+                )
+            );
+            
+            let slides = parsed.slides || [];
+            // Post-process to ensure IDs, types, and metadata are intact
             slides = slides.map((s: any, i: number) => ({
                 id: s.id || `slide-${Date.now()}-${i}`,
                 type: s.type || 'generic',
                 title: s.title || 'بدون عنوان',
-                bullets: Array.isArray(s.bullets) ? s.bullets : [s.content || ''],
-                isHidden: false
+                bullets: Array.isArray(s.bullets) ? s.bullets : [],
+                isHidden: s.isHidden || false,
+                metadata: s.metadata || {}
             }));
 
             return { success: true, data: { slides } };
-
-        } catch (e) {
-            console.error("JSON Parse Error:", e);
-             return { success: false, error: "Invalid AI response format" };
+        } catch (err) {
+            console.error("AI Validation failed for generatePitchDeckAction:", err);
+            await rollback();
+            return { success: false, error: "Invalid AI response format" };
         }
 
     } catch (error) {
         console.error("generatePitchDeckAction error:", error);
+        await rollback();
         return { success: false, error: "Failed to generate deck" };
     }
 }
@@ -378,54 +377,37 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
 // === Generate Smart Canvas ===
 
 export async function generateSmartCanvasAction(data: { idea: string, answers: Record<string, string>, type: 'lean' | 'brand' }): Promise<ActionResponse<Record<string, string[]>>> {
+    let rollback = async () => {};
     try {
-        const { errorResponse } = await checkAILimit();
-        if (errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+        const limitResult = await checkAILimit('generate-smart-canvas');
+        if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+        rollback = limitResult.rollback;
 
         const { idea, answers, type } = data;
-        
-        const isBrand = type === 'brand';
-        const sectionKeys = isBrand 
-            ? ['identity', 'promise', 'audience', 'contentStrategy', 'channels', 'monetization', 'resources', 'collaborators', 'investment']
-            : ['customerSegments', 'valueProposition', 'channels', 'customerRelations', 'revenueStream', 'keyResources', 'keyActivities', 'keyPartners', 'costStructure'];
+        const answersBlock = Object.entries(answers).map(([key, val]) => `- ${key}: ${val}`).join('\n');
 
-        const systemPrompt = `تو مشاور ارشد کسب‌وکار و استراتژیست ${isBrand ? 'برند شخصی' : 'مدل کسب‌وکارهای نوپا'} هستی.
-        قانون: فقط فارسی پاسخ بده.
-        وظایف:
-        ۱. ورودی‌های کاربر برای هر بخش بوم را تحلیل کن.
-        ۲. برای هر بخش، دقیقاً ۲ کارت (Card) مختصر، مفید و حرفه‌ای پیشنهاد بده.
-        ۳. این کارت‌ها باید بر اساس ایده کلی (${idea}) و ورودی خاص کاربر برای آن بخش باشند.
-
-        ورودی‌های کاربر:
-        ${Object.entries(answers).map(([key, val]) => `- ${key}: ${val}`).join('\n')}
-
-        خروجی باید دقیقاً یک آبجکت JSON باشد که کلیدهای آن نام بخش‌ها و مقادیر آن آرایه‌ای از ۲ رشته متنی باشد:
-        {
-            "${sectionKeys[0]}": ["پیشنهاد ۱", "پیشنهاد ۲"],
-            "${sectionKeys[1]}": ["...", "..."],
-            ...
-        }`;
-
-        const result = await callOpenRouter(
-            `ایده اصلی: ${idea}\nلطفاً بوم را تکمیل کن.`,
-            { systemPrompt, maxTokens: 2500, temperature: 0.7, timeoutMs: 45000 }
-        );
-
-        if (!result.success) {
-             return { success: false, error: "Failed to generate canvas" };
-        }
+        const { system, user } = getPrompt("generateSmartCanvas", { idea, type, answersBlock });
 
         try {
-            const content = result.content!.replace(/```json/g, "").replace(/```/g, "").trim();
-            const parsed = JSON.parse(content);
-            return { success: true, data: parsed };
-        } catch (e) {
-            console.error("JSON Parse Error:", e);
-             return { success: false, error: "Invalid AI response format" };
+            const parsed = await runWithAiUsage(
+                { userId: limitResult.user?.id || "anonymous", feature: "generateSmartCanvas" },
+                () => callAIWithValidation(
+                    user,
+                    { systemPrompt: system, maxTokens: 2500, temperature: 0.7, timeoutMs: 30000 },
+                    SmartCanvasSchema,
+                    1
+                )
+            );
+            return { success: true, data: parsed as any };
+        } catch (err) {
+            console.error("AI Validation failed for generateSmartCanvasAction:", err);
+            await rollback();
+            return { success: false, error: "Invalid AI response format" };
         }
 
     } catch (error) {
         console.error("generateSmartCanvasAction error:", error);
+        await rollback();
         return { success: false, error: "Failed to generate canvas" };
     }
 }

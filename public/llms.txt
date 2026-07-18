@@ -1,0 +1,24 @@
+# Karnex
+
+> Karnex is an AI-powered smart co-founder for Iranian startups. It helps founders build a business model canvas, execution roadmap, pitch deck, and project-aware AI copilot — from idea to investor-ready materials.
+
+## Key Sections
+
+- [Home](/): Product story and pricing
+- [About](/about): Mission and focus
+- [Help](/help): Getting started and FAQ (public)
+- [Pricing](/pricing): Free, Pro (plus), Team (pro) plans with weighted AI credits
+- [Contact](/contact): Support
+- [Terms](/terms) · [Privacy](/privacy)
+
+## Product (logged-in)
+
+- Genesis wizard → Startup path
+- Dashboard: overview, roadmap, canvas, pitch deck, validation, growth, competitors, copilot
+- Payments via Zibal (IRR)
+
+## Notes for crawlers
+
+- Primary language: Persian (fa-IR), RTL
+- Launch focus: startups first; traditional/creator paths coming soon
+- AI outputs are advisory; users should verify critical decisions
