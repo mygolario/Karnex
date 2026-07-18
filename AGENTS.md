@@ -20,7 +20,7 @@ Standard commands live in `package.json` scripts (`dev`, `build`, `lint`, `serwi
 ### Environment
 - Config lives in `.env` (gitignored). It is loaded both by Next.js and by `prisma.config.ts` (via `dotenv/config`). `prisma.config.ts` throws if `DATABASE_URL` is unset, so `prisma generate` (run in `postinstall`) needs it defined. See `.env.example`.
 - Optional integrations degrade gracefully when absent: `OPENROUTER_API_KEY` (AI), `RESEND_API_KEY` (email), `LIARA_*` / `STORAGE_*` (S3), Google OAuth via Supabase. Core needs: `DATABASE_URL`, Supabase public + service keys.
-- Payments (Zibal): `ZIBAL_MERCHANT` (`zibal` = public sandbox; real merchant for production). `FIXIE_URL` proxies Zibal only when set.
+- Payments (Zibal): `ZIBAL_MERCHANT` (`zibal` = public sandbox; real merchant for production). `FIXIE_URL` proxies Zibal only when set. Fixie EU West outbound IPs to whitelist in Zibal: `54.195.3.54`, `54.217.142.99`. Push local `FIXIE_URL` to Vercel with `./scripts/setup-fixie-vercel-env.sh` after `vercel login` + `vercel link`.
 
 ### Database migrations
 - Apply schema with `npx prisma migrate deploy` (migrations in `prisma/migrations`). `prisma db seed` runs `scripts/migrate-data.js` — not needed for local dev.
