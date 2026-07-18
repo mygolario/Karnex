@@ -65,15 +65,21 @@ export default function GrowthPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 p-4 pb-24">
+    <div className="max-w-4xl mx-auto space-y-6 pb-8 md:p-4 md:pb-24">
       <h1 className="text-2xl font-black flex items-center gap-2">
         <Rocket className="h-7 w-7 text-indigo-500" /> برنامه رشد
       </h1>
-      <div className="flex gap-2">
-        <Button variant={planType === "north-star" ? "default" : "outline"} size="sm" onClick={() => setPlanType("north-star")}>North Star</Button>
-        <Button variant={planType === "experiments" ? "default" : "outline"} size="sm" onClick={() => setPlanType("experiments")}>آزمایش‌های AAARRR</Button>
-        <Button onClick={generate} disabled={loading} className="mr-auto">
-          {loading && <Loader2 className="animate-spin ml-2 h-4 w-4" />}
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button variant={planType === "north-star" ? "default" : "outline"} size="sm" className="min-h-11" onClick={() => setPlanType("north-star")}>
+            متریک اصلی
+          </Button>
+          <Button variant={planType === "experiments" ? "default" : "outline"} size="sm" className="min-h-11" onClick={() => setPlanType("experiments")}>
+            آزمایش‌های AAARRR
+          </Button>
+        </div>
+        <Button onClick={generate} disabled={loading} className="sm:ms-auto min-h-11">
+          {loading && <Loader2 className="animate-spin ms-2 h-4 w-4" />}
           تولید
         </Button>
       </div>

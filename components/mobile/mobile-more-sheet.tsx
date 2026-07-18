@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useProject } from "@/contexts/project-context";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { cn } from "@/lib/utils";
 import { isLaunchNavRoute } from "@/lib/launch/config";
 import type { ProjectType } from "@/app/new-project/genesis-constants";
@@ -109,6 +110,10 @@ export function MobileMoreSheet({ open, onOpenChange }: MobileMoreSheetProps) {
             عمومی
           </p>
           <div className="space-y-1">{generalRoutes.map(renderLink)}</div>
+          <div className="mt-4 px-4 py-3 flex items-center justify-between rounded-xl border border-border/60 bg-muted/30">
+            <span className="text-sm font-medium text-foreground">ظاهر</span>
+            <ThemeToggle />
+          </div>
         </div>
       </SheetContent>
     </Sheet>

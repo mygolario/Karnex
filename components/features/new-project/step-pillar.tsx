@@ -58,7 +58,7 @@ export function StepPillar() {
               disabled={comingSoon}
               aria-disabled={comingSoon}
               className={cn(
-                "group relative h-[450px] rounded-3xl overflow-hidden text-end transition-all duration-500",
+                "group relative h-[280px] sm:h-[360px] md:h-[450px] rounded-3xl overflow-hidden text-end transition-all duration-500",
                 "border border-border/50",
                 available && "hover:border-brand-primary/50",
                 isSelected

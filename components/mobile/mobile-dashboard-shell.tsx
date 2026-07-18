@@ -6,13 +6,11 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
   LayoutGrid, Map, Target, Bot, MoreHorizontal,
-  Search,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { CommandMenu } from "@/components/dashboard/command-menu";
 import { MobileMoreSheet } from "@/components/mobile/mobile-more-sheet";
 import { useMobileContext } from "@/contexts/mobile-context";
@@ -85,18 +83,17 @@ export function MobileDashboardShell({ children }: { children: React.ReactNode }
                 <span className="sr-only">منو</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="p-0 border-l border-border bg-card w-[300px]">
+            <SheetContent side="left" className="p-0 border-e border-border bg-card w-[300px]">
               <DashboardSidebar variant="mobile" />
             </SheetContent>
           </Sheet>
           <h1 className="font-bold text-sm truncate">{currentLabel}</h1>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-0.5 shrink-0">
           <CommandMenu mobile />
           <NotificationBell />
-          <ThemeToggle />
-          <Link href="/dashboard/profile" className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xs font-bold">
+          <Link href="/dashboard/profile" className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-xs font-bold ms-0.5">
             {(userProfile?.avatar_url || user?.image) ? (
               <img src={userProfile?.avatar_url || user?.image || ""} alt="" className="w-full h-full rounded-xl object-cover" />
             ) : (
@@ -111,7 +108,8 @@ export function MobileDashboardShell({ children }: { children: React.ReactNode }
         id="main-content"
         className={cn(
           "mobile-page min-h-[calc(100dvh-3.5rem)]",
-          !immersiveMode && "pb-[calc(4rem+env(safe-area-inset-bottom,0px))]"
+          !immersiveMode && "pb-[var(--mobile-bottom-nav-offset)]",
+          immersiveMode && "mobile-immersive"
         )}
       >
         {children}

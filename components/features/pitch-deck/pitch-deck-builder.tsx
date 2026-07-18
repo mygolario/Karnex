@@ -549,7 +549,10 @@ export function PitchDeckBuilder() {
           </div>
         )}
 
-        <div className="grid min-h-[500px] flex-1 gap-5 overflow-hidden lg:grid-cols-12">
+        <div className={cn(
+          "grid flex-1 gap-5 overflow-hidden lg:grid-cols-12",
+          isMobile ? "min-h-0" : "min-h-[500px]"
+        )}>
           <Filmstrip
             slides={slides}
             currentIndex={currentSlideIndex}

@@ -914,7 +914,7 @@ export function CompetitorWorkspace() {
             </div>
 
             {matrixTab === "ratings" && (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto mobile-scroll-x -mx-1 px-1 max-w-full">
                 <table className="w-full text-sm min-w-[640px]">
                   <thead>
                     <tr className="text-muted-foreground text-xs">
@@ -1230,7 +1230,7 @@ function FeatureMatrixEditor({
           هنوز ردیف قابلیتی نیست. یک قابلیت یا پیشنهاد اضافه کن تا با رقبا مقایسه شود.
         </p>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto mobile-scroll-x -mx-1 px-1 max-w-full">
           <table className="w-full text-sm min-w-[560px]">
             <thead>
               <tr className="text-xs text-muted-foreground">

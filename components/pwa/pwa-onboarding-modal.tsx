@@ -45,7 +45,7 @@ export function PwaOnboardingModal() {
 
         <ul className="space-y-2 text-sm text-muted-foreground my-2">
           <li>• نوار پایین برای دسترسی سریع</li>
-          <li>• کار آفلاین روی نقشه راه</li>
+          <li>• ذخیره موقت گام‌های نقشه راه هنگام قطع اینترنت</li>
           <li>• رابط تمام‌صفحه بدون نوار مرورگر</li>
         </ul>
 
