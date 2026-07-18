@@ -24,6 +24,7 @@ import { PageTourHelp } from "@/components/tour/page-tour-help";
 import type { RoadmapStep, RoadmapPhase, SubTask } from "@/lib/db";
 import type { StepStatus } from "@/lib/roadmap/constants";
 import { EmptyState } from "@/components/ui/empty-state";
+import { EmptyProjectState } from "@/components/dashboard/empty-project-state";
 import { useGamification } from "@/hooks/use-gamification";
 import { exportRoadmapToICS, downloadFile } from "@/lib/export-utils";
 import {
@@ -300,8 +301,8 @@ export default function RoadmapPage() {
     (s) => s.parentStep === liveSelectedStep?.title
   ) ?? [];
 
-  // Loading state
-  if (loading || !plan) {
+  // Loading / no project
+  if (loading) {
     return (
       <div className="flex h-[80vh] items-center justify-center flex-col gap-6">
         <div className="relative">
@@ -312,6 +313,15 @@ export default function RoadmapPage() {
           در حال ترسیم مسیر موفقیت...
         </p>
       </div>
+    );
+  }
+
+  if (!plan) {
+    return (
+      <EmptyProjectState
+        title="برای نقشه راه به پروژه نیاز داری"
+        description="اول یک پروژه بساز تا نقشه راه ۱۶ هفته‌ای و مراحل اجرا اینجا نمایش داده شود."
+      />
     );
   }
 

@@ -41,6 +41,8 @@ export function ServiceWorkerRegister() {
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (refreshing) return;
       refreshing = true;
+      // Activate new SW (skipWaiting) then hard-reload so RSC/nav rules apply.
+      window.location.reload();
     });
   }, []);
 

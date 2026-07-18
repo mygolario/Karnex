@@ -19,15 +19,25 @@ import { PageTourHelp } from "@/components/tour/page-tour-help";
 import { useImmersivePage } from "@/hooks/use-immersive-page";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { cn } from "@/lib/utils";
+import { EmptyProjectState } from "@/components/dashboard/empty-project-state";
 
 export default function CanvasPage() {
   const { activeProject: plan, loading } = useProject();
 
-  if (loading || !plan) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  if (!plan) {
+    return (
+      <EmptyProjectState
+        title="برای بوم کسب‌وکار به پروژه نیاز داری"
+        description="اول یک پروژه بساز تا بوم، بلوک‌ها و تحلیل کسب‌وکارت اینجا باز شود."
+      />
     );
   }
 
