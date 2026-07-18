@@ -8,11 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Lock, Eye, EyeOff, Loader2, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client";
 
 function ResetPasswordForm() {
   const router = useRouter();
-  const supabase = createClient();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -24,14 +23,23 @@ function ResetPasswordForm() {
   const [hasSession, setHasSession] = useState(false);
 
   useEffect(() => {
+    if (!isSupabaseBrowserConfigured()) {
+      setError("لینک بازیابی نامعتبر یا منقضی شده است. لطفاً دوباره درخواست دهید.");
+      setLoading(false);
+      return;
+    }
+    const supabase = createClient();
     supabase.auth.getSession().then(({ data: { session } }) => {
       setHasSession(!!session);
       if (!session) {
         setError("لینک بازیابی نامعتبر یا منقضی شده است. لطفاً دوباره درخواست دهید.");
       }
       setLoading(false);
+    }).catch(() => {
+      setError("لینک بازیابی نامعتبر یا منقضی شده است. لطفاً دوباره درخواست دهید.");
+      setLoading(false);
     });
-  }, [supabase.auth]);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -48,6 +56,7 @@ function ResetPasswordForm() {
 
     setSubmitting(true);
     try {
+      const supabase = createClient();
       const { error: updateError } = await supabase.auth.updateUser({ password });
       if (updateError) {
         setError(updateError.message || "خطا در تنظیم رمز عبور");
