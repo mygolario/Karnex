@@ -244,12 +244,17 @@ export async function POST(req: Request) {
     }
 
     if (action === "pitch-slide-ai") {
-      const { slideContent, mode } = body;
+      const { slideContent, mode, slideType } = body;
       if (!slideContent || !mode) {
         return NextResponse.json({ error: "slideContent and mode required" }, { status: 400 });
       }
       try {
-        const result = await handlePitchSlideAI({ ...genCtx, slideContent, mode });
+        const result = await handlePitchSlideAI({
+          ...genCtx,
+          slideContent,
+          mode,
+          slideType,
+        });
         return NextResponse.json({ success: true, result });
       } catch (e) {
         await rollback();

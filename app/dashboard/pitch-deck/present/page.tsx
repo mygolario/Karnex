@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { SlideVisualizer } from "@/components/features/pitch-deck/slide-templates";
 import type { PitchDeckSlide } from "@/lib/db";
+import { getVisibleSlides } from "@/lib/pitch-deck";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Clock } from "lucide-react";
 
@@ -11,13 +12,13 @@ export default function PitchDeckPresentPage() {
   const [projectName, setProjectName] = useState("");
   const [index, setIndex] = useState(0);
   const [seconds, setSeconds] = useState(0);
-  const [notes, setNotes] = useState("");
 
   useEffect(() => {
     const raw = sessionStorage.getItem("pitch-deck-present");
     if (raw) {
       const data = JSON.parse(raw);
-      setSlides(data.slides || []);
+      const incoming: PitchDeckSlide[] = data.slides || [];
+      setSlides(getVisibleSlides(incoming));
       setProjectName(data.projectName || "");
     }
   }, []);
@@ -27,13 +28,17 @@ export default function PitchDeckPresentPage() {
     return () => clearInterval(t);
   }, []);
 
-  const next = useCallback(() => setIndex((i) => Math.min(i + 1, slides.length - 1)), [slides.length]);
+  const next = useCallback(
+    () => setIndex((i) => Math.min(i + 1, slides.length - 1)),
+    [slides.length]
+  );
   const prev = useCallback(() => setIndex((i) => Math.max(i - 1, 0)), []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === " ") next();
-      if (e.key === "ArrowLeft") prev();
+      // RTL: ArrowLeft advances
+      if (e.key === "ArrowLeft" || e.key === " ") next();
+      if (e.key === "ArrowRight") prev();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -45,24 +50,28 @@ export default function PitchDeckPresentPage() {
   const ss = String(seconds % 60).padStart(2, "0");
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white grid lg:grid-cols-2 gap-0">
-      <div className="p-6 flex flex-col gap-4 border-e border-white/10">
+    <div className="grid min-h-screen gap-0 bg-zinc-950 text-white lg:grid-cols-2" dir="rtl">
+      <div className="flex flex-col gap-4 border-e border-white/10 p-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-sm font-bold text-cyan-400">کابین پرزنتر</h1>
-          <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
+          <h1 className="text-sm font-bold text-primary">کابین پرزنتر</h1>
+          <div className="flex items-center gap-2 font-mono text-xs text-zinc-400">
             <Clock size={14} /> {mm}:{ss}
           </div>
         </div>
-        <p className="text-xs text-slate-500">اسلاید {index + 1} از {slides.length}</p>
-        <textarea
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="یادداشت سخنران..."
-          className="flex-1 min-h-[120px] bg-slate-900 border border-white/10 rounded-xl p-3 text-sm resize-none"
-        />
+        <p className="text-xs text-zinc-500">
+          اسلاید {slides.length ? index + 1 : 0} از {slides.length}
+        </p>
+        <div className="min-h-[120px] flex-1 rounded-xl border border-white/10 bg-zinc-900 p-3 text-sm text-zinc-300">
+          <p className="mb-2 text-[10px] font-bold text-primary">یادداشت سخنران</p>
+          {slide?.notes?.trim() ? (
+            <p className="leading-relaxed whitespace-pre-wrap">{slide.notes}</p>
+          ) : (
+            <p className="text-zinc-500">یادداشتی برای این اسلاید ثبت نشده است.</p>
+          )}
+        </div>
         {nextSlide && (
-          <div className="p-3 rounded-xl bg-slate-900/60 border border-white/5">
-            <p className="text-[10px] text-slate-500 mb-1">اسلاید بعد</p>
+          <div className="rounded-xl border border-white/5 bg-zinc-900/60 p-3">
+            <p className="mb-1 text-[10px] text-zinc-500">اسلاید بعد</p>
             <p className="text-sm font-bold">{nextSlide.title}</p>
           </div>
         )}
@@ -70,18 +79,28 @@ export default function PitchDeckPresentPage() {
           <Button variant="outline" size="sm" onClick={prev} disabled={index === 0}>
             <ChevronRight size={14} />
           </Button>
-          <Button variant="outline" size="sm" onClick={next} disabled={index >= slides.length - 1}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={next}
+            disabled={index >= slides.length - 1}
+          >
             <ChevronLeft size={14} />
           </Button>
         </div>
       </div>
-      <div className="p-8 flex items-center justify-center bg-black">
+      <div className="flex items-center justify-center bg-black p-8">
         {slide ? (
-          <div className="w-full max-w-4xl aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
-            <SlideVisualizer slide={slide} index={index} total={slides.length} projectName={projectName} />
+          <div className="aspect-video w-full max-w-4xl overflow-hidden rounded-2xl border border-white/10 shadow-2xl">
+            <SlideVisualizer
+              slide={slide}
+              index={index}
+              total={slides.length}
+              projectName={projectName}
+            />
           </div>
         ) : (
-          <p className="text-slate-500">داده‌ای برای نمایش نیست</p>
+          <p className="text-zinc-500">داده‌ای برای نمایش نیست</p>
         )}
       </div>
     </div>

@@ -297,15 +297,35 @@ export async function handleCanvasCritique(
 }
 
 export async function handlePitchSlideAI(
-  ctx: GenerateContext & { slideContent: string; mode: "rewrite" | "lengthen" | "shorten" | "translate_fa" | "translate_en" | "scorecard" }
+  ctx: GenerateContext & {
+    slideContent: string;
+    mode:
+      | "rewrite"
+      | "lengthen"
+      | "shorten"
+      | "strengthen"
+      | "suggest_bullets"
+      | "regenerate_slide"
+      | "translate_fa"
+      | "translate_en"
+      | "scorecard";
+    slideType?: string;
+  }
 ) {
+  const structuredHint =
+    'فقط JSON معتبر فارسی برگردان: { "title": string, "bullets": string[], "notes"?: string, "metadata"?: object }';
+
   const modePrompts: Record<string, string> = {
-    rewrite: "Rewrite professionally in Persian. Return JSON: { \"text\": string }",
-    lengthen: "Expand with more detail in Persian. Return JSON: { \"text\": string }",
-    shorten: "Shorten while keeping key points in Persian. Return JSON: { \"text\": string }",
-    translate_fa: "Translate to Persian. Return JSON: { \"text\": string }",
-    translate_en: "Translate to English. Return JSON: { \"text\": string }",
-    scorecard: "Investor readiness scorecard in Persian. Return JSON: { \"score\": number, \"tips\": string[], \"summary\": string }",
+    rewrite: `بازنویسی حرفه‌ای و سرمایه‌گذارپسند اسلاید پیچ‌دک به فارسی. ${structuredHint}`,
+    lengthen: `محتوای اسلاید را با جزئیات بیشتر به فارسی گسترش بده. ${structuredHint}`,
+    shorten: `اسلاید را کوتاه‌تر کن ولی نکات کلیدی را نگه دار. ${structuredHint}`,
+    strengthen: `پیام اسلاید را قوی‌تر، قانع‌کننده‌تر و مناسب سرمایه‌گذار ایرانی کن. ${structuredHint}`,
+    suggest_bullets: `۳ تا ۵ بولت قوی برای این اسلاید پیشنهاد بده. ${structuredHint}`,
+    regenerate_slide: `این اسلاید را از نو برای پیچ‌دک استارتاپ ایرانی بازنویسی کن. نوع اسلاید: ${ctx.slideType || "generic"}. ${structuredHint}`,
+    translate_fa: `به فارسی روان ترجمه کن. ${structuredHint}`,
+    translate_en: `Translate to English. Return JSON: { "title": string, "bullets": string[] }`,
+    scorecard:
+      'امتیاز آمادگی سرمایه‌گذاری به فارسی. JSON: { "score": number, "tips": string[], "summary": string }',
   };
   const system = modePrompts[ctx.mode] || modePrompts.rewrite;
   // Investor Readiness Scorecard benefits from live-web grounding (citations,
@@ -316,6 +336,7 @@ export async function handlePitchSlideAI(
     maxTokens: 1200,
     temperature: 0.5,
     modelOverride: isScorecard ? TIER_GROUNDED : undefined,
+    responseFormat: { type: "json_object" },
   });
   if (!result.success) throw new Error(result.error);
   return parseJsonFromAI(result.content!);
