@@ -379,7 +379,9 @@ export function ValidationReportView({
                         ? "/dashboard/canvas"
                         : action.target === "roadmap"
                           ? "/dashboard/roadmap"
-                          : null;
+                          : action.target === "competitors"
+                            ? "/dashboard/competitors?from=validation"
+                            : null;
                     if (href) {
                       return (
                         <Button key={i} asChild variant="outline" size="sm">

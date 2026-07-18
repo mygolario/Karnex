@@ -2,58 +2,67 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Activity } from "lucide-react";
+import { Activity, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
 
 export function ValidationEmptyHero({
   projectName,
   onStart,
-  loading,
+  onFillFromProject,
 }: {
   projectName?: string;
   onStart: () => void;
+  onFillFromProject?: () => void;
   loading?: boolean;
 }) {
   return (
-    <Card variant="gradient" className="text-white text-center py-12 px-6">
-      <motion.div
-        className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-6"
-        animate={{ scale: [1, 1.05, 1] }}
-        transition={{ duration: 2, repeat: Infinity }}
-      >
-        {loading ? (
-          <Loader2 size={36} className="animate-spin" />
-        ) : (
-          <Sparkles size={36} />
+    <div className="flex flex-col items-center justify-center text-center py-10 px-4 rounded-xl border border-dashed bg-muted/20 space-y-4">
+      <div className="ai-orb flex h-14 w-14 items-center justify-center rounded-2xl">
+        <Sparkles className="h-7 w-7 text-white" />
+      </div>
+      <div className="space-y-2 max-w-md">
+        <h3 className="text-lg font-bold">استودیو اعتبارسنجی</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          قبل از ساختن، فرض‌های خطرناک «{projectName || "پروژه‌ات"}» را بکش. در چند
+          دقیقه حکم بگیر، بعد با شواهد واقعی جلو برو.
+        </p>
+        <p className="text-xs text-muted-foreground/80 italic">
+          در ۳۰ دقیقه بفهم کدام فرض خطرناک‌ترین است
+        </p>
+      </div>
+      <div className="flex flex-wrap justify-center gap-2">
+        <Button onClick={onStart} className="gap-2">
+          <Sparkles className="h-4 w-4" />
+          شروع بریف جدید
+        </Button>
+        {onFillFromProject && (
+          <Button variant="outline" onClick={onFillFromProject}>
+            از بوم / پروژه پر کن
+          </Button>
         )}
-      </motion.div>
-      <h3 className="text-2xl font-black mb-3">اعتبارسنجی ایده</h3>
-      <p className="text-white/80 mb-8 max-w-lg mx-auto leading-7">
-        قبل از ساختن، فرض‌های خطرناک «{projectName || "پروژه‌ات"}» را بکش.
-        حکم صریح، ابعاد واقعی، و آزمایش ارزان برای این هفته.
-      </p>
-      <Button
-        variant="secondary"
-        size="lg"
-        onClick={onStart}
-        disabled={loading}
-        className="gap-3 h-14 px-8 text-base font-bold shadow-xl"
-      >
-        {loading ? (
-          <>
-            <Loader2 size={20} className="animate-spin" />
-            در حال آماده‌سازی...
-          </>
-        ) : (
-          <>
-            <Sparkles size={20} />
-            پر کردن بریف و شروع
-          </>
-        )}
+      </div>
+    </div>
+  );
+}
+
+export function ValidationEmptyActions({
+  onStart,
+  onFillFromProject,
+}: {
+  onStart: () => void;
+  onFillFromProject?: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap justify-center gap-2">
+      <Button variant="ghost" size="sm" onClick={onStart}>
+        ایده جدید را تعریف کن
       </Button>
-    </Card>
+      {onFillFromProject && (
+        <Button variant="ghost" size="sm" onClick={onFillFromProject}>
+          ادامه از داده پروژه
+        </Button>
+      )}
+    </div>
   );
 }
 
