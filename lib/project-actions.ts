@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
 import { checkProjectLimit, checkAIRequestLimit, incrementAIUsage } from "@/lib/usage-tracker";
-import { callOpenRouter, parseJsonFromAI, TIER_DEFAULT } from "@/lib/openrouter";
+import { TIER_DEFAULT } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { runWithAiUsage } from "@/lib/ai-usage-context";
 import { getPrompt } from "@/lib/prompts/registry";
