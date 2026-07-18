@@ -26,7 +26,8 @@ Standard commands live in `package.json` scripts (`dev`, `build`, `lint`, `serwi
 - Payments (Zibal): `ZIBAL_MERCHANT` (`zibal` = public sandbox; real merchant for production). `FIXIE_URL` proxies Zibal only when set. Fixie EU West outbound IPs to whitelist in Zibal: `54.195.3.54`, `54.217.142.99`. Push local `FIXIE_URL` to Vercel with `./scripts/setup-fixie-vercel-env.sh` after `vercel login` + `vercel link`.
 
 ### Database migrations
-- Apply schema with `npx prisma migrate deploy` (migrations in `prisma/migrations`). `prisma.config.ts` forces migrate onto `DIRECT_URL` (Prisma 7 ignores `directUrl` for CLI migrate) and rejects transaction pooler `:6543`.
+- Apply schema with `npx prisma migrate deploy` (migrations in `prisma/migrations`). **Not part of the Vercel build** (`vercel.json` runs `prisma generate && next build && serwist` only) — run migrate manually/CI against `DIRECT_URL` so Preview/Production builds cannot hang on the pooler.
+- `prisma.config.ts` forces migrate onto `DIRECT_URL` (Prisma 7 ignores `directUrl` for CLI migrate) and rejects transaction pooler `:6543`.
 - `prisma db seed` runs `scripts/migrate-data.js` — not needed for local dev.
 
 ### Non-obvious gotchas

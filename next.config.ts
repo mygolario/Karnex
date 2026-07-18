@@ -172,6 +172,10 @@ export default withSentryConfig(withBundleAnalyzer(nextConfig), {
   project: "karnex",
   authToken: process.env.SENTRY_AUTH_TOKEN,
   silent: !process.env.CI,
-  widenClientFileUpload: true,
+  // Avoid long/hanging source-map uploads on Hobby builds when token is absent/invalid.
+  widenClientFileUpload: Boolean(process.env.SENTRY_AUTH_TOKEN),
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
   tunnelRoute: "/monitoring",
 });

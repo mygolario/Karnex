@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { UserProfile } from "@/lib/db";
-import { createClient } from "@/lib/supabase/client";
+import { createClient, isSupabaseBrowserConfigured } from "@/lib/supabase/client";
 import { getOAuthRedirectUrl } from "@/lib/auth/oauth-redirect";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
@@ -51,7 +51,6 @@ function mapSupabaseUser(su: SupabaseUser | null, appId?: string): AppUser | nul
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const supabase = createClient();
   const [user, setUser] = useState<AppUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,6 +90,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!isSupabaseBrowserConfigured()) {
+      setLoading(false);
+      return;
+    }
+
+    const supabase = createClient();
+
     const init = async () => {
       const {
         data: { user: su },
@@ -104,7 +110,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(false);
     };
 
-    init();
+    void init();
 
     const {
       data: { subscription },
@@ -122,20 +128,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [supabase.auth, fetchProfile]);
+  }, [fetchProfile]);
 
   const refreshProfile = useCallback(async () => {
     await fetchProfile();
   }, [fetchProfile]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    if (isSupabaseBrowserConfigured()) {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    }
     setUserProfile(null);
     setUser(null);
     window.location.href = "/";
   };
 
   const signIn = async (provider?: string) => {
+    if (!isSupabaseBrowserConfigured()) return;
+    const supabase = createClient();
     if (provider === "google") {
       await supabase.auth.signInWithOAuth({
         provider: "google",

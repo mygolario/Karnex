@@ -20,7 +20,6 @@ import { FormAlert } from "@/components/auth/form-alert";
 
 export default function SignupPage() {
   const router = useRouter();
-  const supabase = createClient();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -67,6 +66,7 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
+      const supabase = createClient();
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -106,6 +106,7 @@ export default function SignupPage() {
   const handleGoogleSignup = async () => {
     setError("");
     setLoading(true);
+    const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: getOAuthRedirectUrl("/new-project") },
