@@ -157,7 +157,7 @@ export const COPILOT_TOOLS = [
           },
           type: { 
             type: "string", 
-            enum: ["title", "problem", "solution", "market", "business_model", "team", "generic"],
+            enum: ["title", "problem", "solution", "market", "business_model", "competition", "traction", "roadmap", "team", "ask", "generic"],
             description: "The type of slide layout to use"
           }
         },
