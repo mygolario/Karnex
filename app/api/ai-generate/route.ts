@@ -21,6 +21,8 @@ import {
   handleScriptWriter,
   handleSectionCards,
   handleValidateIdea,
+  handleValidateIdeaRescore,
+  handleValidateIdeaScript,
 } from "@/lib/ai/generate-handlers";
 
 export const maxDuration = 120;
@@ -134,6 +136,48 @@ export async function POST(req: Request) {
           businessIdea: businessIdea || "",
           validationBrief,
           businessStage,
+        });
+        return NextResponse.json({ success: true, ...out });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
+
+    if (action === "validate-idea-rescore") {
+      try {
+        const {
+          validationBrief,
+          priorReport,
+          evidenceEntries,
+          assumptionStatuses,
+          competitorsSummary,
+          marketSummary,
+        } = body;
+        const out = await handleValidateIdeaRescore({
+          ...genCtx,
+          validationBrief,
+          priorReport,
+          evidenceEntries,
+          assumptionStatuses,
+          competitorsSummary,
+          marketSummary,
+        });
+        return NextResponse.json({ success: true, ...out });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
+
+    if (action === "validate-idea-script") {
+      try {
+        const { problem, whoSuffers, assumptionText } = body;
+        const out = await handleValidateIdeaScript({
+          ...genCtx,
+          problem,
+          whoSuffers,
+          assumptionText,
         });
         return NextResponse.json({ success: true, ...out });
       } catch (e) {

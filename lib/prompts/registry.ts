@@ -10,6 +10,8 @@ import generatePlan from "./generate-plan.json";
 import generateRoadmap from "./generate-roadmap.json";
 import copilotSystem from "./copilot-system.json";
 import validateIdea from "./validate-idea.json";
+import validateIdeaRescore from "./validate-idea-rescore.json";
+import validateIdeaScript from "./validate-idea-script.json";
 import generateGrowthPlan from "./generate-growth-plan.json";
 import generateFullCanvas from "./generate-full-canvas.json";
 import generateSectionCards from "./generate-section-cards.json";
@@ -34,6 +36,8 @@ export const Prompts = {
   generateRoadmap,
   copilotSystem,
   validateIdea,
+  validateIdeaRescore,
+  validateIdeaScript,
   generateGrowthPlan,
   generateFullCanvas,
   generateSectionCards,
