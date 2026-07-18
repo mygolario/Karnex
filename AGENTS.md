@@ -18,12 +18,16 @@ Standard commands live in `package.json` scripts (`dev`, `build`, `lint`, `serwi
   Dev DB `karnex` and role `postgres`/`postgres` already exist.
 
 ### Environment
-- Config lives in `.env` (gitignored). It is loaded both by Next.js and by `prisma.config.ts` (via `dotenv/config`). `prisma.config.ts` throws if `DATABASE_URL` is unset, so `prisma generate` (run in `postinstall`) needs it defined. See `.env.example`.
-- Optional integrations degrade gracefully when absent: `OPENROUTER_API_KEY` (AI), `RESEND_API_KEY` (email), `LIARA_*` / `STORAGE_*` (S3), Google OAuth via Supabase. Core needs: `DATABASE_URL`, Supabase public + service keys.
+- Config lives in `.env` (gitignored). It is loaded both by Next.js and by `prisma.config.ts` (via `dotenv/config`). `prisma generate` can use a localhost fallback; migrate requires real URLs. See `.env.example`.
+- **Supabase URLs on Vercel (Preview + Production):**
+  - `DATABASE_URL` — Transaction pooler `:6543` (+ `?pgbouncer=true`) for the app.
+  - `DIRECT_URL` — Session pooler or Direct `:5432` for `prisma migrate deploy`. Never `:6543` (hangs the build).
+- Optional integrations degrade gracefully when absent: `OPENROUTER_API_KEY` (AI), `RESEND_API_KEY` (email), `LIARA_*` / `STORAGE_*` (S3), Google OAuth via Supabase. Core needs: `DATABASE_URL`, `DIRECT_URL`, Supabase public + service keys.
 - Payments (Zibal): `ZIBAL_MERCHANT` (`zibal` = public sandbox; real merchant for production). `FIXIE_URL` proxies Zibal only when set.
 
 ### Database migrations
-- Apply schema with `npx prisma migrate deploy` (migrations in `prisma/migrations`). `prisma db seed` runs `scripts/migrate-data.js` — not needed for local dev.
+- Apply schema with `npx prisma migrate deploy` (migrations in `prisma/migrations`). `prisma.config.ts` forces migrate onto `DIRECT_URL` (Prisma 7 ignores `directUrl` for CLI migrate) and rejects transaction pooler `:6543`.
+- `prisma db seed` runs `scripts/migrate-data.js` — not needed for local dev.
 
 ### Non-obvious gotchas
 - `lib/prisma.ts` uses `ssl: { rejectUnauthorized: false }` for non-localhost remote DBs.
