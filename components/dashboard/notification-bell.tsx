@@ -188,9 +188,10 @@ export function NotificationBell({ notifications: initialNotifications, classNam
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "relative p-2 rounded-xl transition-all hover:bg-muted",
+          "relative flex h-11 w-11 items-center justify-center rounded-xl transition-all hover:bg-muted",
           isOpen && "bg-muted"
         )}
+        aria-label="اعلان‌ها"
       >
         <Bell size={20} className="text-foreground" />
         {unreadCount > 0 && (
@@ -210,7 +211,7 @@ export function NotificationBell({ notifications: initialNotifications, classNam
           />
           
           {/* Panel */}
-          <div className="absolute end-0 top-full mt-2 w-80 bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200">
+          <div className="absolute end-0 top-full mt-2 w-[min(20rem,calc(100vw-1.5rem))] bg-card border border-border rounded-2xl shadow-xl z-50 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-200">
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="font-bold text-foreground">اعلان‌ها</h3>

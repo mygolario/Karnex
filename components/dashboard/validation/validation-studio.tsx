@@ -14,6 +14,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { FlaskConical, Sparkles } from "lucide-react";
 import { useCopilotStore } from "@/lib/copilot/store";
+import { useImmersivePage } from "@/hooks/use-immersive-page";
+import { useIsMobile } from "@/hooks/use-is-mobile";
 import {
   briefFromProject,
   emptyValidationBrief,
@@ -96,6 +98,8 @@ export function ValidationStudio() {
   const { activeProject: plan, updateActiveProject } = useProject();
   const router = useRouter();
   const { setPendingPrefill, clearMessages } = useCopilotStore();
+  const isMobile = useIsMobile();
+  useImmersivePage(isMobile);
 
   const [brief, setBrief] = useState<ValidationBrief>(emptyValidationBrief());
   const [report, setReport] = useState<IdeaValidationReport | null>(null);
@@ -871,8 +875,8 @@ export function ValidationStudio() {
       <AIStudioLayout inputPanel={inputPanel} outputPanel={outputPanel} />
 
       {stickyNext && (
-        <div className="fixed bottom-0 inset-x-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] md:hidden">
-          <Button className="w-full gap-2" onClick={stickyNext.onClick}>
+        <div className="fixed bottom-0 inset-x-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 p-3 safe-bottom md:hidden">
+          <Button className="w-full gap-2 min-h-11" onClick={stickyNext.onClick}>
             {stickyNext.label}
           </Button>
         </div>

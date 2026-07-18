@@ -58,7 +58,7 @@ export function StepPillar() {
               disabled={comingSoon}
               aria-disabled={comingSoon}
               className={cn(
-                "group relative h-[450px] rounded-3xl overflow-hidden text-end transition-all duration-500",
+                "group relative h-[280px] sm:h-[360px] md:h-[450px] rounded-3xl overflow-hidden text-end transition-all duration-500",
                 "border border-border/50",
                 available && "hover:border-brand-primary/50",
                 isSelected
@@ -95,27 +95,27 @@ export function StepPillar() {
                 </div>
               </div>
 
-              <div className="relative h-full flex flex-col p-8 z-20">
+              <div className="relative h-full flex flex-col p-5 sm:p-8 z-20">
                 <div
                   className={cn(
-                    "w-16 h-16 rounded-2xl flex items-center justify-center mb-8 shadow-xl transition-transform duration-500 bg-gradient-to-br text-white",
+                    "w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-4 sm:mb-8 shadow-xl transition-transform duration-500 bg-gradient-to-br text-white",
                     p.accent,
                     available && "group-hover:scale-110",
                   )}
                 >
-                  <p.icon className="w-8 h-8" />
+                  <p.icon className="w-6 h-6 sm:w-8 sm:h-8" />
                 </div>
 
-                <h3 className="text-3xl font-bold text-foreground mb-3">{p.title}</h3>
-                <div className="inline-flex w-fit px-3 py-1 rounded-full bg-brand-secondary/15 text-brand-secondary text-xs font-medium mb-6 backdrop-blur-md">
+                <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 sm:mb-3">{p.title}</h3>
+                <div className="inline-flex w-fit px-3 py-1 rounded-full bg-brand-secondary/15 text-brand-secondary text-xs font-medium mb-3 sm:mb-6 backdrop-blur-md">
                   {comingSoon ? "به‌زودی" : p.subtitle}
                 </div>
 
-                <p className="text-muted-foreground leading-relaxed text-lg">
+                <p className="text-muted-foreground leading-relaxed text-sm sm:text-lg line-clamp-3 sm:line-clamp-none">
                   {p.description}
                 </p>
 
-                <div className="mt-auto pt-8">
+                <div className="mt-auto pt-4 sm:pt-8">
                   {available ? (
                     <div
                       className={cn(

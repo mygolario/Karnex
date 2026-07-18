@@ -225,7 +225,7 @@ export default function AccountPage() {
         <div className="lg:col-span-3">
           <Card
             variant="glass"
-            className="p-3 sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto"
+            className="p-3 lg:sticky lg:top-24 max-h-none lg:max-h-[calc(100vh-7rem)] overflow-y-auto"
           >
             {/* Rail header */}
             <div className="px-2 py-3 mb-2 border-b border-border/40">
@@ -235,7 +235,30 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <nav className="space-y-4">
+            {/* Mobile: horizontal section chips */}
+            <nav className="lg:hidden flex gap-2 overflow-x-auto mobile-scroll-x pb-2 -mx-1 px-1">
+              {grouped.flatMap(({ items }) => items).map((item) => {
+                const isActive = active === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActive(item.id)}
+                    className={cn(
+                      "shrink-0 flex items-center gap-2 px-3 py-2.5 min-h-11 rounded-xl text-sm transition-colors whitespace-nowrap",
+                      isActive
+                        ? "bg-primary/10 text-primary font-bold"
+                        : "bg-muted/50 text-muted-foreground"
+                    )}
+                  >
+                    <item.icon size={16} className="shrink-0" />
+                    {item.label}
+                  </button>
+                );
+              })}
+            </nav>
+
+            <nav className="hidden lg:block space-y-4">
               {grouped.map(({ group, items }) => (
                 <div key={group}>
                   <div className="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">

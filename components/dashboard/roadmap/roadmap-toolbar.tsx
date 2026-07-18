@@ -100,7 +100,7 @@ export function RoadmapToolbar({
                 onClick={() => onViewChange(v)}
                 layout
                 className={cn(
-                  "relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap",
+                  "relative flex items-center gap-1.5 px-3 py-2.5 min-h-11 rounded-lg text-xs font-medium transition-colors whitespace-nowrap",
                   isActive
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"

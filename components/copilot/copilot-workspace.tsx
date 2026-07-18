@@ -92,7 +92,7 @@ export function CopilotWorkspace() {
 
   return (
     <div className={cn(
-      "flex overflow-hidden bg-background mobile-immersive -mx-4 -mt-3",
+      "flex overflow-hidden bg-background",
       isMobile ? "h-[calc(100dvh-3.5rem)]" : "h-[calc(100vh-4rem)]"
     )}>
       {/* Left Rail — Desktop */}
@@ -105,7 +105,7 @@ export function CopilotWorkspace() {
         {leftRailOpen && <CopilotLeftRail />}
       </div>
 
-      {/* Left Rail — Mobile (slide-over) */}
+      {/* Left Rail — Mobile (slide-over from logical start / RTL visual right) */}
       <AnimatePresence>
         {mobileRailOpen && (
           <>
@@ -117,11 +117,11 @@ export function CopilotWorkspace() {
               onClick={() => setMobileRailOpen(false)}
             />
             <motion.div
-              initial={{ x: "-100%" }}
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
+              exit={{ x: "100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed inset-y-0 start-0 z-50 w-80 md:hidden"
+              className="fixed inset-y-0 start-0 z-50 w-[min(20rem,85vw)] md:hidden"
             >
               <CopilotLeftRail onNavigate={() => setMobileRailOpen(false)} />
             </motion.div>
@@ -136,8 +136,8 @@ export function CopilotWorkspace() {
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              size="icon-sm"
-              className="md:hidden"
+              size="icon"
+              className="md:hidden h-11 w-11"
               onClick={() => setMobileRailOpen(true)}
             >
               <PanelLeftOpen size={16} />

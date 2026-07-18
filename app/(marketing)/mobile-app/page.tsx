@@ -14,7 +14,7 @@ import {
 
 const features = [
   { icon: Target, label: "بوم کسب‌وکار", desc: "طراحی و ویرایش بوم در موبایل" },
-  { icon: Map, label: "نقشه راه", desc: "پیگیری مراحل با کار آفلاین" },
+  { icon: Map, label: "نقشه راه", desc: "پیگیری مراحل با همگام‌سازی محدود آفلاین" },
   { icon: Bot, label: "دستیار AI", desc: "پرسش از دستیار هوشمند کارنکس" },
 ];
 
