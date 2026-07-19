@@ -13,7 +13,6 @@ import {
   Map,
   LayoutGrid,
   Palette,
-  Megaphone,
   BookOpen,
   Search,
   Lightbulb,
@@ -270,13 +269,6 @@ export default function HelpCenterPage() {
       href: "/dashboard/canvas",
       variant: "accent" as const
     },
-    {
-      icon: <Megaphone size={20} />,
-      title: "برنامه رشد",
-      description: "مسیر جذب کاربر و رشد استارتاپ با کمک هوش مصنوعی.",
-      href: "/dashboard/growth",
-      variant: "primary" as const
-    }
   ];
 
   // Custom client-side synonym-expanded search & ranker

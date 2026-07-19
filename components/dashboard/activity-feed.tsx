@@ -44,7 +44,7 @@ function generateMockActivities(): ActivityItem[] {
       title: "تولید محتوای بازاریابی",
       description: "۳ پست اینستاگرام با AI تولید شد",
       timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000), // 2 hours ago
-      link: "/dashboard/growth",
+      link: "/dashboard/canvas",
     },
     {
       id: "2",

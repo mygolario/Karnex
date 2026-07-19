@@ -104,13 +104,4 @@ export const DASHBOARD_QUICK_ACTIONS: QuickAction[] = [
   //   color: "text-purple-600",
   //   bgColor: "bg-purple-500/10",
   // },
-  {
-    id: "growth",
-    label: "برنامه رشد",
-    description: "مسیر جذب کاربر",
-    icon: require("lucide-react").Rocket,
-    href: "/dashboard/growth",
-    color: "text-rose-600",
-    bgColor: "bg-rose-500/10",
-  },
 ];

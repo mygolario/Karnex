@@ -30,7 +30,6 @@ export const LAUNCH_CONFIG = {
     startup: [
       "/dashboard/pitch-deck",
       "/dashboard/validation",
-      "/dashboard/growth",
       "/dashboard/competitors",
     ],
     /** Thin traditional surface — hide ops stubs (POS, loyalty, SMS, etc.) */

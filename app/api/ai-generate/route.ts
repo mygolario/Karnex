@@ -10,7 +10,6 @@ import {
   handleContentIdeas,
   handleContentStrategy,
   handleFullCanvas,
-  handleGrowthPlan,
   handleCanvasCritique,
   handleHealthDiagnosis,
   handleMarketResearch,
@@ -142,21 +141,6 @@ export async function POST(req: Request) {
       }
     }
 
-    if (action === "generate-growth-plan") {
-      const { planType, stage } = body;
-      try {
-        const data = await handleGrowthPlan({
-          ...genCtx,
-          planType,
-          stage,
-          businessIdea: businessIdea || "",
-        });
-        return NextResponse.json({ success: true, data });
-      } catch (e) {
-        await rollback();
-        return NextResponse.json({ error: String(e) }, { status: 500 });
-      }
-    }
 
     if (action === "generate-content-ideas") {
       const { topic } = body;

@@ -6,7 +6,7 @@ import {
   Presentation, Calendar, Video, DollarSign,
   Settings, HelpCircle, Headphones, Shield,
   Activity, Wallet, Star, LucideIcon,
-  Receipt, Target, FlaskConical, Rocket,
+  Receipt, Target, FlaskConical,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useProject } from "@/contexts/project-context";
@@ -39,7 +39,6 @@ export function MobileMoreSheet({ open, onOpenChange }: MobileMoreSheetProps) {
       ? [
           { icon: Presentation, label: "پیچ‌دک", href: "/dashboard/pitch-deck" },
           { icon: FlaskConical, label: "اعتبارسنجی ایده", href: "/dashboard/validation" },
-          { icon: Rocket, label: "برنامه رشد", href: "/dashboard/growth" },
           { icon: Target, label: "تحلیل رقبا", href: "/dashboard/competitors" },
         ]
       : []),

@@ -9,7 +9,6 @@ import {
   Map,
   LayoutGrid,
   Palette,
-  Megaphone,
   Settings,
   HelpCircle,
   ArrowRight,
@@ -96,15 +95,6 @@ export function CommandPalette() {
     //   keywords: ["brand", "logo", "colors", "برند", "لوگو"],
     //   category: "navigation",
     // },
-    {
-      id: "growth",
-      title: "برنامه رشد",
-      subtitle: "مسیر جذب و رشد استارتاپ",
-      icon: <Megaphone size={20} />,
-      action: () => router.push("/dashboard/growth"),
-      keywords: ["marketing", "growth", "strategy", "رشد", "بازاریابی"],
-      category: "navigation",
-    },
     {
       id: "settings",
       title: "تنظیمات",

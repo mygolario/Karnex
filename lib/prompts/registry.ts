@@ -9,7 +9,6 @@ import advisorChat from "./advisor-chat.json";
 import generatePlan from "./generate-plan.json";
 import copilotSystem from "./copilot-system.json";
 import validateIdea from "./validate-idea.json";
-import generateGrowthPlan from "./generate-growth-plan.json";
 import generateFullCanvas from "./generate-full-canvas.json";
 import generateSectionCards from "./generate-section-cards.json";
 import generateContentIdeas from "./generate-content-ideas.json";
@@ -32,7 +31,6 @@ export const Prompts = {
   generatePlan,
   copilotSystem,
   validateIdea,
-  generateGrowthPlan,
   generateFullCanvas,
   generateSectionCards,
   generateContentIdeas,

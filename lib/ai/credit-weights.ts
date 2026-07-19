@@ -81,7 +81,6 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "generate-section-cards",
     "script-writer",
     "repurpose-content",
-    "generate-growth-plan",
     "chat-action",
     "advisor-chat",
     "analyze-competitors",

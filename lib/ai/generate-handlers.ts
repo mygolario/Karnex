@@ -105,30 +105,6 @@ export async function handleValidateIdea(
   return { validation: report, reasoning: report.reasoning };
 }
 
-export async function handleGrowthPlan(
-  ctx: GenerateContext & { planType: string; stage?: string; businessIdea: string }
-) {
-  let growthUserPrompt = "";
-  if (ctx.planType === "north-star") {
-    growthUserPrompt = `North Star Metric برای:\nپروژه: ${ctx.projectName}\nتوضیح: ${ctx.businessIdea}\n\nJSON: northStarMetric, why, inputMetrics[]`;
-  } else {
-    growthUserPrompt = `۳ آزمایش Growth برای مرحله "${ctx.stage || "Acquisition"}" AAARRR:\nپروژه: ${ctx.projectName}\n\nJSON آرایه: title, description, ice_score, difficulty, timeline30_60_90`;
-  }
-
-  const { system, user } = await assembled(
-    "generateGrowthPlan",
-    { growthUserPrompt },
-    ctx
-  );
-
-  const result = await callOpenRouter(user, {
-    systemPrompt: system,
-    maxTokens: 2000,
-    temperature: 0.8,
-  });
-  if (!result.success) throw new Error(result.error);
-  return parseJsonFromAI(result.content!);
-}
 
 export async function handleFullCanvas(
   ctx: GenerateContext & { businessIdea: string }

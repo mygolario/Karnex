@@ -74,7 +74,6 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
   const startupRoutes: Route[] = [
     { icon: Presentation, label: "پیچ‌دک", href: "/dashboard/pitch-deck" },
     { icon: Target, label: "اعتبارسنجی", href: "/dashboard/validation" },
-    { icon: Rocket, label: "برنامه رشد", href: "/dashboard/growth" },
     { icon: Target, label: "تحلیل رقبا", href: "/dashboard/competitors" },
   ];
   const traditionalRoutes: Route[] = [
