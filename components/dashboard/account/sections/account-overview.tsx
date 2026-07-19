@@ -12,15 +12,19 @@ import Link from "next/link";
 import type { AccountSectionProps } from "./section-props";
 import type { AccountSectionId } from "@/components/dashboard/account/sections";
 import type { UsageResponse, GamificationSummary } from "@/lib/account/api-types";
+import { LAUNCH_CONFIG } from "@/lib/launch/config";
 
 export function AccountOverview({ bundle, onNavigate }: AccountSectionProps & { onNavigate: (id: AccountSectionId) => void }) {
   const [usage, setUsage] = useState<UsageResponse | null>(null);
   const [gamification, setGamification] = useState<GamificationSummary | null>(null);
+  const hideGamification = LAUNCH_CONFIG.roadmap.hideGamification;
 
   useEffect(() => {
     fetch("/api/user/usage").then((r) => r.json()).then((d: UsageResponse) => setUsage(d)).catch(() => {});
-    fetch("/api/user/gamification").then((r) => r.json()).then((d: { gamification: GamificationSummary }) => setGamification(d.gamification)).catch(() => {});
-  }, []);
+    if (!hideGamification) {
+      fetch("/api/user/gamification").then((r) => r.json()).then((d: { gamification: GamificationSummary }) => setGamification(d.gamification)).catch(() => {});
+    }
+  }, [hideGamification]);
 
   const planId = bundle.subscription?.planId || "free";
   const ai = usage?.quota?.ai;
@@ -89,7 +93,8 @@ export function AccountOverview({ bundle, onNavigate }: AccountSectionProps & { 
           <div className="text-xs text-muted-foreground mt-2">این ماه</div>
         </SettingsCard>
 
-        {/* Gamification */}
+        {/* Gamification — hidden at launch */}
+        {!hideGamification && (
         <SettingsCard title="پیشرفت شما" icon={Trophy} accent="primary">
           {g ? (
             <div className="space-y-3">
@@ -117,6 +122,7 @@ export function AccountOverview({ bundle, onNavigate }: AccountSectionProps & { 
             <div className="text-sm text-muted-foreground text-center py-4">در حال بارگذاری...</div>
           )}
         </SettingsCard>
+        )}
 
         {/* AI insight strip */}
         <Card className="md:col-span-2 lg:col-span-2 bg-card border border-violet-500/30">

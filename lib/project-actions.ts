@@ -52,8 +52,11 @@ export async function createProjectAction(planData: any) {
       };
     }
 
-    const projectName = planData.projectName || "New Project";
-    const tagline = planData.tagline || "";
+    // Map businessModelCanvas → leanCanvas so the canvas UI can bootstrap cards
+    const normalizedPlan = normalizeProjectPlan(planData);
+
+    const projectName = normalizedPlan.projectName || "New Project";
+    const tagline = normalizedPlan.tagline || "";
 
     // RLS: Enforce project ownership by binding project to the authenticated user's ID
     const project = await prisma.project.create({
@@ -61,7 +64,7 @@ export async function createProjectAction(planData: any) {
         userId: userId,
         projectName: projectName,
         tagline: tagline,
-        data: planData,
+        data: normalizedPlan,
       }
     });
 
@@ -100,12 +103,18 @@ export async function getUserProjectsAction() {
 
     const formattedProjects = projects.map(p => {
       const dbData = p.data as any || {};
+      // Heal legacy genesis plans that stored businessModelCanvas without leanCanvas
+      const normalized = normalizeProjectPlan({
+        ...dbData,
+        projectName: p.projectName,
+        tagline: p.tagline || dbData.tagline || "",
+      });
       return {
           id: p.id,
           projectName: p.projectName,
           tagline: p.tagline || "",
           description: p.description || "",
-          ...dbData, // Merge JSON data
+          ...normalized,
           createdAt: p.createdAt.toISOString(),
           updatedAt: p.updatedAt.toISOString(),
       };

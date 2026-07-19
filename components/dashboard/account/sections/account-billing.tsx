@@ -87,7 +87,7 @@ export function AccountBilling({ bundle, refresh }: AccountSectionProps) {
                   {planDisplayName}
                 </span>
                 <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-bold">
-                  {sub?.status === "active" ? "فعال" : "غیرفعال"}
+                  {planId === "free" || sub?.status === "active" ? "فعال" : "غیرفعال"}
                 </span>
               </div>
               {endDate && (

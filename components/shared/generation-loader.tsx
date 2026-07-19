@@ -11,13 +11,13 @@ interface GenerationLoaderProps {
   progress?: number;
 }
 
-// Phases are mapped to elapsed-time buckets so messaging stays honest with the
-// real AI (up to ~45s) + project-save (up to ~30s) budget. No fake "full bar".
+// Phases match real Genesis timing: core plan + two roadmap chunks often take 3–5 min.
 const PHASES = [
-  { untilMs: 8000, text: "تحلیل ورودی‌ها...", icon: Brain },
-  { untilMs: 20000, text: "طراحی مدل کسب‌وکار...", icon: Zap },
-  { untilMs: 35000, text: "بررسی رقبا و تدوین استراتژی...", icon: Search },
-  { untilMs: 60000, text: "ساختاردهی داده‌ها...", icon: Database },
+  { untilMs: 15000, text: "تحلیل ورودی‌ها...", icon: Brain },
+  { untilMs: 45000, text: "طراحی مدل کسب‌وکار...", icon: Zap },
+  { untilMs: 90000, text: "بررسی رقبا و تدوین استراتژی...", icon: Search },
+  { untilMs: 150000, text: "ساخت نقشه راه هفته‌به‌هفته...", icon: Database },
+  { untilMs: 240000, text: "ساختاردهی داده‌ها...", icon: Database },
   { untilMs: Infinity, text: "آماده‌سازی داشبورد شما...", icon: Rocket },
 ];
 
@@ -128,7 +128,11 @@ export function GenerationLoader({
           {!hasRealProgress && (
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
               <Loader2 className="w-3 h-3 animate-spin" />
-              <span>این مرحله ممکن است تا یک دقیقه طول بکشد...</span>
+              <span>
+                {elapsed < 180000
+                  ? "این مرحله معمولاً ۲ تا ۵ دقیقه طول می‌کشد..."
+                  : "هنوز در حال کار است — کمی صبر کنید..."}
+              </span>
               <Sparkles className="w-3 h-3 text-brand-secondary" />
             </div>
           )}

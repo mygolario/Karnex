@@ -117,14 +117,14 @@ function CheckoutContent() {
           <div className="flex justify-between items-center text-sm">
             <span className="text-muted-foreground">قیمت اصلی:</span>
             <span className={isAnnual ? "line-through text-muted-foreground/70" : ""}>
-              {formatPricePersian(originalPrice)} تومان
+              {formatPricePersian(originalPrice)}
             </span>
           </div>
 
           {isAnnual && (
             <div className="flex justify-between items-center text-sm text-green-600 font-medium">
               <span>تخفیف سالانه (۲۰٪):</span>
-              <span>{formatPricePersian(savings)} - تومان</span>
+              <span>{formatPricePersian(savings)}-</span>
             </div>
           )}
 
@@ -132,7 +132,7 @@ function CheckoutContent() {
 
           <div className="flex justify-between items-center text-lg font-black">
             <span>مبلغ قابل پرداخت:</span>
-            <span className="text-primary">{formatPricePersian(finalPrice)} تومان</span>
+            <span className="text-primary">{formatPricePersian(finalPrice)}</span>
           </div>
 
           {error && (

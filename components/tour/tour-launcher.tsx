@@ -14,10 +14,12 @@ import { useTourStore } from "@/lib/tour/store";
 import { getToursForProjectType, ACCENT_CLASSES } from "@/lib/tour/registry";
 import { tourI18n } from "@/lib/tour/i18n";
 import { useProject } from "@/contexts/project-context";
+import { LAUNCH_CONFIG } from "@/lib/launch/config";
 
 export function TourLauncher() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const hideXp = LAUNCH_CONFIG.roadmap.hideGamification;
   const { activeProject } = useProject();
   const { persisted, startTour, isOpen } = useTourStore();
 
@@ -116,9 +118,11 @@ export function TourLauncher() {
                               : tour.description}
                         </p>
                       </div>
-                      <span className="text-[10px] text-amber-500 font-bold shrink-0">
-                        +{tour.xpReward}
-                      </span>
+                      {!hideXp && (
+                        <span className="text-[10px] text-amber-500 font-bold shrink-0">
+                          +{tour.xpReward}
+                        </span>
+                      )}
                     </button>
                   </li>
                 );

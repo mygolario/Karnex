@@ -12,12 +12,14 @@ import { XpToast } from "@/components/gamification/xp-toast";
 import { useTourGamification } from "@/hooks/use-tour-gamification";
 import { useProject } from "@/contexts/project-context";
 import { prefersReducedMotion } from "@/lib/tour/positioning";
+import { LAUNCH_CONFIG } from "@/lib/launch/config";
 
 export function TourCelebration() {
   const { showCelebration, celebration, closeCelebration, startTour, persisted } =
     useTourStore();
   const { activeProject } = useProject();
   const { lastXp } = useTourGamification();
+  const hideXp = LAUNCH_CONFIG.roadmap.hideGamification;
 
   useEffect(() => {
     if (!showCelebration || prefersReducedMotion()) return;
@@ -59,9 +61,12 @@ export function TourCelebration() {
               {tourI18n.celebrationTitle}
             </h2>
             <p className="text-muted-foreground mb-2">{celebration.tourTitle}</p>
-            <p className="text-amber-500 font-bold text-lg mb-6">
-              +{celebration.xpReward} XP
-            </p>
+            {!hideXp && (
+              <p className="text-amber-500 font-bold text-lg mb-6">
+                +{celebration.xpReward} XP
+              </p>
+            )}
+            {hideXp && <div className="mb-6" />}
 
             {nextTour && (
               <div className="mb-4">
@@ -88,7 +93,7 @@ export function TourCelebration() {
         </motion.div>
       </AnimatePresence>
 
-      {lastXp && (
+      {!hideXp && lastXp && (
         <XpToast
           xp={lastXp.xp}
           reason={lastXp.reason}

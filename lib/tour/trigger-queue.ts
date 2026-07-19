@@ -28,12 +28,15 @@ export function getGlobalAutoStartCandidate(query: AutoStartQuery): AutoStartCan
     return { tourId: "dashboard" };
   }
 
+  // What's-new only after the user finished (not merely skipped) the dashboard tour,
+  // so first-session skips aren't immediately followed by another forced tour.
   const whatsNewEligible =
+    persisted.completedTours.includes("dashboard") &&
     persisted.lastSeenWhatsNewVersion !== TOUR_VERSION &&
     !(persisted.skippedTours ?? []).includes("whats-new");
 
   if (whatsNewEligible) {
-    return { tourId: "whats-new", force: true };
+    return { tourId: "whats-new" };
   }
 
   return null;

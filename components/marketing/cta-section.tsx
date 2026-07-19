@@ -72,7 +72,7 @@ export const CTASection = () => {
           >
             ایده با تو، مسیرش با کارنکس.
             <br />
-            <span className="text-white font-medium">رایگان شروع کن، بدون محدودیت.</span>
+            <span className="text-white font-medium">رایگان شروع کن — بدون نیاز به کارت.</span>
           </motion.p>
 
           {/* CTA buttons */}

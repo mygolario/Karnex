@@ -126,7 +126,7 @@ export function StepReview() {
       </div>
 
       <p className="mt-4 text-center text-xs text-muted-foreground">
-        این عملیات یک اعتبار هوش مصنوعی مصرف می‌کند.
+        این عملیات ۵ واحد اعتبار هوش مصنوعی مصرف می‌کند.
       </p>
 
       <div className="mt-8 flex items-center justify-between pt-6 border-t border-border/50">

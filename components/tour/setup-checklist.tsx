@@ -11,10 +11,12 @@ import { CHECKLIST_ITEMS } from "@/lib/tour/registry";
 import { tourI18n } from "@/lib/tour/i18n";
 import { TourMascot } from "./tour-mascot";
 import { useProject } from "@/contexts/project-context";
+import { LAUNCH_CONFIG } from "@/lib/launch/config";
 
 export function SetupChecklist() {
   const { activeProject } = useProject();
   const { persisted, startTour, hasSeenTour, showWelcome, isOpen } = useTourStore();
+  const hideXp = LAUNCH_CONFIG.roadmap.hideGamification;
 
   const items = useMemo(() => {
     const projectType = activeProject?.projectType;
@@ -123,9 +125,11 @@ export function SetupChecklist() {
                   <ChevronLeft size={14} />
                 </Button>
               )}
-              <span className="text-[10px] font-bold text-amber-500 shrink-0">
-                +{item.xpReward} XP
-              </span>
+              {!hideXp && (
+                <span className="text-[10px] font-bold text-amber-500 shrink-0">
+                  +{item.xpReward} XP
+                </span>
+              )}
             </motion.li>
           );
         })}

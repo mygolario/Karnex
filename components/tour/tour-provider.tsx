@@ -83,6 +83,8 @@ export function TourProvider({ children }: TourProviderProps) {
 
     const timer = setTimeout(() => {
       const state = useTourStore.getState();
+      // Don't interrupt an in-progress page tour (roadmap/canvas/copilot).
+      if (state.isOpen || state.showWelcome) return;
       const candidate = getGlobalAutoStartCandidate({
         initialized: state.initialized,
         showWelcome: state.showWelcome,

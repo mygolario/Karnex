@@ -28,7 +28,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { name: '۱ پروژه فعال', included: true, limit: 1 },
       { name: '۴۰ واحد اعتبار AI در ماه', included: true, limit: 40, tooltip: 'درخواست‌های سنگین چند واحد مصرف می‌کنند' },
-      { name: 'بوم، نقشه راه، پیچ‌دک و کوپایلوت', included: true },
+      { name: 'بوم، نقشه راه، پیچ‌دک، اعتبارسنجی و تحلیل رقبا', included: true },
       { name: 'پشتیبانی جامعه', included: true },
     ],
   },
@@ -49,7 +49,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       { name: '۳ پروژه فعال', included: true, limit: 3 },
       { name: '۱۰۰ واحد اعتبار AI در ماه', included: true, limit: 100, tooltip: 'درخواست‌های سنگین چند واحد مصرف می‌کنند' },
       { name: 'همه ابزارهای استارتاپ', included: true },
-      { name: 'تحلیل رقبا و تحقیق بازار', included: true },
+      { name: 'تحقیق بازار با داده زنده وب', included: true },
     ],
   },
   {
