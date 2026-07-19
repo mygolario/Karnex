@@ -13,6 +13,7 @@ export function FocusHero({ nextStepName }: FocusHeroProps) {
   if (!nextStepName) {
     return (
       <motion.div
+        data-tour-id="overview-focus"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
@@ -51,6 +52,7 @@ export function FocusHero({ nextStepName }: FocusHeroProps) {
 
   return (
     <motion.div
+      data-tour-id="overview-focus"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}

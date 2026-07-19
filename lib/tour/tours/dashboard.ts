@@ -30,11 +30,11 @@ export const dashboardTour: TourDefinition = {
     },
     {
       id: "stats",
-      target: "stats-strip",
-      title: "نبض کسب‌وکار",
-      description: "وضعیت کلی پروژه، امتیاز فعلی و روزهای فعالیت شما در یک نگاه.",
+      target: "overview-focus",
+      title: "گام بعدی شما",
+      description: "مهم‌ترین کار فعلی پروژه‌تان اینجا دیده می‌شود؛ از همین‌جا وارد نقشه راه یا دستیار شوید.",
       mood: "tip",
-      position: "top",
+      position: "bottom",
     },
     {
       id: "help",
