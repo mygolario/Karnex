@@ -123,7 +123,7 @@ const nextConfig: NextConfig = {
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: blob: https: http:",
           "font-src 'self' data:",
-          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.ingest.de.sentry.io https://*.sentry.io https://openrouter.ai",
+          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://lh3.googleusercontent.com https://www.google-analytics.com https://*.ingest.de.sentry.io https://*.sentry.io https://openrouter.ai",
           "frame-ancestors 'none'",
           "base-uri 'self'",
           "form-action 'self'",
@@ -172,6 +172,10 @@ export default withSentryConfig(withBundleAnalyzer(nextConfig), {
   project: "karnex",
   authToken: process.env.SENTRY_AUTH_TOKEN,
   silent: !process.env.CI,
-  widenClientFileUpload: true,
+  // Avoid long/hanging source-map uploads on Hobby builds when token is absent/invalid.
+  widenClientFileUpload: Boolean(process.env.SENTRY_AUTH_TOKEN),
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
   tunnelRoute: "/monitoring",
 });

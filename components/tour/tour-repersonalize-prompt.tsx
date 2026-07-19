@@ -24,7 +24,7 @@ export function TourRepersonalizePrompt() {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
-          className="fixed bottom-6 end-6 z-[9500] w-[320px] rounded-2xl border border-primary/30 bg-card shadow-2xl p-4"
+          className="fixed bottom-[var(--mobile-bottom-nav-offset)] md:bottom-6 end-3 start-3 sm:start-auto z-[9500] w-auto sm:w-[320px] max-w-[calc(100vw-1.5rem)] rounded-2xl border border-primary/30 bg-card shadow-2xl p-4 md:end-6"
           dir="rtl"
         >
           <div className="flex items-start gap-3">

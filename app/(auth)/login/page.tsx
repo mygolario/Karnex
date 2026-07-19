@@ -38,7 +38,6 @@ export default function LoginPage() {
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,6 +69,7 @@ function LoginContent() {
     setLoading(true);
 
     try {
+      const supabase = createClient();
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -101,6 +101,7 @@ function LoginContent() {
     setLoading(true);
     const callbackUrl =
       searchParams.get("callbackUrl") || "/dashboard/overview";
+    const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: getOAuthRedirectUrl(callbackUrl) },
@@ -114,6 +115,7 @@ function LoginContent() {
     setResetSuccess("");
 
     try {
+      const supabase = createClient();
       const { error: resetError } = await supabase.auth.resetPasswordForEmail(
         resetEmail,
         { redirectTo: getAuthConfirmRedirectUrl("recovery") }

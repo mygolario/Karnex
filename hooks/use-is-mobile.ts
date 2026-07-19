@@ -33,25 +33,23 @@ export function useIsStandalone(): boolean {
   return isStandalone;
 }
 
+/** True only for narrow viewports (≤767px). Standalone PWA on large screens stays desktop. */
 export function useIsMobile(): boolean {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia(MOBILE_QUERY);
-    const standaloneMq = window.matchMedia(STANDALONE_QUERY);
 
     const update = () => {
-      setIsMobile(getIsMobileViewport() || getIsStandalone());
+      setIsMobile(getIsMobileViewport());
     };
 
     update();
     mq.addEventListener("change", update);
-    standaloneMq.addEventListener("change", update);
     window.addEventListener("resize", update);
 
     return () => {
       mq.removeEventListener("change", update);
-      standaloneMq.removeEventListener("change", update);
       window.removeEventListener("resize", update);
     };
   }, []);

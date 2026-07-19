@@ -1,7 +1,7 @@
 "use client";
 
-import { ValidationWorkspace } from "@/components/dashboard/validation/validation-workspace";
+import { ValidationStudio } from "@/components/dashboard/validation/validation-studio";
 
 export default function ValidationPage() {
-  return <ValidationWorkspace />;
+  return <ValidationStudio />;
 }

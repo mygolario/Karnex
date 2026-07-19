@@ -64,7 +64,7 @@ export function RoadmapAiCopilot({
   };
 
   return (
-    <div className="fixed bottom-24 end-6 z-50 flex flex-col items-end gap-2">
+    <div className="fixed bottom-[var(--mobile-bottom-nav-offset)] md:bottom-24 end-3 md:end-6 z-50 flex flex-col items-end gap-2">
       {/* Expanded panel */}
       <AnimatePresence>
         {isOpen && (
@@ -74,7 +74,7 @@ export function RoadmapAiCopilot({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.22, ease: "easeOut" }}
-            className="w-80 shadow-2xl shadow-primary/10 border border-border/60 bg-card/95 backdrop-blur-xl rounded-2xl overflow-hidden"
+            className="w-[min(20rem,calc(100vw-1.5rem))] shadow-2xl shadow-primary/10 border border-border/60 bg-card/95 backdrop-blur-xl rounded-2xl overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 bg-gradient-to-r from-primary/5 to-violet-500/5">

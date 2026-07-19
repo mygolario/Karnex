@@ -88,6 +88,59 @@ export async function generateInsightsForProject(
     });
   }
 
+  // --- Idea validation journey (startup) ---
+  if (projectType === "startup") {
+    const hasValidation = Boolean(data.ideaValidation?.report);
+    const ws = data.ideaValidationWorkspace;
+    if (!hasValidation) {
+      insights.push({
+        type: "decision",
+        priority: "info",
+        title: "اعتبارسنجی ایده شروع نشده",
+        body: "قبل از ساختن زیاد، یک تصویر سریع از فرض‌های خطرناک بگیر و آزمایش این هفته را مشخص کن.",
+        actionPayload: {
+          type: "open_page",
+          label: "استودیو اعتبارسنجی",
+          href: "/dashboard/validation",
+        },
+      });
+    } else if (ws && typeof ws === "object") {
+      const evidenceCount = Array.isArray(ws.evidenceEntries)
+        ? ws.evidenceEntries.length
+        : 0;
+      const openAssumptions = ws.assumptionStatuses
+        ? Object.values(ws.assumptionStatuses).filter(
+            (s) => s === "open" || s === "testing"
+          ).length
+        : 0;
+      if (evidenceCount === 0 && openAssumptions > 0) {
+        insights.push({
+          type: "decision",
+          priority: "warning",
+          title: "شواهد اعتبارسنجی خالی است",
+          body: `${openAssumptions} فرض هنوز باز است و شاهدی ثبت نشده. یک مصاحبه یا لیست انتظار ثبت کن و بازامتیاز بگیر.`,
+          actionPayload: {
+            type: "open_page",
+            label: "ثبت شواهد",
+            href: "/dashboard/validation",
+          },
+        });
+      } else if (ws.journeyStage && ws.journeyStage !== "decision") {
+        insights.push({
+          type: "decision",
+          priority: "info",
+          title: "مسیر اعتبارسنجی ناتمام",
+          body: `الان در مرحله «${String(ws.journeyStage)}» هستی. گام بعدی را در استودیو اعتبارسنجی ادامه بده.`,
+          actionPayload: {
+            type: "open_page",
+            label: "ادامه اعتبارسنجی",
+            href: "/dashboard/validation",
+          },
+        });
+      }
+    }
+  }
+
   // --- Roadmap stalled (all) ---
   const roadmap: any[] = Array.isArray(data.roadmap) ? data.roadmap : [];
   const completed: string[] = Array.isArray(data.completedSteps)

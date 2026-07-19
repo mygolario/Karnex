@@ -19,15 +19,25 @@ import { PageTourHelp } from "@/components/tour/page-tour-help";
 import { useImmersivePage } from "@/hooks/use-immersive-page";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { cn } from "@/lib/utils";
+import { EmptyProjectState } from "@/components/dashboard/empty-project-state";
 
 export default function CanvasPage() {
   const { activeProject: plan, loading } = useProject();
 
-  if (loading || !plan) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  if (!plan) {
+    return (
+      <EmptyProjectState
+        title="برای بوم کسب‌وکار به پروژه نیاز داری"
+        description="اول یک پروژه بساز تا بوم، بلوک‌ها و تحلیل کسب‌وکارت اینجا باز شود."
+      />
     );
   }
 
@@ -54,22 +64,22 @@ function ZoomControls({ mobile }: { mobile?: boolean }) {
       <Button
         variant={scrollZoomEnabled ? "secondary" : "ghost"}
         size="icon"
-        className="h-8 w-8 mobile-touch-target"
+        className="h-11 w-11"
         onClick={() => setScrollZoomEnabled(!scrollZoomEnabled)}
         title={scrollZoomEnabled ? "غیرفعال کردن زوم با اسکرول" : "فعال کردن زوم با اسکرول"}
       >
         <Mouse size={15} />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomIn} title="بزرگ‌نمایی (+)">
+      <Button variant="ghost" size="icon" className="h-11 w-11" onClick={zoomIn} title="بزرگ‌نمایی (+)">
         <ZoomIn size={15} />
       </Button>
-      <div className="text-center text-[10px] font-bold text-muted-foreground tabular-nums py-0.5 px-1">
+      <div className="text-center text-[10px] font-bold text-muted-foreground tabular-nums py-0.5 px-1 min-w-[2.5rem]">
         {Math.round(viewport.zoom * 100)}%
       </div>
-      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomOut} title="کوچک‌نمایی (-)">
+      <Button variant="ghost" size="icon" className="h-11 w-11" onClick={zoomOut} title="کوچک‌نمایی (-)">
         <ZoomOut size={15} />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8 mobile-touch-target" onClick={zoomReset} title="بازنشانی نما (0)">
+      <Button variant="ghost" size="icon" className="h-11 w-11" onClick={zoomReset} title="بازنشانی نما (0)">
         <Maximize2 size={15} />
       </Button>
     </div>
@@ -111,8 +121,8 @@ function CanvasPageContent() {
   return (
     <div
       className={cn(
-        "flex flex-col mobile-immersive -mx-4 -mt-3",
-        isMobile ? "h-[calc(100dvh-3.5rem)]" : "h-[calc(100vh-3.5rem)]"
+        "flex flex-col",
+        isMobile ? "h-[calc(100dvh-3.5rem)]" : "h-[calc(100vh-3.5rem)] -mx-0"
       )}
       data-tour-id="canvas-page"
     >

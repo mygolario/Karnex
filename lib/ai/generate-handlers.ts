@@ -6,9 +6,14 @@ import { callAIWithValidation } from "@/lib/ai-validation";
 import type { PromptKey } from "@/lib/prompts/registry";
 import {
   IdeaValidationReportSchema,
+  InterviewScriptSchema,
   formatBriefForPrompt,
+  formatEvidenceForPrompt,
+  formatGroundingForPrompt,
   preprocessValidationPayload,
+  type EvidenceEntry,
   type IdeaValidationReport,
+  type AssumptionStatus,
   type ValidationBrief,
 } from "@/lib/validation/types";
 
@@ -57,7 +62,10 @@ export async function handleValidateIdea(
         currentSolution: "",
         unfairAdvantage: "",
         evidenceLevel: "none",
+        topWorry: "",
       });
+
+  const projectContext = buildProjectContextBlock(ctx);
 
   const { system, user } = await assembled(
     "validateIdea",
@@ -66,6 +74,7 @@ export async function handleValidateIdea(
       businessIdea: ctx.businessIdea,
       validationBrief: briefBlock,
       businessStage: ctx.businessStage || "idea",
+      projectContext,
     },
     ctx
   );
@@ -76,7 +85,7 @@ export async function handleValidateIdea(
       maxTokens: 4000,
       temperature: 0.75,
       critiqueInstruction:
-        "نقد کن: آیا حکم صریح است، ابعاد کامل‌اند، آزمایش‌ها قابل اجرا در ایران‌اند، و comparableها واقعی‌اند؟",
+        "نقد کن: آیا حکم صریح است، ابعاد کامل‌اند، آزمایش‌ها قابل اجرا در ایران‌اند، comparableها واقعی‌اند، و لحن مربی (صادق + قدم بعدی) رعایت شده؟",
     });
     const parsed = IdeaValidationReportSchema.safeParse(
       preprocessValidationPayload(data)
@@ -103,6 +112,111 @@ export async function handleValidateIdea(
   }
 
   return { validation: report, reasoning: report.reasoning };
+}
+
+function buildProjectContextBlock(ctx: GenerateContext): string {
+  const data = ctx.projectData || {};
+  const parts: string[] = [];
+  if (ctx.projectAudience) parts.push(`مخاطب پروژه: ${ctx.projectAudience}`);
+  if (ctx.projectDescription) parts.push(`overview: ${String(ctx.projectDescription).slice(0, 500)}`);
+  const canvas = data.leanCanvas;
+  if (canvas && typeof canvas === "object") {
+    parts.push(`بوم ناب (خلاصه): ${JSON.stringify(canvas).slice(0, 1200)}`);
+  }
+  const ideaInput = data.ideaInput;
+  if (typeof ideaInput === "string" && ideaInput.trim()) {
+    parts.push(`ideaInput: ${ideaInput.slice(0, 400)}`);
+  }
+  return parts.length ? parts.join("\n") : "زمینه اضافی موجود نیست.";
+}
+
+export async function handleValidateIdeaRescore(
+  ctx: GenerateContext & {
+    validationBrief?: ValidationBrief;
+    priorReport?: IdeaValidationReport;
+    evidenceEntries?: EvidenceEntry[];
+    assumptionStatuses?: Record<string, AssumptionStatus>;
+    competitorsSummary?: string;
+    marketSummary?: string;
+  }
+) {
+  const brief = ctx.validationBrief || {
+    problem: "",
+    whoSuffers: ctx.projectAudience || "",
+    currentSolution: "",
+    unfairAdvantage: "",
+    evidenceLevel: "none" as const,
+    topWorry: "",
+  };
+
+  const prior = ctx.priorReport;
+  const priorReportSummary = prior
+    ? [
+        `حکم قبلی: ${prior.verdict} | امتیاز: ${prior.overallScore} | اطمینان: ${prior.confidence}`,
+        prior.verdictRationale,
+        `خلاصه: ${prior.critique.summary}`,
+        `فرض‌ها: ${prior.assumptions.map((a) => `[${a.risk}] ${a.text}`).join("؛ ")}`,
+      ].join("\n")
+    : "گزارش قبلی موجود نیست.";
+
+  const evidenceBlock = formatEvidenceForPrompt(
+    ctx.evidenceEntries || [],
+    ctx.assumptionStatuses || {}
+  );
+  const groundingBlock = formatGroundingForPrompt({
+    competitorsSummary: ctx.competitorsSummary,
+    marketSummary: ctx.marketSummary,
+  });
+
+  const { system, user } = await assembled(
+    "validateIdeaRescore",
+    {
+      projectName: ctx.projectName || "پروژه",
+      validationBrief: formatBriefForPrompt(brief),
+      priorReportSummary,
+      evidenceBlock,
+      groundingBlock,
+    },
+    ctx
+  );
+
+  const report = await callAIWithValidation(
+    user,
+    { systemPrompt: system, maxTokens: 3500, temperature: 0.45 },
+    IdeaValidationReportSchema,
+    1,
+    preprocessValidationPayload
+  );
+
+  return { validation: report, reasoning: report.reasoning };
+}
+
+export async function handleValidateIdeaScript(
+  ctx: GenerateContext & {
+    problem?: string;
+    whoSuffers?: string;
+    assumptionText?: string;
+  }
+) {
+  const { system, user } = await assembled(
+    "validateIdeaScript",
+    {
+      projectName: ctx.projectName || "پروژه",
+      problem: ctx.problem || "",
+      whoSuffers: ctx.whoSuffers || ctx.projectAudience || "",
+      assumptionText: ctx.assumptionText || "فرض اصلی محصول",
+    },
+    ctx
+  );
+
+  const script = await callAIWithValidation(
+    user,
+    { systemPrompt: system, maxTokens: 1500, temperature: 0.5 },
+    InterviewScriptSchema,
+    1
+  );
+
+  return { script };
 }
 
 
@@ -273,15 +387,35 @@ export async function handleCanvasCritique(
 }
 
 export async function handlePitchSlideAI(
-  ctx: GenerateContext & { slideContent: string; mode: "rewrite" | "lengthen" | "shorten" | "translate_fa" | "translate_en" | "scorecard" }
+  ctx: GenerateContext & {
+    slideContent: string;
+    mode:
+      | "rewrite"
+      | "lengthen"
+      | "shorten"
+      | "strengthen"
+      | "suggest_bullets"
+      | "regenerate_slide"
+      | "translate_fa"
+      | "translate_en"
+      | "scorecard";
+    slideType?: string;
+  }
 ) {
+  const structuredHint =
+    'فقط JSON معتبر فارسی برگردان: { "title": string, "bullets": string[], "notes"?: string, "metadata"?: object }';
+
   const modePrompts: Record<string, string> = {
-    rewrite: "Rewrite professionally in Persian. Return JSON: { \"text\": string }",
-    lengthen: "Expand with more detail in Persian. Return JSON: { \"text\": string }",
-    shorten: "Shorten while keeping key points in Persian. Return JSON: { \"text\": string }",
-    translate_fa: "Translate to Persian. Return JSON: { \"text\": string }",
-    translate_en: "Translate to English. Return JSON: { \"text\": string }",
-    scorecard: "Investor readiness scorecard in Persian. Return JSON: { \"score\": number, \"tips\": string[], \"summary\": string }",
+    rewrite: `بازنویسی حرفه‌ای و سرمایه‌گذارپسند اسلاید پیچ‌دک به فارسی. ${structuredHint}`,
+    lengthen: `محتوای اسلاید را با جزئیات بیشتر به فارسی گسترش بده. ${structuredHint}`,
+    shorten: `اسلاید را کوتاه‌تر کن ولی نکات کلیدی را نگه دار. ${structuredHint}`,
+    strengthen: `پیام اسلاید را قوی‌تر، قانع‌کننده‌تر و مناسب سرمایه‌گذار ایرانی کن. ${structuredHint}`,
+    suggest_bullets: `۳ تا ۵ بولت قوی برای این اسلاید پیشنهاد بده. ${structuredHint}`,
+    regenerate_slide: `این اسلاید را از نو برای پیچ‌دک استارتاپ ایرانی بازنویسی کن. نوع اسلاید: ${ctx.slideType || "generic"}. ${structuredHint}`,
+    translate_fa: `به فارسی روان ترجمه کن. ${structuredHint}`,
+    translate_en: `Translate to English. Return JSON: { "title": string, "bullets": string[] }`,
+    scorecard:
+      'امتیاز آمادگی سرمایه‌گذاری به فارسی. JSON: { "score": number, "tips": string[], "summary": string }',
   };
   const system = modePrompts[ctx.mode] || modePrompts.rewrite;
   // Investor Readiness Scorecard benefits from live-web grounding (citations,
@@ -292,6 +426,7 @@ export async function handlePitchSlideAI(
     maxTokens: 1200,
     temperature: 0.5,
     modelOverride: isScorecard ? TIER_GROUNDED : undefined,
+    responseFormat: { type: "json_object" },
   });
   if (!result.success) throw new Error(result.error);
   return parseJsonFromAI(result.content!);

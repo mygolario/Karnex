@@ -5,6 +5,7 @@ import { Prisma } from "../prisma/client";
 import { auth } from "@/lib/auth/session";
 import type {
   IdeaValidationRecord,
+  IdeaValidationWorkspace,
   ValidationBrief,
 } from "@/lib/validation/types";
 import type {
@@ -812,6 +813,8 @@ export interface BusinessPlan {
   ideaValidation?: IdeaValidationRecord;
   ideaValidationHistory?: IdeaValidationRecord[];
   ideaValidationBrief?: ValidationBrief;
+  /** Living validation journey state (assumptions, evidence, experiments) */
+  ideaValidationWorkspace?: IdeaValidationWorkspace;
   // documents removed
   assistantData?: AssistantData; // NEW: Assistant Data
   // storefront removed

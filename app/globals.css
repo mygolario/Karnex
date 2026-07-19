@@ -1600,12 +1600,21 @@
 }
 
 /* === Mobile / PWA Utilities === */
+:root {
+  /* Mobile bottom tab bar height (h-16) + safe area — use for FABs/CTAs/nudges */
+  --mobile-bottom-nav-offset: calc(4rem + env(safe-area-inset-bottom, 0px));
+}
+
 @layer utilities {
   .safe-top {
     padding-top: env(safe-area-inset-top, 0px);
   }
 
   .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
@@ -1620,6 +1629,11 @@
 
   .h-dvh {
     height: 100dvh;
+  }
+
+  /* Fixed overlays that must sit above the mobile bottom nav */
+  .mobile-above-nav {
+    bottom: var(--mobile-bottom-nav-offset);
   }
 
   .mobile-page {

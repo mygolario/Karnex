@@ -33,12 +33,54 @@ export const DIMENSION_KEYS = [
 
 export type DimensionKey = (typeof DIMENSION_KEYS)[number];
 
+export const JOURNEY_STAGES = [
+  "brief",
+  "snapshot",
+  "assumptions",
+  "experiment",
+  "evidence",
+  "grounding",
+  "decision",
+] as const;
+
+export type JourneyStage = (typeof JOURNEY_STAGES)[number];
+
+export const ASSUMPTION_STATUSES = [
+  "open",
+  "testing",
+  "validated",
+  "invalidated",
+] as const;
+
+export type AssumptionStatus = (typeof ASSUMPTION_STATUSES)[number];
+
+export const EXPERIMENT_RUN_STATUSES = [
+  "todo",
+  "in_progress",
+  "done",
+  "abandoned",
+] as const;
+
+export type ExperimentRunStatus = (typeof EXPERIMENT_RUN_STATUSES)[number];
+
+export const EVIDENCE_ENTRY_TYPES = [
+  "interview",
+  "waitlist",
+  "survey",
+  "revenue",
+  "other",
+] as const;
+
+export type EvidenceEntryType = (typeof EVIDENCE_ENTRY_TYPES)[number];
+
 export interface ValidationBrief {
   problem: string;
   whoSuffers: string;
   currentSolution: string;
   unfairAdvantage: string;
   evidenceLevel: ValidationEvidenceLevel;
+  /** Optional personalization: what worries the founder most right now */
+  topWorry?: string;
 }
 
 export const ValidationBriefSchema = z.object({
@@ -47,6 +89,7 @@ export const ValidationBriefSchema = z.object({
   currentSolution: z.string().default(""),
   unfairAdvantage: z.string().default(""),
   evidenceLevel: z.enum(VALIDATION_EVIDENCE_LEVELS).default("none"),
+  topWorry: z.string().optional().default(""),
 });
 
 export const ValidationDimensionSchema = z.object({
@@ -81,13 +124,21 @@ export const ValidationComparableSchema = z.object({
 
 export const ValidationNextActionSchema = z.object({
   label: z.string(),
-  target: z.enum(["copilot", "canvas", "roadmap", "experiment"]).default("copilot"),
+  target: z
+    .enum(["copilot", "canvas", "roadmap", "experiment", "competitors", "market"])
+    .default("copilot"),
   detail: z.string().default(""),
 });
 
 export const ValidationEvidenceItemSchema = z.object({
   label: z.string(),
   status: z.enum(["have", "missing", "weak"]).default("missing"),
+});
+
+export const ValidationPivotOptionSchema = z.object({
+  title: z.string(),
+  rationale: z.string().default(""),
+  whatChanges: z.string().default(""),
 });
 
 export const IdeaValidationReportSchema = z.object({
@@ -108,6 +159,8 @@ export const IdeaValidationReportSchema = z.object({
   evidenceChecklist: z.array(ValidationEvidenceItemSchema).default([]),
   nextActions: z.array(ValidationNextActionSchema).default([]),
   thisWeekExperimentId: z.string().optional().default(""),
+  pivotOptions: z.array(ValidationPivotOptionSchema).optional().default([]),
+  lessonsLearned: z.string().optional().default(""),
 });
 
 export type IdeaValidationReport = z.infer<typeof IdeaValidationReportSchema>;
@@ -117,6 +170,7 @@ export type ValidationDimension = z.infer<typeof ValidationDimensionSchema>;
 export type ValidationComparable = z.infer<typeof ValidationComparableSchema>;
 export type ValidationNextAction = z.infer<typeof ValidationNextActionSchema>;
 export type ValidationEvidenceItem = z.infer<typeof ValidationEvidenceItemSchema>;
+export type ValidationPivotOption = z.infer<typeof ValidationPivotOptionSchema>;
 
 export interface IdeaValidationRecord {
   id: string;
@@ -126,11 +180,87 @@ export interface IdeaValidationRecord {
   projectName?: string;
 }
 
+export const ExperimentRunStateSchema = z.object({
+  experimentId: z.string(),
+  status: z.enum(EXPERIMENT_RUN_STATUSES).default("todo"),
+  notes: z.string().default(""),
+  result: z.string().default(""),
+  updatedAt: z.string().default(""),
+});
+
+export type ExperimentRunState = z.infer<typeof ExperimentRunStateSchema>;
+
+export const EvidenceEntrySchema = z.object({
+  id: z.string(),
+  type: z.enum(EVIDENCE_ENTRY_TYPES),
+  title: z.string().default(""),
+  notes: z.string().default(""),
+  metric: z.string().default(""),
+  assumptionIds: z.array(z.string()).default([]),
+  createdAt: z.string(),
+});
+
+export type EvidenceEntry = z.infer<typeof EvidenceEntrySchema>;
+
+export const GroundingMarketSnippetSchema = z.object({
+  researchType: z.string().default("trends"),
+  summary: z.string().default(""),
+  raw: z.unknown().optional(),
+  pulledAt: z.string(),
+});
+
+export type GroundingMarketSnippet = z.infer<typeof GroundingMarketSnippetSchema>;
+
+export const IdeaValidationWorkspaceSchema = z.object({
+  journeyStage: z.enum(JOURNEY_STAGES).default("brief"),
+  assumptionStatuses: z
+    .record(z.string(), z.enum(ASSUMPTION_STATUSES))
+    .default({}),
+  experiments: z.array(ExperimentRunStateSchema).default([]),
+  evidenceEntries: z.array(EvidenceEntrySchema).default([]),
+  linkedMarketResearchAt: z.string().optional().default(""),
+  linkedCompetitorsAt: z.string().optional().default(""),
+  groundingMarket: GroundingMarketSnippetSchema.optional().nullable(),
+  confidenceOverride: z.enum(["low", "medium", "high"]).optional(),
+  interviewScript: z
+    .object({
+      assumptionId: z.string().optional(),
+      title: z.string().default(""),
+      questions: z.array(z.string()).default([]),
+      tips: z.array(z.string()).default([]),
+      generatedAt: z.string().default(""),
+    })
+    .optional()
+    .nullable(),
+});
+
+export type IdeaValidationWorkspace = z.infer<
+  typeof IdeaValidationWorkspaceSchema
+>;
+
+export const InterviewScriptSchema = z.object({
+  title: z.string().default(""),
+  questions: z.array(z.string()).default([]),
+  tips: z.array(z.string()).default([]),
+  opening: z.string().optional().default(""),
+  closing: z.string().optional().default(""),
+});
+
+export type InterviewScript = z.infer<typeof InterviewScriptSchema>;
+
 export const EVIDENCE_LABELS: Record<ValidationEvidenceLevel, string> = {
   none: "هنوز مدرکی ندارم",
   talks: "چند گفتگو با مشتری بالقوه",
   waitlist: "لیست انتظار / پیش‌ثبت‌نام",
   revenue: "فروش یا درآمد واقعی",
+};
+
+export const EVIDENCE_ENTRY_LABELS: Record<EvidenceEntryType, string> = {
+  interview: "مصاحبه",
+  waitlist: "لیست انتظار",
+  survey: "نظرسنجی",
+  revenue: "سیگنال درآمد",
+  other: "سایر",
 };
 
 export const VERDICT_LABELS: Record<ValidationVerdict, string> = {
@@ -156,6 +286,30 @@ export const DIMENSION_LABELS: Record<DimensionKey, string> = {
   iran_local_fit: "تناسب با ایران",
 };
 
+export const JOURNEY_STAGE_LABELS: Record<JourneyStage, string> = {
+  brief: "بریف",
+  snapshot: "تصویر سریع",
+  assumptions: "فرض‌ها",
+  experiment: "آزمایش",
+  evidence: "شواهد",
+  grounding: "بازار و رقبا",
+  decision: "تصمیم",
+};
+
+export const ASSUMPTION_STATUS_LABELS: Record<AssumptionStatus, string> = {
+  open: "باز",
+  testing: "در حال آزمایش",
+  validated: "تأیید شد",
+  invalidated: "رد شد",
+};
+
+export const EXPERIMENT_STATUS_LABELS: Record<ExperimentRunStatus, string> = {
+  todo: "شروع نشده",
+  in_progress: "در حال اجرا",
+  done: "انجام شد",
+  abandoned: "رها شد",
+};
+
 export function emptyValidationBrief(): ValidationBrief {
   return {
     problem: "",
@@ -163,6 +317,23 @@ export function emptyValidationBrief(): ValidationBrief {
     currentSolution: "",
     unfairAdvantage: "",
     evidenceLevel: "none",
+    topWorry: "",
+  };
+}
+
+export function emptyValidationWorkspace(
+  overrides?: Partial<IdeaValidationWorkspace>
+): IdeaValidationWorkspace {
+  return {
+    journeyStage: "brief",
+    assumptionStatuses: {},
+    experiments: [],
+    evidenceEntries: [],
+    linkedMarketResearchAt: "",
+    linkedCompetitorsAt: "",
+    groundingMarket: null,
+    interviewScript: null,
+    ...overrides,
   };
 }
 
@@ -216,6 +387,7 @@ export function briefFromProject(plan: {
       canvasText(canvas?.uniqueValue) ||
       "",
     evidenceLevel: "none",
+    topWorry: "",
   };
 }
 
@@ -224,13 +396,184 @@ export function isBriefReady(brief: ValidationBrief): boolean {
 }
 
 export function formatBriefForPrompt(brief: ValidationBrief): string {
-  return [
+  const lines = [
     `مسئله: ${brief.problem || "—"}`,
     `چه کسانی رنج می‌برند: ${brief.whoSuffers || "—"}`,
     `راه‌حل فعلی بازار: ${brief.currentSolution || "—"}`,
     `مزیت ناعادلانه / بینش: ${brief.unfairAdvantage || "—"}`,
     `سطح شواهد: ${EVIDENCE_LABELS[brief.evidenceLevel]}`,
+  ];
+  if (brief.topWorry?.trim()) {
+    lines.push(`نگرانی اصلی بنیان‌گذار الان: ${brief.topWorry.trim()}`);
+  }
+  return lines.join("\n");
+}
+
+/** Hydrate workspace from legacy project data or partial saves. */
+export function hydrateValidationWorkspace(
+  raw: unknown,
+  report?: IdeaValidationReport | null
+): IdeaValidationWorkspace {
+  const parsed = IdeaValidationWorkspaceSchema.safeParse(raw ?? {});
+  const base = parsed.success
+    ? parsed.data
+    : emptyValidationWorkspace();
+
+  if (!report) return base;
+
+  const assumptionStatuses = { ...base.assumptionStatuses };
+  for (const a of report.assumptions) {
+    if (!assumptionStatuses[a.id]) {
+      assumptionStatuses[a.id] = "open";
+    }
+  }
+
+  const existingExpIds = new Set(base.experiments.map((e) => e.experimentId));
+  const experiments = [...base.experiments];
+  for (const e of report.experiments) {
+    if (!existingExpIds.has(e.id)) {
+      experiments.push({
+        experimentId: e.id,
+        status: e.isPrimary ? "todo" : "todo",
+        notes: "",
+        result: "",
+        updatedAt: "",
+      });
+    }
+  }
+
+  let journeyStage = base.journeyStage;
+  if (journeyStage === "brief" && report) {
+    journeyStage = "snapshot";
+  }
+
+  return {
+    ...base,
+    assumptionStatuses,
+    experiments,
+    journeyStage,
+  };
+}
+
+export function workspaceFromReport(
+  report: IdeaValidationReport
+): IdeaValidationWorkspace {
+  return hydrateValidationWorkspace(
+    {
+      journeyStage: "snapshot",
+      assumptionStatuses: Object.fromEntries(
+        report.assumptions.map((a) => [a.id, "open" as AssumptionStatus])
+      ),
+      experiments: report.experiments.map((e) => ({
+        experimentId: e.id,
+        status: "todo" as ExperimentRunStatus,
+        notes: "",
+        result: "",
+        updatedAt: "",
+      })),
+      evidenceEntries: [],
+    },
+    report
+  );
+}
+
+export function formatEvidenceForPrompt(
+  entries: EvidenceEntry[],
+  assumptionStatuses: Record<string, AssumptionStatus>
+): string {
+  if (!entries.length && Object.keys(assumptionStatuses).length === 0) {
+    return "هنوز شاهد ثبت‌شده‌ای نیست.";
+  }
+  const statusLines = Object.entries(assumptionStatuses).map(
+    ([id, status]) => `- فرض ${id}: ${ASSUMPTION_STATUS_LABELS[status]}`
+  );
+  const evidenceLines = entries.map(
+    (e) =>
+      `- [${EVIDENCE_ENTRY_LABELS[e.type]}] ${e.title || e.notes.slice(0, 80)} | معیار: ${e.metric || "—"} | فرض‌ها: ${e.assumptionIds.join(",") || "—"} | ${e.notes}`
+  );
+  return [
+    "وضعیت فرض‌ها:",
+    ...statusLines,
+    "",
+    "شواهد ثبت‌شده:",
+    ...(evidenceLines.length ? evidenceLines : ["— هیچ موردی —"]),
   ].join("\n");
+}
+
+export function formatGroundingForPrompt(input: {
+  competitorsSummary?: string;
+  marketSummary?: string;
+}): string {
+  const parts: string[] = [];
+  if (input.marketSummary?.trim()) {
+    parts.push(`از تحلیل بازار پروژه:\n${input.marketSummary.trim()}`);
+  }
+  if (input.competitorsSummary?.trim()) {
+    parts.push(`از رقبای ذخیره‌شده:\n${input.competitorsSummary.trim()}`);
+  }
+  if (!parts.length) {
+    return "داده بازار/رقبای پروژه‌ای موجود نیست — عددسازی جعلی ممنوع.";
+  }
+  return parts.join("\n\n");
+}
+
+export function summarizeCompetitorsForValidation(plan: {
+  competitors?: unknown;
+  competitorIntel?: {
+    wedge?: string;
+    brief?: string;
+    competitors?: Array<{
+      name?: string;
+      status?: string;
+      oneLiner?: string;
+      strengths?: string[];
+      weaknesses?: string[];
+    }>;
+  };
+}): string {
+  const intel = plan.competitorIntel;
+  const lines: string[] = [];
+  if (intel?.wedge) lines.push(`زاویه تمایز: ${intel.wedge}`);
+  if (intel?.brief) lines.push(`خلاصه: ${intel.brief}`);
+
+  const fromIntel = Array.isArray(intel?.competitors)
+    ? intel!.competitors!.filter((c) => !c.status || c.status === "active")
+    : [];
+  const list =
+    fromIntel.length > 0
+      ? fromIntel
+      : Array.isArray(plan.competitors)
+        ? (plan.competitors as Array<{ name?: string; description?: string }>)
+        : [];
+
+  for (const c of list.slice(0, 5)) {
+    const name = (c as { name?: string }).name || "رقیب";
+    const oneLiner =
+      (c as { oneLiner?: string }).oneLiner ||
+      (c as { description?: string }).description ||
+      "";
+    lines.push(`- ${name}${oneLiner ? `: ${oneLiner}` : ""}`);
+  }
+
+  return lines.join("\n").slice(0, 2500);
+}
+
+export function getValidationJourneyInsight(workspace?: IdeaValidationWorkspace | null): {
+  stage: JourneyStage;
+  label: string;
+  openAssumptions: number;
+  evidenceCount: number;
+} | null {
+  if (!workspace) return null;
+  const openAssumptions = Object.values(workspace.assumptionStatuses).filter(
+    (s) => s === "open" || s === "testing"
+  ).length;
+  return {
+    stage: workspace.journeyStage,
+    label: JOURNEY_STAGE_LABELS[workspace.journeyStage],
+    openAssumptions,
+    evidenceCount: workspace.evidenceEntries.length,
+  };
 }
 
 export function validationReportToMarkdown(
@@ -259,7 +602,8 @@ export function validationReportToMarkdown(
     "",
     "## فرض‌ها",
     ...report.assumptions.map(
-      (a) => `- [${a.risk}] ${a.text}${a.experimentId ? ` (آزمایش: ${a.experimentId})` : ""}`
+      (a) =>
+        `- [${a.risk}] ${a.text}${a.experimentId ? ` (آزمایش: ${a.experimentId})` : ""}`
     ),
     "",
     "## آزمایش‌ها",
@@ -274,8 +618,21 @@ export function validationReportToMarkdown(
     ),
     "",
     "## اقدام بعدی",
-    ...report.nextActions.map((a) => `- ${a.label}: ${a.detail}`),
+    ...report.nextActions.map((a) => `- ${a.label}: ${a.detail}`)
   );
+  if (report.pivotOptions && report.pivotOptions.length > 0) {
+    lines.push(
+      "",
+      "## گزینه‌های پیوت",
+      ...report.pivotOptions.map(
+        (p) =>
+          `- **${p.title}**: ${p.rationale}${p.whatChanges ? ` — تغییر: ${p.whatChanges}` : ""}`
+      )
+    );
+  }
+  if (report.lessonsLearned) {
+    lines.push("", "## آنچه یاد گرفتی", report.lessonsLearned);
+  }
   if (report.reasoning) {
     lines.push("", "## استدلال", report.reasoning);
   }
@@ -332,11 +689,20 @@ export function preprocessValidationPayload(parsed: unknown): unknown {
       })
     : [];
 
+  const pivotOptions = Array.isArray(raw.pivotOptions)
+    ? (raw.pivotOptions as Record<string, unknown>[]).map((p) => ({
+        title: String(p.title || ""),
+        rationale: String(p.rationale || ""),
+        whatChanges: String(p.whatChanges || ""),
+      }))
+    : [];
+
   return {
     ...raw,
     verdict,
-    verdictRationale:
-      String(raw.verdictRationale || critique.summary || raw.reasoning || ""),
+    verdictRationale: String(
+      raw.verdictRationale || critique.summary || raw.reasoning || ""
+    ),
     overallScore,
     confidence: raw.confidence || "medium",
     critique: {
@@ -354,8 +720,14 @@ export function preprocessValidationPayload(parsed: unknown): unknown {
       ? raw.evidenceChecklist
       : [],
     nextActions: Array.isArray(raw.nextActions) ? raw.nextActions : [],
-    thisWeekExperimentId:
-      String(raw.thisWeekExperimentId || experiments.find((e) => e.isPrimary)?.id || experiments[0]?.id || ""),
+    thisWeekExperimentId: String(
+      raw.thisWeekExperimentId ||
+        experiments.find((e) => e.isPrimary)?.id ||
+        experiments[0]?.id ||
+        ""
+    ),
+    pivotOptions,
+    lessonsLearned: String(raw.lessonsLearned || ""),
     reasoning: String(raw.reasoning || ""),
   };
 }

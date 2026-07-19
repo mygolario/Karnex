@@ -25,7 +25,7 @@ export function MobileNav() {
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="p-0 border-l border-border bg-card w-[300px]">
+      <SheetContent side="left" className="p-0 border-e border-border bg-card w-[300px]">
         <DashboardSidebar variant="mobile" />
       </SheetContent>
     </Sheet>

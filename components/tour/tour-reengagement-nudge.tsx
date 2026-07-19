@@ -36,7 +36,7 @@ export function TourReengagementNudge() {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
-          className="fixed bottom-6 start-6 z-[9500] w-[300px] rounded-2xl border border-border bg-card shadow-2xl p-4"
+          className="fixed bottom-[var(--mobile-bottom-nav-offset)] md:bottom-6 start-3 end-3 sm:end-auto z-[9500] w-auto sm:w-[300px] max-w-[calc(100vw-1.5rem)] rounded-2xl border border-border bg-card shadow-2xl p-4 md:start-6"
           dir="rtl"
         >
           <div className="flex items-start gap-3">

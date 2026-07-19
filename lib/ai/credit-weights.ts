@@ -75,6 +75,9 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "enhance-bio",
     "memory",
     "insights",
+    "validate-idea-script",
+    "validate_idea_script",
+    "validateideascript",
   ]);
 
   const standard = new Set([
@@ -86,6 +89,9 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "analyze-competitors",
     "market-research",
     "stt",
+    "validate-idea-rescore",
+    "validate_idea_rescore",
+    "validateidearescore",
   ]);
 
   if (heavy.has(key) || key.includes("generate-plan") || key.includes("pitch-deck")) {

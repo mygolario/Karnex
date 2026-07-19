@@ -2,97 +2,27 @@
 
 import React from "react";
 import { PitchDeckSlide } from "@/lib/db";
-import { 
-  TrendingUp, 
-  Users, 
-  Target, 
-  DollarSign, 
-  ShieldAlert, 
-  CheckCircle, 
-  MapPin, 
-  Milestone, 
-  ChevronRight, 
-  Zap, 
-  Layers, 
+import {
+  TrendingUp,
+  Users,
+  DollarSign,
+  ShieldAlert,
+  CheckCircle,
+  Milestone,
+  Zap,
+  Layers,
   Award,
-  Check,
-  X
+  Activity,
 } from "lucide-react";
+import {
+  SlideThemes,
+  resolveTheme,
+  convertPersianArabicDigits,
+  safeString,
+  parseNum,
+} from "@/lib/pitch-deck";
 
-const convertPersianArabicDigits = (val: any): string => {
-  if (typeof val === 'symbol') return '';
-  if (typeof val === 'number') return String(val);
-  if (!val) return '';
-  const pMap = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-  const aMap = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-  let str = String(val);
-  for (let i = 0; i < 10; i++) {
-    str = str.replace(new RegExp(pMap[i], 'g'), String(i))
-             .replace(new RegExp(aMap[i], 'g'), String(i));
-  }
-  return str;
-};
-
-const safeString = (val: any): string => {
-  if (typeof val === 'symbol') return '';
-  if (val === null || val === undefined) return '';
-  if (typeof val === 'object') {
-    try {
-      return JSON.stringify(val);
-    } catch {
-      return '';
-    }
-  }
-  return String(val);
-};
-
-const parseNum = (val: any): number => {
-  if (typeof val === 'symbol') return 0;
-  if (typeof val === 'number') return val;
-  if (!val) return 0;
-  const cleaned = convertPersianArabicDigits(val).replace(/,/g, '');
-  const cleanStr = cleaned.replace(/[^0-9.-]/g, '');
-  const parsed = parseFloat(cleanStr);
-  return isNaN(parsed) ? 0 : parsed;
-};
-
-
-export const SlideThemes = {
-
-  midnight_cyan: {
-    bg: "#020617",
-    card: "rgba(15, 23, 42, 0.6)",
-    border: "rgba(34, 211, 238, 0.15)",
-    primary: "#22D3EE",
-    secondary: "#60A5FA",
-    glow1: "rgba(6, 182, 212, 0.12)",
-    glow2: "rgba(109, 40, 217, 0.08)",
-    accentGradient: "linear-gradient(to right, #22D3EE, #4F46E5, #D946EF)",
-    badgeBg: "rgba(34, 211, 238, 0.1)",
-  },
-  amethyst_glow: {
-    bg: "#09090B",
-    card: "rgba(24, 24, 27, 0.6)",
-    border: "rgba(168, 85, 247, 0.15)",
-    primary: "#C084FC",
-    secondary: "#F472B6",
-    glow1: "rgba(168, 85, 247, 0.15)",
-    glow2: "rgba(236, 72, 153, 0.08)",
-    accentGradient: "linear-gradient(to right, #A855F7, #EC4899, #F43F5E)",
-    badgeBg: "rgba(192, 132, 252, 0.1)",
-  },
-  sleek_slate: {
-    bg: "#0B0F10",
-    card: "rgba(30, 30, 30, 0.6)",
-    border: "rgba(52, 211, 153, 0.15)",
-    primary: "#34D399",
-    secondary: "#94A3B8",
-    glow1: "rgba(52, 211, 153, 0.08)",
-    glow2: "rgba(148, 163, 184, 0.05)",
-    accentGradient: "linear-gradient(to right, #34D399, #64748B, #CBD5E1)",
-    badgeBg: "rgba(52, 211, 153, 0.1)",
-  }
-};
+export { SlideThemes };
 
 interface SlideTemplatesProps {
   slide: PitchDeckSlide;
@@ -125,6 +55,8 @@ export function SlideVisualizer({ slide, index, total, projectName, isExport = f
         return <RoadmapLayout slide={slide} />;
       case "team":
         return <TeamLayout slide={slide} />;
+      case "traction":
+        return <TractionLayout slide={slide} />;
       case "ask":
         return <AskLayout slide={slide} />;
       default:
@@ -132,16 +64,19 @@ export function SlideVisualizer({ slide, index, total, projectName, isExport = f
     }
   };
 
-  const themeKey = slide.metadata?.theme || 'midnight_cyan';
-  const activeTheme = SlideThemes[themeKey as keyof typeof SlideThemes] || SlideThemes.midnight_cyan;
+  const activeTheme = resolveTheme(slide.metadata?.theme);
+  const fgClass = activeTheme.isLight ? "text-zinc-900" : "text-white";
 
   return (
     <div 
-      className="w-full h-full p-8 md:p-10 flex flex-col relative overflow-hidden text-white select-none transition-all duration-300"
+      className={`w-full h-full p-8 md:p-10 flex flex-col relative overflow-hidden select-none transition-all duration-300 ${fgClass}`}
       style={{
         backgroundColor: activeTheme.bg,
         borderColor: activeTheme.border,
+        color: activeTheme.fg,
         ['--theme-bg' as any]: activeTheme.bg,
+        ['--theme-fg' as any]: activeTheme.fg,
+        ['--theme-muted' as any]: activeTheme.muted,
         ['--theme-card' as any]: activeTheme.card,
         ['--theme-border' as any]: activeTheme.border,
         ['--theme-primary' as any]: activeTheme.primary,
@@ -783,19 +718,81 @@ function AskLayout({ slide }: { slide: PitchDeckSlide }) {
   );
 }
 
-// 10. Generic Layout
+// 10. Traction / Metrics Layout
+function TractionLayout({ slide }: { slide: PitchDeckSlide }) {
+  const metadata = slide.metadata || {};
+  const rawMetrics = metadata.metrics;
+  const metricsList = Array.isArray(rawMetrics) ? rawMetrics : [];
+  const metrics = metricsList.filter(Boolean);
+
+  return (
+    <div className="space-y-5" dir="rtl">
+      <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: "var(--theme-primary)" }}>
+        <Activity className="w-6 h-6" style={{ color: "var(--theme-primary)" }} />
+        {slide.title}
+      </h2>
+
+      {metrics.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {metrics.slice(0, 6).map((m: { label?: string; value?: string; note?: string }, i: number) => (
+            <div
+              key={i}
+              className="bg-[var(--theme-card)] border p-4 rounded-2xl flex flex-col gap-1"
+              style={{ borderColor: "var(--theme-border)" }}
+            >
+              <span className="text-2xl font-black font-mono" style={{ color: "var(--theme-primary)" }}>
+                {safeString(m.value) || "—"}
+              </span>
+              <span className="text-xs font-bold" style={{ color: "var(--theme-fg)" }}>
+                {safeString(m.label) || "شاخص"}
+              </span>
+              {m.note ? (
+                <span className="text-[10px]" style={{ color: "var(--theme-muted)" }}>
+                  {safeString(m.note)}
+                </span>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {(slide.bullets || []).map((b, i) => (
+            <div
+              key={i}
+              className="bg-[var(--theme-card)] border p-4 rounded-2xl flex gap-3 items-start"
+              style={{ borderColor: "var(--theme-border)" }}
+            >
+              <TrendingUp className="w-4 h-4 shrink-0 mt-0.5" style={{ color: "var(--theme-primary)" }} />
+              <p className="text-xs leading-relaxed font-semibold" style={{ color: "var(--theme-muted)" }}>
+                {b}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// 11. Generic Layout
 function GenericLayout({ slide }: { slide: PitchDeckSlide }) {
   return (
     <div className="space-y-4" dir="rtl">
-      <h2 className="text-2xl font-black text-cyan-400 flex items-center gap-2">
+      <h2 className="text-2xl font-black flex items-center gap-2" style={{ color: "var(--theme-primary)" }}>
         <Award className="w-6 h-6" />
         {slide.title}
       </h2>
       <div className="space-y-3">
         {(slide.bullets || []).map((b, i) => (
-          <div key={i} className="flex gap-3 items-start bg-slate-900/40 border border-white/5 p-3 rounded-2xl">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 mt-2.5 shrink-0" />
-            <p className="text-sm md:text-base leading-relaxed text-slate-300 font-semibold">{b}</p>
+          <div
+            key={i}
+            className="flex gap-3 items-start bg-[var(--theme-card)] border p-3 rounded-2xl"
+            style={{ borderColor: "var(--theme-border)" }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full mt-2.5 shrink-0" style={{ backgroundColor: "var(--theme-primary)" }} />
+            <p className="text-sm md:text-base leading-relaxed font-semibold" style={{ color: "var(--theme-muted)" }}>
+              {b}
+            </p>
           </div>
         ))}
       </div>

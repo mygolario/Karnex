@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/mobile-app" },
   openGraph: {
     title: "نسخه موبایل کارنکس",
-    description: "نصب PWA کارنکس روی iOS و Android برای دسترسی آفلاین و سریع.",
+    description: "نصب PWA کارنکس روی iOS و Android برای دسترسی سریع از صفحه اصلی.",
     url: "https://www.karnex.ir/mobile-app",
     type: "website",
   },

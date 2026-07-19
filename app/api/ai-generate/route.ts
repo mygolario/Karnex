@@ -20,6 +20,8 @@ import {
   handleScriptWriter,
   handleSectionCards,
   handleValidateIdea,
+  handleValidateIdeaRescore,
+  handleValidateIdeaScript,
 } from "@/lib/ai/generate-handlers";
 
 export const maxDuration = 120;
@@ -141,6 +143,48 @@ export async function POST(req: Request) {
       }
     }
 
+    if (action === "validate-idea-rescore") {
+      try {
+        const {
+          validationBrief,
+          priorReport,
+          evidenceEntries,
+          assumptionStatuses,
+          competitorsSummary,
+          marketSummary,
+        } = body;
+        const out = await handleValidateIdeaRescore({
+          ...genCtx,
+          validationBrief,
+          priorReport,
+          evidenceEntries,
+          assumptionStatuses,
+          competitorsSummary,
+          marketSummary,
+        });
+        return NextResponse.json({ success: true, ...out });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
+
+    if (action === "validate-idea-script") {
+      try {
+        const { problem, whoSuffers, assumptionText } = body;
+        const out = await handleValidateIdeaScript({
+          ...genCtx,
+          problem,
+          whoSuffers,
+          assumptionText,
+        });
+        return NextResponse.json({ success: true, ...out });
+      } catch (e) {
+        await rollback();
+        return NextResponse.json({ error: String(e) }, { status: 500 });
+      }
+    }
+
 
     if (action === "generate-content-ideas") {
       const { topic } = body;
@@ -228,12 +272,17 @@ export async function POST(req: Request) {
     }
 
     if (action === "pitch-slide-ai") {
-      const { slideContent, mode } = body;
+      const { slideContent, mode, slideType } = body;
       if (!slideContent || !mode) {
         return NextResponse.json({ error: "slideContent and mode required" }, { status: 400 });
       }
       try {
-        const result = await handlePitchSlideAI({ ...genCtx, slideContent, mode });
+        const result = await handlePitchSlideAI({
+          ...genCtx,
+          slideContent,
+          mode,
+          slideType,
+        });
         return NextResponse.json({ success: true, result });
       } catch (e) {
         await rollback();
