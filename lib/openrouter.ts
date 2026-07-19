@@ -141,6 +141,22 @@ const isTransient = (error: any) => {
 };
 
 /**
+ * Perplexity (via OpenRouter) rejects `response_format.type = "json_object"`.
+ * It only accepts `"json_schema"` or `"text"`. Drop json_object for those models
+ * and rely on prompt + parseJsonFromAI (same path we already use after the call).
+ */
+export function resolveResponseFormatForModel(
+    model: string,
+    responseFormat?: { type: string }
+): { type: string } | undefined {
+    if (!responseFormat) return undefined;
+    if (model.startsWith("perplexity/") && responseFormat.type === "json_object") {
+        return undefined;
+    }
+    return responseFormat;
+}
+
+/**
  * Call OpenRouter API with automatic model fallback
  */
 export async function callOpenRouter(
@@ -239,6 +255,8 @@ export async function callOpenRouter(
                             content: userContent
                         });
 
+                        const resolvedFormat = resolveResponseFormatForModel(model, responseFormat);
+
                         const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                             method: "POST",
                             headers: {
@@ -252,7 +270,7 @@ export async function callOpenRouter(
                                 messages,
                                 max_tokens: maxTokens,
                                 temperature,
-                                response_format: responseFormat,
+                                ...(resolvedFormat ? { response_format: resolvedFormat } : {}),
                                 ...(webSearchPlugin ? { plugins: [webSearchPlugin] } : {}),
                             }),
                             signal: controller.signal,
