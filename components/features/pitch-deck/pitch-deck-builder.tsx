@@ -35,6 +35,7 @@ import { PitchDeckAiSidebar, type StructuredSlidePatch } from "./ai-sidebar";
 import { SyncPanel } from "./sync-panel";
 import { PresentMode } from "./present-mode";
 import { SlideVisualizer } from "./slide-templates";
+import { useTourStore } from "@/lib/tour/store";
 
 type Mode = "home" | "wizard" | "preview" | "edit";
 type MobileEditPanel = "slides" | "editor" | "preview";
@@ -74,6 +75,22 @@ export function PitchDeckBuilder() {
     }
     initialized.current = true;
   }, [activeProject]);
+
+  // Pitch-deck tour anchors live on DeckPreview — ensure that view is mounted.
+  useEffect(() => {
+    const ensurePreviewForTour = () => {
+      const state = useTourStore.getState();
+      if (!state.isOpen || state.engine?.tourId !== "pitch-deck") return;
+      if (isGenerating) return;
+      setIsPlaying(false);
+      if (slidesRef.current.length === 0) {
+        setSlides(createBlankDeck(activeProject?.projectName || ""));
+      }
+      setMode((m) => (m === "preview" ? m : "preview"));
+    };
+    ensurePreviewForTour();
+    return useTourStore.subscribe(ensurePreviewForTour);
+  }, [activeProject?.projectName, isGenerating]);
 
   const contextSummary = useMemo(
     () =>
