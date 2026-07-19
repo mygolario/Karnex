@@ -370,6 +370,7 @@ export default function ScriptsPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          action: "refine-text",
           prompt,
           systemPrompt: refineTextPrompt.system,
           activeProject: plan

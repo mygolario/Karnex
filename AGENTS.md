@@ -9,6 +9,7 @@ Standard commands live in `package.json` scripts (`dev`, `build`, `lint`, `serwi
 ### Launch focus (Sep 2026)
 - Scope config: `lib/launch/config.ts` — Startup-first; Traditional/Creator pillars marked coming soon in Genesis; nav trimmed.
 - Pricing: `lib/payment/pricing.ts` — Free / پرو (`plus` id, 299k) / تیم (`pro` id, 699k). Weighted AI credits in `lib/ai/credit-weights.ts`.
+- AI model policy: `docs/ai-model-policy.md` — tiers in `lib/openrouter.ts` (Gemini volume backbone, Claude for high-stakes, Perplexity for grounded web).
 - Env template: `.env.example`.
 
 ### Services / how to run

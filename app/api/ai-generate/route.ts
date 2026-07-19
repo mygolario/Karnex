@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
+import { callOpenRouter, parseJsonFromAI, TIER_FAST, TIER_REASONING } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { auth } from "@/lib/auth/session";
 import { resolveAssembledPrompt } from "@/lib/ai/prompt-service";
@@ -46,7 +46,8 @@ export async function POST(req: Request) {
     } = body;
 
     const creditFeature =
-      deep && action === "market-research"
+      deep &&
+      (action === "market-research" || action === "generate-market-research")
         ? "market-research-deep"
         : typeof action === "string"
           ? action
@@ -118,6 +119,7 @@ export async function POST(req: Request) {
         systemPrompt: system,
         maxTokens: 3000,
         temperature: 0.7,
+        modelOverride: TIER_REASONING,
       });
       if (!result.success) {
         await rollback();
@@ -375,7 +377,11 @@ export async function POST(req: Request) {
       systemPrompt: finalSystem || "فقط به فارسی پاسخ بده.",
       maxTokens,
       temperature: 0.5,
-      modelOverride,
+      modelOverride:
+        modelOverride ||
+        (action === "refine-text" || action === "enhance-bio"
+          ? TIER_FAST
+          : undefined),
     });
 
     if (!result.success) {

@@ -2,7 +2,9 @@ import "server-only";
 import { callOpenRouter, parseJsonFromAI } from "@/lib/openrouter";
 
 /**
- * Draft → critique → refine for high-stakes structured outputs
+ * Draft → critique → refine for high-stakes structured outputs.
+ * Prefer draft on Flash (`modelOverride` / default) and refine on Claude
+ * (`refineModelOverride`) for quality without paying frontier cost on both passes.
  */
 export async function multiPassGenerate<T extends Record<string, unknown>>(
   userPrompt: string,
@@ -10,15 +12,21 @@ export async function multiPassGenerate<T extends Record<string, unknown>>(
   options: {
     maxTokens?: number;
     temperature?: number;
+    /** Draft-pass model (defaults to TEXT_MODELS chain when omitted) */
     modelOverride?: string;
+    /** Refine-pass model; falls back to modelOverride when omitted */
+    refineModelOverride?: string;
     critiqueInstruction?: string;
   } = {}
 ): Promise<{ data: T; reasoning?: string; passes: number }> {
+  const draftModel = options.modelOverride;
+  const refineModel = options.refineModelOverride ?? options.modelOverride;
+
   const draft = await callOpenRouter(userPrompt, {
     systemPrompt,
     maxTokens: options.maxTokens ?? 4000,
     temperature: options.temperature ?? 0.5,
-    modelOverride: options.modelOverride,
+    modelOverride: draftModel,
   });
 
   if (!draft.success || !draft.content) {
@@ -38,7 +46,7 @@ ${draft.content}
     systemPrompt: systemPrompt + "\n\nاین پاس دوم است — خروجی را بهبود بده.",
     maxTokens: options.maxTokens ?? 4000,
     temperature: 0.3,
-    modelOverride: options.modelOverride,
+    modelOverride: refineModel,
   });
 
   const content = refined.success && refined.content ? refined.content : draft.content;

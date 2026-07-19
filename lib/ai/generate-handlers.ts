@@ -1,6 +1,13 @@
 import "server-only";
 import { resolveAssembledPrompt, SCRIPT_TEMPLATE_INSTRUCTIONS } from "@/lib/ai/prompt-service";
-import { callOpenRouter, parseJsonFromAI, TIER_GROUNDED, TIER_GROUNDED_DEEP } from "@/lib/openrouter";
+import {
+  callOpenRouter,
+  parseJsonFromAI,
+  TIER_FAST,
+  TIER_GROUNDED,
+  TIER_GROUNDED_DEEP,
+  TIER_REASONING,
+} from "@/lib/openrouter";
 import { multiPassGenerate } from "@/lib/ai/multi-pass";
 import { callAIWithValidation } from "@/lib/ai-validation";
 import type { PromptKey } from "@/lib/prompts/registry";
@@ -84,6 +91,8 @@ export async function handleValidateIdea(
     const { data } = await multiPassGenerate<Record<string, unknown>>(user, system, {
       maxTokens: 4000,
       temperature: 0.75,
+      // Draft on default Flash; refine on Claude for high-stakes validation quality.
+      refineModelOverride: TIER_REASONING,
       critiqueInstruction:
         "نقد کن: آیا حکم صریح است، ابعاد کامل‌اند، آزمایش‌ها قابل اجرا در ایران‌اند، comparableها واقعی‌اند، و لحن مربی (صادق + قدم بعدی) رعایت شده؟",
     });
@@ -95,7 +104,12 @@ export async function handleValidateIdea(
     } else {
       report = await callAIWithValidation(
         user,
-        { systemPrompt: system, maxTokens: 4000, temperature: 0.4 },
+        {
+          systemPrompt: system,
+          maxTokens: 4000,
+          temperature: 0.4,
+          modelOverride: TIER_REASONING,
+        },
         IdeaValidationReportSchema,
         1,
         preprocessValidationPayload
@@ -104,7 +118,12 @@ export async function handleValidateIdea(
   } catch {
     report = await callAIWithValidation(
       user,
-      { systemPrompt: system, maxTokens: 4000, temperature: 0.4 },
+      {
+        systemPrompt: system,
+        maxTokens: 4000,
+        temperature: 0.4,
+        modelOverride: TIER_REASONING,
+      },
       IdeaValidationReportSchema,
       1,
       preprocessValidationPayload
@@ -255,6 +274,7 @@ export async function handleSectionCards(
     systemPrompt: system,
     maxTokens: 500,
     temperature: 0.7,
+    modelOverride: TIER_FAST,
   });
   if (!result.success) throw new Error(result.error);
   return parseJsonFromAI(result.content!);
@@ -272,6 +292,7 @@ export async function handleContentIdeas(
     systemPrompt: system,
     maxTokens: 2000,
     temperature: 0.8,
+    modelOverride: TIER_FAST,
   });
   if (!result.success) throw new Error(result.error);
   return parseJsonFromAI(result.content!);

@@ -55,6 +55,8 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
   const deep = new Set([
     "market-research-deep",
     "market_research_deep",
+    "generate-market-research-deep",
+    "generate_market_research_deep",
     "sonar-deep",
     "deep_research",
   ]);
@@ -75,7 +77,13 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "break-task",
     "refine-text",
     "refine_text",
+    "refinetext",
     "enhance-bio",
+    "enhance_bio",
+    "enhancebio",
+    "generate-content-ideas",
+    "generate_content_ideas",
+    "content-ideas",
     "memory",
     "insights",
     "validate-idea-script",
@@ -90,6 +98,8 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "chat-action",
     "advisor-chat",
     "market-research",
+    "generate-market-research",
+    "generate_market_research",
     "stt",
     "validate-idea-rescore",
     "validate_idea_rescore",
@@ -99,7 +109,14 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
   if (heavy.has(key) || key.includes("generate-plan") || key.includes("pitch-deck")) {
     return AI_CREDIT_WEIGHTS.heavy;
   }
-  if (deep.has(key) || key.includes("deep-research") || key.includes("deep_research")) {
+  // Deep before substring market-research so *-deep* keys are not charged as standard.
+  if (
+    deep.has(key) ||
+    key.includes("deep-research") ||
+    key.includes("deep_research") ||
+    key.endsWith("-deep") ||
+    key.endsWith("_deep")
+  ) {
     return AI_CREDIT_WEIGHTS.deep_research;
   }
   if (copilotTools.has(key) || key.startsWith("copilot")) {

@@ -3,7 +3,7 @@
 import { auth } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
 import { checkProjectLimit, checkAIRequestLimit, incrementAIUsage } from "@/lib/usage-tracker";
-import { TIER_DEFAULT } from "@/lib/openrouter";
+import { TIER_DEFAULT, TIER_REASONING } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { runWithAiUsage } from "@/lib/ai-usage-context";
 import { getPrompt } from "@/lib/prompts/registry";
@@ -378,7 +378,7 @@ export async function generateCorePlanAction(data: any): Promise<{
               maxTokens: 12000,
               temperature: 0.6,
               timeoutMs: 90000,
-              modelOverride: TIER_DEFAULT,
+              modelOverride: TIER_REASONING,
             },
             BusinessPlanCoreSchema,
             1

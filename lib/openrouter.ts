@@ -28,15 +28,18 @@ export const MODEL_WHISPER_LARGE_V3      = "openai/whisper-large-v3";
 export const MODEL_GEMINI_FLASH_IMAGE    = "google/gemini-3.1-flash-image";
 
 // === Tier presets — semantic role → preferred model ===
-export const TIER_DEFAULT      = MODEL_GEMINI_35_FLASH;       // backbone: canvas, plan, chat, copilot
-export const TIER_FAST         = MODEL_GEMINI_31_FLASH_LITE;  // memory, insights, quick rewrites
-export const TIER_REASONING    = MODEL_CLAUDE_SONNET_5;       // high-stakes JSON (opt-in)
-export const TIER_GROUNDED     = MODEL_PERPLEXITY_SONAR;      // live-web market research (lighter)
-export const TIER_GROUNDED_PRO = MODEL_PERPLEXITY_SONAR_PRO;  // competitor discovery (richer live web)
+// Call sites must pass these (or MODEL_*) via modelOverride — never hardcode slugs.
+export const TIER_DEFAULT      = MODEL_GEMINI_35_FLASH;       // backbone: canvas, chat, copilot, drafts
+export const TIER_FAST         = MODEL_GEMINI_31_FLASH_LITE;  // memory, insights, name/break-task/rewrites
+export const TIER_REASONING    = MODEL_CLAUDE_SONNET_5;       // high-stakes JSON: plan, pitch, validate refine
+export const TIER_GROUNDED     = MODEL_PERPLEXITY_SONAR;      // live-web market research / pitch scorecard
+export const TIER_GROUNDED_PRO = MODEL_PERPLEXITY_SONAR_PRO;  // competitor discovery
 export const TIER_GROUNDED_DEEP = MODEL_PERPLEXITY_SONAR_DEEP; // TAM/SAM/SOM deep dives
-export const TIER_LOCATION     = MODEL_GEMINI_25_FLASH;       // location analysis (large JSON)
+/** @deprecated Location analysis removed from product — kept for cost-map / docs only */
+export const TIER_LOCATION     = MODEL_GEMINI_25_FLASH;
 export const TIER_STT          = MODEL_WHISPER_LARGE_V3;      // speech-to-text
-export const TIER_IMAGE        = MODEL_GEMINI_FLASH_IMAGE;    // in-product image generation
+/** @deprecated Image generation route is disabled (503) — kept for cost-map / future use */
+export const TIER_IMAGE        = MODEL_GEMINI_FLASH_IMAGE;
 
 /**
  * Build the OpenRouter `web_search` plugin object, or null when disabled.

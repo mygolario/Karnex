@@ -132,7 +132,11 @@ export default function MediaKitPage() {
 
         const res = await fetch("/api/ai-generate", {
             method: "POST",
-            body: JSON.stringify({ prompt, systemPrompt: enhanceBioPrompt.system })
+            body: JSON.stringify({
+              action: "enhance-bio",
+              prompt,
+              systemPrompt: enhanceBioPrompt.system,
+            })
         });
 
         if (res.status === 429) {

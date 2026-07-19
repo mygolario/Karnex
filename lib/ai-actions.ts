@@ -1,6 +1,6 @@
 "use server";
 
-import { callOpenRouter, parseJsonFromAI, TEXT_MODELS, TIER_DEFAULT, TIER_GROUNDED_PRO, MODEL_PERPLEXITY_SONAR_PRO } from "@/lib/openrouter";
+import { TIER_FAST, TIER_GROUNDED_PRO, TIER_REASONING, MODEL_PERPLEXITY_SONAR_PRO } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { runWithAiUsage } from "@/lib/ai-usage-context";
 import { getPrompt } from "@/lib/prompts/registry";
@@ -43,7 +43,13 @@ export async function suggestAudienceAction(productIdea: string): Promise<Action
         { userId: limitResult.user?.id || "anonymous", feature: "suggestAudience" },
         () => callAIWithValidation(
           user,
-          { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 25000 },
+          {
+            systemPrompt: system,
+            maxTokens: 800,
+            temperature: 0.5,
+            timeoutMs: 25000,
+            modelOverride: TIER_FAST,
+          },
           SuggestAudienceSchema,
           1
         )
@@ -88,7 +94,13 @@ export async function suggestProjectNameAction(idea: string): Promise<ActionResp
         { userId: limitResult.user?.id || "anonymous", feature: "suggestName" },
         () => callAIWithValidation(
           user,
-          { systemPrompt: system, maxTokens: 800, temperature: 0.7, timeoutMs: 20000 },
+          {
+            systemPrompt: system,
+            maxTokens: 800,
+            temperature: 0.7,
+            timeoutMs: 20000,
+            modelOverride: TIER_FAST,
+          },
           SuggestNameSchema,
           2
         )
@@ -213,7 +225,13 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
         { userId: limitResult.user?.id || "anonymous", feature: "breakTask" },
         () => callAIWithValidation(
           user,
-          { systemPrompt: system, maxTokens: 800, temperature: 0.5, timeoutMs: 20000 },
+          {
+            systemPrompt: system,
+            maxTokens: 800,
+            temperature: 0.5,
+            timeoutMs: 20000,
+            modelOverride: TIER_FAST,
+          },
           BreakTaskSchema,
           1
         )
@@ -377,7 +395,13 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
                 { userId: limitResult.user?.id || "anonymous", feature: "generatePitchDeck" },
                 () => callAIWithValidation(
                     user,
-                    { systemPrompt: system, maxTokens: 3000, temperature: 0.7, timeoutMs: 30000 },
+                    {
+                      systemPrompt: system,
+                      maxTokens: 3000,
+                      temperature: 0.7,
+                      timeoutMs: 30000,
+                      modelOverride: TIER_REASONING,
+                    },
                     PitchDeckSchema,
                     1
                 )
