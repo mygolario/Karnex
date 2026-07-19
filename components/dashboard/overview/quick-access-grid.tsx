@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { 
   Map, Bot, Calendar, Video, 
-  Share2, Target, Activity, Package, Wallet, ShoppingCart, Megaphone,
+  Share2, LayoutTemplate, Activity, Package, Wallet, ShoppingCart, Megaphone,
   Waves, Ticket, FileText,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -17,7 +17,7 @@ interface QuickAccessGridProps {
 export function QuickAccessGrid({ projectType }: QuickAccessGridProps) {
   const items = [
     { href: "/dashboard/roadmap", icon: Map, label: "نقشه راه", color: "from-blue-500 to-cyan-500", desc: "مسیر پیشرفت" },
-    { href: "/dashboard/canvas", icon: Target, label: "تحلیل کسب و کار", color: "from-amber-500 to-orange-500", desc: "مدل بیزینس" },
+    { href: "/dashboard/canvas", icon: LayoutTemplate, label: "تحلیل کسب و کار", color: "from-amber-500 to-orange-500", desc: "مدل بیزینس" },
     { href: "/dashboard/copilot", icon: Bot, label: "دستیار کارنکس", color: "from-violet-500 to-indigo-500", desc: "مشاوره AI", badge: "AI" },
     
     // Creator Specific

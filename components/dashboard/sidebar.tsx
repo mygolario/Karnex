@@ -3,7 +3,7 @@
 import { cn, toPersianDigits } from "@/lib/utils";
 import {
   LayoutGrid, Map, Bot,
-  Presentation, Target, Rocket,
+  Presentation, LayoutTemplate, FlaskConical, Swords, Goal, Rocket,
   Calendar, Video, DollarSign,
   Crown, LucideIcon,
   ChevronDown, FolderKanban, Check,
@@ -67,21 +67,21 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
   const commonRoutes: Route[] = [
     { icon: LayoutGrid, label: "پیشخوان", href: "/dashboard/overview", badge: showWhatsNewBadge ? "جدید" : undefined },
     { icon: Map, label: "نقشه راه", href: "/dashboard/roadmap" },
-    { icon: Target, label: "تحلیل کسب‌وکار", href: "/dashboard/canvas" },
+    { icon: LayoutTemplate, label: "تحلیل کسب‌وکار", href: "/dashboard/canvas" },
   ];
 
   // --- Project-Specific Routes (launch-scoped) ---
   const startupRoutes: Route[] = [
     { icon: Presentation, label: "پیچ‌دک", href: "/dashboard/pitch-deck" },
-    { icon: Target, label: "اعتبارسنجی", href: "/dashboard/validation" },
-    { icon: Target, label: "تحلیل رقبا", href: "/dashboard/competitors" },
+    { icon: FlaskConical, label: "اعتبارسنجی", href: "/dashboard/validation" },
+    { icon: Swords, label: "تحلیل رقبا", href: "/dashboard/competitors" },
   ];
   const traditionalRoutes: Route[] = [
-    { icon: Target, label: "تحلیل رقبا", href: "/dashboard/competitors" },
+    { icon: Swords, label: "تحلیل رقبا", href: "/dashboard/competitors" },
     { icon: Activity, label: "سلامت کسب‌وکار", href: "/dashboard/health" },
     { icon: Wallet, label: "سود و زیان", href: "/dashboard/finance" },
     { icon: Receipt, label: "هزینه‌ها", href: "/dashboard/expenses" },
-    { icon: Target, label: "اهداف KPI", href: "/dashboard/goals" },
+    { icon: Goal, label: "اهداف KPI", href: "/dashboard/goals" },
   ];
   const creatorRoutes: Route[] = [
     { icon: Calendar, label: "تقویم محتوا", href: "/dashboard/content-calendar" },

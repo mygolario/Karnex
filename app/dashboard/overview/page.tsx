@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { Rocket, Plus, Map, LayoutGrid, Bot, Presentation, FlaskConical, Swords } from "lucide-react";
+import { Rocket, Plus, Map, LayoutTemplate, Bot, Presentation, FlaskConical, Swords } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FocusHero } from "@/components/dashboard/overview/focus-hero";
@@ -41,7 +41,7 @@ const QUICK_LINKS = [
     href: "/dashboard/canvas",
     label: "بوم کسب‌وکار",
     desc: "مدل کسب‌وکارت را بساز",
-    icon: LayoutGrid,
+    icon: LayoutTemplate,
   },
   {
     href: "/dashboard/copilot",
