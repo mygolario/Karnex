@@ -5,6 +5,7 @@ export {
   ValidationEmptyHero,
   ValidationEmptyActions,
   ValidationGate,
+  ValidationNoProject,
 } from "./validation-empty";
 export { DecisionHub } from "./decision-hub";
 export { ValidationJourneyMap } from "./validation-journey-map";

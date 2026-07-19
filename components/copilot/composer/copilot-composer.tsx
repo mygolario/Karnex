@@ -12,7 +12,6 @@ import {
   Search,
   X,
   Mic,
-  Paperclip,
   Sparkles,
   TrendingUp,
   Target,
@@ -32,6 +31,8 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
+
+const CREATOR_SLASH = new Set(["/script", "/calendar", "/idea"]);
 
 const SLASH_COMMANDS: (SlashCommand & { prompt: string })[] = [
   { command: "/plan", label: "برنامه‌ریزی", description: "یک برنامه عملیاتی تدوین کن", icon: "Compass", prompt: "یک برنامه عملیاتی گام‌به‌گام برای پروژه‌ام تدوین کن." },
@@ -284,12 +285,16 @@ export function CopilotComposer() {
   const slashQuery = input.startsWith("/") ? input.slice(1).split(" ")[0].toLowerCase() : "";
   const filteredSlash = useMemo(
     () =>
-      SLASH_COMMANDS.filter(
-        (c) =>
+      SLASH_COMMANDS.filter((c) => {
+        if (CREATOR_SLASH.has(c.command) && plan?.projectType !== "creator") {
+          return false;
+        }
+        return (
           c.command.toLowerCase().includes(slashQuery) ||
           c.label.toLowerCase().includes(slashQuery)
-      ).slice(0, 6),
-    [slashQuery]
+        );
+      }).slice(0, 6),
+    [slashQuery, plan?.projectType]
   );
 
   const insertSlashCommand = (cmd: (typeof SLASH_COMMANDS)[number]) => {
@@ -745,16 +750,6 @@ export function CopilotComposer() {
             {/* Bottom bar */}
             <div className="absolute bottom-0 inset-x-0 flex items-center justify-between px-3 pb-2.5">
               <div className="flex items-center gap-1">
-                {/* Attachment (future) */}
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                  onClick={() => toast.info("آپلود فایل به‌زودی...")}
-                >
-                  <Paperclip size={15} />
-                </Button>
-
                 {/* Voice input */}
                 <Button
                   variant="ghost"

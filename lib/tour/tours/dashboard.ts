@@ -24,7 +24,7 @@ export const dashboardTour: TourDefinition = {
       id: "sidebar",
       target: "sidebar-nav",
       title: "جعبه ابزار شما",
-      description: "دسترسی سریع به تمام بخش‌های پروژه: از بوم مدل کسب‌وکار تا نقشه راه و اسکریپت‌ها.",
+      description: "دسترسی سریع به تمام بخش‌های پروژه: از بوم مدل کسب‌وکار تا نقشه راه و پیچ‌دک.",
       mood: "tip",
       position: "left",
     },

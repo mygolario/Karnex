@@ -32,7 +32,11 @@ import {
   Meh,
   Frown,
   Heart,
-  TrendingUp
+  TrendingUp,
+  Presentation,
+  FlaskConical,
+  Swords,
+  Bot,
 } from "lucide-react";
 import { Card, CardIcon } from "@/components/ui/card";
 import { toPersianDigits } from "@/lib/utils";
@@ -44,6 +48,7 @@ import { tourI18n } from "@/lib/tour/i18n";
 import { useProject } from "@/contexts/project-context";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { isPillarAvailableAtLaunch } from "@/lib/launch/config";
 
 // Interface definitions
 interface FAQ {
@@ -118,9 +123,9 @@ export default function HelpCenterPage() {
     {
       id: "g2",
       q: "بوم کسب‌وکار چیست و چگونه آن را ویرایش کنم؟",
-      a: "بوم کسب‌وکار (Lean Canvas) نقشه یک‌صفحه‌ای از مدل تجاری شماست. در بخش بوم کسب‌وکار، می‌توانید ماوس را روی هر بخش نگه‌دارید و با فشردن دکمه ویرایش هوشمند (✨) از دستیار هوش مصنوعی بخواهید محتوا را مجدداً بنویسد یا اصلاح کند.",
+      a: "بوم مدل کسب‌وکار (Business Model Canvas) نقشه یک‌صفحه‌ای از مدل تجاری شماست. در بخش تحلیل کسب‌وکار، می‌توانید هر بخش را ویرایش کنید و با دستیار هوش مصنوعی محتوا را تکمیل یا بازنویسی کنید.",
       category: "general",
-      tags: ["بوم", "ویرایش", "مدل کسب و کار", "تغییر بوم"]
+      tags: ["بوم", "ویرایش", "مدل کسب و کار", "تغییر بوم", "BMC"]
     },
     {
       id: "g3",
@@ -204,6 +209,15 @@ export default function HelpCenterPage() {
     }
   ];
 
+  // Launch: only general + available pillars (startup) in Help FAQs
+  const launchFaqs = faqs.filter(
+    (f) =>
+      f.category === "general" ||
+      (f.category === "startup" && isPillarAvailableAtLaunch("startup")) ||
+      (f.category === "traditional" && isPillarAvailableAtLaunch("traditional")) ||
+      (f.category === "creator" && isPillarAvailableAtLaunch("creator"))
+  );
+
   // Business Glossary
   const glossary: Record<string, string> = {
     "MVP (حداقل محصول قابل ارائه)": "ساده‌ترین نسخه محصول که فقط ویژگی‌های حیاتی برای حل مشکل مشتری را دارد و برای ارزیابی بازار استفاده می‌شود.",
@@ -246,8 +260,8 @@ export default function HelpCenterPage() {
       badge: "بهبود",
       badgeVariant: "default" as const,
       changes: [
-        "راه‌اندازی ابزار هوشمند تدوین تعرفه اسپانسری مخصوص تولیدکنندگان محتوا.",
-        "پشتیبانی کامل از تقویم جلالی (Solar Hijri) در بخش برنامه‌ریزی محتوایی.",
+        "ابزار پیچ‌دک و اعتبارسنجی ایده برای استارتاپ‌ها.",
+        "پشتیبانی کامل از تقویم جلالی (Solar Hijri) در نقشه راه.",
         "کاهش ۵۰ درصدی تاخیر پاسخ‌دهی دستیار هوشمند با به‌کارگیری تکنیک استریم خروجی."
       ]
     }
@@ -264,16 +278,44 @@ export default function HelpCenterPage() {
     },
     {
       icon: <LayoutGrid size={20} />,
-      title: "بوم کسب‌وکار (Canvas)",
-      description: "فضای مصورسازی ایده در ۹ بخش کلیدی به همراه امکان نگارش مجدد هر خانه با هوش مصنوعی.",
+      title: "بوم مدل کسب‌وکار",
+      description: "فضای مصورسازی ایده در ۹ بخش کلیدی به همراه امکان تکمیل با هوش مصنوعی.",
       href: "/dashboard/canvas",
+      variant: "accent" as const
+    },
+    {
+      icon: <Presentation size={20} />,
+      title: "پیچ‌دک",
+      description: "اسلایدهای ارائه سرمایه‌گذار را بسازید و در حالت ارائه نمایش دهید.",
+      href: "/dashboard/pitch-deck",
+      variant: "primary" as const
+    },
+    {
+      icon: <FlaskConical size={20} />,
+      title: "اعتبارسنجی ایده",
+      description: "فرض‌های خطرناک را پیدا کنید و با آزمایش‌های کوتاه آن‌ها را بیازمایید.",
+      href: "/dashboard/validation",
+      variant: "accent" as const
+    },
+    {
+      icon: <Swords size={20} />,
+      title: "تحلیل رقبا",
+      description: "رقبای بازار را کشف و مقایسه کنید تا جایگاه خود را مشخص کنید.",
+      href: "/dashboard/competitors",
+      variant: "primary" as const
+    },
+    {
+      icon: <Bot size={20} />,
+      title: "دستیار کارنکس",
+      description: "هم‌بنیان‌گذار هوشمند برای برنامه‌ریزی، نقد مدل و پاسخ به سوالات پروژه.",
+      href: "/dashboard/copilot",
       variant: "accent" as const
     },
   ];
 
   // Custom client-side synonym-expanded search & ranker
   const getSearchFilteredFaqs = () => {
-    if (!searchQuery.trim()) return faqs;
+    if (!searchQuery.trim()) return launchFaqs;
     
     // Simple synonym map
     const synonyms: Record<string, string[]> = {
@@ -293,7 +335,7 @@ export default function HelpCenterPage() {
       }
     });
 
-    return faqs.map(faq => {
+    return launchFaqs.map(faq => {
       let score = 0;
       searchTerms.forEach(term => {
         if (faq.q.toLowerCase().includes(term)) score += 10;
@@ -311,11 +353,11 @@ export default function HelpCenterPage() {
 
   // Get FAQs based on personalization filters
   const getPersonalizedFaqs = () => {
-    let list = faqs;
+    let list = launchFaqs;
     if (faqFilter === "personalized") {
-      list = faqs.filter(f => f.category === projectType);
+      list = launchFaqs.filter(f => f.category === projectType);
     } else if (faqFilter === "general") {
-      list = faqs.filter(f => f.category === "general");
+      list = launchFaqs.filter(f => f.category === "general");
     }
     return list;
   };
@@ -531,12 +573,12 @@ export default function HelpCenterPage() {
                       {[
                         { q: "چگونه فایل نهایی بوم را به صورت PDF دانلود کنیم؟", id: "g3" },
                         { q: "حداقل محصول قابل ارائه (MVP) چیست و نحوه ساخت؟", id: "s2" },
-                        { q: "چطور درگاه واسط زیبال را دریافت و تست کنیم؟", id: "t2" }
+                        { q: "چگونه برای استارتاپ خود جذب سرمایه کنیم؟", id: "s3" }
                       ].map((item) => (
                         <button
                           key={item.id}
                           onClick={() => {
-                            const found = faqs.find(f => f.id === item.id);
+                            const found = launchFaqs.find(f => f.id === item.id);
                             if (found) {
                               setSearchQuery(found.q);
                               addRecentlyViewed(found);

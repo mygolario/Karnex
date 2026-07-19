@@ -154,8 +154,8 @@ export function AccountProfile({ bundle, refresh }: AccountSectionProps) {
           </div>
         </SettingsCard>
 
-        {/* Creator channel links */}
-        <SettingsCard title="کانال‌های سازنده" description="برای شخصی‌سازی اسکریپت، تعرفه اسپانسری و مدیا کیت." icon={Youtube} className="lg:col-span-2" accent="amber">
+        {/* Social / web links */}
+        <SettingsCard title="لینک‌ها" description="شبکه‌های اجتماعی و وب‌سایت (اختیاری)." icon={Youtube} className="lg:col-span-2" accent="amber">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="flex items-center gap-1.5"><Youtube size={14} /> یوتیوب</Label>

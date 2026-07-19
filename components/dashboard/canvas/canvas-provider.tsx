@@ -248,7 +248,13 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
     store.setSaveStatus("saving");
 
     try {
-      const type = plan.projectType === "creator" ? "brand" : "lean";
+      const canvasType = store.canvasType;
+      const type =
+        canvasType === "BRAND" || plan.projectType === "creator"
+          ? "brand"
+          : canvasType === "LEAN"
+            ? "lean"
+            : "bmc";
       const result = await generateSmartCanvasAction({
         idea: plan.overview || plan.description || "",
         answers,

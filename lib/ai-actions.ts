@@ -410,7 +410,7 @@ export async function generatePitchDeckAction(data: { idea: string, wizardAnswer
 
 // === Generate Smart Canvas ===
 
-export async function generateSmartCanvasAction(data: { idea: string, answers: Record<string, string>, type: 'lean' | 'brand' }): Promise<ActionResponse<Record<string, string[]>>> {
+export async function generateSmartCanvasAction(data: { idea: string, answers: Record<string, string>, type: 'lean' | 'bmc' | 'brand' }): Promise<ActionResponse<Record<string, string[]>>> {
     let rollback = async () => {};
     try {
         const limitResult = await checkAILimit('generate-smart-canvas');

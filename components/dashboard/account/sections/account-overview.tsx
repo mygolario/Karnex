@@ -31,7 +31,6 @@ export function AccountOverview({ bundle, onNavigate }: AccountSectionProps & { 
   const checks = [
     { label: "پروفایل کامل", ok: !!(bundle.account.firstName && bundle.account.bio), target: "profile" as AccountSectionId },
     { label: "رمز عبور / ورود امن", ok: true, target: "security" as AccountSectionId },
-    { label: "کانال متصل", ok: !!(bundle.profile?.channelLinks && Object.values(bundle.profile.channelLinks).some(Boolean)), target: "profile" as AccountSectionId },
     { label: "شخصی‌سازی دستیار", ok: !!bundle.copilotProfile?.preferredTone, target: "ai" as AccountSectionId },
   ];
   const healthPct = Math.round((checks.filter((c) => c.ok).length / checks.length) * 100);
@@ -86,7 +85,7 @@ export function AccountOverview({ bundle, onNavigate }: AccountSectionProps & { 
 
         {/* AI usage ring */}
         <SettingsCard accent="emerald" className="flex flex-col items-center justify-center text-center">
-          <UsageRing used={ai?.used || 0} total={ai?.limit || 0} label="درخواست AI" size={110} />
+          <UsageRing used={ai?.used || 0} total={ai?.limit || 0} label="اعتبار AI" size={110} />
           <div className="text-xs text-muted-foreground mt-2">این ماه</div>
         </SettingsCard>
 

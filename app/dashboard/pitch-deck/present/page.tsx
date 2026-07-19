@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import Link from "next/link";
 import { SlideVisualizer } from "@/components/features/pitch-deck/slide-templates";
 import type { PitchDeckSlide } from "@/lib/db";
 import { getVisibleSlides } from "@/lib/pitch-deck";
@@ -12,14 +13,25 @@ export default function PitchDeckPresentPage() {
   const [projectName, setProjectName] = useState("");
   const [index, setIndex] = useState(0);
   const [seconds, setSeconds] = useState(0);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem("pitch-deck-present");
-    if (raw) {
-      const data = JSON.parse(raw);
+    try {
+      const raw = sessionStorage.getItem("pitch-deck-present");
+      if (!raw) {
+        setLoadError(true);
+        return;
+      }
+      const data = JSON.parse(raw) as {
+        slides?: PitchDeckSlide[];
+        projectName?: string;
+      };
       const incoming: PitchDeckSlide[] = data.slides || [];
       setSlides(getVisibleSlides(incoming));
       setProjectName(data.projectName || "");
+      if (incoming.length === 0) setLoadError(true);
+    } catch {
+      setLoadError(true);
     }
   }, []);
 
@@ -48,6 +60,19 @@ export default function PitchDeckPresentPage() {
   const nextSlide = slides[index + 1];
   const mm = String(Math.floor(seconds / 60)).padStart(2, "0");
   const ss = String(seconds % 60).padStart(2, "0");
+
+  if (loadError && slides.length === 0) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-zinc-950 text-white p-6" dir="rtl">
+        <p className="text-zinc-400 text-center max-w-md">
+          داده‌ای برای نمایش نیست. ارائه را از صفحه پیچ‌دک دوباره باز کنید.
+        </p>
+        <Button asChild variant="outline">
+          <Link href="/dashboard/pitch-deck">بازگشت به پیچ‌دک</Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="grid min-h-screen gap-0 bg-zinc-950 text-white lg:grid-cols-2" dir="rtl">
@@ -100,7 +125,12 @@ export default function PitchDeckPresentPage() {
             />
           </div>
         ) : (
-          <p className="text-zinc-500">داده‌ای برای نمایش نیست</p>
+          <div className="text-center space-y-3">
+            <p className="text-zinc-500">داده‌ای برای نمایش نیست</p>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/dashboard/pitch-deck">بازگشت به پیچ‌دک</Link>
+            </Button>
+          </div>
         )}
       </div>
     </div>

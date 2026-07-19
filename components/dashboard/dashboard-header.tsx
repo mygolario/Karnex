@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { cn } from "@/lib/utils";
 import { TourLauncher } from "@/components/tour/tour-launcher";
+import { getPlanForDisplay } from "@/lib/payment/pricing";
 
 /* ── Breadcrumb map ── */
 const routeLabels: Record<string, string> = {
@@ -84,6 +85,9 @@ export function DashboardHeader() {
 
   // Build breadcrumb
   const currentLabel = routeLabels[pathname] || "داشبورد";
+  const planId = userProfile?.subscription?.planId || "free";
+  const planDisplayName = getPlanForDisplay(planId)?.name ?? "رایگان";
+  const isPaidPlan = planId === "pro" || planId === "plus" || planId === "ultra";
 
   return (
     <header className="sticky top-0 z-40 h-16 px-4 md:px-6 flex items-center justify-between bg-background/80 backdrop-blur-xl border-b border-border/50">
@@ -133,12 +137,10 @@ export function DashboardHeader() {
               <div className="flex items-center gap-1">
                 <Crown size={10} className={cn(
                   "text-yellow-500",
-                  (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus") && "text-purple-500"
+                  isPaidPlan && "text-purple-500"
                 )} />
                 <span className="text-[10px] text-muted-foreground">
-                  {userProfile?.subscription?.planId === "pro" ? "حرفه‌ای" :
-                   userProfile?.subscription?.planId === "plus" ? "پلاس" :
-                   userProfile?.subscription?.planId === "ultra" ? "اولترا" : "رایگان"}
+                  {planDisplayName}
                 </span>
               </div>
             </div>
@@ -173,24 +175,20 @@ export function DashboardHeader() {
                       </p>
                     </div>
                     <div className={cn("px-2 py-1 rounded-lg border",
-                      (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus")
+                      isPaidPlan
                         ? "bg-purple-500/10 border-purple-500/20"
                         : "bg-yellow-500/10 border-yellow-500/20"
                     )}>
                       <div className="flex items-center gap-1">
                         <Crown size={12} className={cn(
-                          (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus")
-                            ? "text-purple-500"
-                            : "text-yellow-500"
+                          isPaidPlan ? "text-purple-500" : "text-yellow-500"
                         )} />
                         <span className={cn("text-[10px] font-bold",
-                          (userProfile?.subscription?.planId === "pro" || userProfile?.subscription?.planId === "plus")
+                          isPaidPlan
                             ? "text-purple-600 dark:text-purple-400"
                             : "text-yellow-600 dark:text-yellow-400"
                         )}>
-                          {userProfile?.subscription?.planId === "pro" ? "حرفه‌ای" :
-                           userProfile?.subscription?.planId === "plus" ? "پلاس" :
-                           userProfile?.subscription?.planId === "ultra" ? "اولترا" : "رایگان"}
+                          {planDisplayName}
                         </span>
                       </div>
                     </div>
@@ -231,7 +229,7 @@ export function DashboardHeader() {
                     </div>
                     <div className="flex-1">
                       <span className="text-sm font-medium text-foreground">ارتقا به پلن ویژه</span>
-                      <p className="text-[10px] text-muted-foreground">دسترسی نامحدود به همه امکانات</p>
+                      <p className="text-[10px] text-muted-foreground">پروژه‌ها و اعتبار AI بیشتر</p>
                     </div>
                   </Link>
                 </div>

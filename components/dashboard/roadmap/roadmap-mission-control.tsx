@@ -25,6 +25,7 @@ interface RoadmapMissionControlProps {
   topPrioritySteps: RoadmapStep[];
   streak: number;
   bestStreak: number;
+  hideGamification?: boolean;
 }
 
 export function RoadmapMissionControl({
@@ -43,9 +44,18 @@ export function RoadmapMissionControl({
   topPrioritySteps,
   streak,
   bestStreak,
+  hideGamification = false,
 }: RoadmapMissionControlProps) {
   const theme = getRoadmapTheme(projectType);
   const rankTitle = getRankTitle(gamification.level, projectType);
+  const projectTypeLabel =
+    projectType === "startup"
+      ? "استارتاپ"
+      : projectType === "traditional"
+        ? "کسب‌وکار سنتی"
+        : projectType === "creator"
+          ? "تولید محتوا"
+          : projectType;
 
   // SVG progress ring constants
   const size = 140;
@@ -143,18 +153,21 @@ export function RoadmapMissionControl({
             <div className="flex flex-wrap items-center justify-center gap-2">
               {projectType && (
                 <Badge variant="secondary" className="text-xs">
-                  {projectType}
+                  {projectTypeLabel}
                 </Badge>
               )}
-              <Badge
-                variant="outline"
-                className="text-xs border-amber-400 text-amber-500 bg-amber-50 dark:bg-amber-950/30"
-              >
-                {rankTitle}
-              </Badge>
+              {!hideGamification && (
+                <Badge
+                  variant="outline"
+                  className="text-xs border-amber-400 text-amber-500 bg-amber-50 dark:bg-amber-950/30"
+                >
+                  {rankTitle}
+                </Badge>
+              )}
             </div>
 
             {/* Streak row */}
+            {!hideGamification && (
             <div className="flex items-center gap-1.5 mt-1">
               <Flame
                 className={cn(
@@ -168,6 +181,7 @@ export function RoadmapMissionControl({
                   : "اولین گام را بردار"}
               </span>
             </div>
+            )}
           </div>
         </motion.div>
 

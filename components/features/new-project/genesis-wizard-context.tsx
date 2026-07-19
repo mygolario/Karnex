@@ -12,8 +12,20 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { ProjectType } from "@/app/new-project/genesis-constants";
+import {
+  isPillarAvailableAtLaunch,
+  isPillarComingSoon,
+} from "@/lib/launch/config";
 
 const DRAFT_KEY = "karnex_project_draft";
+
+function sanitizePillar(pillar: ProjectType | null): ProjectType | null {
+  if (!pillar) return null;
+  if (isPillarComingSoon(pillar) || !isPillarAvailableAtLaunch(pillar)) {
+    return "startup";
+  }
+  return pillar;
+}
 
 export const GENESIS_STEPS = ["pillar", "details", "vision", "review"] as const;
 export type GenesisStep = (typeof GENESIS_STEPS)[number];
@@ -162,7 +174,7 @@ export function GenesisWizardProvider({
 
     if (Number.isFinite(urlStep) && urlStep >= 0 && urlStep <= 3) {
       if (draft) {
-        setPillar(draft.pillar);
+        setPillar(sanitizePillar(draft.pillar));
         setProjectName(draft.projectName);
         setProjectVision(draft.projectVision);
         setAnswers(draft.answers);
@@ -170,7 +182,7 @@ export function GenesisWizardProvider({
       }
       setActiveStep(urlStep);
     } else if (draft) {
-      setPillar(draft.pillar);
+      setPillar(sanitizePillar(draft.pillar));
       setProjectName(draft.projectName);
       setProjectVision(draft.projectVision);
       setAnswers(draft.answers);
@@ -210,6 +222,7 @@ export function GenesisWizardProvider({
   }, [activeStep, hydrated]);
 
   const selectPillar = useCallback((id: ProjectType) => {
+    if (!isPillarAvailableAtLaunch(id)) return;
     setPillar(id);
     setAnswers({});
     setActiveSubStep(0);
@@ -277,6 +290,10 @@ export function GenesisWizardProvider({
 
   const generate = useCallback(async () => {
     if (!user || !pillar) return;
+    const safePillar = sanitizePillar(pillar) ?? "startup";
+    if (safePillar !== pillar) {
+      setPillar(safePillar);
+    }
     setIsGenerating(true);
     setGeneratingPhase("در حال ساخت بوم و برند...");
     setError("");
@@ -288,7 +305,7 @@ export function GenesisWizardProvider({
       } = await import("@/lib/project-actions");
 
       const coreResult = await generateCorePlanAction({
-        projectType: pillar,
+        projectType: safePillar,
         idea: projectVision,
         projectName,
         genesisAnswers: answers,
@@ -304,7 +321,7 @@ export function GenesisWizardProvider({
 
       setGeneratingPhase("در حال ساخت هفته‌های ۱–۸...");
       const chunk1 = await generateRoadmapChunkAction({
-        projectType: pillar,
+        projectType: safePillar,
         idea: projectVision,
         genesisAnswers: answers,
         corePlan,
@@ -321,7 +338,7 @@ export function GenesisWizardProvider({
 
       setGeneratingPhase("در حال ساخت هفته‌های ۹–۱۶...");
       const chunk2 = await generateRoadmapChunkAction({
-        projectType: pillar,
+        projectType: safePillar,
         idea: projectVision,
         genesisAnswers: answers,
         corePlan,
@@ -343,7 +360,7 @@ export function GenesisWizardProvider({
         ...corePlan,
         roadmap,
         projectName,
-        projectType: pillar,
+        projectType: safePillar,
         ideaInput: projectVision,
         genesisAnswers: answers,
       };

@@ -10,6 +10,7 @@ export const healthTour: TourDefinition = {
   xpReward: 35,
   checklistItem: true,
   estimatedTime: "۱ دقیقه",
+  projectTypes: ["traditional"],
   steps: [
     {
       id: "health-welcome",
@@ -41,6 +42,7 @@ export const financeTour: TourDefinition = {
   xpReward: 35,
   checklistItem: true,
   estimatedTime: "۱ دقیقه",
+  projectTypes: ["traditional"],
   steps: [
     {
       id: "finance-welcome",
@@ -64,6 +66,7 @@ export const inventoryTour: TourDefinition = {
   xpReward: 35,
   checklistItem: true,
   estimatedTime: "۱ دقیقه",
+  projectTypes: ["traditional"],
   steps: [
     {
       id: "inventory-welcome",

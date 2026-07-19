@@ -40,6 +40,7 @@ import {
   ValidationEmptyActions,
   ValidationEmptyHero,
   ValidationGate,
+  ValidationNoProject,
 } from "./validation-empty";
 import { ValidationJourneyMap } from "./validation-journey-map";
 import { DecisionHub } from "./decision-hub";
@@ -170,7 +171,11 @@ export function ValidationStudio() {
     [plan]
   );
 
-  if (!plan || plan.projectType !== "startup") {
+  if (!plan) {
+    return <ValidationNoProject />;
+  }
+
+  if (plan.projectType !== "startup") {
     return <ValidationGate />;
   }
 

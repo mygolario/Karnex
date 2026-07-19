@@ -17,6 +17,7 @@ import {
   normalizeRoadmapChunk1to8,
   normalizeRoadmapChunk9to16,
 } from "@/lib/roadmap-normalize";
+import { isPillarAvailableAtLaunch } from "@/lib/launch/config";
 import fs from 'fs';
 import path from 'path';
 
@@ -32,6 +33,14 @@ export async function createProjectAction(planData: any) {
     }
 
     const userId = user.id;
+
+    const projectType = planData?.projectType as string | undefined;
+    if (projectType && !isPillarAvailableAtLaunch(projectType as "startup" | "traditional" | "creator")) {
+      return {
+        error: "این نوع پروژه هنوز در دسترس نیست",
+        message: "در حال حاضر فقط مسیر استارتاپ فعال است.",
+      };
+    }
 
     // Project Limit Check
     const projectCheck = await checkProjectLimit(userId);
@@ -316,6 +325,13 @@ export async function generateCorePlanAction(data: any): Promise<{
     
     const session = await auth();
     if (!session?.user?.id) return { error: "Unauthorized" };
+
+    if (projectType && !isPillarAvailableAtLaunch(projectType as "startup" | "traditional" | "creator")) {
+      return {
+        error: "این نوع پروژه هنوز در دسترس نیست",
+        message: "در حال حاضر فقط مسیر استارتاپ فعال است.",
+      };
+    }
 
     // AI Limit Check
     const { errorResponse, rollback } = await checkAILimit('generate-plan');

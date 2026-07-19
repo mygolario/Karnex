@@ -137,28 +137,31 @@ export default function RoadmapPage() {
 
   // Track phase completion to trigger full-screen celebration
   const prevCompletedPhasesRef = useRef(completedPhases);
+  const prevPhaseDoneRef = useRef<Set<number>>(new Set());
   useEffect(() => {
-    if (completedPhases > prevCompletedPhasesRef.current && completedPhases > 0) {
-      // Find the recently completed phase
-      const completedList = roadmap.map((phase, idx) => ({
-        phase,
-        idx,
-        isDone: phase.steps.every((s) => {
-          const title = typeof s === "string" ? s : (s as RoadmapStep).title;
-          return completedSteps.includes(title);
-        }),
-      }));
+    const doneIndexes = new Set<number>();
+    roadmap.forEach((phase, idx) => {
+      const isDone = phase.steps.every((s) => {
+        const title = typeof s === "string" ? s : (s as RoadmapStep).title;
+        return completedSteps.includes(title);
+      });
+      if (isDone) doneIndexes.add(idx);
+    });
 
-      const newlyCompleted = completedList.find((x) => x.isDone);
-      if (newlyCompleted) {
+    if (completedPhases > prevCompletedPhasesRef.current && completedPhases > 0) {
+      const newlyCompletedIdx = [...doneIndexes].find(
+        (idx) => !prevPhaseDoneRef.current.has(idx)
+      );
+      if (newlyCompletedIdx !== undefined) {
         setCelebrationPhase({
-          name: newlyCompleted.phase.phase,
-          number: newlyCompleted.idx + 1,
+          name: roadmap[newlyCompletedIdx].phase,
+          number: newlyCompletedIdx + 1,
         });
         setCelebrationOpen(true);
       }
     }
     prevCompletedPhasesRef.current = completedPhases;
+    prevPhaseDoneRef.current = doneIndexes;
   }, [completedPhases, completedSteps, roadmap]);
 
   const handleExport = useCallback(
@@ -410,6 +413,7 @@ export default function RoadmapPage() {
         topPrioritySteps={topPrioritySteps}
         streak={streak}
         bestStreak={bestStreak}
+        hideGamification={LAUNCH_CONFIG.roadmap.hideGamification}
       />
       </div>
 
@@ -424,6 +428,7 @@ export default function RoadmapPage() {
           onToggleStep={(step) => handleUpdateStatus(step, completedSteps.includes(step.title) ? "todo" : "done")}
           onOpenStep={(step) => handleOpenStepDetail(step)}
           projectType={plan.projectType}
+          hideGamification={LAUNCH_CONFIG.roadmap.hideGamification}
         />
       )}
 
@@ -575,7 +580,11 @@ export default function RoadmapPage() {
           phaseName={celebrationPhase.name}
           phaseNumber={celebrationPhase.number}
           totalPhases={totalPhases}
-          newRank={getRankTitle(gamification.level, plan.projectType)}
+          newRank={
+            LAUNCH_CONFIG.roadmap.hideGamification
+              ? undefined
+              : getRankTitle(gamification.level, plan.projectType)
+          }
           projectType={plan.projectType}
         />
       )}

@@ -2,8 +2,56 @@
 
 import { motion } from "framer-motion";
 import { ArrowLeft, Compass, MessageSquare, Map, TrendingUp } from "lucide-react";
+import { LAUNCH_CONFIG } from "@/lib/launch/config";
 
-const steps = [
+const startupSteps = [
+  {
+    number: "۱",
+    icon: Compass,
+    title: "مسیر استارتاپ رو شروع کن",
+    description: "کارنکس هم‌بنیان‌گذار هوشمند استارتاپ‌های ایرانی است. مسیر اختصاصی استارتاپ را انتخاب کن.",
+    color: "from-primary to-pink-600",
+    visual: {
+      items: ["🚀 ایده", "🧪 اعتبارسنجی", "📊 بوم مدل"],
+      highlight: 0,
+    },
+  },
+  {
+    number: "۲",
+    icon: MessageSquare,
+    title: "ایده‌ت رو توضیح بده",
+    description: "با چند جمله ساده بگو چه کاری می‌خوای بکنی. دستیار کارنکس بقیه رو انجام میده.",
+    color: "from-secondary to-yellow-500",
+    visual: {
+      items: ["می‌خوام...", "یه پلتفرم...", "برای بازار ایران"],
+      highlight: 1,
+    },
+  },
+  {
+    number: "۳",
+    icon: Map,
+    title: "نقشه راه رو بگیر",
+    description: "یک برنامه ۴ تا ۱۲ هفته‌ای کاملاً شخصی‌سازی شده با ابزارهای آماده دریافت کن.",
+    color: "from-startup to-purple-600",
+    visual: {
+      items: ["هفته ۱: بوم", "هفته ۳: MVP", "هفته ۶: پیچ‌دک"],
+      highlight: 0,
+    },
+  },
+  {
+    number: "۴",
+    icon: TrendingUp,
+    title: "شروع کن و رشد کن",
+    description: "با پیچ‌دک، اعتبارسنجی، تحلیل رقبا و دستیار AI گام به گام جلو برو.",
+    color: "from-emerald-500 to-teal-600",
+    visual: {
+      items: ["📈 رشد", "💰 اولین درآمد", "🎯 اهداف"],
+      highlight: 0,
+    },
+  },
+];
+
+const legacySteps = [
   {
     number: "۱",
     icon: Compass,
@@ -51,6 +99,8 @@ const steps = [
 ];
 
 export const HowItWorksSection = () => {
+  const steps = LAUNCH_CONFIG.marketingStartupOnly ? startupSteps : legacySteps;
+
   return (
     <section id="how-it-works" className="py-24 lg:py-32 relative overflow-hidden bg-muted/20">
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px]" />

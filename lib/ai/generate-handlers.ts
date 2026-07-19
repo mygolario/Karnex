@@ -519,7 +519,7 @@ export async function handleMonthlyReview(
   const system = `تو مشاور کسب‌وکار سنتی Karnex هستی. بر اساس گزارش ماهانه (سلامت، سود و زیان، موجودی) یک مرور فارسی عملی بنویس.
 خروجی JSON:
 { "summary": string (۳-۵ جمله), "highlights": string[] (حداکثر ۴ نکته مثبت), "risks": string[] (حداکثر ۳ ریسک), "nextMonthFocus": string[] (۳ اولویت ماه بعد) }`;
-  const user = `پروفایل پروژه: ${ctx.projectName || "—"} (${ctx.projectType || "traditional"})
+  const user = `پروفایل پروژه: ${ctx.projectName || "—"} (${ctx.projectType || "startup"})
 گزارش ماهانه:
 ${JSON.stringify(ctx.report, null, 0).slice(0, 6000)}`;
   const result = await callOpenRouter(user, {

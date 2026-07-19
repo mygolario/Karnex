@@ -14,9 +14,9 @@ function CompetitorsPageInner() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <Card className="p-8 text-center max-w-md space-y-3">
-          <h2 className="text-xl font-bold">تحلیل رقبا برای استارتاپ و کسب‌وکار سنتی</h2>
+          <h2 className="text-xl font-bold">تحلیل رقبا برای استارتاپ</h2>
           <p className="text-sm text-muted-foreground">
-            این فضای رقابتی برای پروژه‌های محتوا فعال نیست.
+            این فضای رقابتی برای پروژه‌های استارتاپی فعال است.
           </p>
           <Link href="/dashboard/overview">
             <Button>بازگشت</Button>

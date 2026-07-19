@@ -9,6 +9,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { getUserTransactions } from "@/lib/payment-actions";
 import { useAuth } from "@/contexts/auth-context";
+import { getPlanForDisplay } from "@/lib/payment/pricing";
 import type { AccountSectionProps } from "./section-props";
 import type { TransactionItem } from "@/lib/account/api-types";
 
@@ -62,6 +63,7 @@ export function AccountBilling({ bundle, refresh }: AccountSectionProps) {
   };
 
   const planId = sub?.planId || "free";
+  const planDisplayName = getPlanForDisplay(planId)?.name ?? "رایگان";
   const endDate = sub?.endDate ? new Date(sub.endDate) : null;
 
   return (
@@ -82,7 +84,7 @@ export function AccountBilling({ bundle, refresh }: AccountSectionProps) {
               <div className="text-sm opacity-80 mb-1">طرح فعلی</div>
               <div className="flex items-center gap-3">
                 <span className="text-3xl font-black">
-                  {planId === "free" ? "رایگان" : planId === "plus" ? "پلاس" : planId === "pro" ? "پرو" : "اولترا"}
+                  {planDisplayName}
                 </span>
                 <span className="bg-white/20 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-bold">
                   {sub?.status === "active" ? "فعال" : "غیرفعال"}

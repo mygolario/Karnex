@@ -139,7 +139,7 @@ export function CommandMenu({ mobile = false }: CommandMenuProps) {
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
             >
               <ImageIcon className="ms-2 h-4 w-4" />
-              <span>هویت بصری</span>
+              <span>بوم کسب‌وکار</span>
             </Command.Item>
           </Command.Group>
 

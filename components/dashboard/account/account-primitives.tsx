@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import type { LucideIcon } from "lucide-react";
+import { getPlanForDisplay } from "@/lib/payment/pricing";
 
 /** Section header — replaces the per-page hero banners across account tabs. */
 export function AccountSectionHeader({
@@ -253,18 +254,14 @@ export function ProfileAvatar({
   );
 }
 
-/** Consistent plan badge including Ultra. */
+/** Consistent plan badge — display names from pricing (رایگان / پرو / تیم). */
 export function PlanBadge({ planId }: { planId: string }) {
-  const map: Record<string, { label: string; variant: "muted" | "info" | "gradient" }> = {
-    free: { label: "رایگان", variant: "muted" },
-    plus: { label: "پلاس", variant: "info" },
-    pro: { label: "پرو", variant: "gradient" },
-    ultra: { label: "اولترا", variant: "gradient" },
-  };
-  const cfg = map[planId] || map.free;
+  const label = getPlanForDisplay(planId)?.name ?? "رایگان";
+  const variant: "muted" | "info" | "gradient" =
+    planId === "free" || !planId ? "muted" : planId === "plus" ? "info" : "gradient";
   return (
-    <Badge variant={cfg.variant} size="lg" className="font-bold">
-      {cfg.label}
+    <Badge variant={variant} size="lg" className="font-bold">
+      {label}
     </Badge>
   );
 }

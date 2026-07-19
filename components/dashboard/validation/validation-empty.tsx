@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Activity, Sparkles } from "lucide-react";
+import { FolderPlus, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export function ValidationEmptyHero({
@@ -66,22 +66,42 @@ export function ValidationEmptyActions({
   );
 }
 
+/** Shown when the user has no project selected. */
+export function ValidationNoProject() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh] p-4">
+      <Card className="p-8 text-center max-w-md space-y-4">
+        <h2 className="text-xl font-bold">ابتدا یک پروژه بسازید</h2>
+        <p className="text-muted-foreground text-sm leading-relaxed">
+          برای شروع اعتبارسنجی ایده، یک پروژه استارتاپی در کارنکس بسازید.
+        </p>
+        <div className="flex flex-wrap justify-center gap-2">
+          <Button asChild className="gap-2">
+            <Link href="/new-project">
+              <FolderPlus className="h-4 w-4" />
+              ساخت پروژه جدید
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/dashboard/overview">بازگشت به پیشخوان</Link>
+          </Button>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+/** Shown when the active project is not a startup. */
 export function ValidationGate() {
   return (
     <div className="flex items-center justify-center min-h-[60vh] p-4">
       <Card className="p-8 text-center max-w-md space-y-4">
         <h2 className="text-xl font-bold">اعتبارسنجی ایده — استارتاپ</h2>
         <p className="text-muted-foreground text-sm leading-relaxed">
-          این ابزار برای پروژه‌های استارتاپی است. برای کسب‌وکار سنتی، سلامت عملیاتی و
-          پیشخوان را ببین.
+          این ابزار مخصوص پروژه‌های استارتاپی است. برای پروژه فعلی، از پیشخوان و
+          ابزارهای فعال مسیر خود استفاده کنید.
         </p>
         <div className="flex flex-wrap justify-center gap-2">
-          <Button asChild variant="outline" className="gap-2">
-            <Link href="/dashboard/health">
-              <Activity className="h-4 w-4" />
-              سلامت کسب‌وکار
-            </Link>
-          </Button>
           <Button asChild>
             <Link href="/dashboard/overview">بازگشت به پیشخوان</Link>
           </Button>

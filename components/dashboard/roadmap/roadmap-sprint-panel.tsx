@@ -20,6 +20,7 @@ interface RoadmapSprintPanelProps {
   onToggleStep: (step: RoadmapStep) => void;
   onOpenStep: (step: RoadmapStep) => void;
   projectType?: string;
+  hideGamification?: boolean;
 }
 
 export function RoadmapSprintPanel({
@@ -31,6 +32,7 @@ export function RoadmapSprintPanel({
   onToggleStep,
   onOpenStep,
   projectType = "startup",
+  hideGamification = false,
 }: RoadmapSprintPanelProps) {
   const [isOpen, setIsOpen] = useState(true);
   const theme = getRoadmapTheme(projectType);
@@ -109,7 +111,9 @@ export function RoadmapSprintPanel({
                   </div>
                   <h4 className="font-bold text-emerald-600">همه‌ چیز رو هوا رفت!</h4>
                   <p className="text-xs text-muted-foreground max-w-md mx-auto">
-                    تبریک! شما تمامی گام‌های مشخص شده برای اسپرینت این هفته را تکمیل کردید و ۱۰۰ XP پاداش گرفتید. برای هفته آینده آماده شوید.
+                    {hideGamification
+                      ? "تبریک! شما تمامی گام‌های مشخص شده برای اسپرینت این هفته را تکمیل کردید. برای هفته آینده آماده شوید."
+                      : "تبریک! شما تمامی گام‌های مشخص شده برای اسپرینت این هفته را تکمیل کردید و ۱۰۰ XP پاداش گرفتید. برای هفته آینده آماده شوید."}
                   </p>
                 </div>
               ) : (

@@ -7,7 +7,7 @@ import { Sliders, Moon, Sun, Monitor, Type, Rocket } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import type { AccountSectionProps } from "./section-props";
-import { ACCENT_LABELS, type AccentColor, type DefaultLanding, type ProjectType } from "@/lib/account/types";
+import { ACCENT_LABELS, type AccentColor, type DefaultLanding } from "@/lib/account/types";
 import { PwaSettingsCard } from "@/components/pwa/pwa-settings-card";
 
 export function AccountPreferences({ bundle, refresh }: AccountSectionProps) {
@@ -21,7 +21,6 @@ export function AccountPreferences({ bundle, refresh }: AccountSectionProps) {
     language: s.language || "fa",
     dateFormat: s.dateFormat || "jalali",
     defaultLanding: s.defaultLanding || "overview",
-    defaultProjectType: s.defaultProjectType || "startup",
   });
 
   const patch = async (p: Partial<typeof state>) => {
@@ -104,7 +103,7 @@ export function AccountPreferences({ bundle, refresh }: AccountSectionProps) {
       </SettingsCard>
 
       <SettingsCard title="رفتار پیش‌فرض" icon={Rocket} accent="primary">
-        <SettingsRow label="صفحه ورود پس از لاگین" description="کجا پس از ورود باز شود">
+        <SettingsRow label="صفحه ورود پس از لاگین" description="کجا پس از ورود باز شود" divider={false}>
           <select
             value={state.defaultLanding}
             onChange={(e) => patch({ defaultLanding: e.target.value as DefaultLanding })}
@@ -114,17 +113,6 @@ export function AccountPreferences({ bundle, refresh }: AccountSectionProps) {
             <option value="roadmap">نقشه راه</option>
             <option value="copilot">دستیار هوشمند</option>
             <option value="last-project">آخرین پروژه</option>
-          </select>
-        </SettingsRow>
-        <SettingsRow label="نوع پروژه پیش‌فرض" description="برای پروژه‌های جدید" divider={false}>
-          <select
-            value={state.defaultProjectType}
-            onChange={(e) => patch({ defaultProjectType: e.target.value as ProjectType })}
-            className="h-9 px-3 rounded-lg bg-background border border-border text-sm"
-          >
-            <option value="startup">استارتاپ</option>
-            <option value="traditional">کسب‌وکار سنتی</option>
-            <option value="creator">سازنده محتوا</option>
           </select>
         </SettingsRow>
       </SettingsCard>

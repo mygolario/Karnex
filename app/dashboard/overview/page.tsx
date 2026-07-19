@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { Rocket, Plus, Map, LayoutGrid, Bot, Presentation } from "lucide-react";
+import { Rocket, Plus, Map, LayoutGrid, Bot, Presentation, FlaskConical, Swords } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FocusHero } from "@/components/dashboard/overview/focus-hero";
@@ -54,6 +54,20 @@ const QUICK_LINKS = [
     label: "پیچ‌دک",
     desc: "ارائه برای سرمایه‌گذار",
     icon: Presentation,
+    startupOnly: true,
+  },
+  {
+    href: "/dashboard/validation",
+    label: "اعتبارسنجی",
+    desc: "فرض‌های خطرناک را بیازما",
+    icon: FlaskConical,
+    startupOnly: true,
+  },
+  {
+    href: "/dashboard/competitors",
+    label: "تحلیل رقبا",
+    desc: "رقبای بازار را بشناس",
+    icon: Swords,
     startupOnly: true,
   },
 ] as const;
@@ -168,7 +182,7 @@ export default function DashboardOverviewPage() {
 
       <motion.div variants={itemVariants}>
         <h2 className="text-sm font-bold text-muted-foreground mb-3 px-1">دسترسی سریع</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {links.map((link) => (
             <Link
               key={link.href}

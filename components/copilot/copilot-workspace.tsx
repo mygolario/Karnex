@@ -19,12 +19,19 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useImmersivePage } from "@/hooks/use-immersive-page";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { PageTourHelp } from "@/components/tour/page-tour-help";
+import { isPillarAvailableAtLaunch } from "@/lib/launch/config";
 
-const PERSONAS: { id: CopilotPersona; label: string; color: string }[] = [
-  { id: "startup", label: "استارتاپ", color: "text-blue-500" },
-  { id: "traditional", label: "سنتی", color: "text-amber-500" },
-  { id: "creator", label: "محتوا", color: "text-purple-500" },
+const ALL_PERSONAS: { id: CopilotPersona; label: string; color: string; pillar: "startup" | "traditional" | "creator" }[] = [
+  { id: "startup", label: "استارتاپ", color: "text-blue-500", pillar: "startup" },
+  { id: "traditional", label: "سنتی", color: "text-amber-500", pillar: "traditional" },
+  { id: "creator", label: "محتوا", color: "text-purple-500", pillar: "creator" },
 ];
+
+function personaForProjectType(projectType?: string): CopilotPersona {
+  if (projectType === "creator") return "creator";
+  if (projectType === "traditional") return "traditional";
+  return "startup";
+}
 
 export function CopilotWorkspace() {
   const { activeProject: plan } = useProject();
@@ -62,16 +69,20 @@ export function CopilotWorkspace() {
     }))
   );
 
-  // Set persona based on project type
+  // Set persona based on project type (match switcher ids)
   useEffect(() => {
-    if (plan?.projectType === "creator") {
-      useCopilotStore.getState().setActivePersona("creator" as CopilotPersona);
-    } else if (plan?.projectType === "traditional") {
-      useCopilotStore.getState().setActivePersona("traditional" as CopilotPersona);
-    } else {
-      useCopilotStore.getState().setActivePersona("default" as CopilotPersona);
-    }
+    useCopilotStore.getState().setActivePersona(personaForProjectType(plan?.projectType));
   }, [plan?.projectType]);
+
+  // If customer_bot is open on a non-traditional project, fall back to cofounder
+  useEffect(() => {
+    if (
+      activeMode === "customer_bot" &&
+      plan?.projectType !== "traditional"
+    ) {
+      setActiveMode("cofounder");
+    }
+  }, [activeMode, plan?.projectType, setActiveMode]);
 
   // Load persisted conversations for the active project.
   useEffect(() => {
@@ -89,6 +100,10 @@ export function CopilotWorkspace() {
   const [mobileRightOpen, setMobileRightOpen] = useState(false);
   const isMobile = useIsMobile();
   useImmersivePage(isMobile);
+
+  const visiblePersonas = ALL_PERSONAS.filter((p) => isPillarAvailableAtLaunch(p.pillar));
+  const showCustomerBot = plan?.projectType === "traditional";
+  const showPersonaSwitcher = visiblePersonas.length > 1;
 
   return (
     <div className={cn(
@@ -162,11 +177,13 @@ export function CopilotWorkspace() {
                 active={activeMode === "cofounder"}
                 onClick={() => setActiveMode("cofounder")}
               />
-              <ModeTab
-                label="ربات مشتری"
-                active={activeMode === "customer_bot"}
-                onClick={() => setActiveMode("customer_bot")}
-              />
+              {showCustomerBot && (
+                <ModeTab
+                  label="ربات مشتری"
+                  active={activeMode === "customer_bot"}
+                  onClick={() => setActiveMode("customer_bot")}
+                />
+              )}
               <ModeTab
                 label="بینش‌ها"
                 active={activeMode === "insights"}
@@ -176,23 +193,25 @@ export function CopilotWorkspace() {
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Persona switcher — compact on mobile */}
-            <div className="hidden sm:flex items-center gap-0.5 bg-muted/40 p-0.5 rounded-lg">
-              {PERSONAS.map((p) => (
-                <button
-                  key={p.id}
-                  onClick={() => setActivePersona(p.id)}
-                  className={cn(
-                    "px-2 py-1 rounded-md text-[11px] font-medium transition-all",
-                    activePersona === p.id
-                      ? "bg-background shadow-sm " + p.color
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {p.label}
-                </button>
-              ))}
-            </div>
+            {/* Persona switcher — only when multiple pillars are live */}
+            {showPersonaSwitcher && (
+              <div className="hidden sm:flex items-center gap-0.5 bg-muted/40 p-0.5 rounded-lg">
+                {visiblePersonas.map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setActivePersona(p.id)}
+                    className={cn(
+                      "px-2 py-1 rounded-md text-[11px] font-medium transition-all",
+                      activePersona === p.id
+                        ? "bg-background shadow-sm " + p.color
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Artifact pane toggle — desktop lg+ and mobile sheet */}
             <Button

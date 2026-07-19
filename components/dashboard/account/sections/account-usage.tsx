@@ -57,9 +57,9 @@ export function AccountUsage({}: AccountSectionProps) {
       {/* Quota rings */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <SettingsCard accent="emerald" className="flex flex-col items-center text-center">
-          <UsageRing used={ai?.used || 0} total={ai?.limit || 0} label="درخواست AI" />
+          <UsageRing used={ai?.used || 0} total={ai?.limit || 0} label="اعتبار AI" />
           <div className="mt-3 text-sm text-muted-foreground">
-            {ai?.remaining === "unlimited" ? "نامحدود" : `${ai?.remaining ?? 0} درخواست باقی‌مانده`}
+            {ai?.remaining === "unlimited" ? "نامحدود" : `${ai?.remaining ?? 0} واحد باقی‌مانده`}
           </div>
         </SettingsCard>
 

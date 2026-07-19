@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -489,7 +490,26 @@ export function CompetitorWorkspace() {
     void persist(intel, next, { silent: true });
   };
 
-  if (!plan) return null;
+  if (!plan) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh] p-4">
+        <div className="text-center max-w-md space-y-4 rounded-2xl border border-dashed bg-muted/20 p-8">
+          <h2 className="text-xl font-bold">ابتدا یک پروژه بسازید</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            برای تحلیل رقبا، یک پروژه استارتاپی در کارنکس بسازید.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            <Link href="/new-project">
+              <Button>ساخت پروژه جدید</Button>
+            </Link>
+            <Link href="/dashboard/overview">
+              <Button variant="outline">بازگشت به پیشخوان</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const showEmptyWizard = showWizard || !hasAnyData;
 
