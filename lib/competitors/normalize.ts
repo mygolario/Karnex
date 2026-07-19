@@ -2,12 +2,17 @@ import type { BusinessPlan, Competitor, SWOTAnalysis } from "@/lib/db";
 import {
   DEFAULT_MATRIX_DIMENSIONS,
   DEFAULT_POSITION_AXES,
+  type CompetitorCitation,
   type CompetitorConfidence,
+  type CompetitorDiscoveryMeta,
+  type CompetitorDiscoveryOptions,
   type CompetitorDiscoveryResult,
   type CompetitorIntel,
   type CompetitorIntelItem,
+  type CompetitorNextMove,
   type CompetitorScope,
   type CompetitorSource,
+  type CompetitorType,
 } from "./types";
 
 function newId(prefix = "comp"): string {
@@ -64,6 +69,62 @@ function normalizeConfidence(confidence: unknown): CompetitorConfidence {
   }
 }
 
+function normalizeCompetitorType(type: unknown): CompetitorType | undefined {
+  switch (type) {
+    case "direct":
+    case "indirect":
+    case "substitute":
+      return type;
+    default:
+      return undefined;
+  }
+}
+
+function normalizeCitations(raw: unknown): CompetitorCitation[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const out: CompetitorCitation[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const url = typeof (item as { url?: unknown }).url === "string"
+      ? (item as { url: string }).url.trim()
+      : "";
+    if (!url) continue;
+    const title =
+      typeof (item as { title?: unknown }).title === "string"
+        ? (item as { title: string }).title.trim()
+        : undefined;
+    out.push(title ? { url, title } : { url });
+  }
+  return out.length > 0 ? out : undefined;
+}
+
+function normalizeThreatScore(n: unknown): 1 | 2 | 3 | 4 | 5 | undefined {
+  if (typeof n !== "number" || Number.isNaN(n)) return undefined;
+  return clampRating(n);
+}
+
+export function nextMovesFromStrings(moves: string[] | undefined): CompetitorNextMove[] {
+  if (!moves?.length) return [];
+  return moves
+    .map((text) => text.trim())
+    .filter(Boolean)
+    .map((text) => ({
+      id: newId("move"),
+      text,
+      status: "todo" as const,
+    }));
+}
+
+export function ensureActionableMoves(intel: CompetitorIntel): CompetitorNextMove[] {
+  if (intel.actionableMoves?.length) return intel.actionableMoves;
+  return nextMovesFromStrings(intel.nextMoves);
+}
+
+export function stringsFromActionableMoves(moves: CompetitorNextMove[] | undefined): string[] {
+  if (!moves?.length) return [];
+  return moves.map((m) => m.text).filter(Boolean);
+}
+
 export function emptyCompetitorIntel(): CompetitorIntel {
   return {
     updatedAt: new Date().toISOString(),
@@ -76,8 +137,26 @@ export function emptyCompetitorIntel(): CompetitorIntel {
     },
     yourRatings: {},
     nextMoves: [],
+    actionableMoves: [],
     whiteSpace: [],
     featureRows: [],
+  };
+}
+
+/** Migrate legacy string nextMoves → actionableMoves on read. */
+export function hydrateCompetitorIntel(raw: CompetitorIntel | undefined | null): CompetitorIntel {
+  if (!raw) return emptyCompetitorIntel();
+  const actionableMoves = ensureActionableMoves(raw);
+  return {
+    ...emptyCompetitorIntel(),
+    ...raw,
+    competitors: raw.competitors || [],
+    matrixDimensions:
+      raw.matrixDimensions?.length
+        ? raw.matrixDimensions
+        : [...DEFAULT_MATRIX_DIMENSIONS],
+    actionableMoves,
+    nextMoves: stringsFromActionableMoves(actionableMoves),
   };
 }
 
@@ -102,6 +181,15 @@ export function getActiveIntelItems(intel: CompetitorIntel | undefined | null): 
   return intel.competitors.filter((c) => c.status === "active");
 }
 
+export function getDismissedIntelItems(intel: CompetitorIntel | undefined | null): CompetitorIntelItem[] {
+  if (!intel?.competitors) return [];
+  return intel.competitors.filter((c) => c.status === "dismissed");
+}
+
+export function sortByThreat(items: CompetitorIntelItem[]): CompetitorIntelItem[] {
+  return [...items].sort((a, b) => (b.threatScore || 0) - (a.threatScore || 0));
+}
+
 export function hasActiveCompetitors(plan: BusinessPlan | null | undefined): boolean {
   if (!plan) return false;
   const intel = plan.competitorIntel;
@@ -109,6 +197,14 @@ export function hasActiveCompetitors(plan: BusinessPlan | null | undefined): boo
     return intel.competitors.some((c) => c.status === "active");
   }
   return Array.isArray(plan.competitors) && plan.competitors.length > 0;
+}
+
+export function isIntelStale(intel: CompetitorIntel, days = 14): boolean {
+  const ts = intel.lastResearchedAt || intel.updatedAt;
+  if (!ts) return true;
+  const then = new Date(ts).getTime();
+  if (Number.isNaN(then)) return true;
+  return Date.now() - then > days * 24 * 60 * 60 * 1000;
 }
 
 export function swotArraysToAnalysis(swot: {
@@ -139,6 +235,7 @@ function fromLegacyCompetitor(
     strength: item.strength || "",
     weakness: item.weakness || "",
     confidence: "medium",
+    competitorType: "direct",
     entryPoints: [],
   };
 }
@@ -154,6 +251,7 @@ function fromBrandName(name: string): CompetitorIntelItem {
     strength: "",
     weakness: "",
     confidence: "low",
+    competitorType: "direct",
     entryPoints: [],
   };
 }
@@ -176,6 +274,7 @@ function fromLocationCompetitor(item: {
     strength: item.strength || "",
     weakness: item.weakness || "",
     confidence: "medium",
+    competitorType: "direct",
     entryPoints: [],
     locationRef: {
       distance: item.distance,
@@ -185,17 +284,44 @@ function fromLocationCompetitor(item: {
   };
 }
 
+/** Seed from Validation / market-research competitor name snippets when present. */
+function fromMarketSnippet(name: string): CompetitorIntelItem {
+  return {
+    id: newId("market"),
+    name: name.trim(),
+    source: "market",
+    status: "active",
+    isIranian: true,
+    channel: "تحقیق بازار",
+    strength: "",
+    weakness: "",
+    confidence: "low",
+    competitorType: "direct",
+    entryPoints: [],
+  };
+}
+
+function extractMarketCompetitorNames(plan: BusinessPlan): string[] {
+  const names: string[] = [];
+  const research = (plan as BusinessPlan & {
+    marketResearch?: { competitors?: unknown; data?: { competitors?: unknown } };
+  }).marketResearch;
+  const list =
+    (Array.isArray(research?.competitors) && research.competitors) ||
+    (Array.isArray(research?.data?.competitors) && research.data?.competitors) ||
+    [];
+  for (const item of list) {
+    if (typeof item === "string" && item.trim()) names.push(item.trim());
+    else if (item && typeof item === "object" && typeof (item as { name?: string }).name === "string") {
+      names.push((item as { name: string }).name.trim());
+    }
+  }
+  return names;
+}
+
 export function seedCompetitorIntel(plan: BusinessPlan): CompetitorIntel {
   if (plan.competitorIntel?.competitors?.length) {
-    return {
-      ...emptyCompetitorIntel(),
-      ...plan.competitorIntel,
-      competitors: plan.competitorIntel.competitors,
-      matrixDimensions:
-        plan.competitorIntel.matrixDimensions?.length
-          ? plan.competitorIntel.matrixDimensions
-          : [...DEFAULT_MATRIX_DIMENSIONS],
-    };
+    return hydrateCompetitorIntel(plan.competitorIntel);
   }
 
   const intel = emptyCompetitorIntel();
@@ -225,6 +351,10 @@ export function seedCompetitorIntel(plan: BusinessPlan): CompetitorIntel {
     add(fromLocationCompetitor(c));
   }
 
+  for (const name of extractMarketCompetitorNames(plan)) {
+    add(fromMarketSnippet(name));
+  }
+
   if (intel.competitors.length > 0) {
     intel.updatedAt = new Date().toISOString();
   }
@@ -244,12 +374,18 @@ export function discoveryItemToIntel(
     status: "active",
     isIranian: item.isIranian ?? true,
     scope,
+    competitorType: normalizeCompetitorType(item.competitorType) || "direct",
     channel: item.channel || "وب‌سایت",
     url: item.url,
     tagline: item.tagline,
+    productSummary: item.productSummary,
+    pricingSignal: item.pricingSignal,
+    targetSegment: item.targetSegment,
     strength: item.strength || "",
     weakness: item.weakness || "",
     entryPoints: item.entryPoints || [],
+    citations: normalizeCitations(item.citations),
+    threatScore: normalizeThreatScore(item.threatScore),
     confidence: normalizeConfidence(item.confidence),
     ratings: normalizeRatings(item.ratings),
     position: item.position
@@ -275,23 +411,48 @@ function hashPosition(name: string): { x: number; y: number } {
 export function mergeDiscoveryIntoIntel(
   existing: CompetitorIntel,
   discovery: CompetitorDiscoveryResult,
-  options?: { autoAccept?: boolean }
+  options?: {
+    autoAccept?: boolean;
+    discoveryOptions?: CompetitorDiscoveryOptions;
+    model?: string;
+  }
 ): {
   intel: CompetitorIntel;
   proposed: CompetitorIntelItem[];
   updatedIds: string[];
 } {
   const autoAccept = options?.autoAccept ?? false;
+  const now = new Date().toISOString();
+  const actionableFromDiscovery = nextMovesFromStrings(discovery.nextMoves);
+
+  const discoveryMeta: CompetitorDiscoveryMeta = {
+    ...(existing.discoveryMeta || {}),
+    ...(options?.discoveryOptions || {}),
+    model: options?.model || existing.discoveryMeta?.model,
+    researchedAt: now,
+  };
+
   const intel: CompetitorIntel = {
-    ...existing,
+    ...hydrateCompetitorIntel(existing),
     competitors: existing.competitors.map((c) => ({ ...c })),
-    updatedAt: new Date().toISOString(),
-    lastResearchedAt: new Date().toISOString(),
+    updatedAt: now,
+    lastResearchedAt: now,
+    discoveryMeta,
   };
 
   if (discovery.brief) intel.brief = discovery.brief;
   if (discovery.wedge) intel.wedge = discovery.wedge;
-  if (discovery.nextMoves?.length) intel.nextMoves = discovery.nextMoves;
+  if (actionableFromDiscovery.length) {
+    // Merge new move texts; keep done status for matching text
+    const prevByText = new Map(
+      (intel.actionableMoves || []).map((m) => [m.text.trim().toLowerCase(), m])
+    );
+    intel.actionableMoves = actionableFromDiscovery.map((m) => {
+      const prev = prevByText.get(m.text.trim().toLowerCase());
+      return prev ? { ...m, id: prev.id, status: prev.status } : m;
+    });
+    intel.nextMoves = stringsFromActionableMoves(intel.actionableMoves);
+  }
   if (discovery.whiteSpace?.length) intel.whiteSpace = discovery.whiteSpace;
   if (discovery.matrixDimensions?.length) {
     intel.matrixDimensions = discovery.matrixDimensions;
@@ -322,7 +483,6 @@ export function mergeDiscoveryIntoIntel(
     if (matchIdx >= 0) {
       const current = intel.competitors[matchIdx];
       if (current.source === "manual" || current.status === "dismissed") {
-        // Keep user dismissals and manual records intact; still surface as proposal if dismissed
         if (current.status === "dismissed") {
           proposed.push({
             ...discoveryItemToIntel(raw),
@@ -338,10 +498,17 @@ export function mergeDiscoveryIntoIntel(
         channel: raw.channel || current.channel,
         url: raw.url || current.url,
         tagline: raw.tagline || current.tagline,
+        productSummary: raw.productSummary || current.productSummary,
+        pricingSignal: raw.pricingSignal || current.pricingSignal,
+        targetSegment: raw.targetSegment || current.targetSegment,
         strength: raw.strength || current.strength,
         weakness: raw.weakness || current.weakness,
         entryPoints:
           raw.entryPoints?.length ? raw.entryPoints : current.entryPoints,
+        citations: normalizeCitations(raw.citations) || current.citations,
+        threatScore: normalizeThreatScore(raw.threatScore) || current.threatScore,
+        competitorType:
+          normalizeCompetitorType(raw.competitorType) || current.competitorType,
         confidence: normalizeConfidence(raw.confidence || current.confidence),
         isIranian: raw.isIranian ?? current.isIranian,
         scope: normalizeScope(raw.scope) || current.scope,
@@ -349,7 +516,9 @@ export function mergeDiscoveryIntoIntel(
         position: raw.position
           ? { x: clamp01(raw.position.x), y: clamp01(raw.position.y) }
           : current.position,
-        source: current.source === "plan" || current.source === "brand" ? "ai" : current.source,
+        source: current.source === "plan" || current.source === "brand" || current.source === "market"
+          ? "ai"
+          : current.source,
       };
 
       if (autoAccept) {
@@ -378,7 +547,7 @@ export function acceptProposedCompetitors(
   proposed: CompetitorIntelItem[]
 ): CompetitorIntel {
   const next = {
-    ...intel,
+    ...hydrateCompetitorIntel(intel),
     competitors: intel.competitors.map((c) => ({ ...c })),
     updatedAt: new Date().toISOString(),
   };
@@ -407,6 +576,11 @@ export function acceptProposedCompetitors(
   return next;
 }
 
+/** Snapshot helpers for undo-last-accept */
+export function cloneIntel(intel: CompetitorIntel): CompetitorIntel {
+  return JSON.parse(JSON.stringify(intel)) as CompetitorIntel;
+}
+
 export function buildProjectContextBlock(plan: BusinessPlan): string {
   const canvas = plan.leanCanvas as unknown as Record<string, unknown> | undefined;
   const uniqueValue =
@@ -420,15 +594,23 @@ export function buildProjectContextBlock(plan: BusinessPlan): string {
     plan.locationAnalysis?.city ||
     plan.genesisAnswers?.city ||
     "";
+  const stage =
+    (plan.genesisAnswers as { stage?: string } | undefined)?.stage ||
+    (plan as { stage?: string }).stage ||
+    "";
 
-  const existing = (plan.competitors || [])
-    .map((c) => c.name)
-    .filter(Boolean)
-    .slice(0, 8)
-    .join("، ");
+  const existingNames = new Set<string>();
+  for (const c of plan.competitors || []) {
+    if (c.name) existingNames.add(c.name);
+  }
+  for (const c of plan.competitorIntel?.competitors || []) {
+    if (c.status === "active" && c.name) existingNames.add(c.name);
+  }
+  const existing = [...existingNames].slice(0, 8).join("، ");
 
   return [
     `نوع پروژه: ${plan.projectType || "startup"}`,
+    stage ? `مرحله: ${stage}` : "",
     `نام: ${plan.projectName || ""}`,
     `توضیح/ایده: ${plan.overview || plan.ideaInput || plan.description || ""}`,
     `مخاطب: ${plan.audience || ""}`,
@@ -442,11 +624,43 @@ export function buildProjectContextBlock(plan: BusinessPlan): string {
     .join("\n");
 }
 
+export function buildBattleCardMarkdown(
+  plan: BusinessPlan,
+  intel: CompetitorIntel,
+  competitor: CompetitorIntelItem
+): string {
+  const lines = [
+    `# کارت نبرد — ${competitor.name}`,
+    "",
+    `پروژه: ${plan.projectName || "—"}`,
+    intel.wedge ? `زاویه تمایز ما: ${intel.wedge}` : "",
+    "",
+    "## خلاصه رقیب",
+    competitor.productSummary || competitor.tagline || "—",
+    "",
+    `**قوت:** ${competitor.strength || "—"}`,
+    `**ضعف:** ${competitor.weakness || "—"}`,
+    competitor.pricingSignal ? `**قیمت‌گذاری:** ${competitor.pricingSignal}` : "",
+    competitor.targetSegment ? `**مخاطب آن‌ها:** ${competitor.targetSegment}` : "",
+    "",
+    "## چطور می‌بریم",
+  ];
+  const entries = competitor.entryPoints?.length
+    ? competitor.entryPoints
+    : ["روی ضعف‌های آن‌ها تمرکز کن و wedge خودت را برجسته کن."];
+  for (const e of entries) lines.push(`- ${e}`);
+  if (competitor.url) {
+    lines.push("", `منبع: ${competitor.url}`);
+  }
+  return lines.filter((l) => l !== "").join("\n");
+}
+
 export function buildCompetitorExportMarkdown(
   plan: BusinessPlan,
   intel: CompetitorIntel
 ): string {
   const active = getActiveIntelItems(intel);
+  const moves = ensureActionableMoves(intel);
   const lines: string[] = [
     `# تحلیل رقبا — ${plan.projectName || "پروژه"}`,
     "",
@@ -460,9 +674,11 @@ export function buildCompetitorExportMarkdown(
   if (intel.wedge) {
     lines.push("## زاویه تمایز (Wedge)", intel.wedge, "");
   }
-  if (intel.nextMoves?.length) {
+  if (moves.length) {
     lines.push("## قدم‌های بعدی");
-    for (const m of intel.nextMoves) lines.push(`- ${m}`);
+    for (const m of moves) {
+      lines.push(`- [${m.status === "done" ? "x" : " "}] ${m.text}`);
+    }
     lines.push("");
   }
   if (intel.whiteSpace?.length) {
@@ -472,18 +688,26 @@ export function buildCompetitorExportMarkdown(
   }
 
   lines.push("## رقبا");
-  for (const c of active) {
+  for (const c of sortByThreat(active)) {
     lines.push(`### ${c.name}`);
     lines.push(`- کانال: ${c.channel || "—"}`);
     lines.push(`- حوزه: ${c.scope || "—"}`);
+    lines.push(`- نوع: ${c.competitorType || "direct"}`);
     lines.push(`- ایرانی: ${c.isIranian ? "بله" : "خیر"}`);
+    if (c.threatScore) lines.push(`- تهدید: ${c.threatScore}/5`);
     lines.push(`- اعتماد به داده: ${c.confidence || "medium"}`);
     if (c.tagline) lines.push(`- موقعیت‌یابی: ${c.tagline}`);
+    if (c.productSummary) lines.push(`- خلاصه محصول: ${c.productSummary}`);
+    if (c.pricingSignal) lines.push(`- سیگنال قیمت: ${c.pricingSignal}`);
+    if (c.targetSegment) lines.push(`- مخاطب: ${c.targetSegment}`);
     if (c.url) lines.push(`- وب‌سایت: ${c.url}`);
     lines.push(`- قوت: ${c.strength || "—"}`);
     lines.push(`- ضعف: ${c.weakness || "—"}`);
     if (c.entryPoints?.length) {
       lines.push(`- نقاط ورود شما: ${c.entryPoints.join("؛ ")}`);
+    }
+    if (c.citations?.length) {
+      lines.push(`- منابع: ${c.citations.map((x) => x.url).join("؛ ")}`);
     }
     lines.push("");
   }
@@ -516,12 +740,18 @@ export function createManualCompetitor(partial?: Partial<CompetitorIntelItem>): 
     status: "active",
     isIranian: partial?.isIranian ?? true,
     scope: partial?.scope || "national",
+    competitorType: partial?.competitorType || "direct",
     channel: partial?.channel || "وب‌سایت",
     url: partial?.url,
     tagline: partial?.tagline || "",
+    productSummary: partial?.productSummary || "",
+    pricingSignal: partial?.pricingSignal || "",
+    targetSegment: partial?.targetSegment || "",
     strength: partial?.strength || "",
     weakness: partial?.weakness || "",
     entryPoints: partial?.entryPoints || [],
+    citations: partial?.citations || [],
+    threatScore: partial?.threatScore,
     confidence: partial?.confidence || "medium",
     ratings: partial?.ratings || {},
     position: partial?.position || { x: 0.5, y: 0.5 },

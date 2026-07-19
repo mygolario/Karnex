@@ -1,27 +1,16 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react";
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Target,
-  Plus,
-  Search,
-  Loader2,
-  Download,
-  Copy,
-  Check,
-  RefreshCw,
-  MapPin,
-  Building2,
-  Globe,
-  ChevronDown,
-  ChevronUp,
-  Trash2,
-  X,
-  Sparkles,
   AlertTriangle,
-  ExternalLink,
+  Check,
+  Copy,
+  Download,
+  Loader2,
+  Plus,
+  Target,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/auth-context";
@@ -31,95 +20,77 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 import { cn, toPersianDigits } from "@/lib/utils";
-import { saveCompetitorIntel, type PitchDeckSlide } from "@/lib/db";
+import { saveCompetitorIntel } from "@/lib/db";
 import type {
-  CompetitorConfidence,
+  CompetitorDiscoveryOptions,
   CompetitorDiscoveryResult,
   CompetitorIntel,
   CompetitorIntelItem,
-  CompetitorScope,
   FeatureCell,
 } from "@/lib/competitors/types";
 import {
   acceptProposedCompetitors,
   buildCompetitorExportMarkdown,
   buildProjectContextBlock,
+  cloneIntel,
   createManualCompetitor,
   emptyCompetitorIntel,
+  ensureActionableMoves,
   getActiveIntelItems,
+  getDismissedIntelItems,
+  hydrateCompetitorIntel,
   mergeDiscoveryIntoIntel,
   projectActiveCompetitors,
   seedCompetitorIntel,
+  stringsFromActionableMoves,
   swotArraysToAnalysis,
 } from "@/lib/competitors/normalize";
+import { DiscoveryWizard } from "./discovery-wizard";
+import { CommandCenter } from "./command-center";
+import { ProposalTray } from "./proposal-tray";
+import { RosterPanel } from "./roster-panel";
+import { CompareMode } from "./compare-mode";
+import { PositionMapPanel } from "./position-map-panel";
+import { MatricesPanel } from "./matrices-panel";
+import { BattleCardsPanel } from "./battle-cards";
+import { NextMovesPanel } from "./next-moves-panel";
+import {
+  ANALYZE_COMPETITORS_CREDIT_COST,
+  formatRelativeFa,
+  STUDIO_MODES,
+  syncPitchCompetitionSlides,
+} from "./shared";
+import type { StudioMode } from "./types-ui";
 
-type MatrixTab = "ratings" | "features" | "swot";
-type ScopeFilter = "all" | CompetitorScope | "iranian" | "global";
-
-const CONFIDENCE_LABEL: Record<CompetitorConfidence, string> = {
-  high: "اعتماد بالا",
-  medium: "اعتماد متوسط",
-  low: "اعتماد پایین",
+type SwotArrays = {
+  strengths: string[];
+  weaknesses: string[];
+  opportunities: string[];
+  threats: string[];
 };
 
-const SCOPE_LABEL: Record<CompetitorScope, string> = {
-  local: "محلی",
-  national: "ملی",
-  regional: "منطقه‌ای",
-  global: "جهانی",
-};
-
-function syncPitchCompetitionSlides(
-  pitchDeck: PitchDeckSlide[] | undefined,
-  competitors: ReturnType<typeof projectActiveCompetitors>
-): PitchDeckSlide[] | undefined {
-  if (!pitchDeck?.length || competitors.length === 0) return pitchDeck;
-  return pitchDeck.map((slide) => {
-    if (slide.type !== "competition") return slide;
-    return {
-      ...slide,
-      metadata: {
-        ...(slide.metadata || {}),
-        competitors: competitors.map((c) => ({
-          name: c.name,
-          strength: c.strength,
-          weakness: c.weakness,
-        })),
-      },
-    };
-  });
-}
-
-function formatRelativeFa(iso?: string): string {
-  if (!iso) return "—";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "—";
-  return toPersianDigits(
-    d.toLocaleString("fa-IR", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  );
+function stripDiscoveryMeta(data: CompetitorDiscoveryResult & { _meta?: unknown }) {
+  const { _meta: _ignored, ...rest } = data;
+  return rest as CompetitorDiscoveryResult;
 }
 
 export function CompetitorWorkspace() {
   const { user } = useAuth();
   const { activeProject: plan, updateActiveProject } = useProject();
+  const searchParams = useSearchParams();
+  const fromValidation = searchParams.get("from") === "validation";
 
   const [intel, setIntel] = useState<CompetitorIntel>(() => emptyCompetitorIntel());
-  const [swotArrays, setSwotArrays] = useState<{
-    strengths: string[];
-    weaknesses: string[];
-    opportunities: string[];
-    threats: string[];
-  }>({ strengths: [], weaknesses: [], opportunities: [], threats: [] });
+  const [swotArrays, setSwotArrays] = useState<SwotArrays>({
+    strengths: [],
+    weaknesses: [],
+    opportunities: [],
+    threats: [],
+  });
   const [proposed, setProposed] = useState<CompetitorIntelItem[]>([]);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [matrixTab, setMatrixTab] = useState<MatrixTab>("ratings");
-  const [scopeFilter, setScopeFilter] = useState<ScopeFilter>("all");
+  const [undoSnapshot, setUndoSnapshot] = useState<CompetitorIntel | null>(null);
+  const [mode, setMode] = useState<StudioMode>("hub");
+  const [showWizard, setShowWizard] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -127,12 +98,17 @@ export function CompetitorWorkspace() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [addOpen, setAddOpen] = useState(false);
   const [draftName, setDraftName] = useState("");
+  const [lastDiscoveryOpts, setLastDiscoveryOpts] = useState<CompetitorDiscoveryOptions>({
+    geography: "both",
+    focus: "all",
+    count: 6,
+  });
 
-  // Seed from project when it changes
   useEffect(() => {
     if (!plan) return;
     const seeded = seedCompetitorIntel(plan);
     setIntel(seeded);
+    setShowWizard(getActiveIntelItems(seeded).length === 0 && !seeded.brief);
 
     const existingSwot = plan.swotAnalysis;
     if (existingSwot) {
@@ -153,49 +129,28 @@ export function CompetitorWorkspace() {
   }, [plan?.id]);
 
   const active = useMemo(() => getActiveIntelItems(intel), [intel]);
+  const dismissed = useMemo(() => getDismissedIntelItems(intel), [intel]);
+  const moves = useMemo(() => ensureActionableMoves(intel), [intel]);
+  const hasAnyData = active.length > 0 || !!intel.brief;
 
-  const filtered = useMemo(() => {
-    return active.filter((c) => {
-      switch (scopeFilter) {
-        case "all":
-          return true;
-        case "iranian":
-          return c.isIranian !== false;
-        case "global":
-          return c.isIranian === false || c.scope === "global";
-        case "local":
-        case "national":
-        case "regional":
-          return c.scope === scopeFilter;
-        default: {
-          const _exhaustive: never = scopeFilter;
-          return _exhaustive;
-        }
-      }
-    });
-  }, [active, scopeFilter]);
-
-  const localStrip = useMemo(() => {
-    if (plan?.projectType !== "traditional") return [];
-    return plan.locationAnalysis?.competitorAnalysis?.directCompetitors || [];
-  }, [plan]);
-
-  const saturation = plan?.locationAnalysis?.competitorAnalysis?.saturationLevel;
-  const dimensions =
-    intel.matrixDimensions?.length
-      ? intel.matrixDimensions
-      : ["عمق محصول", "دسترسی قیمت", "حضور محلی", "اعتماد برند", "توزیع و کانال"];
+  const stageHint =
+    (plan?.genesisAnswers as { stage?: string } | undefined)?.stage || undefined;
 
   const persist = useCallback(
     async (
       nextIntel: CompetitorIntel,
-      nextSwot?: typeof swotArrays,
+      nextSwot?: SwotArrays,
       options?: { silent?: boolean }
     ) => {
       if (!plan?.id || !user?.id) return;
       setSaving(true);
       try {
-        const stamped = { ...nextIntel, updatedAt: new Date().toISOString() };
+        const hydrated = hydrateCompetitorIntel(nextIntel);
+        const stamped: CompetitorIntel = {
+          ...hydrated,
+          updatedAt: new Date().toISOString(),
+          nextMoves: stringsFromActionableMoves(hydrated.actionableMoves),
+        };
         const competitors = projectActiveCompetitors(stamped);
         const swotAnalysis = nextSwot ? swotArraysToAnalysis(nextSwot) : undefined;
         const pitchDeck = syncPitchCompetitionSlides(plan.pitchDeck, competitors);
@@ -224,8 +179,13 @@ export function CompetitorWorkspace() {
     [plan, user?.id, updateActiveProject]
   );
 
-  const handleDiscover = async (isRefresh: boolean) => {
+  const handleDiscover = async (
+    isRefresh: boolean,
+    discovery?: CompetitorDiscoveryOptions
+  ) => {
     if (!plan) return;
+    const opts = discovery || lastDiscoveryOpts;
+    setLastDiscoveryOpts(opts);
     setAnalyzing(true);
     setErrorMsg(null);
     try {
@@ -235,6 +195,7 @@ export function CompetitorWorkspace() {
         projectIdea: plan.overview || plan.ideaInput || "",
         audience: plan.audience || "",
         contextBlock: buildProjectContextBlock(plan),
+        discovery: opts,
       });
 
       if (!result.success) {
@@ -243,34 +204,51 @@ export function CompetitorWorkspace() {
           return;
         }
         if (result.error === "OPENROUTER_API_KEY_MISSING") {
-          setErrorMsg("اتصال هوش مصنوعی پیکربندی نشده است. می‌توانی رقبا را دستی اضافه کنی.");
+          setErrorMsg(
+            "اتصال هوش مصنوعی پیکربندی نشده است. می‌توانی رقبا را دستی اضافه کنی."
+          );
           return;
         }
         setErrorMsg("تحلیل ناموفق بود. دوباره تلاش کن یا رقیب را دستی اضافه کن.");
         return;
       }
 
-      const discovery = result.data as CompetitorDiscoveryResult;
-      if (discovery.swot) setSwotArrays(discovery.swot);
+      const raw = result.data as CompetitorDiscoveryResult & {
+        _meta?: { model?: string; geography?: string; focus?: string; count?: number };
+      };
+      const discoveryResult = stripDiscoveryMeta(raw);
+      if (discoveryResult.swot) setSwotArrays(discoveryResult.swot);
 
-      if (isRefresh && active.length > 0) {
-        const merged = mergeDiscoveryIntoIntel(intel, discovery, { autoAccept: false });
-        setIntel(merged.intel);
-        setProposed(merged.proposed);
-        if (discovery.swot) {
-          await persist(merged.intel, discovery.swot, { silent: true });
-        } else {
-          await persist(merged.intel, undefined, { silent: true });
-        }
+      const meta = raw._meta;
+      setShowWizard(false);
+      setMode("hub");
+
+      // Always proposal tray — never silent overwrite of roster
+      const merged = mergeDiscoveryIntoIntel(intel, discoveryResult, {
+        autoAccept: false,
+        discoveryOptions: opts,
+        model: meta?.model,
+      });
+
+      // Narrative fields (brief/wedge/moves) already applied on merged.intel
+      setIntel(merged.intel);
+      setProposed(merged.proposed);
+      if (discoveryResult.swot) {
+        await persist(merged.intel, discoveryResult.swot, { silent: true });
+      } else {
+        await persist(merged.intel, undefined, { silent: true });
+      }
+
+      if (merged.proposed.length === 0) {
+        toast.message("تحلیل تازه شد؛ تغییر معناداری در لیست نبود");
+      } else if (!isRefresh && active.length === 0) {
         toast.message(
-          merged.proposed.length
-            ? `${toPersianDigits(String(merged.proposed.length))} پیشنهاد جدید برای بررسی`
-            : "تحلیل تازه شد؛ تغییر معناداری در لیست نبود"
+          `${toPersianDigits(String(merged.proposed.length))} رقیب پیشنهادی — پذیرش همه را بزن یا تک‌تک بررسی کن`
         );
       } else {
-        const merged = mergeDiscoveryIntoIntel(intel, discovery, { autoAccept: true });
-        setProposed([]);
-        await persist(merged.intel, discovery.swot);
+        toast.message(
+          `${toPersianDigits(String(merged.proposed.length))} پیشنهاد جدید برای بررسی`
+        );
       }
     } catch (e) {
       console.error(e);
@@ -281,22 +259,25 @@ export function CompetitorWorkspace() {
   };
 
   const acceptAllProposed = async () => {
+    setUndoSnapshot(cloneIntel(intel));
     const next = acceptProposedCompetitors(intel, proposed);
     setProposed([]);
     await persist(next, swotArrays);
   };
 
-  const dismissProposed = (id: string) => {
-    setProposed((prev) => prev.filter((p) => p.id !== id));
+  const acceptOneProposed = async (item: CompetitorIntelItem) => {
+    setUndoSnapshot(cloneIntel(intel));
+    const next = acceptProposedCompetitors(intel, [item]);
+    setProposed((prev) => prev.filter((p) => p.id !== item.id));
+    await persist(next, undefined, { silent: true });
   };
 
-  const updateItemLocal = (id: string, patch: Partial<CompetitorIntelItem>) => {
-    setIntel((prev) => ({
-      ...prev,
-      competitors: prev.competitors.map((c) =>
-        c.id === id ? { ...c, ...patch } : c
-      ),
-    }));
+  const undoLastAccept = async () => {
+    if (!undoSnapshot) return;
+    setProposed([]);
+    await persist(undoSnapshot, undefined, { silent: true });
+    setUndoSnapshot(null);
+    toast.message("آخرین پذیرش برگردانده شد");
   };
 
   const persistItem = async (id: string, patch: Partial<CompetitorIntelItem>) => {
@@ -326,6 +307,20 @@ export function CompetitorWorkspace() {
     toast.message("رقیب کنار گذاشته شد");
   };
 
+  const restoreCompetitor = async (id: string) => {
+    setIntel((prev) => {
+      const stamped: CompetitorIntel = {
+        ...prev,
+        competitors: prev.competitors.map((c) =>
+          c.id === id ? { ...c, status: "active" as const } : c
+        ),
+      };
+      void persist(stamped, undefined, { silent: true });
+      return stamped;
+    });
+    toast.success("رقیب بازگردانده شد");
+  };
+
   const addManual = async () => {
     if (!draftName.trim()) return;
     const item = createManualCompetitor({ name: draftName.trim() });
@@ -335,7 +330,8 @@ export function CompetitorWorkspace() {
     };
     setDraftName("");
     setAddOpen(false);
-    setExpandedId(item.id);
+    setShowWizard(false);
+    setMode("roster");
     await persist(next, undefined, { silent: true });
     toast.success("رقیب اضافه شد");
   };
@@ -357,6 +353,7 @@ export function CompetitorWorkspace() {
       ...intel,
       competitors: [...intel.competitors, ...additions],
     };
+    setShowWizard(false);
     await persist(next);
   };
 
@@ -398,6 +395,21 @@ export function CompetitorWorkspace() {
     void persist(next, undefined, { silent: true });
   };
 
+  const addFeatureRow = () => {
+    const id = `feat_${Date.now()}`;
+    const cells: Record<string, FeatureCell> = { you: "no" };
+    for (const c of active) cells[c.id] = "no";
+    const next = {
+      ...intel,
+      featureRows: [
+        ...(intel.featureRows || []),
+        { id, label: "ویژگی جدید", cells },
+      ],
+    };
+    setIntel(next);
+    void persist(next, undefined, { silent: true });
+  };
+
   const setRating = (
     target: "you" | string,
     dim: string,
@@ -428,12 +440,61 @@ export function CompetitorWorkspace() {
     });
   };
 
-  const hasAnyData = active.length > 0 || !!intel.brief;
+  const toggleMove = (id: string) => {
+    setIntel((prev) => {
+      const current = ensureActionableMoves(prev);
+      const actionableMoves = current.map((m) =>
+        m.id === id
+          ? { ...m, status: m.status === "done" ? ("todo" as const) : ("done" as const) }
+          : m
+      );
+      const next = {
+        ...prev,
+        actionableMoves,
+        nextMoves: stringsFromActionableMoves(actionableMoves),
+      };
+      void persist(next, undefined, { silent: true });
+      return next;
+    });
+  };
+
+  const updateYourPosition = (patch: {
+    x?: number;
+    y?: number;
+    xAxis?: string;
+    yAxis?: string;
+  }) => {
+    setIntel((prev) => {
+      const base = prev.yourPosition || {
+        x: 0.5,
+        y: 0.5,
+        xAxis: "قیمت (ارزان ← گران)",
+        yAxis: "تخصص (عمومی ← تخصصی)",
+      };
+      const next = {
+        ...prev,
+        yourPosition: { ...base, ...patch },
+      };
+      void persist(next, undefined, { silent: true });
+      return next;
+    });
+  };
+
+  const updateRivalPosition = (id: string, x: number, y: number) => {
+    void persistItem(id, { position: { x, y } });
+  };
+
+  const onSwotChange = (next: SwotArrays) => {
+    setSwotArrays(next);
+    void persist(intel, next, { silent: true });
+  };
 
   if (!plan) return null;
 
+  const showEmptyWizard = showWizard || !hasAnyData;
+
   return (
-    <div className="max-w-7xl mx-auto p-4 pb-28 space-y-6" dir="rtl">
+    <div className="max-w-6xl mx-auto p-4 pb-28 space-y-5" dir="rtl">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-2">
@@ -442,9 +503,9 @@ export function CompetitorWorkspace() {
               <Target className="w-5 h-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">تحلیل رقبا</h1>
+              <h1 className="text-2xl font-bold tracking-tight">استودیو رقبا</h1>
               <p className="text-sm text-muted-foreground">
-                جایگاه، تمایز و قدم بعدی — نه فقط یک لیست
+                تمایز محصول، تهدیدها و قدم بعدی — با داده زنده وب
               </p>
             </div>
           </div>
@@ -453,6 +514,9 @@ export function CompetitorWorkspace() {
               {plan.projectName}
             </Badge>
             <span>آخرین به‌روزرسانی: {formatRelativeFa(intel.updatedAt)}</span>
+            <Badge variant="secondary" className="font-normal text-[10px]">
+              کشف: {toPersianDigits(String(ANALYZE_COMPETITORS_CREDIT_COST))} اعتبار
+            </Badge>
             {saving && (
               <span className="inline-flex items-center gap-1 text-primary">
                 <Loader2 className="w-3 h-3 animate-spin" />
@@ -463,23 +527,30 @@ export function CompetitorWorkspace() {
         </div>
 
         <div className="flex flex-wrap gap-2">
+          {!showEmptyWizard && (
+            <Button
+              onClick={() => handleDiscover(active.length > 0)}
+              disabled={analyzing}
+              className="gap-2"
+            >
+              {analyzing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Target className="w-4 h-4" />
+              )}
+              {active.length > 0 ? "بازتحلیل" : "کشف"}
+            </Button>
+          )}
           <Button
-            onClick={() => handleDiscover(active.length > 0)}
-            disabled={analyzing}
+            variant="outline"
             className="gap-2"
+            onClick={() => {
+              setAddOpen(true);
+              setShowWizard(false);
+            }}
           >
-            {analyzing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : active.length > 0 ? (
-              <RefreshCw className="w-4 h-4" />
-            ) : (
-              <Sparkles className="w-4 h-4" />
-            )}
-            {active.length > 0 ? "بازتحلیل هوشمند" : "کشف با هوش مصنوعی"}
-          </Button>
-          <Button variant="outline" className="gap-2" onClick={() => setAddOpen(true)}>
             <Plus className="w-4 h-4" />
-            افزودن رقیب
+            افزودن
           </Button>
           <Button variant="outline" size="icon" onClick={handleCopy} title="کپی">
             {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -507,796 +578,158 @@ export function CompetitorWorkspace() {
         </Card>
       )}
 
-      {/* Traditional local strip (legacy locationAnalysis data if present) */}
-      {plan.projectType === "traditional" && localStrip.length > 0 && (
-        <Card className="p-4 space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" />
-              <h2 className="font-semibold text-sm">رقبای محلی ذخیره‌شده</h2>
-              {saturation && (
-                <Badge variant="secondary" className="text-[10px]">
-                  اشباع: {saturation}
-                </Badge>
-              )}
-            </div>
-          </div>
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {localStrip.slice(0, 8).map((c, i) => (
-              <div
-                key={`${c.name}-${i}`}
-                className="shrink-0 rounded-lg border border-border/60 px-3 py-2 text-xs min-w-[140px]"
-              >
-                  <p className="font-medium truncate">{c.name}</p>
-                  <p className="text-muted-foreground mt-0.5">
-                    {c.distance || "فاصله نامشخص"}
-                  </p>
-                </div>
-              ))}
-            </div>
-        </Card>
-      )}
+      <ProposalTray
+        proposed={proposed}
+        canUndo={!!undoSnapshot}
+        onAcceptAll={acceptAllProposed}
+        onDismissAll={() => setProposed([])}
+        onDismissOne={(id) => setProposed((prev) => prev.filter((p) => p.id !== id))}
+        onAcceptOne={acceptOneProposed}
+        onUndo={undoLastAccept}
+      />
 
-      {/* Proposed review tray */}
-      <AnimatePresence>
-        {proposed.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-          >
-            <Card className="p-4 border-primary/30 bg-primary/5 space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <h3 className="font-semibold text-sm">پیشنهادهای بازتحلیل</h3>
-                  <p className="text-xs text-muted-foreground">
-                    بدون پاک کردن ویرایش‌های تو؛ موارد را بپذیر یا رد کن.
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button size="sm" onClick={acceptAllProposed}>
-                    پذیرش همه ({toPersianDigits(String(proposed.length))})
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setProposed([])}>
-                    رد همه
-                  </Button>
-                </div>
-              </div>
-              <div className="grid sm:grid-cols-2 gap-2">
-                {proposed.map((p) => (
-                  <div
-                    key={p.id}
-                    className="rounded-lg border bg-background p-3 text-sm flex justify-between gap-2"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-medium truncate">{p.name}</p>
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                        {p.tagline || p.strength}
-                      </p>
-                    </div>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="shrink-0 h-8 w-8"
-                      onClick={() => dismissProposed(p.id)}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {!hasAnyData ? (
-        <Card className="p-8 sm:p-12 text-center space-y-5">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-muted flex items-center justify-center">
-            <Search className="w-7 h-7 text-muted-foreground" />
-          </div>
-          <div className="space-y-2 max-w-md mx-auto">
-            <h2 className="text-xl font-bold">فضای رقابتی‌ات هنوز خالی است</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              با هوش مصنوعی رقبای واقعی بازار را پیدا کن، یا رقبایی که می‌شناسی را دستی اضافه کن.
-              نتیجه ذخیره می‌شود و به امتیاز و پیچ‌دک وصل می‌شود.
-            </p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-2">
-            <Button onClick={() => handleDiscover(false)} disabled={analyzing} className="gap-2">
-              {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-              کشف با هوش مصنوعی
-            </Button>
-            <Button variant="outline" onClick={() => setAddOpen(true)} className="gap-2">
-              <Plus className="w-4 h-4" />
-              افزودن دستی
-            </Button>
-            <Button variant="ghost" onClick={importSeeds} className="gap-2 text-sm">
-              وارد کردن از پلن / برند / مکان
-            </Button>
-          </div>
-        </Card>
+      {showEmptyWizard ? (
+        <DiscoveryWizard
+          projectName={plan.projectName}
+          analyzing={analyzing}
+          onDiscover={(opts) => handleDiscover(false, opts)}
+          onManual={() => setAddOpen(true)}
+          onImportSeeds={importSeeds}
+          onCancel={hasAnyData ? () => setShowWizard(false) : undefined}
+        />
       ) : (
         <>
-          <div className="grid lg:grid-cols-5 gap-6">
-            {/* Roster */}
-            <div className="lg:col-span-3 space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="font-semibold">
-                  فهرست رقبا{" "}
-                  <span className="text-muted-foreground font-normal text-sm">
-                    ({toPersianDigits(String(active.length))})
-                  </span>
-                </h2>
-                <div className="flex flex-wrap gap-1">
-                  {(
-                    [
-                      ["all", "همه"],
-                      ["iranian", "ایرانی"],
-                      ["local", "محلی"],
-                      ["national", "ملی"],
-                      ["global", "جهانی"],
-                    ] as const
-                  ).map(([key, label]) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setScopeFilter(key)}
-                      className={cn(
-                        "px-2.5 py-1 rounded-full text-[11px] border transition-colors",
-                        scopeFilter === key
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-background text-muted-foreground border-border hover:bg-muted"
-                      )}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                {filtered.map((c) => {
-                  const open = expandedId === c.id;
-                  return (
-                    <Card
-                      key={c.id}
-                      className={cn(
-                        "overflow-hidden transition-shadow",
-                        open && "ring-1 ring-primary/40"
-                      )}
-                    >
-                      <button
-                        type="button"
-                        className="w-full text-start p-4 flex items-start gap-3"
-                        onClick={() => setExpandedId(open ? null : c.id)}
-                      >
-                        <div className="w-9 h-9 rounded-lg bg-muted flex items-center justify-center shrink-0">
-                          {c.isIranian === false ? (
-                            <Globe className="w-4 h-4" />
-                          ) : (
-                            <Building2 className="w-4 h-4" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="font-semibold truncate">{c.name}</span>
-                            <Badge variant="outline" className="text-[10px] font-normal">
-                              {c.isIranian === false ? "بین‌المللی" : "ایرانی"}
-                            </Badge>
-                            {c.scope && (
-                              <Badge variant="secondary" className="text-[10px] font-normal">
-                                {SCOPE_LABEL[c.scope]}
-                              </Badge>
-                            )}
-                            {c.confidence && (
-                              <span className="text-[10px] text-muted-foreground">
-                                {CONFIDENCE_LABEL[c.confidence]}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                            {c.tagline || c.channel || "بدون توضیح موقعیت"}
-                          </p>
-                        </div>
-                        {open ? (
-                          <ChevronUp className="w-4 h-4 shrink-0 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 shrink-0 text-muted-foreground" />
-                        )}
-                      </button>
-
-                      <AnimatePresence>
-                        {open && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <div className="px-4 pb-4 space-y-3 border-t border-border/50 pt-3">
-                              <Field
-                                label="نام"
-                                value={c.name}
-                                onChange={(v) => updateItemLocal(c.id, { name: v })}
-                                onBlur={(v) => void persistItem(c.id, { name: v })}
-                              />
-                              <Field
-                                label="موقعیت‌یابی (یک خط)"
-                                value={c.tagline || ""}
-                                onChange={(v) => updateItemLocal(c.id, { tagline: v })}
-                                onBlur={(v) => void persistItem(c.id, { tagline: v })}
-                              />
-                              <Field
-                                label="کانال"
-                                value={c.channel || ""}
-                                onChange={(v) => updateItemLocal(c.id, { channel: v })}
-                                onBlur={(v) => void persistItem(c.id, { channel: v })}
-                              />
-                              <Field
-                                label="وب‌سایت / لینک"
-                                value={c.url || ""}
-                                onChange={(v) => updateItemLocal(c.id, { url: v })}
-                                onBlur={(v) => void persistItem(c.id, { url: v })}
-                              />
-                              <Field
-                                label="نقطه قوت"
-                                value={c.strength}
-                                onChange={(v) => updateItemLocal(c.id, { strength: v })}
-                                onBlur={(v) => void persistItem(c.id, { strength: v })}
-                                multiline
-                              />
-                              <Field
-                                label="نقطه ضعف"
-                                value={c.weakness}
-                                onChange={(v) => updateItemLocal(c.id, { weakness: v })}
-                                onBlur={(v) => void persistItem(c.id, { weakness: v })}
-                                multiline
-                              />
-                              <Field
-                                label="نقاط ورود شما (با خط جدید جدا کن)"
-                                value={(c.entryPoints || []).join("\n")}
-                                onChange={(v) =>
-                                  updateItemLocal(c.id, {
-                                    entryPoints: v
-                                      .split("\n")
-                                      .map((s) => s.trim())
-                                      .filter(Boolean),
-                                  })
-                                }
-                                onBlur={(v) =>
-                                  void persistItem(c.id, {
-                                    entryPoints: v
-                                      .split("\n")
-                                      .map((s) => s.trim())
-                                      .filter(Boolean),
-                                  })
-                                }
-                                multiline
-                              />
-                              <div className="flex justify-end">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-destructive gap-1"
-                                  onClick={() => dismissCompetitor(c.id)}
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  کنار گذاشتن
-                                </Button>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </Card>
-                  );
-                })}
-                {filtered.length === 0 && (
-                  <p className="text-sm text-muted-foreground py-6 text-center">
-                    با این فیلتر رقیبی نیست.
-                  </p>
+          {/* Desktop mode tabs */}
+          <div className="hidden sm:flex flex-wrap gap-1 border-b pb-2">
+            {STUDIO_MODES.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setMode(m.id)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-sm transition-colors",
+                  mode === m.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted"
                 )}
-              </div>
-            </div>
-
-            {/* Right rail: map + brief */}
-            <div className="lg:col-span-2 space-y-4">
-              <Card className="p-4 space-y-3">
-                <div className="flex items-center justify-between gap-2">
-                  <h2 className="font-semibold text-sm">نقشه موقعیت</h2>
-                </div>
-                <PositionMap
-                  intel={intel}
-                  active={active}
-                  onMoveYou={(x, y) => {
-                    const next = {
-                      ...intel,
-                      yourPosition: {
-                        ...(intel.yourPosition || {
-                          x: 0.5,
-                          y: 0.5,
-                          xAxis: "قیمت (ارزان ← گران)",
-                          yAxis: "تخصص (عمومی ← تخصصی)",
-                        }),
-                        x,
-                        y,
-                      },
-                    };
-                    setIntel(next);
-                    void persist(next, undefined, { silent: true });
-                  }}
-                  onAxisChange={(axis, value) => {
-                    const next = {
-                      ...intel,
-                      yourPosition: {
-                        x: intel.yourPosition?.x ?? 0.5,
-                        y: intel.yourPosition?.y ?? 0.5,
-                        xAxis: intel.yourPosition?.xAxis || "قیمت (ارزان ← گران)",
-                        yAxis: intel.yourPosition?.yAxis || "تخصص (عمومی ← تخصصی)",
-                        [axis]: value,
-                      },
-                    };
-                    setIntel(next);
-                    void persist(next, undefined, { silent: true });
-                  }}
-                />
-              </Card>
-
-              <Card className="p-4 space-y-3">
-                <h2 className="font-semibold text-sm">جایگاه شما</h2>
-                {intel.brief ? (
-                  <p className="text-sm leading-relaxed text-foreground/90">{intel.brief}</p>
-                ) : (
-                  <p className="text-sm text-muted-foreground">
-                    پس از کشف هوشمند، خلاصه جایگاه اینجا می‌آید.
-                  </p>
-                )}
-                {intel.wedge && (
-                  <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
-                    <p className="text-[11px] text-primary mb-1">زاویه تمایز</p>
-                    <p className="text-sm font-medium">{intel.wedge}</p>
-                  </div>
-                )}
-                {!!intel.whiteSpace?.length && (
-                  <div>
-                    <p className="text-[11px] text-muted-foreground mb-1.5">فضای سفید</p>
-                    <ul className="space-y-1">
-                      {intel.whiteSpace.map((w) => (
-                        <li key={w} className="text-sm flex gap-2">
-                          <span className="text-primary">•</span>
-                          <span>{w}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {!!intel.nextMoves?.length && (
-                  <div>
-                    <p className="text-[11px] text-muted-foreground mb-1.5">قدم‌های بعدی</p>
-                    <ol className="space-y-1.5 list-decimal list-inside">
-                      {intel.nextMoves.map((m) => (
-                        <li key={m} className="text-sm">
-                          {m}
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-              </Card>
-            </div>
+              >
+                {m.label}
+              </button>
+            ))}
           </div>
 
-          {/* Matrix section */}
-          <Card className="p-4 space-y-4">
-            <div className="flex flex-wrap gap-2 border-b border-border/50 pb-3">
-              {(
-                [
-                  ["ratings", "امتیازها"],
-                  ["features", "قابلیت‌ها"],
-                  ["swot", "SWOT"],
-                ] as const
-              ).map(([key, label]) => (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={mode}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.18 }}
+            >
+              {mode === "hub" && (
+                <CommandCenter
+                  intel={intel}
+                  active={active}
+                  analyzing={analyzing}
+                  stageHint={stageHint}
+                  fromValidation={fromValidation}
+                  onRefresh={() => handleDiscover(true)}
+                  onOpenWizard={() => setShowWizard(true)}
+                  onSetMode={setMode}
+                />
+              )}
+              {mode === "roster" && (
+                <RosterPanel
+                  items={active}
+                  dismissed={dismissed}
+                  onPersistItem={persistItem}
+                  onDismiss={dismissCompetitor}
+                  onRestore={restoreCompetitor}
+                />
+              )}
+              {mode === "compare" && <CompareMode intel={intel} active={active} />}
+              {mode === "map" && (
+                <PositionMapPanel
+                  intel={intel}
+                  active={active}
+                  onUpdatePosition={updateYourPosition}
+                  onUpdateRivalPosition={updateRivalPosition}
+                />
+              )}
+              {mode === "matrices" && (
+                <MatricesPanel
+                  intel={intel}
+                  active={active}
+                  swotArrays={swotArrays}
+                  onSetRating={setRating}
+                  onCycleFeature={cycleFeatureCell}
+                  onAddFeatureRow={addFeatureRow}
+                  onSwotChange={onSwotChange}
+                />
+              )}
+              {mode === "battle" && (
+                <BattleCardsPanel plan={plan} intel={intel} active={active} />
+              )}
+              {mode === "moves" && (
+                <NextMovesPanel moves={moves} onToggle={toggleMove} />
+              )}
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Mobile bottom mode switcher */}
+          <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+            <div className="flex overflow-x-auto gap-1 px-2 py-2">
+              {STUDIO_MODES.map((m) => (
                 <button
-                  key={key}
+                  key={m.id}
                   type="button"
-                  onClick={() => setMatrixTab(key)}
+                  onClick={() => setMode(m.id)}
                   className={cn(
-                    "px-3 py-1.5 rounded-lg text-sm transition-colors",
-                    matrixTab === key
+                    "shrink-0 px-3 py-2 rounded-lg text-xs",
+                    mode === m.id
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted"
+                      : "text-muted-foreground"
                   )}
                 >
-                  {label}
+                  {m.label}
                 </button>
               ))}
             </div>
-
-            {matrixTab === "ratings" && (
-              <div className="overflow-x-auto mobile-scroll-x -mx-1 px-1 max-w-full">
-                <table className="w-full text-sm min-w-[640px]">
-                  <thead>
-                    <tr className="text-muted-foreground text-xs">
-                      <th className="text-start font-medium p-2">بُعد</th>
-                      <th className="text-start font-medium p-2">شما</th>
-                      {active.slice(0, 5).map((c) => (
-                        <th key={c.id} className="text-start font-medium p-2 truncate max-w-[120px]">
-                          {c.name}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {dimensions.map((dim) => (
-                      <tr key={dim} className="border-t border-border/40">
-                        <td className="p-2 font-medium whitespace-nowrap">{dim}</td>
-                        <td className="p-2">
-                          <RatingPicker
-                            value={intel.yourRatings?.[dim]}
-                            onChange={(v) => setRating("you", dim, v)}
-                          />
-                        </td>
-                        {active.slice(0, 5).map((c) => (
-                          <td key={c.id} className="p-2">
-                            <RatingPicker
-                              value={c.ratings?.[dim]}
-                              onChange={(v) => setRating(c.id, dim, v)}
-                            />
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <p className="text-[11px] text-muted-foreground mt-2">
-                  امتیاز ۱ تا ۵ قابل ویرایش است؛ عدد تصادفی ساخته نمی‌شود.
-                </p>
-              </div>
-            )}
-
-            {matrixTab === "features" && (
-              <FeatureMatrixEditor
-                intel={intel}
-                active={active}
-                onAddRow={(label) => {
-                  const id = `feat_${Date.now()}`;
-                  const cells: Record<string, FeatureCell> = { you: "partial" };
-                  for (const c of active) cells[c.id] = "no";
-                  const next = {
-                    ...intel,
-                    featureRows: [...(intel.featureRows || []), { id, label, cells }],
-                  };
-                  setIntel(next);
-                  void persist(next, undefined, { silent: true });
-                }}
-                onCycle={cycleFeatureCell}
-              />
-            )}
-
-            {matrixTab === "swot" && (
-              <div className="grid sm:grid-cols-2 gap-3">
-                {(
-                  [
-                    ["strengths", "نقاط قوت", "bg-emerald-500/10 border-emerald-500/20"],
-                    ["weaknesses", "نقاط ضعف", "bg-rose-500/10 border-rose-500/20"],
-                    ["opportunities", "فرصت‌ها", "bg-sky-500/10 border-sky-500/20"],
-                    ["threats", "تهدیدها", "bg-amber-500/10 border-amber-500/20"],
-                  ] as const
-                ).map(([key, title, cls]) => (
-                  <div key={key} className={cn("rounded-xl border p-3 space-y-2", cls)}>
-                    <h3 className="text-sm font-semibold">{title}</h3>
-                    <textarea
-                      className="w-full min-h-[100px] text-sm bg-background/70 rounded-lg border border-border/50 p-2 resize-y"
-                      value={swotArrays[key].join("\n")}
-                      onChange={(e) => {
-                        const next = {
-                          ...swotArrays,
-                          [key]: e.target.value
-                            .split("\n")
-                            .map((s) => s.trim())
-                            .filter(Boolean),
-                        };
-                        setSwotArrays(next);
-                      }}
-                      onBlur={() => void persist(intel, swotArrays, { silent: true })}
-                      placeholder="هر مورد در یک خط"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </Card>
+          </div>
         </>
       )}
 
-      {/* Add modal */}
-      <AnimatePresence>
-        {addOpen && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setAddOpen(false)}
-          >
-            <motion.div
-              initial={{ y: 24, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 24, opacity: 0 }}
-              className="w-full max-w-md rounded-2xl bg-background border p-5 space-y-4"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <h3 className="font-bold">افزودن رقیب</h3>
-              <input
-                autoFocus
-                className="w-full rounded-lg border px-3 py-2 text-sm"
-                placeholder="نام رقیب"
-                value={draftName}
-                onChange={(e) => setDraftName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") void addManual();
-                }}
-              />
-              <div className="flex justify-end gap-2">
-                <Button variant="ghost" onClick={() => setAddOpen(false)}>
-                  انصراف
-                </Button>
-                <Button onClick={() => void addManual()} disabled={!draftName.trim()}>
-                  افزودن
-                </Button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Add manual dialog */}
+      {addOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <Card className="w-full max-w-sm p-5 space-y-4">
+            <h3 className="font-semibold">افزودن رقیب دستی</h3>
+            <input
+              className="w-full rounded-lg border bg-background px-3 py-2 text-sm"
+              placeholder="نام رقیب"
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value)}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void addManual();
+              }}
+            />
+            <div className="flex gap-2 justify-end">
+              <Button variant="ghost" onClick={() => setAddOpen(false)}>
+                انصراف
+              </Button>
+              <Button onClick={addManual} disabled={!draftName.trim()}>
+                افزودن
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
 
       <LimitReachedModal
         isOpen={showLimitModal}
         onClose={() => setShowLimitModal(false)}
       />
-    </div>
-  );
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  onBlur,
-  multiline,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  onBlur?: (v: string) => void;
-  multiline?: boolean;
-}) {
-  const cls =
-    "w-full rounded-lg border border-border/60 bg-background px-3 py-2 text-sm";
-  return (
-    <label className="block space-y-1">
-      <span className="text-[11px] text-muted-foreground">{label}</span>
-      {multiline ? (
-        <textarea
-          className={cn(cls, "min-h-[72px] resize-y")}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onBlur={(e) => onBlur?.(e.target.value)}
-        />
-      ) : (
-        <input
-          className={cls}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onBlur={(e) => onBlur?.(e.target.value)}
-        />
-      )}
-    </label>
-  );
-}
-
-function RatingPicker({
-  value,
-  onChange,
-}: {
-  value?: number;
-  onChange: (v: 1 | 2 | 3 | 4 | 5) => void;
-}) {
-  return (
-    <div className="flex gap-0.5">
-      {([1, 2, 3, 4, 5] as const).map((n) => (
-        <button
-          key={n}
-          type="button"
-          onClick={() => onChange(n)}
-          className={cn(
-            "w-6 h-6 rounded text-[11px] border transition-colors",
-            value === n
-              ? "bg-primary text-primary-foreground border-primary"
-              : "bg-muted/40 text-muted-foreground border-transparent hover:border-border"
-          )}
-        >
-          {toPersianDigits(String(n))}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function PositionMap({
-  intel,
-  active,
-  onMoveYou,
-  onAxisChange,
-}: {
-  intel: CompetitorIntel;
-  active: CompetitorIntelItem[];
-  onMoveYou: (x: number, y: number) => void;
-  onAxisChange: (axis: "xAxis" | "yAxis", value: string) => void;
-}) {
-  const pos = intel.yourPosition || {
-    x: 0.5,
-    y: 0.5,
-    xAxis: "قیمت (ارزان ← گران)",
-    yAxis: "تخصص (عمومی ← تخصصی)",
-  };
-
-  const handleClick = (e: MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = 1 - (e.clientY - rect.top) / rect.height;
-    onMoveYou(Math.max(0.05, Math.min(0.95, x)), Math.max(0.05, Math.min(0.95, y)));
-  };
-
-  return (
-    <div className="space-y-2">
-      <input
-        className="w-full text-[11px] text-muted-foreground bg-transparent border-b border-border/40 pb-1"
-        value={pos.yAxis}
-        onChange={(e) => onAxisChange("yAxis", e.target.value)}
-      />
-      <div
-        role="presentation"
-        onClick={handleClick}
-        className="relative aspect-square rounded-xl border border-border/60 bg-muted/30 cursor-crosshair overflow-hidden"
-      >
-        <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 pointer-events-none">
-          <div className="border-e border-b border-border/30" />
-          <div className="border-b border-border/30" />
-          <div className="border-e border-border/30" />
-          <div />
-        </div>
-        {active.slice(0, 8).map((c) => {
-          const x = c.position?.x ?? 0.5;
-          const y = c.position?.y ?? 0.5;
-          return (
-            <div
-              key={c.id}
-              title={c.name}
-              className="absolute w-2.5 h-2.5 rounded-full bg-foreground/50 -translate-x-1/2 translate-y-1/2"
-              style={{ left: `${x * 100}%`, bottom: `${y * 100}%` }}
-            />
-          );
-        })}
-        <div
-          title="شما"
-          className="absolute w-4 h-4 rounded-full bg-primary border-2 border-background shadow -translate-x-1/2 translate-y-1/2 z-10"
-          style={{ left: `${pos.x * 100}%`, bottom: `${pos.y * 100}%` }}
-        />
-      </div>
-      <input
-        className="w-full text-[11px] text-muted-foreground bg-transparent border-b border-border/40 pb-1 text-center"
-        value={pos.xAxis}
-        onChange={(e) => onAxisChange("xAxis", e.target.value)}
-      />
-      <p className="text-[10px] text-muted-foreground">
-        روی نقشه کلیک کن تا موقعیت «شما» جابه‌جا شود. نقاط خاکستری رقبا هستند.
-      </p>
-    </div>
-  );
-}
-
-function FeatureMatrixEditor({
-  intel,
-  active,
-  onAddRow,
-  onCycle,
-}: {
-  intel: CompetitorIntel;
-  active: CompetitorIntelItem[];
-  onAddRow: (label: string) => void;
-  onCycle: (rowId: string, colId: string) => void;
-}) {
-  const [label, setLabel] = useState("");
-  const rows = intel.featureRows || [];
-  const cellLabel = (v?: FeatureCell) => {
-    switch (v) {
-      case "yes":
-        return "دارد";
-      case "partial":
-        return "نسبی";
-      case "no":
-        return "ندارد";
-      default:
-        return "—";
-    }
-  };
-
-  return (
-    <div className="space-y-3">
-      {rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          هنوز ردیف قابلیتی نیست. یک قابلیت یا پیشنهاد اضافه کن تا با رقبا مقایسه شود.
-        </p>
-      ) : (
-        <div className="overflow-x-auto mobile-scroll-x -mx-1 px-1 max-w-full">
-          <table className="w-full text-sm min-w-[560px]">
-            <thead>
-              <tr className="text-xs text-muted-foreground">
-                <th className="text-start p-2">قابلیت</th>
-                <th className="text-start p-2">شما</th>
-                {active.slice(0, 5).map((c) => (
-                  <th key={c.id} className="text-start p-2 truncate max-w-[100px]">
-                    {c.name}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.id} className="border-t border-border/40">
-                  <td className="p-2 font-medium">{row.label}</td>
-                  <td className="p-2">
-                    <button
-                      type="button"
-                      className="text-xs px-2 py-1 rounded border hover:bg-muted"
-                      onClick={() => onCycle(row.id, "you")}
-                    >
-                      {cellLabel(row.cells.you)}
-                    </button>
-                  </td>
-                  {active.slice(0, 5).map((c) => (
-                    <td key={c.id} className="p-2">
-                      <button
-                        type="button"
-                        className="text-xs px-2 py-1 rounded border hover:bg-muted"
-                        onClick={() => onCycle(row.id, c.id)}
-                      >
-                        {cellLabel(row.cells[c.id])}
-                      </button>
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-      <div className="flex gap-2">
-        <input
-          className="flex-1 rounded-lg border px-3 py-2 text-sm"
-          placeholder="نام قابلیت یا پیشنهاد"
-          value={label}
-          onChange={(e) => setLabel(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && label.trim()) {
-              onAddRow(label.trim());
-              setLabel("");
-            }
-          }}
-        />
-        <Button
-          variant="outline"
-          disabled={!label.trim()}
-          onClick={() => {
-            onAddRow(label.trim());
-            setLabel("");
-          }}
-        >
-          افزودن ردیف
-        </Button>
-      </div>
     </div>
   );
 }

@@ -621,6 +621,11 @@ export async function executeSearchCompetitors(projectId: string, args: any, use
             projectIdea: args.projectIdea || plan.overview || "",
             audience: args.audience || plan.audience || "",
             contextBlock,
+            discovery: {
+                geography: args.geography || "both",
+                focus: args.focus || "all",
+                count: typeof args.count === "number" ? args.count : 6,
+            },
         },
         { skipLimitCheck: true }
     );
@@ -629,9 +634,19 @@ export async function executeSearchCompetitors(projectId: string, args: any, use
         throw new Error(result.error || "خطا در تحلیل رقبا");
     }
 
-    const discovery = result.data as CompetitorDiscoveryResult;
+    const raw = result.data as CompetitorDiscoveryResult & { _meta?: { model?: string } };
+    const { _meta, ...discoveryRest } = raw;
+    const discovery = discoveryRest as CompetitorDiscoveryResult;
     const seeded = seedCompetitorIntel(plan);
-    const { intel } = mergeDiscoveryIntoIntel(seeded, discovery, { autoAccept: true });
+    const { intel } = mergeDiscoveryIntoIntel(seeded, discovery, {
+        autoAccept: true,
+        discoveryOptions: {
+            geography: args.geography || "both",
+            focus: args.focus || "all",
+            count: typeof args.count === "number" ? args.count : 6,
+        },
+        model: _meta?.model,
+    });
     const competitors = projectActiveCompetitors(intel);
     const swotAnalysis = discovery.swot
         ? swotArraysToAnalysis(discovery.swot)

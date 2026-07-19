@@ -50,6 +50,11 @@ export const PitchDeckSchema = z.object({
 });
 
 // --- SWOT & Competitors Schema ---
+export const CompetitorCitationSchema = z.object({
+  title: z.string().optional().default(''),
+  url: z.string().min(1),
+});
+
 export const CompetitorSchema = z.object({
   name: z.string(),
   channel: z.string().optional().default('وب‌سایت'),
@@ -57,9 +62,15 @@ export const CompetitorSchema = z.object({
   weakness: z.string().optional().default(''),
   isIranian: z.boolean().optional().default(true),
   scope: z.enum(['local', 'national', 'regional', 'global']).optional(),
+  competitorType: z.enum(['direct', 'indirect', 'substitute']).optional().default('direct'),
   url: z.string().optional().default(''),
   tagline: z.string().optional().default(''),
+  productSummary: z.string().optional().default(''),
+  pricingSignal: z.string().optional().default(''),
+  targetSegment: z.string().optional().default(''),
   entryPoints: z.array(z.string()).optional().default([]),
+  citations: z.array(CompetitorCitationSchema).optional().default([]),
+  threatScore: z.number().min(1).max(5).optional(),
   confidence: z.enum(['high', 'medium', 'low']).optional().default('medium'),
   ratings: z.record(z.string(), z.number().min(1).max(5)).optional(),
   position: z.object({
@@ -220,6 +231,7 @@ export async function callAIWithValidation<T>(
     temperature?: number;
     timeoutMs?: number;
     modelOverride?: string;
+    singleModel?: boolean;
   },
   schema: z.ZodSchema<T>,
   retriesRemaining = 1,

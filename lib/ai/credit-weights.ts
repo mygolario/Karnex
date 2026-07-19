@@ -47,6 +47,9 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "generate_smart_canvas",
     "generatefullcanvas",
     "generate-full-canvas",
+    "analyze-competitors",
+    "analyze_competitors",
+    "analyzecompetitors",
   ]);
 
   const deep = new Set([
@@ -86,7 +89,6 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "repurpose-content",
     "chat-action",
     "advisor-chat",
-    "analyze-competitors",
     "market-research",
     "stt",
     "validate-idea-rescore",

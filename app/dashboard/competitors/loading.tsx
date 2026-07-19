@@ -1,19 +1,19 @@
 export default function Loading() {
   return (
-    <div className="max-w-7xl mx-auto space-y-6 p-4 pb-24">
-      <div className="h-20 rounded-2xl bg-muted/40 animate-pulse" />
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-3 space-y-3">
-          <div className="h-24 rounded-2xl bg-muted/40 animate-pulse" />
-          <div className="h-24 rounded-2xl bg-muted/40 animate-pulse" />
-          <div className="h-24 rounded-2xl bg-muted/40 animate-pulse" />
-        </div>
-        <div className="lg:col-span-2 space-y-4">
-          <div className="aspect-square rounded-2xl bg-muted/40 animate-pulse" />
-          <div className="h-40 rounded-2xl bg-muted/40 animate-pulse" />
+    <div className="max-w-6xl mx-auto space-y-5 p-4 pb-28">
+      <div className="h-16 rounded-xl bg-muted/40 animate-pulse" />
+      <div className="flex gap-2">
+        <div className="h-8 w-20 rounded-lg bg-muted/40 animate-pulse" />
+        <div className="h-8 w-20 rounded-lg bg-muted/40 animate-pulse" />
+        <div className="h-8 w-20 rounded-lg bg-muted/40 animate-pulse" />
+      </div>
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+        <div className="h-56 rounded-xl bg-muted/40 animate-pulse" />
+        <div className="space-y-4">
+          <div className="h-28 rounded-xl bg-muted/40 animate-pulse" />
+          <div className="h-28 rounded-xl bg-muted/40 animate-pulse" />
         </div>
       </div>
-      <div className="h-64 rounded-2xl bg-muted/40 animate-pulse" />
     </div>
   );
 }

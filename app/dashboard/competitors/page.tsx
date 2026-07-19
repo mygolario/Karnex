@@ -1,12 +1,13 @@
 "use client";
 
+import { Suspense } from "react";
 import Link from "next/link";
 import { useProject } from "@/contexts/project-context";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CompetitorWorkspace } from "@/components/dashboard/competitors/competitor-workspace";
 
-export default function CompetitorsPage() {
+function CompetitorsPageInner() {
   const { activeProject: plan } = useProject();
 
   if (plan && plan.projectType === "creator") {
@@ -26,4 +27,19 @@ export default function CompetitorsPage() {
   }
 
   return <CompetitorWorkspace />;
+}
+
+export default function CompetitorsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="max-w-6xl mx-auto p-4 space-y-4 animate-pulse">
+          <div className="h-12 w-64 rounded-xl bg-muted" />
+          <div className="h-64 rounded-xl bg-muted" />
+        </div>
+      }
+    >
+      <CompetitorsPageInner />
+    </Suspense>
+  );
 }

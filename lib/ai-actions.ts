@@ -1,6 +1,6 @@
 "use server";
 
-import { callOpenRouter, parseJsonFromAI, TEXT_MODELS, TIER_DEFAULT, TIER_GROUNDED } from "@/lib/openrouter";
+import { callOpenRouter, parseJsonFromAI, TEXT_MODELS, TIER_DEFAULT, TIER_GROUNDED_PRO, MODEL_PERPLEXITY_SONAR_PRO } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { runWithAiUsage } from "@/lib/ai-usage-context";
 import { getPrompt } from "@/lib/prompts/registry";
@@ -13,6 +13,7 @@ import {
   PitchDeckSchema,
   SmartCanvasSchema
 } from "@/lib/ai-validation";
+import type { CompetitorDiscoveryOptions } from "@/lib/competitors/types";
 
 // === Shared Types ===
 interface ActionResponse<T> {
@@ -233,12 +234,26 @@ export async function breakTaskAction(taskName: string): Promise<ActionResponse<
 
 // === Analyze Competitors ===
 
+const GEOGRAPHY_LABEL: Record<string, string> = {
+  iran: "فقط ایران / فارسی",
+  international: "فقط بین‌الملل",
+  both: "ایران و بین‌الملل",
+};
+
+const FOCUS_LABEL: Record<string, string> = {
+  direct: "رقبای مستقیم",
+  indirect: "رقبای غیرمستقیم",
+  substitutes: "جایگزین‌ها / substitutes",
+  all: "ترکیب مستقیم، غیرمستقیم و جایگزین",
+};
+
 export async function analyzeCompetitorsAction(
   data: {
     projectName: string;
     projectIdea: string;
     audience: string;
     contextBlock?: string;
+    discovery?: CompetitorDiscoveryOptions;
   },
   options?: { skipLimitCheck?: boolean }
 ): Promise<ActionResponse<any>> {
@@ -260,11 +275,18 @@ export async function analyzeCompetitorsAction(
             return { success: false, error: "OPENROUTER_API_KEY_MISSING" };
         }
 
+        const geography = data.discovery?.geography || "both";
+        const focus = data.discovery?.focus || "all";
+        const count = data.discovery?.count || 6;
+
         const { system, user } = getPrompt("analyzeCompetitors", {
             projectName: data.projectName,
             projectIdea: data.projectIdea,
             audience: data.audience,
             contextBlock: data.contextBlock || "",
+            geography: GEOGRAPHY_LABEL[geography] || geography,
+            focus: FOCUS_LABEL[focus] || focus,
+            count: String(count),
         });
 
         try {
@@ -272,11 +294,12 @@ export async function analyzeCompetitorsAction(
                 user,
                 {
                     systemPrompt: system,
-                    maxTokens: 3500,
-                    temperature: 0.5,
-                    timeoutMs: 45000,
-                    // Grounded via Perplexity Sonar (built-in live web search).
-                    modelOverride: TIER_GROUNDED,
+                    maxTokens: 4500,
+                    temperature: 0.4,
+                    timeoutMs: 60000,
+                    singleModel: true,
+                    // Grounded via Perplexity Sonar Pro (richer live web search).
+                    modelOverride: TIER_GROUNDED_PRO,
                 },
                 SwotCompetitorsSchema,
                 1
@@ -285,7 +308,18 @@ export async function analyzeCompetitorsAction(
             const parsed = usageUserId
                 ? await runWithAiUsage({ userId: usageUserId, feature: "analyzeCompetitors" }, runValidation)
                 : await runValidation();
-            return { success: true, data: parsed };
+            return {
+              success: true,
+              data: {
+                ...parsed,
+                _meta: {
+                  model: MODEL_PERPLEXITY_SONAR_PRO,
+                  geography,
+                  focus,
+                  count,
+                },
+              },
+            };
         } catch (err) {
             console.warn("AI Validation failed for analyzeCompetitorsAction:", err);
             await rollback();
