@@ -12,15 +12,13 @@ import {
   TodayFocusBar,
   GamificationHud,
   RoadmapMissionControl,
-  RoadmapDailyBriefing,
+  RoadmapAiStrip,
   RoadmapAiCopilot,
   RoadmapSprintPanel,
   RoadmapMilestoneCelebration,
 } from "@/components/dashboard/roadmap";
 import { Loader2, Map } from "lucide-react";
 import { breakTaskAction } from "@/lib/ai-actions";
-import { AskCopilotButton } from "@/components/copilot/ask-copilot-button";
-import { PageTourHelp } from "@/components/tour/page-tour-help";
 import type { RoadmapStep, RoadmapPhase, SubTask } from "@/lib/db";
 import type { StepStatus } from "@/lib/roadmap/constants";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -34,6 +32,10 @@ import {
 } from "@/lib/roadmap/export";
 import { getRankTitle } from "@/lib/roadmap/themes";
 import { LAUNCH_CONFIG } from "@/lib/launch/config";
+import {
+  isEmptyRoadmapShell,
+  isMeaningfulRoadmap,
+} from "@/lib/roadmap/quality";
 
 const RoadmapKanban = dynamic(
   () => import("@/components/dashboard/roadmap/roadmap-kanban").then((m) => m.RoadmapKanban),
@@ -328,17 +330,26 @@ export default function RoadmapPage() {
     );
   }
 
-  // Empty / generating / failed roadmap
-  if (!roadmap || roadmap.length === 0) {
+  // Empty / generating / failed / empty-shell roadmap
+  if (
+    !roadmap ||
+    roadmap.length === 0 ||
+    isEmptyRoadmapShell(roadmap) ||
+    plan.roadmapStatus === "generating" ||
+    plan.roadmapStatus === "failed"
+  ) {
     const status = plan.roadmapStatus;
+    const isShell = isEmptyRoadmapShell(roadmap);
+    const showGenerating =
+      status === "generating" || (isShell && status !== "failed");
 
-    if (status === "generating") {
+    if (showGenerating) {
       return (
         <div className="container mx-auto max-w-4xl p-6">
           <EmptyState
             icon={Map}
             title="نقشه راه در حال ساخت است"
-            description="بوم و برند آماده‌اند. نقشه راه ۱۶ هفته‌ای به‌صورت موازی ساخته می‌شود و به‌زودی اینجا ظاهر می‌شود."
+            description="نقشه راه ۱۶ هفته‌ای در حال تکمیل است و به‌زودی اینجا ظاهر می‌شود."
             size="lg"
           />
           <p className="mt-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
@@ -349,7 +360,7 @@ export default function RoadmapPage() {
       );
     }
 
-    if (status === "failed") {
+    if (status === "failed" || (isShell && status === "failed")) {
       return (
         <div className="container mx-auto max-w-4xl p-6">
           <EmptyState
@@ -360,7 +371,10 @@ export default function RoadmapPage() {
             action={{
               label: "تلاش مجدد",
               onClick: () => {
-                void updateActiveProject({ roadmapStatus: "generating" });
+                void updateActiveProject({
+                  roadmap: [],
+                  roadmapStatus: "generating",
+                });
               },
             }}
           />
@@ -375,6 +389,29 @@ export default function RoadmapPage() {
           title="نقشه راه خالی است"
           description="برای این پروژه هنوز نقشه راهی تولید نشده است. با ساخت پروژه جدید، هوش مصنوعی یک نقشه راه اختصاصی برای شما می‌سازد."
           size="lg"
+        />
+      </div>
+    );
+  }
+
+  // Guard: length 16 but not meaningful should not render fake "فاز جدید" UI
+  if (!isMeaningfulRoadmap(roadmap) && plan.roadmapStatus !== "ready") {
+    return (
+      <div className="container mx-auto max-w-4xl p-6">
+        <EmptyState
+          icon={Map}
+          title="نقشه راه ناقص است"
+          description="نقشه راه کامل نیست. می‌توانید دوباره تولید را شروع کنید."
+          size="lg"
+          action={{
+            label: "تلاش مجدد",
+            onClick: () => {
+              void updateActiveProject({
+                roadmap: [],
+                roadmapStatus: "generating",
+              });
+            },
+          }}
         />
       </div>
     );
@@ -404,34 +441,28 @@ export default function RoadmapPage() {
 
   return (
     <div className="container mx-auto max-w-[1600px] p-0 md:p-6 space-y-4 md:space-y-6 pb-28 md:pb-32">
-      {/* Daily AI Briefing Banner */}
-      <RoadmapDailyBriefing
-        projectName={plan.projectName}
-        projectType={plan.projectType}
-        completedCount={completedCount}
-        remainingCount={remainingCount}
-        currentStepTitle={currentStep?.step?.title}
-        onGenerateBriefing={generateBriefing}
-      />
-
-      {/* Inline page-level Copilot access */}
-      <div className="flex items-center justify-between">
-        <PageTourHelp tourId="roadmap" />
-        <AskCopilotButton
-          prompt={`بیا نقشه راه پروژه‌ام رو بررسی کنیم. پیشرفت ${progressPercent}٪ است و الان روی «${currentStep?.step?.title ?? "گام فعلی"}» هستیم${blockedStepCount > 0 ? ` و ${blockedStepCount} گام مسدود داریم` : ""}. پیشنهاد بده چطوری جلو برم.`}
-          contexts={[
-            {
-              id: "roadmap_full",
-              type: "roadmap",
-              title: "نقشه راه پروژه",
-              subtitle: `${totalSteps} گام · ${progressPercent}٪`,
-              data: { overview: true, totalSteps, completedCount, progressPercent, blockedStepCount },
-              icon: "Map",
+      <RoadmapAiStrip
+        insight={aiInsight}
+        isLoading={isLoadingInsight}
+        onRetry={() => generateBriefing(true)}
+        askPrompt={`بیا نقشه راه پروژه‌ام رو بررسی کنیم. پیشرفت ${progressPercent}٪ است و الان روی «${currentStep?.step?.title ?? "گام فعلی"}» هستیم${blockedStepCount > 0 ? ` و ${blockedStepCount} گام مسدود داریم` : ""}. پیشنهاد بده چطوری جلو برم.`}
+        askContexts={[
+          {
+            id: "roadmap_full",
+            type: "roadmap",
+            title: "نقشه راه پروژه",
+            subtitle: `${totalSteps} گام · ${progressPercent}٪`,
+            data: {
+              overview: true,
+              totalSteps,
+              completedCount,
+              progressPercent,
+              blockedStepCount,
             },
-          ]}
-          label="بپرس از دستیار درباره نقشه راه"
-        />
-      </div>
+            icon: "Map",
+          },
+        ]}
+      />
 
       {/* Reworked Mission Control Header */}
       <div data-tour-id="roadmap-header">
@@ -446,8 +477,6 @@ export default function RoadmapPage() {
         velocity={velocity}
         completedSteps={completedSteps}
         gamification={gamification}
-        aiInsight={aiInsight}
-        isLoadingInsight={isLoadingInsight}
         topPrioritySteps={topPrioritySteps}
         streak={streak}
         bestStreak={bestStreak}

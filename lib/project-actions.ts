@@ -18,6 +18,10 @@ import {
   normalizeRoadmapChunk1to8,
   normalizeRoadmapChunk9to16,
 } from "@/lib/roadmap-normalize";
+import {
+  buildCanvasSummaryForRoadmap,
+  isMeaningfulRoadmap,
+} from "@/lib/roadmap/quality";
 import { getEffectiveLaunchConfig } from "@/lib/launch/effective";
 import fs from 'fs';
 import path from 'path';
@@ -248,20 +252,29 @@ function normalizeProjectPlan(plan: any): any {
     plan.brandKit.logoConcepts = [];
   }
 
-  // 4. Ensure roadmap — exactly 16 phases with weekNumber 1-16
+  // 4. Ensure roadmap — pad only for finished plans that are slightly short.
+  // Never invent 16 empty "فاز جدید" weeks for generating/empty roadmaps
+  // (that blocks background repair and looks like a completed roadmap).
   if (!Array.isArray(plan.roadmap)) {
     plan.roadmap = [];
   }
 
-  // Pad to 16 if shorter, trim if longer
-  while (plan.roadmap.length < 16) {
-    plan.roadmap.push({
-      phase: `هفته ${plan.roadmap.length + 1}: فاز جدید`,
-      weekNumber: plan.roadmap.length + 1,
-      theme: "",
-      icon: "",
-      steps: [],
-    });
+  const roadmapStatus = plan.roadmapStatus as string | undefined;
+  const shouldPadRoadmap =
+    plan.roadmap.length > 0 &&
+    roadmapStatus !== "generating" &&
+    roadmapStatus !== "failed";
+
+  if (shouldPadRoadmap) {
+    while (plan.roadmap.length < 16) {
+      plan.roadmap.push({
+        phase: `هفته ${plan.roadmap.length + 1}: فاز جدید`,
+        weekNumber: plan.roadmap.length + 1,
+        theme: "",
+        icon: "",
+        steps: [],
+      });
+    }
   }
   if (plan.roadmap.length > 16) {
     plan.roadmap = plan.roadmap.slice(0, 16);
@@ -435,8 +448,12 @@ export async function generateRoadmapChunkAction(data: {
   idea: string;
   projectType: string;
   genesisAnswers?: Record<string, string>;
-  /** Only projectName + overview are used for the prompt */
-  corePlan: { projectName?: string; overview?: string };
+  /** projectName + overview (+ optional canvasSummary for grounding) */
+  corePlan: {
+    projectName?: string;
+    overview?: string;
+    canvasSummary?: string;
+  };
   weekStart: number;
   weekEnd: number;
 }): Promise<{
@@ -467,6 +484,8 @@ export async function generateRoadmapChunkAction(data: {
     idea,
     projectName: corePlan?.projectName ?? "",
     overview: corePlan?.overview ?? "",
+    canvasSummary:
+      corePlan?.canvasSummary ?? "خلاصه بوم در دسترس نیست.",
     formattedAnswers,
     weekStart: String(weekStart),
     weekEnd: String(weekEnd),
@@ -523,6 +542,7 @@ export async function generateRoadmapAction(data: any): Promise<{
     const slimCore = {
       projectName: corePlan?.projectName ?? "",
       overview: corePlan?.overview ?? "",
+      canvasSummary: buildCanvasSummaryForRoadmap(corePlan ?? {}),
     };
 
     const [first, second] = await Promise.all([
@@ -561,6 +581,13 @@ export async function generateRoadmapAction(data: any): Promise<{
     const merged = normalizeRoadmapOnly({
       roadmap: [...first.roadmap, ...second.roadmap],
     });
+
+    if (!isMeaningfulRoadmap(merged.roadmap)) {
+      return {
+        error: ROADMAP_FAILED_FA,
+        message: "نقشه راه تولیدشده ناقص بود. لطفاً دوباره تلاش کنید.",
+      };
+    }
 
     return { success: true as const, roadmap: merged.roadmap };
   } catch (parseError: any) {
@@ -614,11 +641,16 @@ export async function completeGenesisRoadmapAction(data: {
 
   const existingData = (project.data as Record<string, unknown>) || {};
   const existingRoadmap = existingData.roadmap;
-  if (Array.isArray(existingRoadmap) && existingRoadmap.length === 16) {
+  // Only skip generation when a *meaningful* 16-week roadmap already exists.
+  if (isMeaningfulRoadmap(existingRoadmap as any)) {
     return { success: true as const, roadmap: existingRoadmap };
   }
 
-  const slimCore = { projectName, overview };
+  const slimCore = {
+    projectName,
+    overview,
+    canvasSummary: buildCanvasSummaryForRoadmap(existingData as any),
+  };
 
   const markFailed = async () => {
     await prisma.project.update({
@@ -703,6 +735,14 @@ export async function completeGenesisRoadmapAction(data: {
     const merged = normalizeRoadmapOnly({
       roadmap: [...first.roadmap, ...second.roadmap],
     });
+
+    if (!isMeaningfulRoadmap(merged.roadmap)) {
+      await markFailed();
+      return {
+        error: ROADMAP_FAILED_FA,
+        message: "نقشه راه تولیدشده ناقص بود. لطفاً دوباره تلاش کنید.",
+      };
+    }
 
     await prisma.project.update({
       where: { id: projectId },

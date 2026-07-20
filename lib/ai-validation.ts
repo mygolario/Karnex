@@ -131,16 +131,28 @@ export const SmartCanvasSchema = z.object({
 });
 
 // --- Business Plan (Full Strategic Blueprint) Schema ---
+const canvasFieldSchema = z.preprocess((val) => {
+  if (typeof val === "string") return val;
+  if (Array.isArray(val)) {
+    return val
+      .map((v) => (typeof v === "string" ? v.trim() : String(v ?? "").trim()))
+      .filter(Boolean)
+      .join("؛ ");
+  }
+  if (val == null) return "";
+  return String(val);
+}, z.string().default(""));
+
 export const BusinessModelCanvasSchema = z.object({
-  keyPartners: z.string().default(''),
-  keyActivities: z.string().default(''),
-  keyResources: z.string().default(''),
-  uniqueValue: z.string().default(''),
-  customerRelations: z.string().default(''),
-  channels: z.string().default(''),
-  customerSegments: z.string().default(''),
-  costStructure: z.string().default(''),
-  revenueStream: z.string().default(''),
+  keyPartners: canvasFieldSchema,
+  keyActivities: canvasFieldSchema,
+  keyResources: canvasFieldSchema,
+  uniqueValue: canvasFieldSchema,
+  customerRelations: canvasFieldSchema,
+  channels: canvasFieldSchema,
+  customerSegments: canvasFieldSchema,
+  costStructure: canvasFieldSchema,
+  revenueStream: canvasFieldSchema,
 });
 
 export const BrandKitSchema = z.object({
@@ -202,6 +214,26 @@ export const BusinessPlanSchema = z.object({
 
 export const BusinessPlanCoreSchema = BusinessPlanSchema.omit({ roadmap: true }).extend({
   roadmap: z.array(RoadmapPhaseSchema).optional().default([]),
+}).superRefine((plan, ctx) => {
+  const c = plan.businessModelCanvas || plan.leanCanvas;
+  const keys = [
+    "keyPartners",
+    "keyActivities",
+    "keyResources",
+    "uniqueValue",
+    "customerRelations",
+    "channels",
+    "customerSegments",
+    "costStructure",
+    "revenueStream",
+  ] as const;
+  if (!c || !keys.every((k) => String(c[k] ?? "").trim().length > 0)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "بوم کسب‌وکار باید هر ۹ فیلد را با محتوای واقعی پر کند",
+      path: ["businessModelCanvas"],
+    });
+  }
 });
 
 export const RoadmapOnlySchema = z.object({

@@ -11,6 +11,8 @@ import { FocusHero } from "@/components/dashboard/overview/focus-hero";
 import { SetupChecklist } from "@/components/tour/setup-checklist";
 import { UpcomingTasks } from "@/components/dashboard/overview/upcoming-tasks";
 import { cn } from "@/lib/utils";
+import { needsRoadmapRepair } from "@/lib/roadmap/quality";
+import { cn } from "@/lib/utils";
 
 function getStepTitle(step: unknown): string {
   if (typeof step === "string") return step;
@@ -137,6 +139,12 @@ export default function DashboardOverviewPage() {
     return !plan?.completedSteps?.includes(name);
   });
   const nextStepName = nextStep ? getStepTitle(nextStep) : null;
+  const roadmapIncomplete =
+    !!plan &&
+    (plan.roadmapStatus === "generating" ||
+      plan.roadmapStatus === "failed" ||
+      needsRoadmapRepair(plan) ||
+      !plan.roadmap?.length);
 
   const links = QUICK_LINKS.filter(
     (l) => !("startupOnly" in l && l.startupOnly) || plan?.projectType === "startup",
@@ -181,7 +189,7 @@ export default function DashboardOverviewPage() {
         >
           <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
           <span className="text-foreground">
-            نقشه راه ۱۶ هفته‌ای در پس‌زمینه در حال ساخت است — بوم و برند آمادهٔ استفاده‌اند.
+            نقشه راه در حال تکمیل است — کمی صبر کنید.
           </span>
           <Link
             href="/dashboard/roadmap"
@@ -193,7 +201,10 @@ export default function DashboardOverviewPage() {
       )}
 
       <motion.div variants={itemVariants}>
-        <FocusHero nextStepName={nextStepName} />
+        <FocusHero
+          nextStepName={roadmapIncomplete ? null : nextStepName}
+          roadmapIncomplete={roadmapIncomplete}
+        />
       </motion.div>
 
       <motion.div variants={itemVariants}>

@@ -307,7 +307,16 @@ export function GenesisWizardProvider({
     setError("");
 
     try {
-      const { generateCorePlanAction } = await import("@/lib/project-actions");
+      const {
+        generateCorePlanAction,
+        generateRoadmapChunkAction,
+      } = await import("@/lib/project-actions");
+      const {
+        buildCanvasSummaryForRoadmap,
+        getCanvasFromPlan,
+        isMeaningfulCanvas,
+        isMeaningfulRoadmap,
+      } = await import("@/lib/roadmap/quality");
 
       const coreResult = await generateCorePlanAction({
         projectType: safePillar,
@@ -327,16 +336,69 @@ export function GenesisWizardProvider({
       }
 
       const corePlan = coreResult.plan;
+      if (!isMeaningfulCanvas(getCanvasFromPlan(corePlan))) {
+        throw new Error(
+          "بوم کسب‌وکار ناقص تولید شد. لطفاً دوباره تلاش کنید."
+        );
+      }
 
-      // Progressive unlock: create + redirect after core; roadmap fills in on dashboard.
-      setGeneratingPhase("در حال آماده‌سازی داشبورد...");
+      setGeneratingPhase("در حال ساخت نقشه راه...");
+
+      const slimCore = {
+        projectName: corePlan.projectName || projectName,
+        overview: corePlan.overview || "",
+        canvasSummary: buildCanvasSummaryForRoadmap(corePlan),
+      };
+
+      const [chunk1, chunk2] = await Promise.all([
+        generateRoadmapChunkAction({
+          projectType: safePillar,
+          idea: projectVision,
+          genesisAnswers: answers,
+          corePlan: slimCore,
+          weekStart: 1,
+          weekEnd: 8,
+        }),
+        generateRoadmapChunkAction({
+          projectType: safePillar,
+          idea: projectVision,
+          genesisAnswers: answers,
+          corePlan: slimCore,
+          weekStart: 9,
+          weekEnd: 16,
+        }),
+      ]);
+
+      if (chunk1.error || !chunk1.roadmap) {
+        throw new Error(
+          chunk1.message ||
+            chunk1.error ||
+            "ساخت نقشه راه (هفته‌های ۱–۸) ناموفق بود. لطفاً دوباره تلاش کنید."
+        );
+      }
+      if (chunk2.error || !chunk2.roadmap) {
+        throw new Error(
+          chunk2.message ||
+            chunk2.error ||
+            "ساخت نقشه راه (هفته‌های ۹–۱۶) ناموفق بود. لطفاً دوباره تلاش کنید."
+        );
+      }
+
+      const roadmap = [...chunk1.roadmap, ...chunk2.roadmap];
+      if (!isMeaningfulRoadmap(roadmap)) {
+        throw new Error(
+          "نقشه راه تولیدشده ناقص بود. لطفاً دوباره تلاش کنید."
+        );
+      }
+
+      setGeneratingPhase("در حال ذخیره پروژه...");
       setIsGenerating(false);
       setIsCreating(true);
 
       const completePlan = {
         ...corePlan,
-        roadmap: [],
-        roadmapStatus: "generating" as const,
+        roadmap,
+        roadmapStatus: "ready" as const,
         projectName,
         projectType: safePillar,
         ideaInput: projectVision,

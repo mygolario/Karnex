@@ -2,10 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import { useProject } from "@/contexts/project-context";
+import { needsRoadmapRepair } from "@/lib/roadmap/quality";
 
 /**
- * When Genesis creates a project with roadmapStatus === "generating",
- * finish both roadmap chunks in parallel and merge into the active project.
+ * Repair path for projects stuck with empty/padded roadmaps.
+ * New Genesis waits for a full roadmap before create; this only
+ * repairs legacy incomplete projects.
  */
 export function RoadmapBackgroundGenerator() {
   const { activeProject, updateActiveProject } = useProject();
@@ -14,8 +16,8 @@ export function RoadmapBackgroundGenerator() {
   useEffect(() => {
     const project = activeProject;
     if (!project?.id) return;
-    if (project.roadmapStatus !== "generating") return;
-    if ((project.roadmap?.length ?? 0) > 0) return;
+    if (project.roadmapStatus === "failed") return;
+    if (!needsRoadmapRepair(project)) return;
     if (inFlightRef.current === project.id) return;
 
     inFlightRef.current = project.id;
@@ -23,6 +25,13 @@ export function RoadmapBackgroundGenerator() {
 
     void (async () => {
       try {
+        if (project.roadmapStatus !== "generating") {
+          await updateActiveProject({
+            roadmap: [],
+            roadmapStatus: "generating",
+          });
+        }
+
         const { completeGenesisRoadmapAction } = await import(
           "@/lib/project-actions"
         );
@@ -37,7 +46,6 @@ export function RoadmapBackgroundGenerator() {
           overview: project.overview || "",
         });
 
-        // Only apply if this project is still the one we started for.
         if (inFlightRef.current !== projectId) return;
 
         if (result.error || !result.roadmap) {
@@ -63,7 +71,7 @@ export function RoadmapBackgroundGenerator() {
   }, [
     activeProject?.id,
     activeProject?.roadmapStatus,
-    activeProject?.roadmap?.length,
+    activeProject?.roadmap,
     activeProject?.ideaInput,
     activeProject?.projectType,
     activeProject?.projectName,

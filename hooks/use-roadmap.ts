@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useOptimistic, startTransition, useCallback } from "react";
+import { useState, useEffect, useMemo, useOptimistic, startTransition, useCallback, useRef } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { updateRoadmapStepStatus } from "@/lib/db";
@@ -75,11 +75,20 @@ export interface UseRoadmapReturn {
   weekEnd: string;
   aiInsight: string | null;
   isLoadingInsight: boolean;
-  generateBriefing: () => Promise<string | null>;
+  generateBriefing: (force?: boolean) => Promise<string | null>;
 }
 
 const VIEW_STORAGE_KEY = "karnex-roadmap-view";
 const SPRINT_MODE_KEY = "karnex-roadmap-sprint-mode";
+const BRIEFING_CACHE_PREFIX = "karnex-briefing-";
+
+function getBriefingCacheKey(day = new Date().toISOString().slice(0, 10)) {
+  return `${BRIEFING_CACHE_PREFIX}${day}`;
+}
+
+function getBriefingDismissKey(day = new Date().toISOString().slice(0, 10)) {
+  return `karnex-briefing-dismissed-${day}`;
+}
 
 export function useRoadmap(): UseRoadmapReturn {
   const { user } = useAuth();
@@ -468,18 +477,29 @@ export function useRoadmap(): UseRoadmapReturn {
     return d.toISOString();
   }, [weekStart]);
 
-  // Generate Daily AI briefing
-  const generateBriefing = useCallback(async () => {
+  // Generate Daily AI briefing (sessionStorage is the single source of truth for the day)
+  const generateBriefing = useCallback(async (force = false) => {
+    if (typeof window !== "undefined" && !force) {
+      const cached = sessionStorage.getItem(getBriefingCacheKey());
+      if (cached) {
+        setAiInsight(cached);
+        return cached;
+      }
+    }
+
     setIsLoadingInsight(true);
     try {
       const { chatAction } = await import("@/lib/chat-actions");
       const currentTitle = currentStep?.step?.title || "شروع برنامه‌ریزی";
       const result = await chatAction(
-        `یک بینش کارآفرینی انگیزشی روزانه بنویس که به کاربر کمک کند گام بعدی خود را با نام "${currentTitle}" بردارد. نوع پروژه کاربر "${plan?.projectType || "startup"}" است. متن بسیار صمیمی و انگیزشی و کوتاه باشد.`,
+        `یک بینش روزانه کوتاه و کاربردی برای نقشه راه بنویس (حداکثر ۲–۳ جمله، فارسی، صمیمی). گام فعلی کاربر «${currentTitle}» است و نوع پروژه «${plan?.projectType || "startup"}». نام گام را ذکر کن، یک اقدام مشخص و قابل‌انجام برای امروز پیشنهاد بده، و با یک جمله انگیزشی کوتاه تمام کن. بدون عنوان، بولت یا مقدمه.`,
         { projectName: plan?.projectName, projectType: plan?.projectType },
         false
       );
       if (result.success && result.reply) {
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(getBriefingCacheKey(), result.reply);
+        }
         setAiInsight(result.reply);
         return result.reply;
       }
@@ -490,6 +510,24 @@ export function useRoadmap(): UseRoadmapReturn {
     }
     return null;
   }, [currentStep, plan]);
+
+  // Hydrate or fetch once when the active project is ready
+  const briefingBootstrappedFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!plan?.id) return;
+    if (briefingBootstrappedFor.current === plan.id) return;
+    briefingBootstrappedFor.current = plan.id;
+
+    if (typeof window !== "undefined") {
+      const cached = sessionStorage.getItem(getBriefingCacheKey());
+      if (cached) setAiInsight(cached);
+      // Don't burn an AI call if the user already dismissed today's strip
+      if (sessionStorage.getItem(getBriefingDismissKey()) === "1") return;
+      if (cached) return;
+    }
+
+    void generateBriefing(false);
+  }, [plan?.id, generateBriefing]);
 
   // --- Filtering ---
   const filteredRoadmap = useMemo(() => {

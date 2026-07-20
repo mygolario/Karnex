@@ -20,8 +20,6 @@ interface RoadmapMissionControlProps {
   velocity: { perWeek: number; totalDone: number; estimatedRemaining: number };
   completedSteps: string[];
   gamification: GamificationState;
-  aiInsight?: string | null;
-  isLoadingInsight?: boolean;
   topPrioritySteps: RoadmapStep[];
   streak: number;
   bestStreak: number;
@@ -39,8 +37,6 @@ export function RoadmapMissionControl({
   velocity,
   completedSteps,
   gamification,
-  aiInsight,
-  isLoadingInsight,
   topPrioritySteps,
   streak,
   bestStreak,
@@ -93,8 +89,8 @@ export function RoadmapMissionControl({
 
   return (
     <div className="space-y-6">
-      {/* Row 1: 3-column grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Row 1: progress + priorities */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Column 1: Progress Ring */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -224,36 +220,6 @@ export function RoadmapMissionControl({
                   );
                 })}
               </ol>
-            )}
-          </Card>
-        </motion.div>
-
-        {/* Column 3: AI Insight */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <Card variant="muted" className="h-full p-4 flex flex-col gap-3">
-            <div className="flex items-center gap-2">
-              <Zap className="w-4 h-4 text-yellow-500 shrink-0" />
-              <span className="font-semibold text-sm">بینش هوشمند</span>
-            </div>
-
-            {isLoadingInsight ? (
-              <div className="flex flex-col gap-2 py-1">
-                <div className="animate-pulse bg-muted rounded h-3 w-full" />
-                <div className="animate-pulse bg-muted rounded h-3 w-4/5" />
-                <div className="animate-pulse bg-muted rounded h-3 w-3/5" />
-              </div>
-            ) : aiInsight ? (
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {aiInsight}
-              </p>
-            ) : (
-              <p className="text-sm text-muted-foreground italic">
-                برای دریافت بینش روزانه صبر کنید...
-              </p>
             )}
           </Card>
         </motion.div>

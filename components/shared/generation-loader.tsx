@@ -11,12 +11,13 @@ interface GenerationLoaderProps {
   progress?: number;
 }
 
-// Phases match core-plan wait (~45–90s); roadmap continues on the dashboard.
+// Phases cover core + parallel roadmap (~1–3 min total).
 const PHASES = [
-  { untilMs: 12000, text: "تحلیل ورودی‌ها...", icon: Brain },
-  { untilMs: 35000, text: "طراحی مدل کسب‌وکار...", icon: Zap },
-  { untilMs: 70000, text: "بررسی رقبا و تدوین استراتژی...", icon: Search },
-  { untilMs: 100000, text: "آماده‌سازی داشبورد شما...", icon: Rocket },
+  { untilMs: 15000, text: "تحلیل ورودی‌ها...", icon: Brain },
+  { untilMs: 45000, text: "طراحی مدل کسب‌وکار...", icon: Zap },
+  { untilMs: 90000, text: "بررسی رقبا و تدوین استراتژی...", icon: Search },
+  { untilMs: 150000, text: "ساخت نقشه راه هفته‌به‌هفته...", icon: Database },
+  { untilMs: 210000, text: "آماده‌سازی داشبورد شما...", icon: Rocket },
   { untilMs: Infinity, text: "تقریباً آماده‌ایم...", icon: Database },
 ];
 
@@ -129,14 +130,14 @@ export function GenerationLoader({
               <div className="flex items-center gap-2">
                 <Loader2 className="w-3 h-3 animate-spin shrink-0" />
                 <span>
-                  {elapsed < 90000
-                    ? "معمولاً کمتر از دو دقیقه طول می‌کشد"
+                  {elapsed < 180000
+                    ? "معمولاً ۱ تا ۳ دقیقه طول می‌کشد"
                     : "هنوز در حال کار است — کمی صبر کنید"}
                 </span>
                 <Sparkles className="w-3 h-3 text-brand-secondary shrink-0" />
               </div>
               <span className="text-[11px] text-muted-foreground/80 text-center leading-relaxed max-w-xs">
-                بعد از آماده‌شدن بوم و برند وارد داشبورد می‌شوید؛ نقشه راه کمی بعد در پس‌زمینه تکمیل می‌شود.
+                بوم کسب‌وکار و نقشه راه ۱۶ هفته‌ای قبل از ورود به داشبورد کامل می‌شوند.
               </span>
             </div>
           )}

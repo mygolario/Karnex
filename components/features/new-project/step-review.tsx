@@ -131,7 +131,7 @@ export function StepReview() {
       <p className="mt-4 text-center text-xs text-muted-foreground">
         این عملیات ۵ واحد اعتبار هوش مصنوعی مصرف می‌کند.
         <br />
-        معمولاً کمتر از دو دقیقه طول می‌کشد؛ بعدش داشبورد باز می‌شود و نقشه راه در پس‌زمینه کامل می‌شود.
+        معمولاً ۱ تا ۳ دقیقه طول می‌کشد؛ بوم و نقشه راه قبل از ورود به داشبورد کامل می‌شوند.
       </p>
 
       <div className="mt-8 flex items-center justify-between pt-6 border-t border-border/50">

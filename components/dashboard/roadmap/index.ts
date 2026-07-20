@@ -12,7 +12,7 @@ export { GamificationHud } from "./gamification-hud";
 
 // Reworked and new components
 export { RoadmapMissionControl } from "./roadmap-mission-control";
-export { RoadmapDailyBriefing } from "./roadmap-daily-briefing";
+export { RoadmapAiStrip } from "./roadmap-ai-strip";
 export { RoadmapAiCopilot } from "./roadmap-ai-copilot";
 export { RoadmapSprintPanel } from "./roadmap-sprint-panel";
 export { RoadmapMilestoneCelebration } from "./roadmap-milestone-celebration";
