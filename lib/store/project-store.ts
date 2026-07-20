@@ -196,7 +196,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     try {
       const full = await fetchProjectDetail(projectId);
       if (full) {
-        const repaired = await maybeRepairProjectName(full.userId, full);
+        const ownerId = (full as BusinessPlan & { userId?: string }).userId;
+        const repaired = await maybeRepairProjectName(ownerId, full);
         set({
           activeProject: repaired,
           projects: projects.map((p) => (p.id === projectId ? repaired : p)),
