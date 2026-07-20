@@ -48,6 +48,8 @@ interface GenesisWizardState extends GenesisDraft {
   /** True when a recoverable draft was found on mount (drives the resume modal). */
   hasResumableDraft: boolean;
   showLimitModal: boolean;
+  limitModalKind: "ai" | "project";
+  limitModalMessage: string;
 }
 
 interface GenesisWizardActions {
@@ -153,6 +155,8 @@ export function GenesisWizardProvider({
   const [generatingPhase, setGeneratingPhase] = useState("");
   const [error, setError] = useState("");
   const [showLimitModal, setShowLimitModal] = useState(false);
+  const [limitModalKind, setLimitModalKind] = useState<"ai" | "project">("ai");
+  const [limitModalMessage, setLimitModalMessage] = useState("");
 
   const [hasResumableDraft, setHasResumableDraft] = useState(false);
   const [hydrated, setHydrated] = useState(false);
@@ -275,7 +279,11 @@ export function GenesisWizardProvider({
   }, []);
 
   const clearError = useCallback(() => setError(""), []);
-  const closeLimitModal = useCallback(() => setShowLimitModal(false), []);
+  const closeLimitModal = useCallback(() => {
+    setShowLimitModal(false);
+    setLimitModalMessage("");
+    setLimitModalKind("ai");
+  }, []);
 
   const reset = useCallback(() => {
     clearDraft();
@@ -299,10 +307,7 @@ export function GenesisWizardProvider({
     setError("");
 
     try {
-      const {
-        generateCorePlanAction,
-        generateRoadmapChunkAction,
-      } = await import("@/lib/project-actions");
+      const { generateCorePlanAction } = await import("@/lib/project-actions");
 
       const coreResult = await generateCorePlanAction({
         projectType: safePillar,
@@ -314,64 +319,41 @@ export function GenesisWizardProvider({
       });
 
       if (coreResult.error) {
-        throw new Error(coreResult.error);
+        throw new Error(
+          coreResult.message ||
+            coreResult.error ||
+            "ساخت بوم و استراتژی ناموفق بود. لطفاً دوباره تلاش کنید."
+        );
       }
 
       const corePlan = coreResult.plan;
 
-      setGeneratingPhase("در حال ساخت هفته‌های ۱–۸...");
-      const chunk1 = await generateRoadmapChunkAction({
-        projectType: safePillar,
-        idea: projectVision,
-        genesisAnswers: answers,
-        corePlan,
-        weekStart: 1,
-        weekEnd: 8,
-      });
-
-      if (chunk1.error || !chunk1.roadmap) {
-        throw new Error(
-          chunk1.error ||
-            "Failed to generate structured roadmap. Check console logs for details."
-        );
-      }
-
-      setGeneratingPhase("در حال ساخت هفته‌های ۹–۱۶...");
-      const chunk2 = await generateRoadmapChunkAction({
-        projectType: safePillar,
-        idea: projectVision,
-        genesisAnswers: answers,
-        corePlan,
-        weekStart: 9,
-        weekEnd: 16,
-      });
-
-      if (chunk2.error || !chunk2.roadmap) {
-        throw new Error(
-          chunk2.error ||
-            "Failed to generate structured roadmap. Check console logs for details."
-        );
-      }
-
-      // Chunks are already normalized to 8 phases each with correct weekNumbers.
-      const roadmap = [...chunk1.roadmap, ...chunk2.roadmap];
+      // Progressive unlock: create + redirect after core; roadmap fills in on dashboard.
+      setGeneratingPhase("در حال آماده‌سازی داشبورد...");
+      setIsGenerating(false);
+      setIsCreating(true);
 
       const completePlan = {
         ...corePlan,
-        roadmap,
+        roadmap: [],
+        roadmapStatus: "generating" as const,
         projectName,
         projectType: safePillar,
         ideaInput: projectVision,
         genesisAnswers: answers,
       };
 
-      setIsGenerating(false);
-      setGeneratingPhase("");
-      setIsCreating(true);
-
       const createPromise = createNewProject(completePlan);
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Project creation timed out")), 30000)
+        setTimeout(
+          () =>
+            reject(
+              new Error(
+                "زمان ساخت پروژه تمام شد. لطفاً اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."
+              )
+            ),
+          30000
+        )
       );
 
       await Promise.race([createPromise, timeoutPromise]);
@@ -379,15 +361,47 @@ export function GenesisWizardProvider({
       router.push("/dashboard");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "خطای ناشناخته";
+      const limitKind =
+        err && typeof err === "object" && "limitKind" in err
+          ? (err as { limitKind?: string }).limitKind
+          : undefined;
+
+      const localizeClientError = (raw: string) => {
+        if (
+          raw.includes("Failed to generate") ||
+          raw.includes("Check console") ||
+          raw.includes("structured")
+        ) {
+          return "ساخت استراتژی ناموفق بود. لطفاً دوباره تلاش کنید.";
+        }
+        if (raw.includes("Failed to create") || raw.includes("Not authenticated")) {
+          return "ساخت پروژه ناموفق بود. لطفاً دوباره وارد شوید و تلاش کنید.";
+        }
+        return raw || "خطا در تولید استراتژی. لطفاً دوباره تلاش کنید.";
+      };
+
       if (
-        message.includes("AI_LIMIT_REACHED") ||
-        message.includes("Limit reached")
+        limitKind === "project" ||
+        message.includes("محدودیت تعداد پروژه") ||
+        (message.includes("سقف") && message.includes("پروژه"))
       ) {
+        setLimitModalKind("project");
+        setLimitModalMessage(message);
+        setShowLimitModal(true);
+      } else if (
+        message.includes("AI_LIMIT_REACHED") ||
+        message.includes("Limit reached") ||
+        message.includes("اعتبار AI")
+      ) {
+        setLimitModalKind("ai");
+        setLimitModalMessage(
+          message.includes("اعتبار")
+            ? message
+            : "سقف اعتبار هوش مصنوعی این ماه تمام شده است."
+        );
         setShowLimitModal(true);
       } else {
-        setError(
-          message || "خطا در تولید استراتژی. لطفاً دوباره تلاش کنید."
-        );
+        setError(localizeClientError(message));
       }
       setIsGenerating(false);
       setIsCreating(false);
@@ -408,6 +422,8 @@ export function GenesisWizardProvider({
     error,
     hasResumableDraft,
     showLimitModal,
+    limitModalKind,
+    limitModalMessage,
     selectPillar,
     setName: setProjectName,
     setVision: setProjectVision,

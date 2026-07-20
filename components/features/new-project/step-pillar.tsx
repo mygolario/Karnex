@@ -38,7 +38,7 @@ export function StepPillar() {
         </motion.p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
+      <div className="grid md:grid-cols-3 gap-6 lg:gap-8 pb-24 md:pb-0">
         {PILLARS.map((p, index) => {
           const available = isPillarAvailableAtLaunch(p.id);
           const comingSoon = isPillarComingSoon(p.id);
@@ -107,9 +107,12 @@ export function StepPillar() {
                 </div>
 
                 <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 sm:mb-3">{p.title}</h3>
-                <div className="inline-flex w-fit px-3 py-1 rounded-full bg-brand-secondary/15 text-brand-secondary text-xs font-medium mb-3 sm:mb-6 backdrop-blur-md">
-                  {comingSoon ? "به‌زودی" : p.subtitle}
-                </div>
+                {!comingSoon && (
+                  <div className="inline-flex w-fit px-3 py-1 rounded-full bg-brand-secondary/15 text-brand-secondary text-xs font-medium mb-3 sm:mb-6 backdrop-blur-md">
+                    {p.subtitle}
+                  </div>
+                )}
+                {comingSoon && <div className="mb-3 sm:mb-6" />}
 
                 <p className="text-muted-foreground leading-relaxed text-sm sm:text-lg line-clamp-3 sm:line-clamp-none">
                   {p.description}
@@ -144,7 +147,10 @@ export function StepPillar() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="mt-12 flex justify-center"
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl p-4 pb-[max(1rem,env(safe-area-inset-bottom))] flex justify-center",
+          "md:static md:mt-12 md:border-0 md:bg-transparent md:backdrop-blur-none md:p-0 md:pb-0",
+        )}
       >
         <Button
           size="lg"
@@ -152,7 +158,7 @@ export function StepPillar() {
           onClick={handleStart}
           disabled={!pillar || !isPillarAvailableAtLaunch(pillar)}
           className={cn(
-            "h-14 px-10 text-lg font-bold transition-all duration-300",
+            "h-14 w-full max-w-md md:w-auto md:px-10 text-lg font-bold transition-all duration-300",
             pillar && isPillarAvailableAtLaunch(pillar)
               ? "bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5"
               : "opacity-50 cursor-not-allowed",

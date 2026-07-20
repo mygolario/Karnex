@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { Rocket, Plus, Map, LayoutTemplate, Bot, Presentation, FlaskConical, Swords } from "lucide-react";
+import { Rocket, Plus, Map, LayoutTemplate, Bot, Presentation, FlaskConical, Swords, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FocusHero } from "@/components/dashboard/overview/focus-hero";
@@ -171,6 +171,26 @@ export default function DashboardOverviewPage() {
           <span className="text-sm font-bold text-foreground">{plan?.projectName}</span>
         </div>
       </motion.div>
+
+      {plan?.roadmapStatus === "generating" && (
+        <motion.div
+          variants={itemVariants}
+          className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm"
+          role="status"
+          aria-live="polite"
+        >
+          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
+          <span className="text-foreground">
+            نقشه راه ۱۶ هفته‌ای در پس‌زمینه در حال ساخت است — بوم و برند آمادهٔ استفاده‌اند.
+          </span>
+          <Link
+            href="/dashboard/roadmap"
+            className="ms-auto shrink-0 text-primary hover:underline font-medium"
+          >
+            مشاهده
+          </Link>
+        </motion.div>
+      )}
 
       <motion.div variants={itemVariants}>
         <FocusHero nextStepName={nextStepName} />

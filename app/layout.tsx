@@ -9,6 +9,7 @@ import { NetworkStatus } from '@/components/shared/network-status';
 import { GoogleAnalytics, PerformanceMonitoring } from '@/components/shared/analytics';
 import { ToastProvider } from '@/components/ui/toast';
 import { ClientHelpers } from '@/components/shared/client-helpers';
+import { LaunchConfigProvider } from '@/components/launch-config-provider';
 
 export const metadata: Metadata = {
   title: {
@@ -142,9 +143,11 @@ export default function RootLayout({
                 <GoogleAnalytics />
                 <PerformanceMonitoring />
                 <ProjectProvider>
+                  <LaunchConfigProvider>
                   <NetworkStatus />
                   <ClientHelpers />
                   {children}
+                  </LaunchConfigProvider>
                 </ProjectProvider>
               </ToastProvider>
           </AuthProvider>

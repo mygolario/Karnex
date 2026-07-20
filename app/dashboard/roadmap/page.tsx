@@ -328,8 +328,46 @@ export default function RoadmapPage() {
     );
   }
 
-  // Empty roadmap
+  // Empty / generating / failed roadmap
   if (!roadmap || roadmap.length === 0) {
+    const status = plan.roadmapStatus;
+
+    if (status === "generating") {
+      return (
+        <div className="container mx-auto max-w-4xl p-6">
+          <EmptyState
+            icon={Map}
+            title="نقشه راه در حال ساخت است"
+            description="بوم و برند آماده‌اند. نقشه راه ۱۶ هفته‌ای به‌صورت موازی ساخته می‌شود و به‌زودی اینجا ظاهر می‌شود."
+            size="lg"
+          />
+          <p className="mt-4 text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            معمولاً کمتر از یک دقیقه دیگر...
+          </p>
+        </div>
+      );
+    }
+
+    if (status === "failed") {
+      return (
+        <div className="container mx-auto max-w-4xl p-6">
+          <EmptyState
+            icon={Map}
+            title="ساخت نقشه راه ناموفق بود"
+            description="می‌توانید دوباره تلاش کنید؛ بوم و برند پروژه شما ذخیره شده‌اند."
+            size="lg"
+            action={{
+              label: "تلاش مجدد",
+              onClick: () => {
+                void updateActiveProject({ roadmapStatus: "generating" });
+              },
+            }}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="container mx-auto max-w-4xl p-6">
         <EmptyState

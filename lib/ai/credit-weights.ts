@@ -89,6 +89,10 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "validate-idea-script",
     "validate_idea_script",
     "validateideascript",
+    "stt",
+    "generateroadmap",
+    "generate-roadmap",
+    "generate_roadmap",
   ]);
 
   const standard = new Set([
@@ -100,10 +104,17 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "market-research",
     "generate-market-research",
     "generate_market_research",
-    "stt",
     "validate-idea-rescore",
     "validate_idea_rescore",
     "validateidearescore",
+    "content-brief",
+    "content-strategy",
+    "generate-canvas-critique",
+    "canvas-critique",
+    "pitch-slide-ai",
+    "health-diagnosis",
+    "pnl-narrative",
+    "monthly-review",
   ]);
 
   if (heavy.has(key) || key.includes("generate-plan") || key.includes("pitch-deck")) {
@@ -121,6 +132,9 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
   }
   if (copilotTools.has(key) || key.startsWith("copilot")) {
     return AI_CREDIT_WEIGHTS.copilot_tools;
+  }
+  if (key === "stt" || key.includes("speech-to-text") || key.includes("whisper")) {
+    return AI_CREDIT_WEIGHTS.stt;
   }
   if (light.has(key)) return AI_CREDIT_WEIGHTS.light;
   if (standard.has(key)) return AI_CREDIT_WEIGHTS.standard;

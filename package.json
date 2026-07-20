@@ -13,7 +13,8 @@
     "postinstall": "prisma generate",
     "kb:scrape": "node --env-file=.env.local --env-file=.env scripts/build-kb-corpus.ts",
     "kb:chunk": "node --env-file=.env.local --env-file=.env scripts/chunk-kb.ts",
-    "kb:embed": "node --env-file=.env.local --env-file=.env scripts/embed-kb.ts"
+    "kb:embed": "node --env-file=.env.local --env-file=.env scripts/embed-kb.ts",
+    "promote-admin": "node scripts/promote-admin.cjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.989.0",

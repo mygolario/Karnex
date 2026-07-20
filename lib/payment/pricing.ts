@@ -29,7 +29,7 @@ export const PRICING_PLANS: PricingPlan[] = [
       { name: '۱ پروژه فعال', included: true, limit: 1 },
       { name: '۴۰ واحد اعتبار AI در ماه', included: true, limit: 40, tooltip: 'درخواست‌های سنگین چند واحد مصرف می‌کنند' },
       { name: 'بوم، نقشه راه، پیچ‌دک، اعتبارسنجی و تحلیل رقبا', included: true },
-      { name: 'پشتیبانی جامعه', included: true },
+      { name: 'پشتیبانی از طریق ایمیل و تیکت', included: true },
     ],
   },
   {
@@ -57,7 +57,7 @@ export const PRICING_PLANS: PricingPlan[] = [
     name: 'تیم',
     nameEn: 'Team',
     tier: 'pro',
-    description: 'برای هم‌بنیان‌گذاران و تیم کوچک',
+    description: 'برای هم‌بنیان‌گذاران و چند پروژه موازی',
     price: {
       monthly: 699000,
       yearly: 6710400, // 559,200 × 12 (20% off)
@@ -66,8 +66,8 @@ export const PRICING_PLANS: PricingPlan[] = [
     features: [
       { name: '۸ پروژه فعال', included: true, limit: 8 },
       { name: '۳۵۰ واحد اعتبار AI در ماه', included: true, limit: 350, tooltip: 'درخواست‌های سنگین چند واحد مصرف می‌کنند' },
-      { name: 'تحقیق بازار عمیق', included: true },
-      { name: 'پشتیبانی اولویت‌دار', included: true },
+      { name: 'تحقیق بازار با داده زنده وب', included: true },
+      { name: 'تحقیق بازار عمیق (۸ واحد)', included: true },
     ],
   },
 ];

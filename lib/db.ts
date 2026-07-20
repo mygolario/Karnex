@@ -792,6 +792,8 @@ export interface BusinessPlan {
   };
   brandKit: BrandKit;
   roadmap: RoadmapPhase[];
+  /** Genesis progressive unlock: roadmap fills in after core plan is ready */
+  roadmapStatus?: "generating" | "ready" | "failed";
   marketingStrategy: string[];
   competitors: Competitor[];
   /** Rich competitor workspace; `competitors` is the active projection for legacy readers */
@@ -1283,9 +1285,23 @@ export interface Feedback {
 }
 
 export const saveFeedback = async (feedback: Feedback) => {
-  // We don't have a Feedback model in Prisma schema yet! 
-  // Let's assume we skip this or add it later.
-  console.warn("Feedback saving not implemented in Prisma yet.");
+  const userId =
+    feedback.user_id && feedback.user_id !== "anonymous" ? feedback.user_id : null;
+  const payload = {
+    rating: feedback.rating,
+    category: feedback.category,
+    comment: feedback.comment,
+    page: feedback.page,
+    user_email: feedback.user_email,
+    user_agent: feedback.user_agent,
+    status: feedback.status,
+  };
+  await prisma.feedback.create({
+    data: {
+      userId,
+      message: JSON.stringify(payload),
+    },
+  });
   return true;
 };
 

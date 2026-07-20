@@ -33,38 +33,6 @@ interface NotificationBellProps {
   className?: string;
 }
 
-// Generate initial mock notifications
-function getDefaultNotifications(): Notification[] {
-  const now = new Date();
-  return [
-    {
-      id: "1",
-      type: "achievement",
-      title: "دستاورد جدید! 🏆",
-      message: "شما ۱۰ مرحله از نقشه راه را تکمیل کردید.",
-      read: false,
-      timestamp: new Date(now.getTime() - 30 * 60 * 1000),
-    },
-    {
-      id: "2",
-      type: "promo",
-      title: "تخفیف ویژه",
-      message: "۳۰٪ تخفیف اشتراک سالانه تا پایان هفته",
-      read: false,
-      timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000),
-      action: { label: "مشاهده", href: "/pricing" },
-    },
-    {
-      id: "3",
-      type: "info",
-      title: "به‌روزرسانی جدید",
-      message: "قابلیت خروجی PDF به پلن رایگان اضافه شد.",
-      read: true,
-      timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000),
-    },
-  ];
-}
-
 const typeConfig = {
   info: {
     icon: Bell,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useAuth } from "@/contexts/auth-context";
 import { useRouter } from "next/navigation";
 import { MentorProvider } from "@/components/dashboard/mentor-context";
@@ -15,7 +15,7 @@ import { MobileDashboardShell } from "@/components/mobile/mobile-dashboard-shell
 import { PwaInstallBanner } from "@/components/pwa/pwa-install-banner";
 import { PwaOnboardingModal } from "@/components/pwa/pwa-onboarding-modal";
 import { PwaWelcomeToast } from "@/components/pwa/pwa-welcome-toast";
-import { Suspense } from "react";
+import { RoadmapBackgroundGenerator } from "@/components/dashboard/roadmap-background-generator";
 import { Loader2 } from "lucide-react";
 
 export function DashboardClientLayout({ children }: { children: React.ReactNode }) {
@@ -28,6 +28,8 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
       router.push("/login");
     }
   }, [user, loading, router]);
+
+  // launch overrides hydrated by LaunchConfigProvider in root layout
 
   if (loading || !user) {
     return (
@@ -50,6 +52,7 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
           <TourRoot />
           <TourReengagementNudge />
           <TourRepersonalizePrompt />
+          <RoadmapBackgroundGenerator />
           {isMobile ? (
             <MobileDashboardShell>{children}</MobileDashboardShell>
           ) : (

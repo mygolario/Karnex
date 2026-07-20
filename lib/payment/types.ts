@@ -150,10 +150,14 @@ export interface Transaction {
 /**
  * Launch limits: project count + weighted AI credits (see lib/ai/credit-weights.ts).
  * aiRequestsPerMonth = monthly credit budget (not raw HTTP count).
+ * liveWebResearch / deepMarketResearch are plan-gated AI capabilities.
+ * prioritySupport stays false until phone/queue support is actually delivered.
  */
 export interface FeatureFlags {
   projectLimit: number | 'unlimited';
   aiRequestsPerMonth: number | 'unlimited';
+  liveWebResearch: boolean;
+  deepMarketResearch: boolean;
   prioritySupport: boolean;
   dedicatedConsulting: boolean;
 }
@@ -181,6 +185,8 @@ export const DEFAULT_FEATURES: Record<PlanTier, FeatureFlags> = {
   free: {
     projectLimit: 1,
     aiRequestsPerMonth: 40,
+    liveWebResearch: false,
+    deepMarketResearch: false,
     prioritySupport: false,
     dedicatedConsulting: false,
   },
@@ -188,6 +194,8 @@ export const DEFAULT_FEATURES: Record<PlanTier, FeatureFlags> = {
   plus: {
     projectLimit: 3,
     aiRequestsPerMonth: 100,
+    liveWebResearch: true,
+    deepMarketResearch: false,
     prioritySupport: false,
     dedicatedConsulting: false,
   },
@@ -195,21 +203,27 @@ export const DEFAULT_FEATURES: Record<PlanTier, FeatureFlags> = {
   pro: {
     projectLimit: 8,
     aiRequestsPerMonth: 350,
-    prioritySupport: true,
+    liveWebResearch: true,
+    deepMarketResearch: true,
+    prioritySupport: false,
     dedicatedConsulting: false,
   },
   /** Legacy alias → same as تیم */
   team: {
     projectLimit: 8,
     aiRequestsPerMonth: 350,
-    prioritySupport: true,
+    liveWebResearch: true,
+    deepMarketResearch: true,
+    prioritySupport: false,
     dedicatedConsulting: false,
   },
   /** Legacy ultra subscribers → تیم limits (no fake consulting) */
   ultra: {
     projectLimit: 8,
     aiRequestsPerMonth: 350,
-    prioritySupport: true,
+    liveWebResearch: true,
+    deepMarketResearch: true,
+    prioritySupport: false,
     dedicatedConsulting: false,
   },
-};
+}

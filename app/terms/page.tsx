@@ -33,7 +33,7 @@ export default function TermsPage() {
             <div>
               <h1 className="text-4xl md:text-5xl font-black text-foreground mb-2">قوانین و مقررات</h1>
               <p className="text-muted-foreground text-lg">
-                آخرین بروزرسانی: ۲۱ بهمن ۱۴۰۴
+                آخرین بروزرسانی: ۲۸ تیر ۱۴۰۵
               </p>
             </div>
           </div>

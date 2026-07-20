@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Sparkles, CheckCircle2 } from "lucide-react";
-import { toPersianDigits } from "@/lib/utils";
 
 interface AuthBrandPanelProps {
   mode: "login" | "signup";
@@ -99,29 +98,10 @@ export function AuthBrandPanel({ mode }: AuthBrandPanelProps) {
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-lg text-white/90 leading-relaxed mb-10"
+              className="text-lg text-white/90 leading-relaxed"
             >
-              به هزاران کارآفرین بپیوندید که با هوش مصنوعی کارنکس، ایده‌های خود را به واقعیت تبدیل کرده‌اند.
+              با هوش مصنوعی کارنکس، ایده کسب‌وکارتان را به برنامه عملی تبدیل کنید.
             </motion.p>
-
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="flex items-center justify-center gap-6"
-            >
-              <div className="text-right">
-                <div className="font-black text-3xl leading-none">
-                  {toPersianDigits("+۱۲٬۰۰۰")}
-                </div>
-                <div className="text-xs text-white/70 mt-1">کارآفرین در حال رشد با کارنکس</div>
-              </div>
-              <div className="h-12 w-px bg-white/20" />
-              <div className="text-right">
-                <div className="font-black text-3xl leading-none">۴.۹★</div>
-                <div className="text-xs text-white/70 mt-1">رضایت کاربران</div>
-              </div>
-            </motion.div>
           </>
         )}
       </div>

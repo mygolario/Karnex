@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { ArrowLeft, Compass, MessageSquare, Map, TrendingUp } from "lucide-react";
-import { LAUNCH_CONFIG } from "@/lib/launch/config";
+import { useLaunchConfig } from "@/components/launch-config-provider";
 
 const startupSteps = [
   {
@@ -99,7 +99,8 @@ const legacySteps = [
 ];
 
 export const HowItWorksSection = () => {
-  const steps = LAUNCH_CONFIG.marketingStartupOnly ? startupSteps : legacySteps;
+  const { config } = useLaunchConfig();
+  const steps = config.marketingStartupOnly ? startupSteps : legacySteps;
 
   return (
     <section id="how-it-works" className="py-24 lg:py-32 relative overflow-hidden bg-muted/20">

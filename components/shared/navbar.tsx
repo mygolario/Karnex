@@ -16,6 +16,8 @@ import {
   Sparkles,
   Rocket,
   Smartphone,
+  BookOpen,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -259,6 +261,22 @@ export function Navbar() {
                 >
                   <HeadphonesIcon size={18} className="text-muted-foreground" />
                   <span className="font-medium text-foreground text-sm">سوالات متداول</span>
+                </Link>
+                <Link
+                  href="/help"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors"
+                >
+                  <BookOpen size={18} className="text-muted-foreground" />
+                  <span className="font-medium text-foreground text-sm">راهنما</span>
+                </Link>
+                <Link
+                  href="/about"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-muted/50 transition-colors"
+                >
+                  <Info size={18} className="text-muted-foreground" />
+                  <span className="font-medium text-foreground text-sm">درباره ما</span>
                 </Link>
                 <Link
                   href="/contact"

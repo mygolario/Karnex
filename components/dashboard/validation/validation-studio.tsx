@@ -418,6 +418,10 @@ export function ValidationStudio() {
       }
 
       const data = await res.json();
+      if (res.status === 403 && data.error === "PLAN_FEATURE_REQUIRED") {
+        toast.error(data.message || "این قابلیت در پلن فعلی شما فعال نیست.");
+        return;
+      }
       if (!res.ok) {
         throw new Error(data.error || "خطا در دریافت بازار");
       }

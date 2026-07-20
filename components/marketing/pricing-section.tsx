@@ -15,7 +15,7 @@ import { toPersianDigits } from "@/lib/utils";
 const trustSignals = [
   { icon: Shield, text: "پرداخت امن از طریق درگاه زیبال" },
   { icon: RefreshCw, text: "لغو در هر زمان" },
-  { icon: Headphones, text: "پشتیبانی اولویت‌دار در پلن تیم" },
+  { icon: Headphones, text: "پشتیبانی از طریق ایمیل و تیکت" },
 ];
 
 export const PricingSection = () => {
@@ -154,8 +154,8 @@ export const PricingSection = () => {
         </div>
 
         <p className="text-center text-sm text-muted-foreground mb-10 max-w-2xl mx-auto">
-          واحد اعتبار AI: درخواست‌های سبک ۱ واحد، استاندارد ۲، سنگین (مثل ساخت کامل نقشه راه) ۵ واحد،
-          و کوپایلوت با ابزار ۳ واحد مصرف می‌کنند.
+          واحد اعتبار AI: سبک ۱، استاندارد ۲، سنگین (مثل ساخت کامل نقشه راه) ۵، کوپایلوت با ابزار ۳،
+          و تحقیق بازار عمیق ۸ واحد. تحقیق زنده وب در پرو و بالاتر؛ تحقیق عمیق فقط در تیم.
         </p>
 
         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground">

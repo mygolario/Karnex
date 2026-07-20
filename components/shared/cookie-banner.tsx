@@ -1,21 +1,32 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Cookie } from "lucide-react";
 
+const AUTH_PATHS = ["/login", "/signup", "/reset-password"];
+
 export function CookieBanner() {
+  const pathname = usePathname();
   const [show, setShow] = useState(false);
 
+  const onAuthPage = AUTH_PATHS.some(
+    (p) => pathname === p || pathname?.startsWith(`${p}/`)
+  );
+
   useEffect(() => {
+    if (onAuthPage) {
+      setShow(false);
+      return;
+    }
     const consent = localStorage.getItem("cookieConsent");
     if (!consent) {
-      // Show after a small delay
       const timer = setTimeout(() => setShow(true), 2000);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [onAuthPage]);
 
   const handleAccept = () => {
     localStorage.setItem("cookieConsent", "true");
@@ -29,11 +40,11 @@ export function CookieBanner() {
     setShow(false);
   };
 
-  if (!show) return null;
+  if (!show || onAuthPage) return null;
 
   return (
     <div
-      className="fixed bottom-4 end-4 z-50 max-w-sm w-full animate-in slide-in-from-bottom duration-500"
+      className="fixed bottom-4 end-4 z-50 max-w-sm w-[calc(100%-2rem)] sm:w-full animate-in slide-in-from-bottom duration-500"
       role="dialog"
       aria-modal="true"
       aria-labelledby="cookie-banner-title"

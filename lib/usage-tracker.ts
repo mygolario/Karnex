@@ -10,6 +10,7 @@
 import prisma from '@/lib/prisma';
 import { DEFAULT_FEATURES, PlanTier, resolveFeatureTier } from '@/lib/payment/types';
 import { auth } from '@/lib/auth/session';
+import { syncUserCreditsToEmailQuota } from '@/lib/auth/email-ai-quota';
 export interface UsageCheckResult {
   allowed: boolean;
   used: number;
@@ -96,7 +97,7 @@ export async function incrementAIUsage(userId: string, amount = 1): Promise<void
   
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { credits: true }
+    select: { credits: true, email: true }
   });
 
   const credits = (user?.credits as Record<string, unknown>) || {};
@@ -115,6 +116,12 @@ export async function incrementAIUsage(userId: string, amount = 1): Promise<void
     where: { id: userId },
     data: { credits: newCredits }
   });
+
+  try {
+    await syncUserCreditsToEmailQuota(user?.email, newCredits);
+  } catch (err) {
+    console.error("[usage-tracker] Failed to sync email AI quota:", err);
+  }
 }
 
 /**
@@ -126,7 +133,7 @@ export async function decrementAIUsage(userId: string, amount = 1): Promise<void
   
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { credits: true }
+    select: { credits: true, email: true }
   });
 
   const credits = (user?.credits as Record<string, unknown>) || {};
@@ -147,6 +154,12 @@ export async function decrementAIUsage(userId: string, amount = 1): Promise<void
     where: { id: userId },
     data: { credits: newCredits }
   });
+
+  try {
+    await syncUserCreditsToEmailQuota(user?.email, newCredits);
+  } catch (err) {
+    console.error("[usage-tracker] Failed to sync email AI quota:", err);
+  }
 }
 
 /**
@@ -162,7 +175,7 @@ export async function checkProjectLimit(userId: string): Promise<UsageCheckResul
   }
   
   const count = await prisma.project.count({
-    where: { userId }
+    where: { userId, deletedAt: null }
   });
   
   const used = count || 0;

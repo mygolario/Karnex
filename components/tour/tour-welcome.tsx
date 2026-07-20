@@ -11,22 +11,17 @@ import { trackOnboardingCompleted, trackWelcomeCompleted } from "@/lib/tour/anal
 import { cn } from "@/lib/utils";
 import {
   Rocket,
-  Mic,
-  Megaphone,
   LayoutGrid,
   Sparkles as SparklesIcon,
   Zap,
   Trophy,
   Target,
-  Users,
   TrendingUp,
   Compass,
 } from "lucide-react";
 
 const PERSONAS: { id: TourPersona; icon: typeof Rocket; color: string }[] = [
   { id: "founder", icon: Rocket, color: "from-blue-500 to-indigo-600" },
-  { id: "creator", icon: Mic, color: "from-purple-500 to-pink-600" },
-  { id: "marketer", icon: Megaphone, color: "from-amber-500 to-orange-600" },
   { id: "general", icon: LayoutGrid, color: "from-slate-500 to-slate-700" },
 ];
 
@@ -38,9 +33,8 @@ const EXPERIENCE_LEVELS: { id: TourExperienceLevel; icon: typeof SparklesIcon; c
 
 const PRIMARY_GOALS: { id: TourPrimaryGoal; icon: typeof Target; color: string }[] = [
   { id: "validate-idea", icon: Target, color: "from-sky-500 to-blue-600" },
-  { id: "grow-audience", icon: Users, color: "from-fuchsia-500 to-pink-600" },
-  { id: "raise-funding", icon: TrendingUp, color: "from-emerald-500 to-teal-600" },
   { id: "launch-product", icon: Rocket, color: "from-indigo-500 to-violet-600" },
+  { id: "raise-funding", icon: TrendingUp, color: "from-emerald-500 to-teal-600" },
   { id: "just-exploring", icon: Compass, color: "from-slate-500 to-slate-700" },
 ];
 

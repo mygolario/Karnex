@@ -49,6 +49,8 @@ function NewProjectInner() {
     isGenerating,
     isCreating,
     showLimitModal,
+    limitModalKind,
+    limitModalMessage,
     closeLimitModal,
     hasResumableDraft,
     dismissResume,
@@ -94,7 +96,12 @@ function NewProjectInner() {
         {activeStep === 3 && <StepReview />}
       </GenesisWizardShell>
 
-      <LimitReachedModal isOpen={showLimitModal} onClose={closeLimitModal} />
+      <LimitReachedModal
+        isOpen={showLimitModal}
+        onClose={closeLimitModal}
+        kind={limitModalKind}
+        message={limitModalMessage || undefined}
+      />
 
       <Dialog
         open={hasResumableDraft}

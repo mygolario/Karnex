@@ -90,6 +90,24 @@ export async function verifyPaymentAction(trackId: string, orderId?: string): Pr
             return { success: false, message: verifyResult.message || "Payment failed" };
         }
 
+        // Integrity: gateway amount (Rials) must match stored transaction amount
+        if (
+            typeof verifyResult.amount === "number" &&
+            Number.isFinite(verifyResult.amount) &&
+            Math.abs(verifyResult.amount - txAmount) > 0.5
+        ) {
+            console.error("[Payment Verify] Amount mismatch:", {
+                trackId,
+                expected: txAmount,
+                gateway: verifyResult.amount,
+            });
+            await updateTransactionStatus(transactionId, "failed");
+            return {
+                success: false,
+                message: "مبلغ پرداخت با سفارش مطابقت ندارد. در صورت کسر وجه با پشتیبانی تماس بگیرید.",
+            };
+        }
+
         await createSubscription(userId, planIdFixed, billingCycle);
 
         await updateTransactionStatus(transactionId, "completed", {

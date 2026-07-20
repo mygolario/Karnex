@@ -19,7 +19,7 @@ import { useAuth } from "@/contexts/auth-context";
 const routeLabels: Record<string, string> = {
   "/dashboard/overview": "پیشخوان",
   "/dashboard/roadmap": "نقشه راه",
-  "/dashboard/canvas": "تحلیل کسب‌وکار",
+  "/dashboard/canvas": "بوم",
   "/dashboard/copilot": "دستیار کارنکس",
   "/dashboard/pitch-deck": "پیچ‌دک",
   "/dashboard/competitors": "تحلیل رقبا",

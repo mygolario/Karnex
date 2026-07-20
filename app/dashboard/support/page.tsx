@@ -56,8 +56,11 @@ export default function SupportPage() {
         body: JSON.stringify({
           name: "کاربر داشبورد",
           email: "support_in_app@karnex.ir",
-          subject: `[${formData.category.toUpperCase()}] [${formData.priority.toUpperCase()}] ${formData.subject}`,
+          subject: formData.subject,
           message: formData.message,
+          category: formData.category,
+          priority: formData.priority,
+          source: "dashboard-support",
         }),
       });
 
@@ -356,7 +359,7 @@ export default function SupportPage() {
                 </div>
                 <div>
                   <div className="text-xs font-extrabold text-foreground">تلفن تماس مستقیم</div>
-                  <div className="text-[11px] text-muted-foreground font-bold tracking-wide">۰۲۱-۹۱۰۱۵۶۷۸</div>
+                  <div className="text-[11px] text-muted-foreground font-bold tracking-wide">به‌زودی</div>
                 </div>
               </div>
             </CardContent>

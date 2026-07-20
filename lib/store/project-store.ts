@@ -101,7 +101,16 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       const res = await createProjectAction(planData);
 
       if (res.error || !res.success || !res.id) {
-        throw new Error(res.error || "Failed to create project");
+        const err = new Error(
+          (typeof res.message === "string" && res.message) ||
+            res.error ||
+            "Failed to create project"
+        ) as Error & { limitKind?: "project" | "ai"; limitReached?: boolean };
+        if (res.limitReached) {
+          err.limitKind = "project";
+          err.limitReached = true;
+        }
+        throw err;
       }
 
       const newId = res.id;
@@ -127,12 +136,21 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   switchProject: async (projectId) => {
     const { projects, activeProject } = get();
-    if (activeProject?.id === projectId && activeProject.roadmap) {
+    // Empty roadmap + generating status must still refresh when chunks finish.
+    if (
+      activeProject?.id === projectId &&
+      (activeProject.roadmap?.length ?? 0) > 0 &&
+      activeProject.roadmapStatus !== "generating"
+    ) {
       return;
     }
 
     const cached = projects.find((p) => p.id === projectId);
-    if (cached?.roadmap) {
+    if (
+      cached &&
+      (cached.roadmap?.length ?? 0) > 0 &&
+      cached.roadmapStatus !== "generating"
+    ) {
       set({ activeProject: cached });
       return;
     }

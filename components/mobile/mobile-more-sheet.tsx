@@ -14,6 +14,7 @@ import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { cn } from "@/lib/utils";
 import { isLaunchNavRoute } from "@/lib/launch/config";
 import type { ProjectType } from "@/app/new-project/genesis-constants";
+import { useAdmin } from "@/hooks/use-admin";
 
 interface MoreRoute {
   icon: LucideIcon;
@@ -29,6 +30,7 @@ interface MobileMoreSheetProps {
 export function MobileMoreSheet({ open, onOpenChange }: MobileMoreSheetProps) {
   const pathname = usePathname();
   const { activeProject: plan } = useProject();
+  const { isAdmin } = useAdmin();
 
   const isStartup = plan?.projectType === "startup";
   const isTraditional = plan?.projectType === "traditional";
@@ -65,11 +67,13 @@ export function MobileMoreSheet({ open, onOpenChange }: MobileMoreSheetProps) {
     { icon: Headphones, label: "پشتیبانی", href: "/dashboard/support" },
     { icon: HelpCircle, label: "راهنما", href: "/dashboard/help" },
     { icon: Settings, label: "حساب کاربری", href: "/dashboard/account" },
-    { icon: Shield, label: "مدیریت", href: "/dashboard/admin" },
-  ].filter((route) =>
-    route.href === "/dashboard/admin"
-      ? true
-      : isLaunchNavRoute(route.href, projectType),
+    ...(isAdmin
+      ? [{ icon: Shield, label: "مدیریت", href: "/dashboard/admin" } satisfies MoreRoute]
+      : []),
+  ].filter(
+    (route) =>
+      route.href === "/dashboard/admin" ||
+      isLaunchNavRoute(route.href, projectType)
   );
 
   const renderLink = (route: MoreRoute) => {

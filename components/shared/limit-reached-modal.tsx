@@ -2,8 +2,10 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, XCircle } from "lucide-react";
+import { FolderKanban, Sparkles, XCircle } from "lucide-react";
 import Link from "next/link";
+
+export type LimitReachedKind = "ai" | "project";
 
 interface LimitReachedModalProps {
   isOpen: boolean;
@@ -12,30 +14,55 @@ interface LimitReachedModalProps {
   used?: number;
   message?: string;
   zIndex?: number;
+  /** Defaults to AI credit exhaustion copy */
+  kind?: LimitReachedKind;
 }
 
-export function LimitReachedModal({ 
-  isOpen, 
-  onClose, 
-  limit, 
+const COPY: Record<
+  LimitReachedKind,
+  { title: string; fallbackMessage: string; continueHint: string; icon: typeof XCircle }
+> = {
+  ai: {
+    title: "پایان اعتبار هوش مصنوعی",
+    fallbackMessage: "شما به سقف استفاده از هوش مصنوعی در پلن فعلی خود رسیده‌اید.",
+    continueHint: "برای ادامه استفاده از امکانات هوش مصنوعی، لطفاً پلن خود را ارتقا دهید.",
+    icon: XCircle,
+  },
+  project: {
+    title: "سقف تعداد پروژه",
+    fallbackMessage: "شما به سقف تعداد پروژه‌های فعال در پلن فعلی خود رسیده‌اید.",
+    continueHint: "برای ساخت پروژه جدید، پلن خود را ارتقا دهید یا یک پروژه فعال را حذف کنید.",
+    icon: FolderKanban,
+  },
+};
+
+export function LimitReachedModal({
+  isOpen,
+  onClose,
+  limit,
   used,
-  message = "شما به سقف استفاده از هوش مصنوعی در پلن فعلی خود رسیده‌اید.",
-  zIndex
+  message,
+  zIndex,
+  kind = "ai",
 }: LimitReachedModalProps) {
+  const copy = COPY[kind];
+  const Icon = copy.icon;
+  const bodyMessage = message || copy.fallbackMessage;
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md" dir="rtl" style={{ zIndex: zIndex }}>
         <DialogHeader className="flex flex-col items-center gap-4 text-center">
             <div className="w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center mb-2">
-                <XCircle className="w-8 h-8 text-destructive" />
+                <Icon className="w-8 h-8 text-destructive" />
             </div>
           <DialogTitle className="text-xl font-bold text-foreground">
-            پایان اعتبار هوش مصنوعی
+            {copy.title}
           </DialogTitle>
           <DialogDescription className="text-center text-muted-foreground leading-relaxed">
-            {message}
+            {bodyMessage}
             <br />
-            برای ادامه استفاده از امکانات هوش مصنوعی، لطفاً پلن خود را ارتقا دهید.
+            {copy.continueHint}
           </DialogDescription>
         </DialogHeader>
 

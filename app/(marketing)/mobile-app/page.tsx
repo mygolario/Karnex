@@ -48,8 +48,8 @@ export default function MobileAppPage() {
               اپلیکیشن نصب شده است
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-4">
-              <PwaInstallButton className="text-base px-8 py-4" />
+            <div className="flex flex-col items-center gap-4 w-full max-w-md mx-auto">
+              <PwaInstallButton className="text-base px-8 py-4" showFallback />
               {isIOS && (
                 <p className="text-sm text-muted-foreground">
                   در iOS از راهنمای پایین صفحه استفاده کنید
@@ -112,12 +112,15 @@ export default function MobileAppPage() {
                 Android / Chrome
               </h3>
               <ol className="space-y-3 text-sm text-muted-foreground">
-                <li>1. این صفحه را در Chrome باز کنید</li>
-                <li>2. روی دکمه «نصب اپلیکیشن کارنکس» بزنید</li>
+                <li>1. این صفحه را در Chrome موبایل باز کنید</li>
+                <li>
+                  2. اگر دکمه «نصب اپلیکیشن کارنکس» را می‌بینید روی آن بزنید؛ در غیر
+                  این صورت از منوی ⋮ گزینه Install app / Add to Home screen را انتخاب کنید
+                </li>
                 <li>3. در پنجره تأیید، «نصب» را انتخاب کنید</li>
               </ol>
               <div className="mt-4">
-                <PwaInstallButton variant="banner" />
+                <PwaInstallButton variant="banner" showFallback />
               </div>
             </div>
           )}

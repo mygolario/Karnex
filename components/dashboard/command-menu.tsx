@@ -25,6 +25,7 @@ import { useProject } from "@/contexts/project-context";
 import { useCopilotStore } from "@/lib/copilot/store";
 import { useTourStore } from "@/lib/tour/store";
 import { getToursForProjectType } from "@/lib/tour/registry";
+import { useAdmin } from "@/hooks/use-admin";
 
 interface CommandMenuProps {
   mobile?: boolean;
@@ -34,6 +35,7 @@ export function CommandMenu({ mobile = false }: CommandMenuProps) {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const { activeProject } = useProject();
   const startTour = useTourStore((s) => s.startTour);
   const { setPendingPrefill, clearMessages } = useCopilotStore();
@@ -225,6 +227,15 @@ export function CommandMenu({ mobile = false }: CommandMenuProps) {
               <Shield className="ms-2 h-4 w-4" />
               <span>امنیت</span>
             </Command.Item>
+            {isAdmin && (
+              <Command.Item
+                onSelect={() => runCommand(() => router.push("/dashboard/admin"))}
+                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+              >
+                <Shield className="ms-2 h-4 w-4 text-primary" />
+                <span>پنل مدیریت</span>
+              </Command.Item>
+            )}
             <Command.Item 
                 onSelect={() => runCommand(() => signOut().then(() => router.push('/')))}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-destructive/10 aria-selected:text-destructive data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-destructive"

@@ -233,6 +233,7 @@ export default function PricingPage() {
 
           <p className="text-center text-sm text-muted-foreground mt-10 max-w-2xl mx-auto">
             واحد اعتبار AI: سبک ۱، استاندارد ۲، سنگین ۵، کوپایلوت با ابزار ۳، تحقیق عمیق ۸.
+            تحقیق زنده وب در پرو و بالاتر؛ تحقیق عمیق فقط در تیم.
           </p>
         </section>
       </main>

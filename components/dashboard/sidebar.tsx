@@ -5,7 +5,7 @@ import {
   LayoutGrid, Map, Bot,
   Presentation, LayoutTemplate, FlaskConical, Swords, Goal, Rocket,
   Calendar, Video, DollarSign,
-  Crown, LucideIcon,
+  Crown, LucideIcon, Shield,
   ChevronDown, FolderKanban, Check,
   Activity, Wallet, Receipt,
 } from "lucide-react";
@@ -20,6 +20,7 @@ import { useTourStore } from "@/lib/tour/store";
 import { TOUR_VERSION } from "@/lib/tour/registry";
 import { isLaunchNavRoute } from "@/lib/launch/config";
 import type { ProjectType } from "@/app/new-project/genesis-constants";
+import { useAdmin } from "@/hooks/use-admin";
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "desktop" | "mobile";
@@ -36,6 +37,7 @@ interface Route {
 export function DashboardSidebar({ className, variant = "desktop" }: SidebarProps) {
   const pathname = usePathname();
   const { activeProject: plan, projects, switchProject } = useProject();
+  const { isAdmin } = useAdmin();
   const [usage, setUsage] = useState<{ ai?: { limit: number | 'unlimited'; used: number }; tier?: string } | null>(null);
   const [loadingUsage, setLoadingUsage] = useState(true);
   const [showProjectSwitcher, setShowProjectSwitcher] = useState(false);
@@ -67,7 +69,7 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
   const commonRoutes: Route[] = [
     { icon: LayoutGrid, label: "پیشخوان", href: "/dashboard/overview", badge: showWhatsNewBadge ? "جدید" : undefined },
     { icon: Map, label: "نقشه راه", href: "/dashboard/roadmap" },
-    { icon: LayoutTemplate, label: "تحلیل کسب‌وکار", href: "/dashboard/canvas" },
+    { icon: LayoutTemplate, label: "بوم", href: "/dashboard/canvas" },
   ];
 
   // --- Project-Specific Routes (launch-scoped) ---
@@ -274,6 +276,18 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
             </span>
           </Link>
         </div>
+
+        {isAdmin && (
+          <div className="mt-4">
+            <p className="px-3 mb-2 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
+              سیستم
+            </p>
+            <SidebarLink
+              route={{ icon: Shield, label: "مدیریت", href: "/dashboard/admin" }}
+              pathname={pathname}
+            />
+          </div>
+        )}
       </div>
 
       {/* ═══ Usage Meter ═══ */}

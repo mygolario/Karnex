@@ -22,7 +22,7 @@ import { getPlanForDisplay } from "@/lib/payment/pricing";
 const routeLabels: Record<string, string> = {
   "/dashboard/overview": "پیشخوان",
   "/dashboard/roadmap": "نقشه راه",
-  "/dashboard/canvas": "تحلیل کسب‌وکار",
+  "/dashboard/canvas": "بوم",
   "/dashboard/copilot": "دستیار کارنکس",
   "/dashboard/pitch-deck": "پیچ‌دک",
   "/dashboard/health": "سلامت کسب‌وکار",

@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 /**
- * Admin gate — fetches /api/admin/me (server checks role + ADMIN_EMAILS).
+ * Admin gate — fetches /api/admin/me (Prisma role === "admin").
  * Never reads ADMIN_EMAILS in the browser.
  */
 export function useAdmin() {

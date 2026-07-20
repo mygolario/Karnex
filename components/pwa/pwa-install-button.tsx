@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, Smartphone, Loader2 } from "lucide-react";
+import { Download, Smartphone, Loader2, Share } from "lucide-react";
 import { useState } from "react";
 import { usePwa } from "@/hooks/use-pwa";
 import { cn } from "@/lib/utils";
@@ -9,12 +9,15 @@ interface PwaInstallButtonProps {
   className?: string;
   variant?: "default" | "outline" | "banner";
   showLabel?: boolean;
+  /** When true, show Chrome/menu fallback if beforeinstallprompt is unavailable */
+  showFallback?: boolean;
 }
 
 export function PwaInstallButton({
   className,
   variant = "default",
   showLabel = true,
+  showFallback = false,
 }: PwaInstallButtonProps) {
   const { isInstallable, isInstalled, isIOS, promptInstall } = usePwa();
   const [loading, setLoading] = useState(false);
@@ -33,7 +36,24 @@ export function PwaInstallButton({
   }
 
   if (!isInstallable) {
-    return null;
+    if (!showFallback) return null;
+    return (
+      <div
+        className={cn(
+          "rounded-xl border border-border bg-muted/40 px-4 py-3 text-start text-sm text-muted-foreground",
+          className
+        )}
+      >
+        <p className="font-medium text-foreground mb-1 flex items-center gap-2">
+          <Share size={16} className="text-primary shrink-0" />
+          نصب از منوی مرورگر
+        </p>
+        <p className="leading-relaxed">
+          در Chrome روی منوی ⋮ بزنید و گزینه «Install app» یا «Add to Home screen»
+          را انتخاب کنید. اگر این گزینه را نمی‌بینید، صفحه را در Chrome موبایل باز کنید.
+        </p>
+      </div>
+    );
   }
 
   const handleInstall = async () => {

@@ -247,6 +247,38 @@ exports.Prisma.FeedbackScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.SupportTicketScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  email: 'email',
+  subject: 'subject',
+  category: 'category',
+  priority: 'priority',
+  message: 'message',
+  status: 'status',
+  adminNote: 'adminNote',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SystemSettingScalarFieldEnum = {
+  id: 'id',
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AdminAuditLogScalarFieldEnum = {
+  id: 'id',
+  actorId: 'actorId',
+  action: 'action',
+  targetType: 'targetType',
+  targetId: 'targetId',
+  meta: 'meta',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.ProjectMemberScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -451,6 +483,13 @@ exports.Prisma.AiUsageScalarFieldEnum = {
   success: 'success',
   errorMessage: 'errorMessage',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.EmailAiQuotaScalarFieldEnum = {
+  emailHash: 'emailHash',
+  aiRequests: 'aiRequests',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.CustomerBotChannelScalarFieldEnum = {
@@ -840,6 +879,9 @@ exports.Prisma.ModelName = {
   MediaItem: 'MediaItem',
   SystemLog: 'SystemLog',
   Feedback: 'Feedback',
+  SupportTicket: 'SupportTicket',
+  SystemSetting: 'SystemSetting',
+  AdminAuditLog: 'AdminAuditLog',
   ProjectMember: 'ProjectMember',
   Canvas: 'Canvas',
   Card: 'Card',
@@ -855,6 +897,7 @@ exports.Prisma.ModelName = {
   AiActionLog: 'AiActionLog',
   AiInsight: 'AiInsight',
   AiUsage: 'AiUsage',
+  EmailAiQuota: 'EmailAiQuota',
   CustomerBotChannel: 'CustomerBotChannel',
   CustomerBotConversation: 'CustomerBotConversation',
   CustomerBotMessage: 'CustomerBotMessage',

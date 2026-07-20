@@ -27,7 +27,7 @@ export const tourI18n = {
     founder: "بنیان‌گذار / استارتاپ",
     creator: "تولیدکننده محتوا",
     marketer: "بازاریاب",
-    general: "همه موارد",
+    general: "هنوز مطمئن نیستم",
   },
   celebrationTitle: "آفرین!",
   celebrationSubtitle: "تور با موفقیت تکمیل شد",

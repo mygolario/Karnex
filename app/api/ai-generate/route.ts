@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { callOpenRouter, parseJsonFromAI, TIER_FAST, TIER_REASONING } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
 import { auth } from "@/lib/auth/session";
+import { getUserFeatures } from "@/lib/subscription";
 import { resolveAssembledPrompt } from "@/lib/ai/prompt-service";
 import { runWithAiUsage } from "@/lib/ai-usage-context";
 import {
@@ -28,6 +29,10 @@ export const maxDuration = 120;
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function isMarketResearchAction(action: unknown): boolean {
+  return action === "market-research" || action === "generate-market-research";
+}
+
 export async function POST(req: Request) {
   let rollback = async () => {};
   try {
@@ -45,20 +50,55 @@ export async function POST(req: Request) {
       deep,
     } = body;
 
-    const creditFeature =
-      deep &&
-      (action === "market-research" || action === "generate-market-research")
-        ? "market-research-deep"
-        : typeof action === "string"
-          ? action
-          : "default";
+    const session = await auth();
+    const userId = session?.user?.id;
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Unauthorized. Please log in to use AI features." },
+        { status: 401 }
+      );
+    }
+
+    const wantsDeepResearch = Boolean(deep) && isMarketResearchAction(action);
+    const wantsLiveWebResearch = isMarketResearchAction(action);
+
+    if (wantsLiveWebResearch) {
+      const features = await getUserFeatures(userId);
+      if (wantsDeepResearch && !features.deepMarketResearch) {
+        return NextResponse.json(
+          {
+            error: "PLAN_FEATURE_REQUIRED",
+            message:
+              "تحقیق بازار عمیق فقط در پلن تیم در دسترس است. برای ادامه، پلن خود را ارتقا دهید.",
+            requiredPlan: "pro",
+            feature: "deepMarketResearch",
+          },
+          { status: 403 }
+        );
+      }
+      if (!wantsDeepResearch && !features.liveWebResearch) {
+        return NextResponse.json(
+          {
+            error: "PLAN_FEATURE_REQUIRED",
+            message:
+              "تحقیق بازار با داده زنده وب در پلن پرو و بالاتر فعال است. برای ادامه، پلن خود را ارتقا دهید.",
+            requiredPlan: "plus",
+            feature: "liveWebResearch",
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    const creditFeature = wantsDeepResearch
+      ? "market-research-deep"
+      : typeof action === "string"
+        ? action
+        : "default";
 
     const limitResult = await checkAILimit(creditFeature);
     if (limitResult.errorResponse) return limitResult.errorResponse;
     rollback = limitResult.rollback;
-
-    const session = await auth();
-    const userId = session?.user?.id;
 
     const genCtx = buildGenerateContext(activeProject, userId, modifier);
 
@@ -66,7 +106,7 @@ export async function POST(req: Request) {
     // callOpenRouter inside handlers auto-records token/cost to AiUsage.
     const feature = (action as string) || (body.featureKey as string) || "ai-generate";
     return await runWithAiUsage(
-      { userId: userId || "anonymous", projectId: genCtx.projectId, feature },
+      { userId, projectId: genCtx.projectId, feature },
       async () => {
     if (action === "generate-full-canvas") {
       if (!businessIdea) {

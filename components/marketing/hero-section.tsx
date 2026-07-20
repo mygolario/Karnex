@@ -121,7 +121,7 @@ export const HeroSection = () => {
                 <div className="w-3 h-3 rounded-full bg-red-400" />
                 <div className="w-3 h-3 rounded-full bg-yellow-400" />
                 <div className="w-3 h-3 rounded-full bg-green-400" />
-                <span className="text-xs text-muted-foreground font-medium ms-2">app.karnex.ir/dashboard</span>
+                <span className="text-xs text-muted-foreground font-medium ms-2">www.karnex.ir/dashboard</span>
               </div>
 
               {/* Mockup content */}

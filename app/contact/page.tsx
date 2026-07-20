@@ -375,7 +375,7 @@ function ContactPageInner() {
                   </h4>
                   <p className="text-xs text-muted-foreground leading-relaxed font-medium">
                     ساعات کاری شنبه تا چهارشنبه ۹ تا ۱۷ آماده دریافت تماس‌های کاربران پلن تیم هستیم.
-                    <span className="block mt-2 font-semibold text-foreground">۰۲۱-۹۱۰۱۵۶۷۸</span>
+                    <span className="block mt-2 font-semibold text-muted-foreground">شماره تماس به‌زودی فعال می‌شود</span>
                   </p>
                 </div>
               </div>

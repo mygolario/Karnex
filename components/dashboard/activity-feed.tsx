@@ -72,7 +72,7 @@ function generateMockActivities(): ActivityItem[] {
     {
       id: "5",
       type: "ai",
-      title: "تحلیل کسب‌وکار",
+      title: "بوم",
       description: "گزارش تحلیلی آماده شد",
       timestamp: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
       link: "/dashboard/canvas",

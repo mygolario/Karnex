@@ -1,35 +1,21 @@
-import { NextResponse } from 'next/server';
-import { auth } from '@/lib/auth/session';
-import prisma from '@/lib/prisma';
+import { NextResponse } from "next/server";
+import { getAdminUsers } from "@/lib/admin-actions";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-export async function GET() {
+/** Thin API wrapper around getAdminUsers (prefer server actions from the admin UI). */
+export async function GET(req: Request) {
   try {
-    const session = await auth();
-    const user = session?.user;
-
-    if (!user || (user as any).role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const { searchParams } = new URL(req.url);
+    const search = searchParams.get("search") ?? undefined;
+    const page = Number(searchParams.get("page") || "1");
+    const res = await getAdminUsers({ search, page });
+    if (res.error) {
+      return NextResponse.json({ error: res.error }, { status: 403 });
     }
-
-    const users = await prisma.user.findMany({
-      where: { deletedAt: null },
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        image: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      }
-    });
-
-    return NextResponse.json({ success: true, users });
+    return NextResponse.json(res);
   } catch (error) {
     console.error("GET Admin Users Error:", error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

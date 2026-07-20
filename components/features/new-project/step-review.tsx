@@ -20,11 +20,14 @@ export function StepReview() {
     projectVision,
     answers,
     isGenerating,
+    isCreating,
     generatingPhase,
     generate,
     goToStep,
     retreat,
   } = useGenesisWizard();
+
+  const busy = isGenerating || isCreating;
 
   const p = PILLARS.find((x) => x.id === pillar);
   if (!p) return null;
@@ -127,6 +130,8 @@ export function StepReview() {
 
       <p className="mt-4 text-center text-xs text-muted-foreground">
         این عملیات ۵ واحد اعتبار هوش مصنوعی مصرف می‌کند.
+        <br />
+        معمولاً کمتر از دو دقیقه طول می‌کشد؛ بعدش داشبورد باز می‌شود و نقشه راه در پس‌زمینه کامل می‌شود.
       </p>
 
       <div className="mt-8 flex items-center justify-between pt-6 border-t border-border/50">
@@ -135,22 +140,22 @@ export function StepReview() {
           onClick={retreat}
           className="text-muted-foreground hover:text-foreground h-12 px-6"
           type="button"
-          disabled={isGenerating}
+          disabled={busy}
         >
           <ArrowRight className="ms-2 w-4 h-4" />
           مرحله قبل
         </Button>
         <Button
           onClick={generate}
-          disabled={isGenerating}
+          disabled={busy}
           size="lg"
           className="h-14 px-8 text-lg font-bold rounded-xl bg-gradient-to-r from-brand-primary to-brand-secondary text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300"
           type="button"
         >
-          {isGenerating ? (
+          {busy ? (
             <>
               <span className="ms-2 animate-spin border-2 border-white/40 border-t-white rounded-full w-5 h-5" />
-              {generatingPhase || "در حال ساخت..."}
+              {generatingPhase || (isCreating ? "در حال آماده‌سازی داشبورد..." : "در حال ساخت...")}
             </>
           ) : (
             <>

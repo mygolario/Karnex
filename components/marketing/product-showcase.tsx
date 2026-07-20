@@ -99,7 +99,7 @@ export const ProductShowcase = () => {
               <div className="w-3 h-3 rounded-full bg-green-400" />
               <div className="flex-1 flex justify-center">
                 <div className="bg-background/80 rounded-lg px-4 py-1 text-xs text-muted-foreground font-medium">
-                  app.karnex.ir/dashboard
+                  www.karnex.ir/dashboard
                 </div>
               </div>
             </div>

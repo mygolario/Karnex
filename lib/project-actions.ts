@@ -17,9 +17,25 @@ import {
   normalizeRoadmapChunk1to8,
   normalizeRoadmapChunk9to16,
 } from "@/lib/roadmap-normalize";
-import { isPillarAvailableAtLaunch } from "@/lib/launch/config";
+import { getEffectiveLaunchConfig } from "@/lib/launch/effective";
 import fs from 'fs';
 import path from 'path';
+
+const CORE_PLAN_FAILED_FA =
+  "ساخت بوم و استراتژی ناموفق بود. لطفاً چند لحظه بعد دوباره تلاش کنید.";
+const ROADMAP_FAILED_FA =
+  "ساخت نقشه راه ناموفق بود. بوم و برند ذخیره می‌شوند؛ می‌توانید بعداً دوباره تلاش کنید.";
+
+function localizeServerAiError(raw: string | undefined, fallback: string): string {
+  if (!raw) return fallback;
+  if (raw === "Unauthorized") return "لطفاً دوباره وارد شوید.";
+  if (raw.includes("AI_LIMIT") || raw.includes("Limit reached")) return raw;
+  if (raw.includes("Failed to generate") || raw.includes("Check console")) {
+    return fallback;
+  }
+  if (/[\u0600-\u06FF]/.test(raw)) return raw;
+  return fallback;
+}
 
 // --- Project Creation ---
 
@@ -35,11 +51,14 @@ export async function createProjectAction(planData: any) {
     const userId = user.id;
 
     const projectType = planData?.projectType as string | undefined;
-    if (projectType && !isPillarAvailableAtLaunch(projectType as "startup" | "traditional" | "creator")) {
-      return {
-        error: "این نوع پروژه هنوز در دسترس نیست",
-        message: "در حال حاضر فقط مسیر استارتاپ فعال است.",
-      };
+    if (projectType) {
+      const launch = await getEffectiveLaunchConfig();
+      if (!launch.availablePillars.includes(projectType as "startup" | "traditional" | "creator")) {
+        return {
+          error: "این نوع پروژه هنوز در دسترس نیست",
+          message: "در حال حاضر فقط مسیر استارتاپ فعال است.",
+        };
+      }
     }
 
     // Project Limit Check
@@ -335,11 +354,14 @@ export async function generateCorePlanAction(data: any): Promise<{
     const session = await auth();
     if (!session?.user?.id) return { error: "Unauthorized" };
 
-    if (projectType && !isPillarAvailableAtLaunch(projectType as "startup" | "traditional" | "creator")) {
-      return {
-        error: "این نوع پروژه هنوز در دسترس نیست",
-        message: "در حال حاضر فقط مسیر استارتاپ فعال است.",
-      };
+    if (projectType) {
+      const launch = await getEffectiveLaunchConfig();
+      if (!launch.availablePillars.includes(projectType as "startup" | "traditional" | "creator")) {
+        return {
+          error: "این نوع پروژه هنوز در دسترس نیست",
+          message: "در حال حاضر فقط مسیر استارتاپ فعال است.",
+        };
+      }
     }
 
     // AI Limit Check
@@ -378,10 +400,8 @@ export async function generateCorePlanAction(data: any): Promise<{
       return await runWithAiUsage(
         { userId: session.user.id, feature: "generatePlan" },
         async () => {
-          const coreUser = `${userWithKb}\n\n⚠️ مرحله ۱: فقط overview، businessModelCanvas، brandKit، marketingStrategy و competitors را کامل تولید کن. فیلد roadmap را حتماً به صورت آرایه خالی [] برگردان.`;
-
           const corePlan = await callAIWithValidation(
-            coreUser,
+            userWithKb,
             {
               systemPrompt: system,
               maxTokens: 12000,
@@ -399,19 +419,23 @@ export async function generateCorePlanAction(data: any): Promise<{
     } catch (parseError: any) {
       console.error("AI Validation / Parse Core Plan Error:", parseError);
       await rollback();
-      return { error: 'Failed to generate structured plan core. Check console logs for details.' };
+      return {
+        error: localizeServerAiError(parseError?.message, CORE_PLAN_FAILED_FA),
+        message: CORE_PLAN_FAILED_FA,
+      };
     }
 }
 
 /**
- * Generate one 8-week roadmap chunk. Used by the wizard for progress UX
- * (weeks 1–8 then 9–16) and by generateRoadmapAction as a sequential merge.
+ * Generate one 8-week roadmap chunk. Chunks for weeks 1–8 and 9–16 are
+ * independent and should be started in parallel by callers.
  */
 export async function generateRoadmapChunkAction(data: {
   idea: string;
   projectType: string;
   genesisAnswers?: Record<string, string>;
-  corePlan: any;
+  /** Only projectName + overview are used for the prompt */
+  corePlan: { projectName?: string; overview?: string };
   weekStart: number;
   weekEnd: number;
 }): Promise<{
@@ -452,19 +476,19 @@ export async function generateRoadmapChunkAction(data: {
 
   try {
     return await runWithAiUsage(
-      { userId: session.user.id, feature: "generatePlan" },
+      { userId: session.user.id, feature: "generateRoadmap" },
       async () => {
         const chunkResult = await callAIWithValidation(
           user,
           {
             systemPrompt: system,
             maxTokens: 8000,
-            temperature: 0.6,
-            timeoutMs: 60000,
+            temperature: 0.55,
+            timeoutMs: 90000,
             modelOverride: TIER_DEFAULT,
           },
           RoadmapChunkSchema,
-          1,
+          2,
           preprocess
         );
 
@@ -477,7 +501,8 @@ export async function generateRoadmapChunkAction(data: {
       parseError
     );
     return {
-      error: "Failed to generate structured roadmap. Check console logs for details.",
+      error: localizeServerAiError(parseError?.message, ROADMAP_FAILED_FA),
+      message: ROADMAP_FAILED_FA,
     };
   }
 }
@@ -494,35 +519,41 @@ export async function generateRoadmapAction(data: any): Promise<{
   if (!session?.user?.id) return { error: "Unauthorized" };
 
   try {
-    const first = await generateRoadmapChunkAction({
-      idea,
-      projectType,
-      genesisAnswers,
-      corePlan,
-      weekStart: 1,
-      weekEnd: 8,
-    });
+    const slimCore = {
+      projectName: corePlan?.projectName ?? "",
+      overview: corePlan?.overview ?? "",
+    };
+
+    const [first, second] = await Promise.all([
+      generateRoadmapChunkAction({
+        idea,
+        projectType,
+        genesisAnswers,
+        corePlan: slimCore,
+        weekStart: 1,
+        weekEnd: 8,
+      }),
+      generateRoadmapChunkAction({
+        idea,
+        projectType,
+        genesisAnswers,
+        corePlan: slimCore,
+        weekStart: 9,
+        weekEnd: 16,
+      }),
+    ]);
+
     if (first.error || !first.roadmap) {
       return {
-        error:
-          first.error ||
-          "Failed to generate structured roadmap. Check console logs for details.",
+        error: localizeServerAiError(first.error, ROADMAP_FAILED_FA),
+        message: ROADMAP_FAILED_FA,
       };
     }
 
-    const second = await generateRoadmapChunkAction({
-      idea,
-      projectType,
-      genesisAnswers,
-      corePlan,
-      weekStart: 9,
-      weekEnd: 16,
-    });
     if (second.error || !second.roadmap) {
       return {
-        error:
-          second.error ||
-          "Failed to generate structured roadmap. Check console logs for details.",
+        error: localizeServerAiError(second.error, ROADMAP_FAILED_FA),
+        message: ROADMAP_FAILED_FA,
       };
     }
 
@@ -534,7 +565,162 @@ export async function generateRoadmapAction(data: any): Promise<{
   } catch (parseError: any) {
     console.error("AI Validation / Parse Roadmap Error:", parseError);
     return {
-      error: "Failed to generate structured roadmap. Check console logs for details.",
+      error: localizeServerAiError(parseError?.message, ROADMAP_FAILED_FA),
+      message: ROADMAP_FAILED_FA,
+    };
+  }
+}
+
+/**
+ * Background Genesis step: generate both roadmap chunks in parallel and
+ * persist them onto an existing project (progressive unlock after core create).
+ */
+export async function completeGenesisRoadmapAction(data: {
+  projectId: string;
+  idea: string;
+  projectType: string;
+  genesisAnswers?: Record<string, string>;
+  projectName: string;
+  overview: string;
+}): Promise<{
+  success?: boolean;
+  roadmap?: any;
+  error?: string;
+  message?: string;
+}> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: "Unauthorized" };
+
+  const userId = session.user.id;
+  const { projectId, idea, projectType, genesisAnswers, projectName, overview } =
+    data;
+
+  if (!projectId) return { error: "Missing projectId" };
+
+  const project = await prisma.project.findFirst({
+    where: {
+      id: projectId,
+      deletedAt: null,
+      OR: [
+        { userId },
+        { members: { some: { userId, role: { in: ["admin", "editor"] } } } },
+      ],
+    },
+    select: { id: true, data: true },
+  });
+
+  if (!project) return { error: "Project not found" };
+
+  const existingData = (project.data as Record<string, unknown>) || {};
+  const existingRoadmap = existingData.roadmap;
+  if (Array.isArray(existingRoadmap) && existingRoadmap.length === 16) {
+    return { success: true as const, roadmap: existingRoadmap };
+  }
+
+  const slimCore = { projectName, overview };
+
+  const markFailed = async () => {
+    await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        data: {
+          ...existingData,
+          roadmapStatus: "failed",
+        },
+      },
+    });
+  };
+
+  const runChunks = async (mode: "parallel" | "sequential") => {
+    if (mode === "parallel") {
+      return Promise.all([
+        generateRoadmapChunkAction({
+          idea,
+          projectType,
+          genesisAnswers,
+          corePlan: slimCore,
+          weekStart: 1,
+          weekEnd: 8,
+        }),
+        generateRoadmapChunkAction({
+          idea,
+          projectType,
+          genesisAnswers,
+          corePlan: slimCore,
+          weekStart: 9,
+          weekEnd: 16,
+        }),
+      ]);
+    }
+    const first = await generateRoadmapChunkAction({
+      idea,
+      projectType,
+      genesisAnswers,
+      corePlan: slimCore,
+      weekStart: 1,
+      weekEnd: 8,
+    });
+    if (first.error || !first.roadmap) return [first, { error: first.error }] as const;
+    const second = await generateRoadmapChunkAction({
+      idea,
+      projectType,
+      genesisAnswers,
+      corePlan: slimCore,
+      weekStart: 9,
+      weekEnd: 16,
+    });
+    return [first, second] as const;
+  };
+
+  try {
+    let [first, second] = await runChunks("parallel");
+
+    if (first.error || !first.roadmap || second.error || !second.roadmap) {
+      console.warn(
+        "completeGenesisRoadmapAction: parallel chunks failed, retrying sequentially"
+      );
+      [first, second] = await runChunks("sequential");
+    }
+
+    if (first.error || !first.roadmap || second.error || !second.roadmap) {
+      await markFailed();
+      return {
+        error: localizeServerAiError(
+          first.error || second.error,
+          ROADMAP_FAILED_FA
+        ),
+        message: ROADMAP_FAILED_FA,
+      };
+    }
+
+    const merged = normalizeRoadmapOnly({
+      roadmap: [...first.roadmap, ...second.roadmap],
+    });
+
+    await prisma.project.update({
+      where: { id: projectId },
+      data: {
+        data: {
+          ...existingData,
+          roadmap: merged.roadmap,
+          roadmapStatus: "ready",
+        },
+      },
+    });
+
+    return { success: true as const, roadmap: merged.roadmap };
+  } catch (parseError: unknown) {
+    console.error("completeGenesisRoadmapAction Error:", parseError);
+    try {
+      await markFailed();
+    } catch {
+      // best-effort status write
+    }
+    const raw =
+      parseError instanceof Error ? parseError.message : undefined;
+    return {
+      error: localizeServerAiError(raw, ROADMAP_FAILED_FA),
+      message: ROADMAP_FAILED_FA,
     };
   }
 }

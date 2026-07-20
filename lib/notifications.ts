@@ -129,20 +129,13 @@ export async function seedWelcomeNotifications(userId: string) {
         {
           userId,
           type: "success",
-          title: "به کارنکس خوش آمدید! 🎉",
-          message: "از اینکه کارنکس را انتخاب کردید متشکریم. برای شروع، اولین پروژه و نقشه راه خود را ایجاد کنید.",
-          action: { label: "داشبورد", href: "/dashboard/overview" } as any,
+          title: "به کارنکس خوش آمدید",
+          message:
+            "برای شروع، اولین پروژه استارتاپی خود را بسازید تا نقشه راه و بوم آماده شود.",
+          action: { label: "ساخت پروژه", href: "/new-project" } as any,
           read: false,
         },
-        {
-          userId,
-          type: "info",
-          title: "پروفایل خود را تکمیل کنید 👤",
-          message: "اطلاعات حساب کاربری خود را در بخش تنظیمات تکمیل کنید تا تجربه بهتری داشته باشید.",
-          action: { label: "تنظیمات حساب", href: "/dashboard/account" } as any,
-          read: false,
-        }
-      ]
+      ],
     });
     return welcome;
   } catch (error) {

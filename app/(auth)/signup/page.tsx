@@ -58,8 +58,8 @@ export default function SignupPage() {
       setError("رمز عبور و تکرار آن مطابقت ندارند");
       return;
     }
-    if (password.length < 6) {
-      setError("رمز عبور باید حداقل ۶ کاراکتر باشد");
+    if (password.length < 8) {
+      setError("رمز عبور باید حداقل ۸ کاراکتر باشد");
       return;
     }
 
@@ -196,7 +196,7 @@ export default function SignupPage() {
             <div className="space-y-2">
               <PasswordField
                 label="رمز عبور"
-                placeholder="حداقل ۶ کاراکتر"
+                placeholder="حداقل ۸ کاراکتر"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

@@ -1,6 +1,21 @@
 import prisma from "@/lib/prisma";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { archiveAppUser } from "@/lib/auth/archive-user";
+import { creditsSeedFromEmailQuota } from "@/lib/auth/email-ai-quota";
+import { isEmailInAdminAllowlist } from "@/lib/admin/require-admin";
+import type { Prisma } from "../../prisma/client";
+
+/** Bootstrap: ADMIN_EMAILS → Prisma role=admin (runtime gates use role only). */
+async function ensureAdminRoleFromAllowlist<
+  T extends { id: string; email: string | null; role: string | null },
+>(user: T): Promise<T> {
+  if (user.role === "admin") return user;
+  if (!isEmailInAdminAllowlist(user.email)) return user;
+  return prisma.user.update({
+    where: { id: user.id },
+    data: { role: "admin" },
+  }) as Promise<T>;
+}
 
 function displayName(supabaseUser: SupabaseUser): string | undefined {
   const meta = supabaseUser.user_metadata ?? {};
@@ -32,7 +47,7 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
   const bySupabaseId = await prisma.user.findFirst({
     where: { supabaseUserId: supabaseUser.id, deletedAt: null },
   });
-  if (bySupabaseId) return bySupabaseId;
+  if (bySupabaseId) return ensureAdminRoleFromAllowlist(bySupabaseId);
 
   const byEmail = await prisma.user.findFirst({
     where: { email: supabaseUser.email, deletedAt: null },
@@ -41,7 +56,7 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
   if (byEmail) {
     // Legacy migration: link Supabase ID to a row that never had one.
     if (!byEmail.supabaseUserId) {
-      return prisma.user.update({
+      const linked = await prisma.user.update({
         where: { id: byEmail.id },
         data: {
           supabaseUserId: supabaseUser.id,
@@ -52,11 +67,12 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
             : byEmail.emailVerified,
         },
       });
+      return ensureAdminRoleFromAllowlist(linked);
     }
 
     // Same Supabase auth identity — normal re-login.
     if (byEmail.supabaseUserId === supabaseUser.id) {
-      return byEmail;
+      return ensureAdminRoleFromAllowlist(byEmail);
     }
 
     // New Supabase auth user re-used an email from a previous auth identity.
@@ -65,6 +81,7 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
   }
 
   const name = displayName(supabaseUser);
+  const credits = await creditsSeedFromEmailQuota(supabaseUser.email);
   const newUser = await prisma.user.create({
     data: {
       supabaseUserId: supabaseUser.id,
@@ -74,6 +91,7 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
       emailVerified: supabaseUser.email_confirmed_at
         ? new Date(supabaseUser.email_confirmed_at)
         : null,
+      credits: credits as Prisma.InputJsonValue,
     },
   });
 
@@ -100,5 +118,5 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
     console.error("Failed to send welcome email on user sync:", emailErr);
   }
 
-  return newUser;
+  return ensureAdminRoleFromAllowlist(newUser);
 }
