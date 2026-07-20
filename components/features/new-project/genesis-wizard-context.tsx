@@ -335,17 +335,28 @@ export function GenesisWizardProvider({
         );
       }
 
-      const corePlan = coreResult.plan;
-      if (!isMeaningfulCanvas(getCanvasFromPlan(corePlan))) {
+      const rawCorePlan = coreResult.plan;
+      if (!isMeaningfulCanvas(getCanvasFromPlan(rawCorePlan))) {
         throw new Error(
           "بوم کسب‌وکار ناقص تولید شد. لطفاً دوباره تلاش کنید."
         );
       }
 
+      // Prefer the user's chosen name over any AI-invented brand so roadmap
+      // titles/overview never diverge from the sidebar project name.
+      const { alignPlanToUserProjectName } = await import(
+        "@/lib/roadmap/align-project-name"
+      );
+      const corePlan = alignPlanToUserProjectName(
+        rawCorePlan,
+        projectName,
+        rawCorePlan.projectName
+      );
+
       setGeneratingPhase("در حال ساخت نقشه راه...");
 
       const slimCore = {
-        projectName: corePlan.projectName || projectName,
+        projectName: projectName || corePlan.projectName || "",
         overview: corePlan.overview || "",
         canvasSummary: buildCanvasSummaryForRoadmap(corePlan),
       };
@@ -395,15 +406,19 @@ export function GenesisWizardProvider({
       setIsGenerating(false);
       setIsCreating(true);
 
-      const completePlan = {
-        ...corePlan,
-        roadmap,
-        roadmapStatus: "ready" as const,
+      const completePlan = alignPlanToUserProjectName(
+        {
+          ...corePlan,
+          roadmap,
+          roadmapStatus: "ready" as const,
+          projectName,
+          projectType: safePillar,
+          ideaInput: projectVision,
+          genesisAnswers: answers,
+        },
         projectName,
-        projectType: safePillar,
-        ideaInput: projectVision,
-        genesisAnswers: answers,
-      };
+        rawCorePlan.projectName
+      );
 
       const createPromise = createNewProject(completePlan);
       const timeoutPromise = new Promise((_, reject) =>

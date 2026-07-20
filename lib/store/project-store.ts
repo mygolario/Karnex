@@ -1,11 +1,47 @@
 import { create } from "zustand";
 import { BusinessPlan, savePlanToCloud } from "@/lib/db";
+import { repairMisalignedProjectName } from "@/lib/roadmap/align-project-name";
 
 async function fetchProjectDetail(projectId: string): Promise<BusinessPlan | null> {
   const res = await fetch(`/api/projects/${projectId}`, { cache: "no-store" });
   if (!res.ok) return null;
   const data = await res.json();
   return data.project as BusinessPlan;
+}
+
+/** Fix roadmap/overview copy that still uses an AI-invented brand name. */
+async function maybeRepairProjectName(
+  userId: string | undefined,
+  project: BusinessPlan
+): Promise<BusinessPlan> {
+  const { plan, changed } = repairMisalignedProjectName(
+    project as unknown as Record<string, unknown>
+  );
+  if (!changed) return project;
+
+  const repaired = plan as unknown as BusinessPlan;
+  const ownerId = userId || (project as BusinessPlan & { userId?: string }).userId;
+  if (!ownerId || !project.id) return repaired;
+
+  // Persist only content fields — avoid writing client metadata into JSON `data`.
+  const {
+    id: _id,
+    userId: _uid,
+    createdAt: _ca,
+    updatedAt: _ua,
+    ...content
+  } = repaired as BusinessPlan & {
+    userId?: string;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+
+  try {
+    await savePlanToCloud(ownerId, content, true, project.id);
+  } catch (err) {
+    console.error("Failed to persist project-name alignment repair:", err);
+  }
+  return repaired;
 }
 
 interface ProjectState {
@@ -77,9 +113,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       if (selectedId) {
         const full = await fetchProjectDetail(selectedId);
         if (full) {
+          const repaired = await maybeRepairProjectName(userId, full);
           set({
-            activeProject: full,
-            projects: summaries.map((p) => (p.id === full.id ? full : p)),
+            activeProject: repaired,
+            projects: summaries.map((p) => (p.id === repaired.id ? repaired : p)),
           });
         } else {
           set({ activeProject: summaries.find((p) => p.id === selectedId) || null });
@@ -159,9 +196,10 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     try {
       const full = await fetchProjectDetail(projectId);
       if (full) {
+        const repaired = await maybeRepairProjectName(full.userId, full);
         set({
-          activeProject: full,
-          projects: projects.map((p) => (p.id === projectId ? full : p)),
+          activeProject: repaired,
+          projects: projects.map((p) => (p.id === projectId ? repaired : p)),
         });
       }
     } finally {

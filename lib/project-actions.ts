@@ -365,7 +365,7 @@ export async function generateCorePlanAction(data: any): Promise<{
   error?: string;
   message?: string;
 }> {
-    const { idea, audience, budget, projectType, genesisAnswers } = data;
+    const { idea, audience, budget, projectType, genesisAnswers, projectName } = data;
     
     const session = await auth();
     if (!session?.user?.id) return { error: "Unauthorized" };
@@ -395,22 +395,34 @@ export async function generateCorePlanAction(data: any): Promise<{
 
     const { businessGlossary } = await import("@/lib/knowledge-base");
     const { getKbContextBlock } = await import("@/lib/ai/rag");
+    const { alignPlanToUserProjectName } = await import(
+      "@/lib/roadmap/align-project-name"
+    );
 
     // Ground the plan with authoritative Iranian regulatory content (e‌namad,
     // samandehi, tax, nic, ...). Best-effort: empty string if RAG is unavailable.
     const kbQuery = `${idea} ${audience ?? ""} ${projectType ?? ""}`.trim();
     const kbContext = await getKbContextBlock(kbQuery, { k: 4 });
 
+    const userProjectName =
+      typeof projectName === "string" ? projectName.trim() : "";
+
     const { system, user } = getPrompt("generatePlan", {
       projectType,
       idea,
       audience,
       budget,
+      projectName: userProjectName || "نام پروژه مشخص نشده",
       formattedAnswers,
       businessGlossary: JSON.stringify(businessGlossary, null, 2)
     });
 
     const userWithKb = kbContext ? `${user}\n\n${kbContext}` : user;
+
+    const finalizeCorePlan = (plan: any) => {
+      if (!userProjectName) return plan;
+      return alignPlanToUserProjectName(plan, userProjectName, plan?.projectName);
+    };
 
     try {
       return await runWithAiUsage(
@@ -453,10 +465,10 @@ export async function generateCorePlanAction(data: any): Promise<{
             if (!isMeaningfulCanvas(getCanvasFromPlan(repaired))) {
               throw new Error(CORE_PLAN_FAILED_FA);
             }
-            return { success: true as const, plan: repaired };
+            return { success: true as const, plan: finalizeCorePlan(repaired) };
           }
 
-          return { success: true as const, plan: corePlan };
+          return { success: true as const, plan: finalizeCorePlan(corePlan) };
         }
       );
     } catch (parseError: any) {
