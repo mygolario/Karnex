@@ -5,6 +5,27 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+/** Deduplicate concurrent /api/admin/me probes across sidebar + command + mobile. */
+let sharedAdminProbe: {
+  userId: string;
+  promise: Promise<boolean>;
+} | null = null;
+
+function probeIsAdmin(userId: string): Promise<boolean> {
+  if (sharedAdminProbe?.userId === userId) {
+    return sharedAdminProbe.promise;
+  }
+  const promise = fetch("/api/admin/me")
+    .then(async (r) => {
+      if (!r.ok) return false;
+      const data = (await r.json()) as { isAdmin?: boolean };
+      return Boolean(data.isAdmin);
+    })
+    .catch(() => false);
+  sharedAdminProbe = { userId, promise };
+  return promise;
+}
+
 /**
  * Admin gate — fetches /api/admin/me (Prisma role === "admin").
  * Never reads ADMIN_EMAILS in the browser.
@@ -19,6 +40,7 @@ export function useAdmin() {
     if (authLoading) return;
 
     if (!user) {
+      sharedAdminProbe = null;
       setIsAdmin(false);
       setChecking(false);
       return;
@@ -27,13 +49,9 @@ export function useAdmin() {
     let cancelled = false;
     setChecking(true);
 
-    fetch("/api/admin/me")
-      .then((r) => (r.ok ? r.json() : { isAdmin: false }))
-      .then((data: { isAdmin?: boolean }) => {
-        if (!cancelled) setIsAdmin(Boolean(data.isAdmin));
-      })
-      .catch(() => {
-        if (!cancelled) setIsAdmin(false);
+    probeIsAdmin(user.id)
+      .then((admin) => {
+        if (!cancelled) setIsAdmin(admin);
       })
       .finally(() => {
         if (!cancelled) setChecking(false);

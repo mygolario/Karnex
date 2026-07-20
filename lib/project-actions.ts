@@ -533,11 +533,11 @@ export async function generateRoadmapChunkAction(data: {
             systemPrompt: system,
             maxTokens: 8000,
             temperature: 0.55,
-            timeoutMs: 90000,
+            timeoutMs: 75000,
             modelOverride: TIER_DEFAULT,
           },
           RoadmapChunkSchema,
-          2,
+          1,
           preprocess
         );
 
@@ -631,6 +631,8 @@ export async function generateRoadmapAction(data: any): Promise<{
 /**
  * Background Genesis step: generate both roadmap chunks in parallel and
  * persist them onto an existing project (progressive unlock after core create).
+ * Prefer client-side sequential chunk calls (RoadmapBackgroundGenerator) to
+ * stay under Vercel maxDuration; this path is parallel-only with no same-invoke retry.
  */
 export async function completeGenesisRoadmapAction(data: {
   projectId: string;
@@ -693,62 +695,25 @@ export async function completeGenesisRoadmapAction(data: {
     });
   };
 
-  type RoadmapChunkResult = Awaited<ReturnType<typeof generateRoadmapChunkAction>>;
-
-  const runChunks = async (
-    mode: "parallel" | "sequential"
-  ): Promise<[RoadmapChunkResult, RoadmapChunkResult]> => {
-    if (mode === "parallel") {
-      return Promise.all([
-        generateRoadmapChunkAction({
-          idea,
-          projectType,
-          genesisAnswers,
-          corePlan: slimCore,
-          weekStart: 1,
-          weekEnd: 8,
-        }),
-        generateRoadmapChunkAction({
-          idea,
-          projectType,
-          genesisAnswers,
-          corePlan: slimCore,
-          weekStart: 9,
-          weekEnd: 16,
-        }),
-      ]);
-    }
-    const first = await generateRoadmapChunkAction({
-      idea,
-      projectType,
-      genesisAnswers,
-      corePlan: slimCore,
-      weekStart: 1,
-      weekEnd: 8,
-    });
-    if (first.error || !first.roadmap) {
-      return [first, { error: first.error }];
-    }
-    const second = await generateRoadmapChunkAction({
-      idea,
-      projectType,
-      genesisAnswers,
-      corePlan: slimCore,
-      weekStart: 9,
-      weekEnd: 16,
-    });
-    return [first, second];
-  };
-
   try {
-    let [first, second] = await runChunks("parallel");
-
-    if (first.error || !first.roadmap || second.error || !second.roadmap) {
-      console.warn(
-        "completeGenesisRoadmapAction: parallel chunks failed, retrying sequentially"
-      );
-      [first, second] = await runChunks("sequential");
-    }
+    const [first, second] = await Promise.all([
+      generateRoadmapChunkAction({
+        idea,
+        projectType,
+        genesisAnswers,
+        corePlan: slimCore,
+        weekStart: 1,
+        weekEnd: 8,
+      }),
+      generateRoadmapChunkAction({
+        idea,
+        projectType,
+        genesisAnswers,
+        corePlan: slimCore,
+        weekStart: 9,
+        weekEnd: 16,
+      }),
+    ]);
 
     if (first.error || !first.roadmap || second.error || !second.roadmap) {
       await markFailed();

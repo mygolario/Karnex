@@ -2,12 +2,16 @@
 
 import { useEffect, useRef } from "react";
 import { useProject } from "@/contexts/project-context";
-import { needsRoadmapRepair } from "@/lib/roadmap/quality";
+import {
+  buildCanvasSummaryForRoadmap,
+  isMeaningfulRoadmap,
+  needsRoadmapRepair,
+} from "@/lib/roadmap/quality";
 
 /**
  * Repair path for projects with empty/padded/generating roadmaps.
- * Genesis may unlock the dashboard with core plan first; this finishes
- * the 16-week roadmap in the background when needed.
+ * Runs each 8-week chunk as its own server action so Vercel does not
+ * kill a single oversized parallel+sequential invocation.
  */
 export function RoadmapBackgroundGenerator() {
   const { activeProject, updateActiveProject } = useProject();
@@ -32,35 +36,68 @@ export function RoadmapBackgroundGenerator() {
           });
         }
 
-        const { completeGenesisRoadmapAction } = await import(
+        const { generateRoadmapChunkAction } = await import(
           "@/lib/project-actions"
         );
-        const result = await completeGenesisRoadmapAction({
-          projectId,
+
+        const slimCore = {
+          projectName: project.projectName,
+          overview: project.overview || "",
+          canvasSummary: buildCanvasSummaryForRoadmap(project),
+        };
+
+        const chunkArgs = {
           idea: project.ideaInput || "",
           projectType: project.projectType,
           genesisAnswers: project.genesisAnswers as
             | Record<string, string>
             | undefined,
-          projectName: project.projectName,
-          overview: project.overview || "",
-        });
+          corePlan: slimCore,
+        };
 
+        // Sequential client-side calls → separate serverless budgets.
+        const first = await generateRoadmapChunkAction({
+          ...chunkArgs,
+          weekStart: 1,
+          weekEnd: 8,
+        });
         if (inFlightRef.current !== projectId) return;
 
-        if (result.error || !result.roadmap) {
+        if (first.error || !first.roadmap) {
+          await updateActiveProject({ roadmapStatus: "failed" });
+          return;
+        }
+
+        const second = await generateRoadmapChunkAction({
+          ...chunkArgs,
+          weekStart: 9,
+          weekEnd: 16,
+        });
+        if (inFlightRef.current !== projectId) return;
+
+        if (second.error || !second.roadmap) {
+          await updateActiveProject({ roadmapStatus: "failed" });
+          return;
+        }
+
+        const roadmap = [...first.roadmap, ...second.roadmap];
+        if (!isMeaningfulRoadmap(roadmap)) {
           await updateActiveProject({ roadmapStatus: "failed" });
           return;
         }
 
         await updateActiveProject({
-          roadmap: result.roadmap,
+          roadmap,
           roadmapStatus: "ready",
         });
       } catch (err) {
         console.error("Background roadmap generation failed:", err);
         if (inFlightRef.current === projectId) {
-          await updateActiveProject({ roadmapStatus: "failed" });
+          try {
+            await updateActiveProject({ roadmapStatus: "failed" });
+          } catch {
+            // best-effort status write
+          }
         }
       } finally {
         if (inFlightRef.current === projectId) {

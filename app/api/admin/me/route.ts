@@ -1,20 +1,23 @@
 import { NextResponse } from "next/server";
-import { requireAdminResult } from "@/lib/admin/require-admin";
+import { auth } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /**
- * Server-side admin check — Prisma role === "admin" only.
- * Client hooks must call this; never trust ADMIN_EMAILS in the browser.
+ * Admin identity probe — Prisma role === "admin" only.
+ * Authenticated non-admins get 200 {isAdmin:false} (not 401) so dashboards
+ * don't spam the console. Unauthenticated requests still get 401.
  */
 export async function GET() {
   try {
-    const result = await requireAdminResult();
-    if (!result.ok) {
+    const session = await auth();
+    if (!session?.user?.id) {
       return NextResponse.json({ isAdmin: false }, { status: 401 });
     }
-    return NextResponse.json({ isAdmin: true });
+    return NextResponse.json({
+      isAdmin: session.user.role === "admin",
+    });
   } catch (error) {
     console.error("admin/me error:", error);
     return NextResponse.json({ isAdmin: false }, { status: 500 });
