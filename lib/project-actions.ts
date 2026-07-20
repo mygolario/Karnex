@@ -2,6 +2,7 @@
 
 import { auth } from "@/lib/auth/session";
 import prisma from "@/lib/prisma";
+import { Prisma } from "../prisma/client";
 import { checkProjectLimit, checkAIRequestLimit, incrementAIUsage } from "@/lib/usage-tracker";
 import { TIER_DEFAULT, TIER_REASONING } from "@/lib/openrouter";
 import { checkAILimit } from "@/lib/ai-limit-middleware";
@@ -626,7 +627,7 @@ export async function completeGenesisRoadmapAction(data: {
         data: {
           ...existingData,
           roadmapStatus: "failed",
-        },
+        } as unknown as Prisma.InputJsonValue,
       },
     });
   };
@@ -710,7 +711,7 @@ export async function completeGenesisRoadmapAction(data: {
           ...existingData,
           roadmap: merged.roadmap,
           roadmapStatus: "ready",
-        },
+        } as unknown as Prisma.InputJsonValue,
       },
     });
 
