@@ -360,7 +360,7 @@ export default function RoadmapPage() {
       );
     }
 
-    if (status === "failed" || (isShell && status === "failed")) {
+    if (status === "failed") {
       return (
         <div className="container mx-auto max-w-4xl p-6">
           <EmptyState
