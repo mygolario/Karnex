@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { FocusHero } from "@/components/dashboard/overview/focus-hero";
 import { SetupChecklist } from "@/components/tour/setup-checklist";
 import { UpcomingTasks } from "@/components/dashboard/overview/upcoming-tasks";
-import { cn } from "@/lib/utils";
 import { needsRoadmapRepair } from "@/lib/roadmap/quality";
 import { cn } from "@/lib/utils";
 
