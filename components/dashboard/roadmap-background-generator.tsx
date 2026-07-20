@@ -9,9 +9,10 @@ import {
 } from "@/lib/roadmap/quality";
 
 /**
- * Repair path for projects with empty/padded/generating roadmaps.
- * Runs each 8-week chunk as its own server action so Vercel does not
- * kill a single oversized parallel+sequential invocation.
+ * Legacy repair for projects stuck with empty/padded/generating roadmaps.
+ * New Genesis waits for a full ready roadmap before create; this only
+ * repairs older incomplete projects (or failed retries via «تلاش مجدد»).
+ * Runs each 8-week chunk as its own server action to stay under Vercel maxDuration.
  */
 export function RoadmapBackgroundGenerator() {
   const { activeProject, updateActiveProject } = useProject();

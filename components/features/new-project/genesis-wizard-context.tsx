@@ -350,57 +350,55 @@ export function GenesisWizardProvider({
         canvasSummary: buildCanvasSummaryForRoadmap(corePlan),
       };
 
-      let roadmap: unknown[] = [];
-      let roadmapStatus: "ready" | "generating" = "generating";
+      const [chunk1, chunk2] = await Promise.all([
+        generateRoadmapChunkAction({
+          projectType: safePillar,
+          idea: projectVision,
+          genesisAnswers: answers,
+          corePlan: slimCore,
+          weekStart: 1,
+          weekEnd: 8,
+        }),
+        generateRoadmapChunkAction({
+          projectType: safePillar,
+          idea: projectVision,
+          genesisAnswers: answers,
+          corePlan: slimCore,
+          weekStart: 9,
+          weekEnd: 16,
+        }),
+      ]);
 
-      try {
-        const [chunk1, chunk2] = await Promise.all([
-          generateRoadmapChunkAction({
-            projectType: safePillar,
-            idea: projectVision,
-            genesisAnswers: answers,
-            corePlan: slimCore,
-            weekStart: 1,
-            weekEnd: 8,
-          }),
-          generateRoadmapChunkAction({
-            projectType: safePillar,
-            idea: projectVision,
-            genesisAnswers: answers,
-            corePlan: slimCore,
-            weekStart: 9,
-            weekEnd: 16,
-          }),
-        ]);
-
-        if (
-          !chunk1.error &&
-          chunk1.roadmap &&
-          !chunk2.error &&
-          chunk2.roadmap
-        ) {
-          const merged = [...chunk1.roadmap, ...chunk2.roadmap];
-          if (isMeaningfulRoadmap(merged)) {
-            roadmap = merged;
-            roadmapStatus = "ready";
-          }
-        }
-      } catch (roadmapErr) {
-        console.warn("Genesis roadmap generation deferred:", roadmapErr);
+      if (chunk1.error || !chunk1.roadmap) {
+        throw new Error(
+          chunk1.message ||
+            chunk1.error ||
+            "ساخت نقشه راه (هفته‌های ۱–۸) ناموفق بود. لطفاً دوباره تلاش کنید."
+        );
+      }
+      if (chunk2.error || !chunk2.roadmap) {
+        throw new Error(
+          chunk2.message ||
+            chunk2.error ||
+            "ساخت نقشه راه (هفته‌های ۹–۱۶) ناموفق بود. لطفاً دوباره تلاش کنید."
+        );
       }
 
-      setGeneratingPhase(
-        roadmapStatus === "ready"
-          ? "در حال ذخیره پروژه..."
-          : "ذخیره پروژه؛ نقشه راه در پس‌زمینه کامل می‌شود..."
-      );
+      const roadmap = [...chunk1.roadmap, ...chunk2.roadmap];
+      if (!isMeaningfulRoadmap(roadmap)) {
+        throw new Error(
+          "نقشه راه تولیدشده ناقص بود. لطفاً دوباره تلاش کنید."
+        );
+      }
+
+      setGeneratingPhase("در حال ذخیره پروژه...");
       setIsGenerating(false);
       setIsCreating(true);
 
       const completePlan = {
         ...corePlan,
         roadmap,
-        roadmapStatus,
+        roadmapStatus: "ready" as const,
         projectName,
         projectType: safePillar,
         ideaInput: projectVision,
