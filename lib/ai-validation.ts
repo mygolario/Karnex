@@ -131,6 +131,44 @@ export const SmartCanvasSchema = z.object({
 });
 
 // --- Business Plan (Full Strategic Blueprint) Schema ---
+const BMC_KEYS = [
+  "keyPartners",
+  "keyActivities",
+  "keyResources",
+  "uniqueValue",
+  "customerRelations",
+  "channels",
+  "customerSegments",
+  "costStructure",
+  "revenueStream",
+] as const;
+
+const CANVAS_KEY_ALIASES: Record<string, (typeof BMC_KEYS)[number]> = {
+  keypartners: "keyPartners",
+  keypartnerships: "keyPartners",
+  partners: "keyPartners",
+  keyactivities: "keyActivities",
+  activities: "keyActivities",
+  keyresources: "keyResources",
+  resources: "keyResources",
+  uniquevalue: "uniqueValue",
+  uniquevalueproposition: "uniqueValue",
+  valueproposition: "uniqueValue",
+  valueprop: "uniqueValue",
+  customerrelations: "customerRelations",
+  customerrelationships: "customerRelations",
+  relationships: "customerRelations",
+  channels: "channels",
+  customersegments: "customerSegments",
+  segments: "customerSegments",
+  customers: "customerSegments",
+  coststructure: "costStructure",
+  costs: "costStructure",
+  revenuestream: "revenueStream",
+  revenuestreams: "revenueStream",
+  revenue: "revenueStream",
+};
+
 const canvasFieldSchema = z.preprocess((val) => {
   if (typeof val === "string") return val;
   if (Array.isArray(val)) {
@@ -143,17 +181,40 @@ const canvasFieldSchema = z.preprocess((val) => {
   return String(val);
 }, z.string().default(""));
 
-export const BusinessModelCanvasSchema = z.object({
-  keyPartners: canvasFieldSchema,
-  keyActivities: canvasFieldSchema,
-  keyResources: canvasFieldSchema,
-  uniqueValue: canvasFieldSchema,
-  customerRelations: canvasFieldSchema,
-  channels: canvasFieldSchema,
-  customerSegments: canvasFieldSchema,
-  costStructure: canvasFieldSchema,
-  revenueStream: canvasFieldSchema,
-});
+function normalizeCanvasInput(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(raw as Record<string, unknown>)) {
+    const lower = key.toLowerCase().replace(/[^a-z]/g, "");
+    const target =
+      CANVAS_KEY_ALIASES[lower] ??
+      (BMC_KEYS.includes(key as (typeof BMC_KEYS)[number])
+        ? (key as (typeof BMC_KEYS)[number])
+        : null);
+    if (!target) continue;
+    const existing = out[target];
+    const existingEmpty =
+      existing == null ||
+      (typeof existing === "string" && existing.trim().length === 0);
+    if (existingEmpty) out[target] = value;
+  }
+  return out;
+}
+
+export const BusinessModelCanvasSchema = z.preprocess(
+  normalizeCanvasInput,
+  z.object({
+    keyPartners: canvasFieldSchema,
+    keyActivities: canvasFieldSchema,
+    keyResources: canvasFieldSchema,
+    uniqueValue: canvasFieldSchema,
+    customerRelations: canvasFieldSchema,
+    channels: canvasFieldSchema,
+    customerSegments: canvasFieldSchema,
+    costStructure: canvasFieldSchema,
+    revenueStream: canvasFieldSchema,
+  })
+);
 
 export const BrandKitSchema = z.object({
   primaryColorHex: z.string().default('#3b82f6'),
@@ -214,26 +275,6 @@ export const BusinessPlanSchema = z.object({
 
 export const BusinessPlanCoreSchema = BusinessPlanSchema.omit({ roadmap: true }).extend({
   roadmap: z.array(RoadmapPhaseSchema).optional().default([]),
-}).superRefine((plan, ctx) => {
-  const c = plan.businessModelCanvas || plan.leanCanvas;
-  const keys = [
-    "keyPartners",
-    "keyActivities",
-    "keyResources",
-    "uniqueValue",
-    "customerRelations",
-    "channels",
-    "customerSegments",
-    "costStructure",
-    "revenueStream",
-  ] as const;
-  if (!c || !keys.every((k) => String(c[k] ?? "").trim().length > 0)) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "بوم کسب‌وکار باید هر ۹ فیلد را با محتوای واقعی پر کند",
-      path: ["businessModelCanvas"],
-    });
-  }
 });
 
 export const RoadmapOnlySchema = z.object({

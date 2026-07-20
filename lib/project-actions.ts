@@ -20,6 +20,8 @@ import {
 } from "@/lib/roadmap-normalize";
 import {
   buildCanvasSummaryForRoadmap,
+  getCanvasFromPlan,
+  isMeaningfulCanvas,
   isMeaningfulRoadmap,
 } from "@/lib/roadmap/quality";
 import { getEffectiveLaunchConfig } from "@/lib/launch/effective";
@@ -424,8 +426,35 @@ export async function generateCorePlanAction(data: any): Promise<{
               modelOverride: TIER_REASONING,
             },
             BusinessPlanCoreSchema,
-            1
+            2
           );
+
+          // Soft quality gate: if BMC is thin, one focused repair pass.
+          if (!isMeaningfulCanvas(getCanvasFromPlan(corePlan))) {
+            const repairPrompt = `${userWithKb}
+
+⚠️ SYSTEM DIRECTION: بوم کسب‌وکار ناقص بود. businessModelCanvas را با هر ۹ فیلد اجباری دوباره بساز
+(keyPartners, keyActivities, keyResources, uniqueValue, customerRelations, channels, customerSegments, costStructure, revenueStream).
+هر فیلد باید رشته فارسی غیرخالی یا آرایه ۳ موردی باشد. بقیه فیلدهای JSON قبلی را حفظ کن. roadmap باید [] بماند.`;
+
+            const repaired = await callAIWithValidation(
+              repairPrompt,
+              {
+                systemPrompt: system,
+                maxTokens: 12000,
+                temperature: 0.5,
+                timeoutMs: 90000,
+                modelOverride: TIER_REASONING,
+              },
+              BusinessPlanCoreSchema,
+              1
+            );
+
+            if (!isMeaningfulCanvas(getCanvasFromPlan(repaired))) {
+              throw new Error(CORE_PLAN_FAILED_FA);
+            }
+            return { success: true as const, plan: repaired };
+          }
 
           return { success: true as const, plan: corePlan };
         }

@@ -5,9 +5,9 @@ import { useProject } from "@/contexts/project-context";
 import { needsRoadmapRepair } from "@/lib/roadmap/quality";
 
 /**
- * Repair path for projects stuck with empty/padded roadmaps.
- * New Genesis waits for a full roadmap before create; this only
- * repairs legacy incomplete projects.
+ * Repair path for projects with empty/padded/generating roadmaps.
+ * Genesis may unlock the dashboard with core plan first; this finishes
+ * the 16-week roadmap in the background when needed.
  */
 export function RoadmapBackgroundGenerator() {
   const { activeProject, updateActiveProject } = useProject();

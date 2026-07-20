@@ -92,22 +92,23 @@ function phaseStepCount(phase: PhaseLike | null | undefined): number {
 
 /**
  * A roadmap is ready when it has 16 weeks and enough real steps.
- * Every week needs ≥2 titled steps; at least 12 weeks must have content
- * so padded empty shells fail.
+ * Prefer ≥2 titled steps per week; allow a few thinner weeks so
+ * review/launch weeks don't fail the whole plan. Empty padded shells fail.
  */
 export function isMeaningfulRoadmap(
   roadmap: PhaseLike[] | null | undefined
 ): boolean {
   if (!Array.isArray(roadmap) || roadmap.length !== 16) return false;
 
-  let weeksWithSteps = 0;
+  let weeksWithAny = 0;
+  let weeksWithEnough = 0;
   for (let i = 0; i < 16; i++) {
     const count = phaseStepCount(roadmap[i]);
-    if (count >= 1) weeksWithSteps += 1;
-    if (count < 2) return false;
+    if (count >= 1) weeksWithAny += 1;
+    if (count >= 2) weeksWithEnough += 1;
   }
 
-  return weeksWithSteps >= 12;
+  return weeksWithAny >= 14 && weeksWithEnough >= 12;
 }
 
 /** Mostly-empty 16-week pad from the progressive-unlock bug. */
