@@ -11,10 +11,11 @@ async function ensureAdminRoleFromAllowlist<
 >(user: T): Promise<T> {
   if (user.role === "admin") return user;
   if (!isEmailInAdminAllowlist(user.email)) return user;
-  return prisma.user.update({
+  await prisma.user.update({
     where: { id: user.id },
     data: { role: "admin" },
-  }) as Promise<T>;
+  });
+  return { ...user, role: "admin" };
 }
 
 function displayName(supabaseUser: SupabaseUser): string | undefined {
