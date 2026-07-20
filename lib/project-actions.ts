@@ -631,7 +631,11 @@ export async function completeGenesisRoadmapAction(data: {
     });
   };
 
-  const runChunks = async (mode: "parallel" | "sequential") => {
+  type RoadmapChunkResult = Awaited<ReturnType<typeof generateRoadmapChunkAction>>;
+
+  const runChunks = async (
+    mode: "parallel" | "sequential"
+  ): Promise<[RoadmapChunkResult, RoadmapChunkResult]> => {
     if (mode === "parallel") {
       return Promise.all([
         generateRoadmapChunkAction({
@@ -660,7 +664,9 @@ export async function completeGenesisRoadmapAction(data: {
       weekStart: 1,
       weekEnd: 8,
     });
-    if (first.error || !first.roadmap) return [first, { error: first.error }] as const;
+    if (first.error || !first.roadmap) {
+      return [first, { error: first.error }];
+    }
     const second = await generateRoadmapChunkAction({
       idea,
       projectType,
@@ -669,7 +675,7 @@ export async function completeGenesisRoadmapAction(data: {
       weekStart: 9,
       weekEnd: 16,
     });
-    return [first, second] as const;
+    return [first, second];
   };
 
   try {
