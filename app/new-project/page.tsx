@@ -9,11 +9,12 @@ import {
   useGenesisWizard,
 } from "@/components/features/new-project/genesis-wizard-context";
 import { GenesisWizardShell } from "@/components/features/new-project/genesis-wizard-shell";
+import { StepWelcome } from "@/components/features/new-project/step-welcome";
 import { StepPillar } from "@/components/features/new-project/step-pillar";
-import { StepDetails } from "@/components/features/new-project/step-details";
-import { StepVision } from "@/components/features/new-project/step-vision";
-import { StepReview } from "@/components/features/new-project/step-review";
-import { GenerationLoader } from "@/components/shared/generation-loader";
+import { StepInterview } from "@/components/features/new-project/step-interview";
+import { StepContext } from "@/components/features/new-project/step-context";
+import { StepBrief } from "@/components/features/new-project/step-brief";
+import { StepBuild } from "@/components/features/new-project/step-build";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,8 +47,7 @@ function NewProjectInner() {
   const { user, loading: authLoading } = useAuth();
   const {
     activeStep,
-    isGenerating,
-    isCreating,
+    currentPhase,
     showLimitModal,
     limitModalKind,
     limitModalMessage,
@@ -56,7 +56,6 @@ function NewProjectInner() {
     dismissResume,
   } = useGenesisWizard();
 
-  // Auth gate: logged-out users go to /login (not /signup).
   useEffect(() => {
     if (!authLoading && !user) {
       router.push("/login");
@@ -71,29 +70,15 @@ function NewProjectInner() {
     );
   }
 
-  if (isGenerating || isCreating) {
-    return (
-      <div className="h-screen w-full bg-background flex flex-col items-center justify-center text-center p-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-brand-primary/5 blur-3xl opacity-50" />
-        <GenerationLoader
-          isLoading
-          title={
-            isCreating
-              ? "در حال ساخت امپراطوری شما..."
-              : "کارنکس در حال طراحی استراتژی..."
-          }
-        />
-      </div>
-    );
-  }
-
   return (
     <>
       <GenesisWizardShell>
-        {activeStep === 0 && <StepPillar />}
-        {activeStep === 1 && <StepDetails />}
-        {activeStep === 2 && <StepVision />}
-        {activeStep === 3 && <StepReview />}
+        {activeStep === 0 && <StepWelcome />}
+        {activeStep === 1 && <StepPillar />}
+        {activeStep === 2 && <StepInterview />}
+        {activeStep === 3 && <StepContext />}
+        {activeStep === 4 && <StepBrief />}
+        {activeStep === 5 && <StepBuild />}
       </GenesisWizardShell>
 
       <LimitReachedModal
@@ -121,8 +106,8 @@ function NewProjectInner() {
               بازیابی پیش‌نویس قبلی
             </DialogTitle>
             <DialogDescription className="text-center text-muted-foreground leading-relaxed">
-              پیش‌نویس تکمیل‌نشده‌ای از مراحل ثبت پروژه قبلی شما پیدا شد. آیا مایلید
-              آن را بازیابی کنید؟
+              پیش‌نویس تکمیل‌نشده‌ای پیدا شد
+              {currentPhase ? ` (مرحله: ${currentPhase})` : ""}. بازیابی می‌کنی؟
             </DialogDescription>
           </DialogHeader>
 

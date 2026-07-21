@@ -21,6 +21,9 @@ import contentStrategy from "./content-strategy.json";
 import contentBrief from "./content-brief.json";
 import refineText from "./refine-text.json";
 import enhanceBio from "./enhance-bio.json";
+import genesisDraft from "./genesis-draft.json";
+import genesisCoach from "./genesis-coach.json";
+import genesisBriefPolish from "./genesis-brief-polish.json";
 
 export const Prompts = {
   suggestAudience,
@@ -46,6 +49,9 @@ export const Prompts = {
   contentBrief,
   refineText,
   enhanceBio,
+  genesisDraft,
+  genesisCoach,
+  genesisBriefPolish,
 };
 
 export type PromptKey = keyof typeof Prompts;

@@ -389,9 +389,13 @@ export async function generateCorePlanAction(data: any): Promise<{
         };
     }
 
-    const formattedAnswers = genesisAnswers 
-      ? Object.entries(genesisAnswers).map(([key, val]) => `- ${key}: ${val}`).join('\n') 
-      : 'None provided';
+    const { formatGenesisAnswersForPrompt } = await import("@/lib/genesis/format");
+    const formattedAnswers =
+      genesisAnswers && typeof genesisAnswers === "object"
+        ? formatGenesisAnswersForPrompt(
+            genesisAnswers as Record<string, string>
+          )
+        : "None provided";
 
     const { businessGlossary } = await import("@/lib/knowledge-base");
     const { getKbContextBlock } = await import("@/lib/ai/rag");
@@ -410,8 +414,8 @@ export async function generateCorePlanAction(data: any): Promise<{
     const { system, user } = getPrompt("generatePlan", {
       projectType,
       idea,
-      audience,
-      budget,
+      audience: audience || "مشخص نشده",
+      budget: budget || "مشخص نشده",
       projectName: userProjectName || "نام پروژه مشخص نشده",
       formattedAnswers,
       businessGlossary: JSON.stringify(businessGlossary, null, 2)
@@ -514,11 +518,11 @@ export async function generateRoadmapChunkAction(data: {
     return { error: "Invalid roadmap chunk range" };
   }
 
-  const formattedAnswers = genesisAnswers
-    ? Object.entries(genesisAnswers)
-        .map(([key, val]) => `- ${key}: ${val}`)
-        .join("\n")
-    : "None provided";
+  const { formatGenesisAnswersForPrompt } = await import("@/lib/genesis/format");
+  const formattedAnswers =
+    genesisAnswers && typeof genesisAnswers === "object"
+      ? formatGenesisAnswersForPrompt(genesisAnswers as Record<string, string>)
+      : "None provided";
 
   const { system, user } = getPrompt("generateRoadmap", {
     projectType,

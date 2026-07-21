@@ -16,6 +16,7 @@ import { PwaInstallBanner } from "@/components/pwa/pwa-install-banner";
 import { PwaOnboardingModal } from "@/components/pwa/pwa-onboarding-modal";
 import { PwaWelcomeToast } from "@/components/pwa/pwa-welcome-toast";
 import { RoadmapBackgroundGenerator } from "@/components/dashboard/roadmap-background-generator";
+import { GenesisFirstRunCoach } from "@/components/dashboard/genesis-first-run-coach";
 import { Loader2 } from "lucide-react";
 
 export function DashboardClientLayout({ children }: { children: React.ReactNode }) {
@@ -62,6 +63,9 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
           <PwaOnboardingModal />
           <Suspense fallback={null}>
             <PwaWelcomeToast />
+          </Suspense>
+          <Suspense fallback={null}>
+            <GenesisFirstRunCoach />
           </Suspense>
         </TourProvider>
       </MentorProvider>

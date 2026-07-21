@@ -12,7 +12,7 @@ import {
 import { useGenesisWizard } from "./genesis-wizard-context";
 
 export function StepPillar() {
-  const { pillar, selectPillar, advance } = useGenesisWizard();
+  const { pillar, selectPillar, advance, retreat } = useGenesisWizard();
 
   const handleStart = () => {
     if (pillar && isPillarAvailableAtLaunch(pillar)) advance();
@@ -24,7 +24,7 @@ export function StepPillar() {
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-4xl md:text-6xl font-black tracking-tight text-foreground"
+          className="text-4xl md:text-5xl font-black tracking-tight text-foreground"
         >
           چه چیزی می‌سازی؟
         </motion.h1>
@@ -32,7 +32,7 @@ export function StepPillar() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-xl text-muted-foreground max-w-2xl mx-auto"
+          className="text-lg text-muted-foreground max-w-2xl mx-auto"
         >
           الان مسیر استارتاپ آماده است. مسیرهای دیگر به‌زودی فعال می‌شوند.
         </motion.p>
@@ -148,10 +148,19 @@ export function StepPillar() {
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
         className={cn(
-          "fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl p-4 pb-[max(1rem,env(safe-area-inset-bottom))] flex justify-center",
+          "fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-xl p-4 pb-[max(1rem,env(safe-area-inset-bottom))] flex justify-center gap-3",
           "md:static md:mt-12 md:border-0 md:bg-transparent md:backdrop-blur-none md:p-0 md:pb-0",
         )}
       >
+        <Button
+          variant="outline"
+          size="lg"
+          rounded="lg"
+          onClick={retreat}
+          className="h-14 px-6 hidden md:inline-flex"
+        >
+          قبلی
+        </Button>
         <Button
           size="lg"
           rounded="lg"
@@ -164,7 +173,7 @@ export function StepPillar() {
               : "opacity-50 cursor-not-allowed",
           )}
         >
-          شروع کنید
+          ادامه
           <ArrowLeft className="me-2 w-5 h-5" />
         </Button>
       </motion.div>

@@ -93,6 +93,15 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "generateroadmap",
     "generate-roadmap",
     "generate_roadmap",
+    "genesis-draft",
+    "genesis_draft",
+    "genesisdraft",
+    "genesis-coach",
+    "genesis_coach",
+    "genesiscoach",
+    "genesis-brief-polish",
+    "genesis_brief_polish",
+    "genesisbriefpolish",
   ]);
 
   const standard = new Set([

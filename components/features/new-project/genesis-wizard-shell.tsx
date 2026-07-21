@@ -13,20 +13,22 @@ interface GenesisWizardShellProps {
 }
 
 export function GenesisWizardShell({ children }: GenesisWizardShellProps) {
-  const { activeStep, error, clearError } = useGenesisWizard();
+  const { activeStep, currentPhase, error, clearError } = useGenesisWizard();
+
+  const showBackHome = currentPhase === "welcome" || currentPhase === "pillar";
 
   return (
     <div
       className="min-h-screen bg-background font-sans overflow-x-hidden relative"
       dir="rtl"
     >
-      {/* On-brand ambient background */}
+      {/* Ambient pink/orange mesh — evolved */}
       <div className="fixed inset-0 z-0 pointer-events-none bg-mesh-gradient">
-        <div className="absolute top-[-15%] start-[-10%] w-[45vw] h-[45vw] rounded-full blur-[120px] opacity-40 bg-brand-primary/20" />
-        <div className="absolute bottom-[-15%] end-[-10%] w-[40vw] h-[40vw] rounded-full blur-[120px] opacity-40 bg-brand-secondary/20" />
+        <div className="absolute top-[-18%] start-[-12%] w-[50vw] h-[50vw] rounded-full blur-[130px] opacity-45 bg-brand-primary/25" />
+        <div className="absolute bottom-[-18%] end-[-12%] w-[45vw] h-[45vw] rounded-full blur-[130px] opacity-40 bg-brand-secondary/25" />
+        <div className="absolute top-[40%] start-[30%] w-[28vw] h-[28vw] rounded-full blur-[100px] opacity-20 bg-brand-accent/20" />
       </div>
 
-      {/* Header */}
       <header className="relative z-50 p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto w-full">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-10 h-10 group-hover:scale-105 transition-transform">
@@ -43,7 +45,7 @@ export function GenesisWizardShell({ children }: GenesisWizardShellProps) {
           </span>
         </Link>
 
-        {activeStep === 0 && (
+        {showBackHome && (
           <Link href="/">
             <Button
               variant="ghost"
@@ -56,16 +58,14 @@ export function GenesisWizardShell({ children }: GenesisWizardShellProps) {
         )}
       </header>
 
-      {/* Stepper (hidden on the first step for a cleaner intro, shown from Details onward) */}
-      {activeStep > 0 && (
+      {activeStep > 0 && currentPhase !== "build" && (
         <div className="relative z-10 pb-6">
           <GenesisStepper />
         </div>
       )}
 
-      {/* Error toast */}
       <AnimatePresence>
-        {error && (
+        {error && currentPhase !== "build" && (
           <motion.div
             key={error}
             initial={{ opacity: 0, y: 20 }}
@@ -79,15 +79,14 @@ export function GenesisWizardShell({ children }: GenesisWizardShellProps) {
         )}
       </AnimatePresence>
 
-      {/* Step content */}
       <main className="relative z-10 w-full mx-auto pb-12 flex flex-col min-h-[calc(100vh-220px)]">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeStep}
-            initial={{ opacity: 0, x: 40 }}
+            initial={{ opacity: 0, x: 28 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            exit={{ opacity: 0, x: -28 }}
+            transition={{ type: "spring", stiffness: 280, damping: 28 }}
             className="flex-1 flex flex-col justify-center"
           >
             {children}

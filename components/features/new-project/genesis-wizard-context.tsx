@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useCallback,
   useRef,
+  useMemo,
 } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
@@ -16,8 +17,32 @@ import {
   isPillarAvailableAtLaunch,
   isPillarComingSoon,
 } from "@/lib/launch/config";
+import {
+  GENESIS_PHASES,
+  type GenesisPathMode,
+  type GenesisPhase,
+  type GenesisDraftV2,
+} from "@/lib/genesis/types";
+import {
+  DEEP_CONTEXT_IDS,
+  DEEP_INTERVIEW_IDS,
+  EXPRESS_CONTEXT_IDS,
+  GENESIS_ASSIST_CAP,
+  getFieldDef,
+} from "@/lib/genesis/intake-constants";
+import {
+  buildIdeaFromAnswers,
+  estimateGenesisCredits,
+  labeledGenesisAnswers,
+  resolveAudience,
+  resolveBudget,
+  resolveGeoSummary,
+  scoreGenesisConfidence,
+} from "@/lib/genesis/format";
+import { UNKNOWN_ANSWER } from "@/lib/genesis/types";
 
 const DRAFT_KEY = "karnex_project_draft";
+const FIRST_RUN_COACH_KEY = "karnex_genesis_first_run_coach";
 
 function sanitizePillar(pillar: ProjectType | null): ProjectType | null {
   if (!pillar) return null;
@@ -27,25 +52,25 @@ function sanitizePillar(pillar: ProjectType | null): ProjectType | null {
   return pillar;
 }
 
-export const GENESIS_STEPS = ["pillar", "details", "vision", "review"] as const;
-export type GenesisStep = (typeof GENESIS_STEPS)[number];
+export { GENESIS_PHASES };
+export type { GenesisPhase, GenesisPathMode };
 
-interface GenesisDraft {
+interface GenesisWizardState {
+  pathMode: GenesisPathMode;
   pillar: ProjectType | null;
   projectName: string;
   projectVision: string;
   answers: Record<string, string>;
   activeStep: number;
   activeSubStep: number;
-}
-
-interface GenesisWizardState extends GenesisDraft {
+  assistUses: number;
   isGenerating: boolean;
   isCreating: boolean;
-  /** Human-readable phase while generating (Persian). */
   generatingPhase: string;
+  /** Optional overview peek after core plan returns */
+  overviewPeek: string;
+  buildChecklist: { id: string; label: string; done: boolean }[];
   error: string;
-  /** True when a recoverable draft was found on mount (drives the resume modal). */
   hasResumableDraft: boolean;
   showLimitModal: boolean;
   limitModalKind: "ai" | "project";
@@ -53,6 +78,7 @@ interface GenesisWizardState extends GenesisDraft {
 }
 
 interface GenesisWizardActions {
+  setPathMode: (mode: GenesisPathMode) => void;
   selectPillar: (id: ProjectType) => void;
   setName: (v: string) => void;
   setVision: (v: string) => void;
@@ -60,15 +86,21 @@ interface GenesisWizardActions {
   goToStep: (step: number) => void;
   nextSubStep: () => void;
   prevSubStep: () => void;
-  /** Advance from the current step to the next phase. */
   advance: () => void;
-  /** Step back within / out of the current phase. */
   retreat: () => void;
   dismissResume: (restore: boolean) => void;
   clearError: () => void;
   closeLimitModal: () => void;
   reset: () => void;
+  /** Returns false if assist cap reached */
+  consumeAssist: () => boolean;
+  assistsRemaining: number;
   generate: () => Promise<void>;
+  interviewFieldIds: string[];
+  contextFieldIds: string[];
+  currentPhase: GenesisPhase;
+  creditEstimate: ReturnType<typeof estimateGenesisCredits>;
+  confidence: ReturnType<typeof scoreGenesisConfidence>;
 }
 
 type GenesisWizardContextValue = GenesisWizardState & GenesisWizardActions;
@@ -85,35 +117,75 @@ export function useGenesisWizard() {
   return ctx;
 }
 
-function readDraft(): GenesisDraft | null {
+function migrateDraft(raw: unknown): GenesisDraftV2 | null {
+  if (!raw || typeof raw !== "object") return null;
+  const parsed = raw as Record<string, unknown>;
+
+  // v2
+  if (parsed.version === 2) {
+    return {
+      version: 2,
+      pathMode: parsed.pathMode === "express" ? "express" : "deep",
+      pillar: (parsed.pillar as ProjectType) ?? null,
+      projectName: String(parsed.projectName ?? ""),
+      projectVision: String(parsed.projectVision ?? ""),
+      answers: (parsed.answers as Record<string, string>) ?? {},
+      activeStep: Number(parsed.activeStep ?? 0),
+      activeSubStep: Number(parsed.activeSubStep ?? 0),
+      assistUses: Number(parsed.assistUses ?? 0),
+    };
+  }
+
+  // Legacy v1 → map into new shape (vision becomes problem/solution polish)
+  const legacyAnswers = (parsed.answers as Record<string, string>) ?? {};
+  const vision = String(parsed.projectVision ?? "");
+  const answers = { ...legacyAnswers };
+  if (vision && !answers.problem) {
+    answers.problem = vision.slice(0, 200);
+  }
+  if (legacyAnswers.stage && !answers.stage) {
+    answers.stage = legacyAnswers.stage;
+  }
+
+  return {
+    version: 2,
+    pathMode: "deep",
+    pillar: (parsed.pillar as ProjectType) ?? null,
+    projectName: String(parsed.projectName ?? ""),
+    projectVision: vision,
+    answers,
+    activeStep: Math.min(
+      GENESIS_PHASES.length - 1,
+      Number(parsed.activeStep ?? 0)
+    ),
+    activeSubStep: Number(parsed.activeSubStep ?? 0),
+    assistUses: 0,
+  };
+}
+
+function readDraft(): GenesisDraftV2 | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(DRAFT_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<GenesisDraft>;
+    const migrated = migrateDraft(JSON.parse(raw));
     if (
-      !parsed ||
-      (!parsed.pillar &&
-        !parsed.projectName &&
-        !parsed.projectVision &&
-        Object.keys(parsed.answers || {}).length === 0)
+      !migrated ||
+      (!migrated.pillar &&
+        !migrated.projectName &&
+        !migrated.projectVision &&
+        Object.keys(migrated.answers).length === 0 &&
+        migrated.activeStep === 0)
     ) {
       return null;
     }
-    return {
-      pillar: parsed.pillar ?? null,
-      projectName: parsed.projectName ?? "",
-      projectVision: parsed.projectVision ?? "",
-      answers: parsed.answers ?? {},
-      activeStep: parsed.activeStep ?? 0,
-      activeSubStep: parsed.activeSubStep ?? 0,
-    };
+    return migrated;
   } catch {
     return null;
   }
 }
 
-function writeDraft(draft: GenesisDraft) {
+function writeDraft(draft: GenesisDraftV2) {
   if (typeof window === "undefined") return;
   const hasContent =
     !!draft.pillar ||
@@ -133,6 +205,18 @@ function clearDraft() {
   localStorage.removeItem(DRAFT_KEY);
 }
 
+function fieldFilled(answers: Record<string, string>, id: string): boolean {
+  const v = answers[id]?.trim();
+  if (!v) return false;
+  // unknown counts as answered (escape hatch)
+  if (v === UNKNOWN_ANSWER) return true;
+  const def = getFieldDef(id);
+  if (def?.kind === "text" && def.minChars) {
+    return v.length >= Math.min(def.minChars, 3);
+  }
+  return true;
+}
+
 export function GenesisWizardProvider({
   children,
 }: {
@@ -143,16 +227,24 @@ export function GenesisWizardProvider({
   const { user } = useAuth();
   const { createNewProject } = useProject();
 
+  const [pathMode, setPathModeState] = useState<GenesisPathMode>("deep");
   const [pillar, setPillar] = useState<ProjectType | null>(null);
   const [projectName, setProjectName] = useState("");
   const [projectVision, setProjectVision] = useState("");
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [activeStep, setActiveStep] = useState(0);
   const [activeSubStep, setActiveSubStep] = useState(0);
+  const [assistUses, setAssistUses] = useState(0);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [generatingPhase, setGeneratingPhase] = useState("");
+  const [overviewPeek, setOverviewPeek] = useState("");
+  const [buildChecklist, setBuildChecklist] = useState([
+    { id: "core", label: "بوم و برند", done: false },
+    { id: "roadmap", label: "نقشه راه ۱۶ هفته", done: false },
+    { id: "save", label: "ذخیره پروژه", done: false },
+  ]);
   const [error, setError] = useState("");
   const [showLimitModal, setShowLimitModal] = useState(false);
   const [limitModalKind, setLimitModalKind] = useState<"ai" | "project">("ai");
@@ -161,38 +253,73 @@ export function GenesisWizardProvider({
   const [hasResumableDraft, setHasResumableDraft] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
-  // Keep latest values for the debounced persister without re-subscribing timers.
-  const draftRef = useRef<GenesisDraft>({
+  const draftRef = useRef<GenesisDraftV2>({
+    version: 2,
+    pathMode: "deep",
     pillar: null,
     projectName: "",
     projectVision: "",
     answers: {},
     activeStep: 0,
     activeSubStep: 0,
+    assistUses: 0,
   });
 
-  // Hydrate once on mount: URL ?step wins, else localStorage draft, else step 0.
+  const interviewFieldIds = useMemo(
+    () =>
+      pathMode === "express"
+        ? (["industry", "problem", "solution"] as string[])
+        : [...DEEP_INTERVIEW_IDS],
+    [pathMode]
+  );
+
+  const contextFieldIds = useMemo(() => {
+    if (pathMode === "express") {
+      // stage + audience (audience may already be set in interview for deep;
+      // express collects audience in context if missing)
+      return EXPRESS_CONTEXT_IDS.filter((id) => {
+        if (id === "audience_who" && fieldFilled(answers, "audience_who")) {
+          return false;
+        }
+        return true;
+      }) as string[];
+    }
+    return [...DEEP_CONTEXT_IDS];
+  }, [pathMode, answers]);
+
+  const maxStep = GENESIS_PHASES.length - 1;
+  const currentPhase = GENESIS_PHASES[activeStep] ?? "welcome";
+
   useEffect(() => {
     const urlStep = Number(searchParams.get("step"));
     const draft = readDraft();
 
-    if (Number.isFinite(urlStep) && urlStep >= 0 && urlStep <= 3) {
+    if (Number.isFinite(urlStep) && urlStep >= 0 && urlStep <= maxStep) {
       if (draft) {
+        setPathModeState(draft.pathMode);
         setPillar(sanitizePillar(draft.pillar));
         setProjectName(draft.projectName);
         setProjectVision(draft.projectVision);
         setAnswers(draft.answers);
         setActiveSubStep(draft.activeSubStep);
+        setAssistUses(draft.assistUses);
       }
       setActiveStep(urlStep);
     } else if (draft) {
+      setPathModeState(draft.pathMode);
       setPillar(sanitizePillar(draft.pillar));
       setProjectName(draft.projectName);
       setProjectVision(draft.projectVision);
       setAnswers(draft.answers);
-      setActiveStep(draft.activeStep);
+      setActiveStep(Math.min(maxStep, draft.activeStep));
       setActiveSubStep(draft.activeSubStep);
-      if (draft.activeStep > 0 || draft.projectName || draft.projectVision) {
+      setAssistUses(draft.assistUses);
+      if (
+        draft.activeStep > 0 ||
+        draft.projectName ||
+        draft.projectVision ||
+        Object.keys(draft.answers).length > 0
+      ) {
         setHasResumableDraft(true);
       }
     }
@@ -201,22 +328,33 @@ export function GenesisWizardProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Debounced persistence of the full state (including sub-step).
   useEffect(() => {
     if (!hydrated) return;
     draftRef.current = {
+      version: 2,
+      pathMode,
       pillar,
       projectName,
       projectVision,
       answers,
       activeStep,
       activeSubStep,
+      assistUses,
     };
     const t = setTimeout(() => writeDraft(draftRef.current), 400);
     return () => clearTimeout(t);
-  }, [pillar, projectName, projectVision, answers, activeStep, activeSubStep, hydrated]);
+  }, [
+    pathMode,
+    pillar,
+    projectName,
+    projectVision,
+    answers,
+    activeStep,
+    activeSubStep,
+    assistUses,
+    hydrated,
+  ]);
 
-  // Sync activeStep to the URL (replace, no scroll, no history spam).
   useEffect(() => {
     if (!hydrated) return;
     const params = new URLSearchParams(searchParams.toString());
@@ -225,21 +363,27 @@ export function GenesisWizardProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeStep, hydrated]);
 
+  const setPathMode = useCallback((mode: GenesisPathMode) => {
+    setPathModeState(mode);
+    setActiveSubStep(0);
+  }, []);
+
   const selectPillar = useCallback((id: ProjectType) => {
     if (!isPillarAvailableAtLaunch(id)) return;
     setPillar(id);
-    setAnswers({});
-    setActiveSubStep(0);
   }, []);
 
   const setAnswer = useCallback((qId: string, optId: string) => {
     setAnswers((prev) => ({ ...prev, [qId]: optId }));
   }, []);
 
-  const goToStep = useCallback((step: number) => {
-    setActiveStep(Math.max(0, Math.min(3, step)));
-    setActiveSubStep(0);
-  }, []);
+  const goToStep = useCallback(
+    (step: number) => {
+      setActiveStep(Math.max(0, Math.min(maxStep, step)));
+      setActiveSubStep(0);
+    },
+    [maxStep]
+  );
 
   const nextSubStep = useCallback(() => {
     setActiveSubStep((s) => s + 1);
@@ -250,15 +394,13 @@ export function GenesisWizardProvider({
   }, []);
 
   const advance = useCallback(() => {
-    setActiveStep((s) => Math.min(3, s + 1));
+    setActiveStep((s) => Math.min(maxStep, s + 1));
     setActiveSubStep(0);
-  }, []);
+  }, [maxStep]);
 
   const retreat = useCallback(() => {
     setActiveStep((s) => {
-      if (s > 0) {
-        return s - 1;
-      }
+      if (s > 0) return s - 1;
       router.push("/");
       return s;
     });
@@ -269,12 +411,14 @@ export function GenesisWizardProvider({
     setHasResumableDraft(false);
     if (!restore) {
       clearDraft();
+      setPathModeState("deep");
       setPillar(null);
       setProjectName("");
       setProjectVision("");
       setAnswers({});
       setActiveStep(0);
       setActiveSubStep(0);
+      setAssistUses(0);
     }
   }, []);
 
@@ -287,24 +431,68 @@ export function GenesisWizardProvider({
 
   const reset = useCallback(() => {
     clearDraft();
+    setPathModeState("deep");
     setPillar(null);
     setProjectName("");
     setProjectVision("");
     setAnswers({});
     setActiveStep(0);
     setActiveSubStep(0);
+    setAssistUses(0);
     setError("");
+    setOverviewPeek("");
   }, []);
+
+  const consumeAssist = useCallback(() => {
+    if (assistUses >= GENESIS_ASSIST_CAP) return false;
+    setAssistUses((n) => n + 1);
+    return true;
+  }, [assistUses]);
+
+  const confidence = useMemo(
+    () => scoreGenesisConfidence(answers, projectVision, projectName),
+    [answers, projectVision, projectName]
+  );
+
+  const creditEstimate = useMemo(
+    () => estimateGenesisCredits(assistUses),
+    [assistUses]
+  );
 
   const generate = useCallback(async () => {
     if (!user || !pillar) return;
     const safePillar = sanitizePillar(pillar) ?? "startup";
-    if (safePillar !== pillar) {
-      setPillar(safePillar);
+    if (safePillar !== pillar) setPillar(safePillar);
+
+    // Quality gate: weak confidence — still allow but warn via tips on brief;
+    // hard block only if idea is essentially empty.
+    const idea = buildIdeaFromAnswers(answers, projectVision);
+    if (idea.length < 12 && !answers.problem?.trim()) {
+      setError("قبل از ساخت، حداقل مشکل یا ایده‌ات را بنویس.");
+      return;
     }
+
     setIsGenerating(true);
+    setOverviewPeek("");
+    setBuildChecklist([
+      { id: "core", label: "بوم و برند", done: false },
+      { id: "roadmap", label: "نقشه راه ۱۶ هفته", done: false },
+      { id: "save", label: "ذخیره پروژه", done: false },
+    ]);
     setGeneratingPhase("در حال ساخت بوم و برند...");
     setError("");
+
+    const audience = resolveAudience(answers);
+    const budget = resolveBudget(answers);
+    const geo = resolveGeoSummary(answers);
+    const labeled = labeledGenesisAnswers(answers);
+    if (geo) labeled["بازار جغرافیایی"] = geo;
+
+    // Persist both labeled (for AI/humans) and raw ids under genesisAnswers
+    const genesisPayload = {
+      ...labeled,
+      _raw: answers,
+    };
 
     try {
       const {
@@ -320,11 +508,11 @@ export function GenesisWizardProvider({
 
       const coreResult = await generateCorePlanAction({
         projectType: safePillar,
-        idea: projectVision,
+        idea,
         projectName,
-        genesisAnswers: answers,
-        audience: "",
-        budget: "",
+        genesisAnswers: labeled,
+        audience,
+        budget,
       });
 
       if (coreResult.error) {
@@ -342,8 +530,6 @@ export function GenesisWizardProvider({
         );
       }
 
-      // Prefer the user's chosen name over any AI-invented brand so roadmap
-      // titles/overview never diverge from the sidebar project name.
       const { alignPlanToUserProjectName } = await import(
         "@/lib/roadmap/align-project-name"
       );
@@ -353,6 +539,12 @@ export function GenesisWizardProvider({
         rawCorePlan.projectName
       );
 
+      if (corePlan.overview) {
+        setOverviewPeek(String(corePlan.overview).slice(0, 280));
+      }
+      setBuildChecklist((prev) =>
+        prev.map((c) => (c.id === "core" ? { ...c, done: true } : c))
+      );
       setGeneratingPhase("در حال ساخت نقشه راه...");
 
       const slimCore = {
@@ -364,16 +556,16 @@ export function GenesisWizardProvider({
       const [chunk1, chunk2] = await Promise.all([
         generateRoadmapChunkAction({
           projectType: safePillar,
-          idea: projectVision,
-          genesisAnswers: answers,
+          idea,
+          genesisAnswers: labeled,
           corePlan: slimCore,
           weekStart: 1,
           weekEnd: 8,
         }),
         generateRoadmapChunkAction({
           projectType: safePillar,
-          idea: projectVision,
-          genesisAnswers: answers,
+          idea,
+          genesisAnswers: labeled,
           corePlan: slimCore,
           weekStart: 9,
           weekEnd: 16,
@@ -402,6 +594,11 @@ export function GenesisWizardProvider({
         );
       }
 
+      setBuildChecklist((prev) =>
+        prev.map((c) =>
+          c.id === "roadmap" || c.id === "core" ? { ...c, done: true } : c
+        )
+      );
       setGeneratingPhase("در حال ذخیره پروژه...");
       setIsGenerating(false);
       setIsCreating(true);
@@ -413,8 +610,10 @@ export function GenesisWizardProvider({
           roadmapStatus: "ready" as const,
           projectName,
           projectType: safePillar,
-          ideaInput: projectVision,
-          genesisAnswers: answers,
+          ideaInput: idea,
+          audience,
+          budget,
+          genesisAnswers: genesisPayload,
         },
         projectName,
         rawCorePlan.projectName
@@ -434,8 +633,14 @@ export function GenesisWizardProvider({
       );
 
       await Promise.race([createPromise, timeoutPromise]);
+      setBuildChecklist((prev) => prev.map((c) => ({ ...c, done: true })));
       clearDraft();
-      router.push("/dashboard");
+      try {
+        localStorage.setItem(FIRST_RUN_COACH_KEY, "1");
+      } catch {
+        /* ignore */
+      }
+      router.push("/dashboard/overview?genesisCoach=1");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "خطای ناشناخته";
       const limitKind =
@@ -487,20 +692,25 @@ export function GenesisWizardProvider({
   }, [user, pillar, projectVision, projectName, answers, createNewProject, router]);
 
   const value: GenesisWizardContextValue = {
+    pathMode,
     pillar,
     projectName,
     projectVision,
     answers,
     activeStep,
     activeSubStep,
+    assistUses,
     isGenerating,
     isCreating,
     generatingPhase,
+    overviewPeek,
+    buildChecklist,
     error,
     hasResumableDraft,
     showLimitModal,
     limitModalKind,
     limitModalMessage,
+    setPathMode,
     selectPillar,
     setName: setProjectName,
     setVision: setProjectVision,
@@ -514,7 +724,14 @@ export function GenesisWizardProvider({
     clearError,
     closeLimitModal,
     reset,
+    consumeAssist,
+    assistsRemaining: Math.max(0, GENESIS_ASSIST_CAP - assistUses),
     generate,
+    interviewFieldIds,
+    contextFieldIds,
+    currentPhase,
+    creditEstimate,
+    confidence,
   };
 
   return (

@@ -11,7 +11,10 @@ import {
   BreakTaskSchema,
   SwotCompetitorsSchema,
   PitchDeckSchema,
-  SmartCanvasSchema
+  SmartCanvasSchema,
+  GenesisDraftSchema,
+  GenesisCoachSchema,
+  GenesisBriefPolishSchema,
 } from "@/lib/ai-validation";
 import type { CompetitorDiscoveryOptions } from "@/lib/competitors/types";
 
@@ -124,6 +127,175 @@ export async function suggestProjectNameAction(idea: string): Promise<ActionResp
     console.error("suggestProjectNameAction error:", error);
     await rollback();
     return { success: false, error: "Failed to suggest name" };
+  }
+}
+
+// === Genesis intake assists (light credits) ===
+
+export async function genesisDraftFromChipsAction(data: {
+  industryLabel: string;
+  painHints: string[];
+  userNote?: string;
+}): Promise<
+  ActionResponse<{ problem: string; solution: string; audience: string }>
+> {
+  let rollback = async () => {};
+  try {
+    const limitResult = await checkAILimit("genesis-draft");
+    if (limitResult.errorResponse)
+      return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    rollback = limitResult.rollback;
+
+    const { system, user } = getPrompt("genesisDraft", {
+      industryLabel: data.industryLabel || "سایر",
+      painHints: (data.painHints || []).join("، ") || "نامشخص",
+      userNote: data.userNote?.trim() || "ندارد",
+    });
+
+    try {
+      const parsed = await runWithAiUsage(
+        { userId: limitResult.user?.id || "anonymous", feature: "genesisDraft" },
+        () =>
+          callAIWithValidation(
+            user,
+            {
+              systemPrompt: system,
+              maxTokens: 600,
+              temperature: 0.6,
+              timeoutMs: 20000,
+              modelOverride: TIER_FAST,
+            },
+            GenesisDraftSchema,
+            1
+          )
+      );
+      return { success: true, data: parsed };
+    } catch (err) {
+      console.warn("genesisDraftFromChipsAction fallback:", err);
+      await rollback();
+      const label = data.industryLabel || "این حوزه";
+      const pain = data.painHints?.[0] || "کار روزمره سخت و وقت‌گیر است";
+      return {
+        success: true,
+        data: {
+          problem: `در ${label}، ${pain} و راه‌حل ساده و در دسترس کم است.`,
+          solution: `یک محصول ساده می‌سازیم که همین درد را برای کاربر ایرانی کمتر کند.`,
+          audience: `افرادی که در ${label} با این مشکل روبه‌رو هستند`,
+        },
+      };
+    }
+  } catch (error) {
+    console.error("genesisDraftFromChipsAction error:", error);
+    await rollback();
+    return { success: false, error: "Failed to draft idea" };
+  }
+}
+
+export async function genesisCoachTipAction(data: {
+  fieldLabel: string;
+  currentText: string;
+  ideaContext: string;
+}): Promise<ActionResponse<{ tip: string; improvedDraft?: string }>> {
+  let rollback = async () => {};
+  try {
+    const limitResult = await checkAILimit("genesis-coach");
+    if (limitResult.errorResponse)
+      return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    rollback = limitResult.rollback;
+
+    const { system, user } = getPrompt("genesisCoach", {
+      fieldLabel: data.fieldLabel,
+      currentText: data.currentText || "(خالی)",
+      ideaContext: data.ideaContext || "نامشخص",
+    });
+
+    try {
+      const parsed = await runWithAiUsage(
+        { userId: limitResult.user?.id || "anonymous", feature: "genesisCoach" },
+        () =>
+          callAIWithValidation(
+            user,
+            {
+              systemPrompt: system,
+              maxTokens: 400,
+              temperature: 0.5,
+              timeoutMs: 15000,
+              modelOverride: TIER_FAST,
+            },
+            GenesisCoachSchema,
+            1
+          )
+      );
+      return {
+        success: true,
+        data: {
+          tip: parsed.tip,
+          improvedDraft: parsed.improvedDraft || undefined,
+        },
+      };
+    } catch (err) {
+      console.warn("genesisCoachTipAction fallback:", err);
+      await rollback();
+      return {
+        success: true,
+        data: {
+          tip: "با یک مثال واقعی از زندگی روزمره بنویس تا ایده ملموس‌تر شود.",
+        },
+      };
+    }
+  } catch (error) {
+    console.error("genesisCoachTipAction error:", error);
+    await rollback();
+    return { success: false, error: "Failed to coach" };
+  }
+}
+
+export async function genesisPolishBriefAction(data: {
+  projectName: string;
+  briefBlock: string;
+}): Promise<ActionResponse<{ vision: string }>> {
+  let rollback = async () => {};
+  try {
+    const limitResult = await checkAILimit("genesis-brief-polish");
+    if (limitResult.errorResponse)
+      return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+    rollback = limitResult.rollback;
+
+    const { system, user } = getPrompt("genesisBriefPolish", {
+      projectName: data.projectName || "پروژه بدون نام",
+      briefBlock: data.briefBlock,
+    });
+
+    try {
+      const parsed = await runWithAiUsage(
+        {
+          userId: limitResult.user?.id || "anonymous",
+          feature: "genesisBriefPolish",
+        },
+        () =>
+          callAIWithValidation(
+            user,
+            {
+              systemPrompt: system,
+              maxTokens: 500,
+              temperature: 0.5,
+              timeoutMs: 20000,
+              modelOverride: TIER_FAST,
+            },
+            GenesisBriefPolishSchema,
+            1
+          )
+      );
+      return { success: true, data: { vision: parsed.vision.trim() } };
+    } catch (err) {
+      console.warn("genesisPolishBriefAction fallback:", err);
+      await rollback();
+      return { success: true, data: { vision: data.briefBlock } };
+    }
+  } catch (error) {
+    console.error("genesisPolishBriefAction error:", error);
+    await rollback();
+    return { success: false, error: "Failed to polish brief" };
   }
 }
 

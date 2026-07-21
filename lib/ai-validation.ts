@@ -31,6 +31,21 @@ export const SuggestNameSchema = z.object({
   names: z.array(z.string().min(1)).min(3),
 });
 
+export const GenesisDraftSchema = z.object({
+  problem: z.string().min(1),
+  solution: z.string().min(1),
+  audience: z.string().min(1),
+});
+
+export const GenesisCoachSchema = z.object({
+  tip: z.string().min(1),
+  improvedDraft: z.string().optional().nullable(),
+});
+
+export const GenesisBriefPolishSchema = z.object({
+  vision: z.string().min(1),
+});
+
 export const BreakTaskSchema = z.object({
   subTasks: z.array(z.string()).default([]),
 });
