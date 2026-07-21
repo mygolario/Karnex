@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { ChunkLoadRecovery } from "@/components/shared/chunk-load-recovery";
 
 const CookieBanner = dynamic(
   () => import("@/components/shared/cookie-banner").then((m) => m.CookieBanner),
@@ -18,6 +19,7 @@ const ServiceWorkerRegister = dynamic(
 export function ClientHelpers() {
   return (
     <>
+      <ChunkLoadRecovery />
       <WebVitalsReporter />
       <ServiceWorkerRegister />
       <CookieBanner />

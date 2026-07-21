@@ -42,10 +42,14 @@ export function StepInterview() {
   const [coachTip, setCoachTip] = useState("");
   const [assistError, setAssistError] = useState("");
 
-  const fieldId = interviewFieldIds[activeSubStep] || interviewFieldIds[0];
+  const total = Math.max(1, interviewFieldIds.length);
+  const safeSubStep = Math.min(
+    Math.max(0, activeSubStep),
+    interviewFieldIds.length - 1
+  );
+  const fieldId = interviewFieldIds[safeSubStep] || interviewFieldIds[0];
   const field = getFieldDef(fieldId);
-  const total = interviewFieldIds.length;
-  const isLast = activeSubStep >= total - 1;
+  const isLast = safeSubStep >= total - 1;
   const value = answers[fieldId] || "";
 
   const canNext = useMemo(() => {
@@ -60,7 +64,7 @@ export function StepInterview() {
   if (!field) return null;
 
   const handleBack = () => {
-    if (activeSubStep > 0) prevSubStep();
+    if (safeSubStep > 0) prevSubStep();
     else retreat();
   };
 
@@ -72,7 +76,9 @@ export function StepInterview() {
 
   const togglePain = (pain: string) => {
     setPainPicks((prev) =>
-      prev.includes(pain) ? prev.filter((p) => p !== pain) : [...prev, pain].slice(0, 3)
+      prev.includes(pain)
+        ? prev.filter((p) => p !== pain)
+        : [...prev, pain].slice(0, 3)
     );
   };
 
@@ -121,7 +127,9 @@ export function StepInterview() {
       const res = await genesisCoachTipAction({
         fieldLabel: field.question,
         currentText: value,
-        ideaContext: [answers.problem, answers.solution].filter(Boolean).join(" | "),
+        ideaContext: [answers.problem, answers.solution]
+          .filter(Boolean)
+          .join(" | "),
       });
       if (!res.success || !res.data) {
         if (res.isLimitError) setAssistError("سقف اعتبار AI تمام شده است.");
@@ -145,7 +153,7 @@ export function StepInterview() {
   return (
     <div className="w-full max-w-xl mx-auto px-6 pb-28 md:pb-8">
       <div className="mb-2 text-xs text-muted-foreground">
-        ایده · {toPersianDigits(activeSubStep + 1)} از {toPersianDigits(total)}
+        ایده · {toPersianDigits(safeSubStep + 1)} از {toPersianDigits(total)}
         {pathMode === "express" && " · مسیر سریع"}
       </div>
 
@@ -194,6 +202,7 @@ export function StepInterview() {
 
       {field.kind === "text" && (
         <Textarea
+          key={fieldId}
           value={value === UNKNOWN_ANSWER ? "" : value}
           onChange={(e) => setAnswer(fieldId, e.target.value)}
           placeholder={field.placeholder}
@@ -201,7 +210,6 @@ export function StepInterview() {
         />
       )}
 
-      {/* Pain chips + AI draft after industry (first field on deep / express) */}
       {fieldId === "industry" && value && value !== UNKNOWN_ANSWER && (
         <div className="mt-6 rounded-2xl border border-border/50 bg-card/30 p-4 space-y-3">
           <p className="text-sm font-medium flex items-center gap-1.5">

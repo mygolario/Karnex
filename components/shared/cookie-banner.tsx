@@ -46,7 +46,7 @@ export function CookieBanner() {
     <div
       className="fixed bottom-4 end-4 z-50 max-w-sm w-[calc(100%-2rem)] sm:w-full animate-in slide-in-from-bottom duration-500"
       role="dialog"
-      aria-modal="true"
+      aria-modal="false"
       aria-labelledby="cookie-banner-title"
     >
       <Card variant="default" className="shadow-2xl border-primary/20 bg-background/95 backdrop-blur-xl">

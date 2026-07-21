@@ -123,7 +123,7 @@ const nextConfig: NextConfig = {
           "style-src 'self' 'unsafe-inline'",
           "img-src 'self' data: blob: https: http:",
           "font-src 'self' data:",
-          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://lh3.googleusercontent.com https://www.google-analytics.com https://*.ingest.de.sentry.io https://*.sentry.io https://openrouter.ai",
+          "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://lh3.googleusercontent.com https://www.google-analytics.com https://*.ingest.de.sentry.io https://*.sentry.io https://openrouter.ai https://*.enamad.ir https://trustseal.enamad.ir",
           "frame-ancestors 'none'",
           "base-uri 'self'",
           "form-action 'self'",

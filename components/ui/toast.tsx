@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, AlertCircle, Info, X, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -55,6 +55,11 @@ const styles = {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const removeToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
@@ -83,7 +88,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ toast, success, error, info, celebrate }}>
       {children}
       
-      {/* Toast Container */}
+      {/* Portal only after mount to avoid framer-motion hydration mismatch */}
+      {mounted && (
       <div className="fixed top-4 start-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 w-full max-w-md px-4 pointer-events-none">
         <AnimatePresence mode="sync">
           {toasts.map(t => (
@@ -124,6 +130,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           ))}
         </AnimatePresence>
       </div>
+      )}
     </ToastContext.Provider>
   );
 }

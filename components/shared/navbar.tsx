@@ -46,9 +46,9 @@ export function Navbar() {
           : "py-4"
       )}
     >
-      {/* Glassmorphism background */}
+      {/* Glassmorphism background — decorative only; must not steal header clicks */}
       <div className={cn(
-        "absolute inset-0 transition-all duration-500",
+        "absolute inset-0 transition-all duration-500 pointer-events-none",
         scrolled ? "bg-background/70 backdrop-blur-2xl border-b border-border/40 shadow-lg shadow-black/5" : ""
       )} />
       
