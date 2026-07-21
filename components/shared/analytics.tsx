@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { WebVitalsReporter } from "@/components/shared/web-vitals-reporter";
 
@@ -52,5 +53,10 @@ export function GoogleAnalytics() {
 }
 
 export function PerformanceMonitoring() {
-  return <SpeedInsights />;
+  return (
+    <>
+      <Analytics />
+      <SpeedInsights />
+    </>
+  );
 }
