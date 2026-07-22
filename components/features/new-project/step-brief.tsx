@@ -10,18 +10,37 @@ import {
   buildPersonalizationPreview,
   buildIdeaFromAnswers,
 } from "@/lib/genesis/format";
-import { GENESIS_ASSIST_CAP } from "@/lib/genesis/intake-constants";
+import {
+  ANSWER_KEY_LABELS,
+  GENESIS_ASSIST_CAP,
+  getFieldDef,
+  resolveOptionLabel,
+} from "@/lib/genesis/intake-constants";
 import {
   genesisPolishBriefAction,
   suggestProjectNameAction,
 } from "@/lib/ai-actions";
+import { UNKNOWN_ANSWER } from "@/lib/genesis/types";
 import { useGenesisWizard } from "./genesis-wizard-context";
 import { StickyNav } from "./genesis-ui";
 import { cn, toPersianDigits } from "@/lib/utils";
 
+/** Keys shown on the living brief; text ones are editable inline. */
+const BRIEF_ANSWER_KEYS = [
+  "industry",
+  "problem",
+  "solution",
+  "stage",
+  "audience_who",
+  "team",
+  "goal",
+  "budget",
+] as const;
+
 export function StepBrief() {
   const {
     answers,
+    setAnswer,
     projectName,
     setName,
     projectVision,
@@ -32,7 +51,7 @@ export function StepBrief() {
     assistsRemaining,
     advance,
     retreat,
-    goToStep,
+    goToAnswerField,
   } = useGenesisWizard();
 
   const [polishing, setPolishing] = useState(false);
@@ -49,6 +68,35 @@ export function StepBrief() {
     () => buildIdeaFromAnswers(answers, projectVision),
     [answers, projectVision]
   );
+
+  const briefRows = useMemo(() => {
+    const alwaysShow = new Set([
+      "industry",
+      "problem",
+      "solution",
+      "stage",
+      "audience_who",
+    ]);
+    return BRIEF_ANSWER_KEYS.map((key) => {
+      const raw = answers[key] || "";
+      if (!raw.trim() && !alwaysShow.has(key)) return null;
+      const field = getFieldDef(key);
+      const label = ANSWER_KEY_LABELS[key] || key;
+      const isText = field?.kind === "text";
+      const display = !raw.trim()
+        ? ""
+        : isText || key === "geo_detail"
+          ? raw.trim()
+          : resolveOptionLabel(key, raw);
+      return { key, label, isText, display, raw };
+    }).filter(Boolean) as Array<{
+      key: string;
+      label: string;
+      isText: boolean;
+      display: string;
+      raw: string;
+    }>;
+  }, [answers]);
 
   const levelLabel =
     confidence.level === "strong"
@@ -133,7 +181,6 @@ export function StepBrief() {
         <p className="text-muted-foreground">{preview}</p>
       </motion.div>
 
-      {/* Living brief desk — surprise composition */}
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -185,27 +232,43 @@ export function StepBrief() {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-3">
-            {Object.entries(labeled).slice(0, 8).map(([k, v]) => (
-              <button
-                key={k}
-                type="button"
-                onClick={() => {
-                  // jump back to interview/context for edits
-                  if (["مشکل", "راه‌حل", "مخاطب", "حوزه"].includes(k)) {
-                    goToStep(2);
-                  } else {
-                    goToStep(3);
-                  }
-                }}
-                className="text-start rounded-xl border border-border/40 bg-background/50 px-3 py-2 hover:border-brand-primary/30 transition-colors group"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[11px] text-muted-foreground">{k}</span>
-                  <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-60" />
+            {briefRows.map((row) =>
+              row.isText ? (
+                <div
+                  key={row.key}
+                  className="text-start rounded-xl border border-border/40 bg-background/50 px-3 py-2 sm:col-span-2"
+                >
+                  <label className="text-[11px] text-muted-foreground mb-1 block">
+                    {row.label}
+                  </label>
+                  <Textarea
+                    value={
+                      row.raw === UNKNOWN_ANSWER ? "" : row.raw
+                    }
+                    onChange={(e) => setAnswer(row.key, e.target.value)}
+                    placeholder={`ویرایش ${row.label}…`}
+                    className="min-h-[72px] rounded-lg text-sm bg-background/80"
+                  />
                 </div>
-                <p className="text-sm font-medium line-clamp-2 mt-0.5">{v}</p>
-              </button>
-            ))}
+              ) : (
+                <button
+                  key={row.key}
+                  type="button"
+                  onClick={() => goToAnswerField(row.key)}
+                  className="text-start rounded-xl border border-border/40 bg-background/50 px-3 py-2 hover:border-brand-primary/30 transition-colors group"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-muted-foreground">
+                      {row.label}
+                    </span>
+                    <Pencil className="w-3 h-3 opacity-0 group-hover:opacity-60" />
+                  </div>
+                  <p className="text-sm font-medium line-clamp-2 mt-0.5">
+                    {row.display}
+                  </p>
+                </button>
+              )
+            )}
           </div>
 
           <div>
@@ -235,7 +298,6 @@ export function StepBrief() {
             />
           </div>
 
-          {/* Confidence meter */}
           <div className="rounded-xl bg-background/60 border border-border/40 p-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">آمادگی ایده</span>
@@ -261,7 +323,7 @@ export function StepBrief() {
                 <li>
                   <button
                     type="button"
-                    onClick={() => goToStep(2)}
+                    onClick={() => goToAnswerField("problem")}
                     className="text-xs font-semibold text-brand-primary hover:underline mt-1"
                   >
                     ۲–۳ سوال کوتاه برای تقویت ایده

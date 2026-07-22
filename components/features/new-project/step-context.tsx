@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { UNKNOWN_ANSWER } from "@/lib/genesis/types";
 import { getFieldDef } from "@/lib/genesis/intake-constants";
 import { useGenesisWizard } from "./genesis-wizard-context";
@@ -22,15 +23,19 @@ export function StepContext() {
     pathMode,
   } = useGenesisWizard();
 
-  const fieldId = contextFieldIds[activeSubStep] || contextFieldIds[0];
-  const field = getFieldDef(fieldId);
   const total = Math.max(1, contextFieldIds.length);
-  const isLast = activeSubStep >= contextFieldIds.length - 1;
+  const safeSubStep = Math.min(
+    Math.max(0, activeSubStep),
+    Math.max(0, contextFieldIds.length - 1)
+  );
+  const fieldId = contextFieldIds[safeSubStep] || contextFieldIds[0];
+  const field = getFieldDef(fieldId);
+  const isLast = safeSubStep >= contextFieldIds.length - 1;
   const value = answers[fieldId] || "";
 
   const canNext = useMemo(() => {
     if (!field) {
-      // empty context list (express with audience already set) — allow advance
+      // empty context list — allow advance
       return contextFieldIds.length === 0;
     }
     if (value === UNKNOWN_ANSWER) return true;
@@ -62,7 +67,7 @@ export function StepContext() {
   if (!field) return null;
 
   const handleBack = () => {
-    if (activeSubStep > 0) prevSubStep();
+    if (safeSubStep > 0) prevSubStep();
     else retreat();
   };
 
@@ -75,7 +80,7 @@ export function StepContext() {
   return (
     <div className="w-full max-w-xl mx-auto px-6 pb-28 md:pb-8">
       <div className="mb-2 text-xs text-muted-foreground">
-        شرایط · {toPersianDigits(activeSubStep + 1)} از {toPersianDigits(total)}
+        شرایط · {toPersianDigits(safeSubStep + 1)} از {toPersianDigits(total)}
         {pathMode === "express" && " · مسیر سریع"}
       </div>
 
@@ -110,11 +115,12 @@ export function StepContext() {
       )}
 
       {field.kind === "text" && (
-        <Input
+        <Textarea
+          key={`context-input-${fieldId}`}
           value={value === UNKNOWN_ANSWER ? "" : value}
           onChange={(e) => setAnswer(fieldId, e.target.value)}
           placeholder={field.placeholder}
-          className="h-12 rounded-xl text-base"
+          className="min-h-[120px] text-base rounded-2xl bg-card/50 border-border/60"
         />
       )}
 

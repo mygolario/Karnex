@@ -28,7 +28,6 @@ import {
   DEEP_INTERVIEW_IDS,
   EXPRESS_CONTEXT_IDS,
   GENESIS_ASSIST_CAP,
-  getFieldDef,
 } from "@/lib/genesis/intake-constants";
 import {
   buildIdeaFromAnswers,
@@ -39,7 +38,6 @@ import {
   resolveGeoSummary,
   scoreGenesisConfidence,
 } from "@/lib/genesis/format";
-import { UNKNOWN_ANSWER } from "@/lib/genesis/types";
 
 const DRAFT_KEY = "karnex_project_draft";
 const FIRST_RUN_COACH_KEY = "karnex_genesis_first_run_coach";
@@ -84,6 +82,8 @@ interface GenesisWizardActions {
   setVision: (v: string) => void;
   setAnswer: (qId: string, optId: string) => void;
   goToStep: (step: number) => void;
+  /** Jump to the interview/context screen that owns this answer key */
+  goToAnswerField: (fieldId: string) => void;
   nextSubStep: () => void;
   prevSubStep: () => void;
   advance: () => void;
@@ -205,18 +205,6 @@ function clearDraft() {
   localStorage.removeItem(DRAFT_KEY);
 }
 
-function fieldFilled(answers: Record<string, string>, id: string): boolean {
-  const v = answers[id]?.trim();
-  if (!v) return false;
-  // unknown counts as answered (escape hatch)
-  if (v === UNKNOWN_ANSWER) return true;
-  const def = getFieldDef(id);
-  if (def?.kind === "text" && def.minChars) {
-    return v.length >= Math.min(def.minChars, 3);
-  }
-  return true;
-}
-
 export function GenesisWizardProvider({
   children,
 }: {
@@ -274,18 +262,14 @@ export function GenesisWizardProvider({
   );
 
   const contextFieldIds = useMemo(() => {
+    // Always keep the full express/deep list stable while answering.
+    // Filtering audience out when it becomes "filled" removed the field mid-typing
+    // and collapsed the context step into the brief.
     if (pathMode === "express") {
-      // stage + audience (audience may already be set in interview for deep;
-      // express collects audience in context if missing)
-      return EXPRESS_CONTEXT_IDS.filter((id) => {
-        if (id === "audience_who" && fieldFilled(answers, "audience_who")) {
-          return false;
-        }
-        return true;
-      }) as string[];
+      return [...EXPRESS_CONTEXT_IDS] as string[];
     }
     return [...DEEP_CONTEXT_IDS];
-  }, [pathMode, answers]);
+  }, [pathMode]);
 
   const maxStep = GENESIS_PHASES.length - 1;
   const currentPhase = GENESIS_PHASES[activeStep] ?? "welcome";
@@ -383,6 +367,37 @@ export function GenesisWizardProvider({
       setActiveSubStep(0);
     },
     [maxStep]
+  );
+
+  const goToAnswerField = useCallback(
+    (fieldId: string) => {
+      const interviewIdx = interviewFieldIds.indexOf(fieldId);
+      if (interviewIdx >= 0) {
+        setActiveStep(2);
+        setActiveSubStep(interviewIdx);
+        return;
+      }
+      const contextIdx = contextFieldIds.indexOf(fieldId);
+      if (contextIdx >= 0) {
+        setActiveStep(3);
+        setActiveSubStep(contextIdx);
+        return;
+      }
+      // Fallback: text idea fields → interview, rest → context
+      if (
+        fieldId === "problem" ||
+        fieldId === "solution" ||
+        fieldId === "industry" ||
+        fieldId === "audience_who"
+      ) {
+        setActiveStep(2);
+        setActiveSubStep(0);
+        return;
+      }
+      setActiveStep(3);
+      setActiveSubStep(0);
+    },
+    [interviewFieldIds, contextFieldIds]
   );
 
   const nextSubStep = useCallback(() => {
@@ -716,6 +731,7 @@ export function GenesisWizardProvider({
     setVision: setProjectVision,
     setAnswer,
     goToStep,
+    goToAnswerField,
     nextSubStep,
     prevSubStep,
     advance,
