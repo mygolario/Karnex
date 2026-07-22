@@ -475,7 +475,14 @@ export function GenesisWizardProvider({
   );
 
   const generate = useCallback(async () => {
-    if (!user || !pillar) return;
+    if (!user) {
+      setError("نشست شما منقضی شده است. لطفاً دوباره وارد شوید و ساخت را ادامه دهید.");
+      return;
+    }
+    if (!pillar) {
+      setError("نوع پروژه مشخص نیست. لطفاً یک مرحله به عقب برگردید.");
+      return;
+    }
     const safePillar = sanitizePillar(pillar) ?? "startup";
     if (safePillar !== pillar) setPillar(safePillar);
 

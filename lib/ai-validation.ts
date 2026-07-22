@@ -65,6 +65,121 @@ export const PitchDeckSchema = z.object({
 });
 
 // --- SWOT & Competitors Schema ---
+const COMPETITOR_SCOPE_ALIASES: Record<string, 'local' | 'national' | 'regional' | 'global'> = {
+  local: 'local',
+  city: 'local',
+  municipal: 'local',
+  national: 'national',
+  iran: 'national',
+  iranian: 'national',
+  country: 'national',
+  regional: 'regional',
+  region: 'regional',
+  global: 'global',
+  international: 'global',
+  worldwide: 'global',
+  world: 'global',
+};
+
+function clampCompetitorScore(n: number, min = 1, max = 5): number {
+  if (Number.isNaN(n)) return min;
+  return Math.max(min, Math.min(max, Math.round(n)));
+}
+
+function clampUnitInterval(n: number): number {
+  if (Number.isNaN(n)) return 0.5;
+  return Math.max(0, Math.min(1, n));
+}
+
+/** Soften common Perplexity/LLM deviations before Zod (scope aliases, empty citations, 0 ratings). */
+export function normalizeCompetitorDiscoveryPayload(raw: unknown): unknown {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  const out: Record<string, unknown> = { ...(raw as Record<string, unknown>) };
+
+  if (Array.isArray(out.competitors)) {
+    out.competitors = out.competitors.map((item) => {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return item;
+      const c: Record<string, unknown> = { ...(item as Record<string, unknown>) };
+
+      if (typeof c.scope === 'string') {
+        const key = c.scope.toLowerCase().trim().replace(/\s+/g, '');
+        const mapped = COMPETITOR_SCOPE_ALIASES[key] ?? COMPETITOR_SCOPE_ALIASES[c.scope.toLowerCase().trim()];
+        if (mapped) c.scope = mapped;
+        else delete c.scope;
+      }
+
+      if (typeof c.competitorType === 'string') {
+        const t = c.competitorType.toLowerCase().trim();
+        if (t === 'substitutes' || t === 'alternative' || t === 'alternatives') {
+          c.competitorType = 'substitute';
+        } else if (t !== 'direct' && t !== 'indirect' && t !== 'substitute') {
+          delete c.competitorType;
+        }
+      }
+
+      if (Array.isArray(c.citations)) {
+        c.citations = c.citations
+          .filter((cit) => {
+            if (!cit || typeof cit !== 'object' || Array.isArray(cit)) return false;
+            const url = (cit as { url?: unknown }).url;
+            return typeof url === 'string' && url.trim().length > 0;
+          })
+          .map((cit) => {
+            const row = cit as { title?: unknown; url: string };
+            return {
+              title: typeof row.title === 'string' ? row.title : '',
+              url: row.url.trim(),
+            };
+          });
+      }
+
+      if (c.ratings && typeof c.ratings === 'object' && !Array.isArray(c.ratings)) {
+        const ratings: Record<string, number> = {};
+        for (const [key, value] of Object.entries(c.ratings as Record<string, unknown>)) {
+          const n = typeof value === 'number' ? value : Number(value);
+          if (!Number.isNaN(n)) ratings[key] = clampCompetitorScore(n);
+        }
+        c.ratings = ratings;
+      }
+
+      if (typeof c.threatScore === 'number') {
+        c.threatScore = clampCompetitorScore(c.threatScore);
+      } else if (c.threatScore != null) {
+        const n = Number(c.threatScore);
+        if (!Number.isNaN(n)) c.threatScore = clampCompetitorScore(n);
+        else delete c.threatScore;
+      }
+
+      if (c.position && typeof c.position === 'object' && !Array.isArray(c.position)) {
+        const p = { ...(c.position as Record<string, unknown>) };
+        if (typeof p.x === 'number') p.x = clampUnitInterval(p.x);
+        if (typeof p.y === 'number') p.y = clampUnitInterval(p.y);
+        c.position = p;
+      }
+
+      return c;
+    });
+  }
+
+  if (out.yourPosition && typeof out.yourPosition === 'object' && !Array.isArray(out.yourPosition)) {
+    const p = { ...(out.yourPosition as Record<string, unknown>) };
+    if (typeof p.x === 'number') p.x = clampUnitInterval(p.x);
+    if (typeof p.y === 'number') p.y = clampUnitInterval(p.y);
+    out.yourPosition = p;
+  }
+
+  if (out.yourRatings && typeof out.yourRatings === 'object' && !Array.isArray(out.yourRatings)) {
+    const ratings: Record<string, number> = {};
+    for (const [key, value] of Object.entries(out.yourRatings as Record<string, unknown>)) {
+      const n = typeof value === 'number' ? value : Number(value);
+      if (!Number.isNaN(n)) ratings[key] = clampCompetitorScore(n);
+    }
+    out.yourRatings = ratings;
+  }
+
+  return out;
+}
+
 export const CompetitorCitationSchema = z.object({
   title: z.string().optional().default(''),
   url: z.string().min(1),
@@ -101,23 +216,26 @@ export const SwotSchema = z.object({
   threats: z.array(z.string()).default([]),
 });
 
-export const SwotCompetitorsSchema = z.object({
-  competitors: z.array(CompetitorSchema).default([]),
-  swot: SwotSchema,
-  brief: z.string().optional().default(''),
-  wedge: z.string().optional().default(''),
-  nextMoves: z.array(z.string()).optional().default([]),
-  whiteSpace: z.array(z.string()).optional().default([]),
-  matrixDimensions: z.array(z.string()).optional().default([]),
-  yourPosition: z.object({
-    x: z.number().min(0).max(1),
-    y: z.number().min(0).max(1),
-    xAxis: z.string(),
-    yAxis: z.string(),
-  }).optional(),
-  yourRatings: z.record(z.string(), z.number().min(1).max(5)).optional(),
-  reasoning: z.string().optional().default(''),
-});
+export const SwotCompetitorsSchema = z.preprocess(
+  normalizeCompetitorDiscoveryPayload,
+  z.object({
+    competitors: z.array(CompetitorSchema).default([]),
+    swot: SwotSchema,
+    brief: z.string().optional().default(''),
+    wedge: z.string().optional().default(''),
+    nextMoves: z.array(z.string()).optional().default([]),
+    whiteSpace: z.array(z.string()).optional().default([]),
+    matrixDimensions: z.array(z.string()).optional().default([]),
+    yourPosition: z.object({
+      x: z.number().min(0).max(1),
+      y: z.number().min(0).max(1),
+      xAxis: z.string(),
+      yAxis: z.string(),
+    }).optional(),
+    yourRatings: z.record(z.string(), z.number().min(1).max(5)).optional(),
+    reasoning: z.string().optional().default(''),
+  })
+);
 
 // --- Smart Canvas Schema ---
 export const SmartCanvasSchema = z.object({

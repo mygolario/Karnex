@@ -455,7 +455,9 @@ export async function analyzeCompetitorsAction(
         // skip a second charge and a second usage record to avoid double counting.
         if (!options?.skipLimitCheck) {
             const limitResult = await checkAILimit('analyze-competitors');
-            if (limitResult.errorResponse) return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+            if (limitResult.errorResponse) {
+                return { success: false, error: "AI_LIMIT_REACHED", isLimitError: true };
+            }
             rollback = limitResult.rollback;
             usageUserId = limitResult.user?.id;
         }

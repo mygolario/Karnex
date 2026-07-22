@@ -47,12 +47,26 @@ function normalizeRatings(
 }
 
 function normalizeScope(scope: unknown): CompetitorScope | undefined {
-  switch (scope) {
+  if (typeof scope !== "string") return undefined;
+  const key = scope.toLowerCase().trim();
+  switch (key) {
     case "local":
+    case "city":
+    case "municipal":
+      return "local";
     case "national":
+    case "iran":
+    case "iranian":
+    case "country":
+      return "national";
     case "regional":
+    case "region":
+      return "regional";
     case "global":
-      return scope;
+    case "international":
+    case "worldwide":
+    case "world":
+      return "global";
     default:
       return undefined;
   }

@@ -3,13 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Check, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useAuth } from "@/contexts/auth-context";
 import { useGenesisWizard } from "./genesis-wizard-context";
 import { cn, toPersianDigits } from "@/lib/utils";
 
 /**
- * Build phase: auto-starts generate once and shows phased checklist + peek.
+ * Build phase: auto-starts generate once auth is ready and shows phased checklist + peek.
  */
 export function StepBuild() {
+  const { user, loading: authLoading } = useAuth();
   const {
     generate,
     isGenerating,
@@ -23,17 +26,20 @@ export function StepBuild() {
     retreat,
   } = useGenesisWizard();
 
-  const started = useRef(false);
+  const startedForKey = useRef<string | null>(null);
   const [retryToken, setRetryToken] = useState(0);
 
   useEffect(() => {
-    if (started.current && retryToken === 0) return;
-    started.current = true;
+    // Wait for auth hydration so we don't fire generate() with user=null and get stuck.
+    if (authLoading) return;
+    const authKey = user?.id ?? "anon";
+    if (startedForKey.current === authKey && retryToken === 0) return;
+    startedForKey.current = authKey;
     void generate();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [retryToken]);
+  }, [retryToken, authLoading, user?.id]);
 
-  const busy = isGenerating || isCreating;
+  const busy = isGenerating || isCreating || authLoading;
 
   return (
     <div className="w-full max-w-lg mx-auto px-6 py-12 text-center">
@@ -50,9 +56,11 @@ export function StepBuild() {
           )}
         </div>
         <h2 className="text-2xl md:text-3xl font-black mb-2">
-          {isCreating
-            ? "در حال ذخیره پروژه…"
-            : "کارنکس در حال طراحی استراتژی…"}
+          {authLoading
+            ? "در حال بررسی ورود…"
+            : isCreating
+              ? "در حال ذخیره پروژه…"
+              : "کارنکس در حال طراحی استراتژی…"}
         </h2>
         <p className="text-muted-foreground text-sm">
           {generatingPhase ||
@@ -111,26 +119,38 @@ export function StepBuild() {
       {error && (
         <div className="space-y-3">
           <p className="text-sm text-destructive">{error}</p>
-          <button
-            type="button"
-            onClick={() => {
-              clearError();
-              retreat();
-            }}
-            className="text-sm font-semibold text-brand-primary hover:underline"
-          >
-            بازگشت به تأیید و تلاش دوباره
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              clearError();
-              setRetryToken((t) => t + 1);
-            }}
-            className="block mx-auto text-sm text-muted-foreground hover:text-foreground"
-          >
-            تلاش مجدد همین‌جا
-          </button>
+          {error.includes("وارد شوید") ? (
+            <Link
+              href={`/login?callbackUrl=${encodeURIComponent("/new-project?step=5")}`}
+              className="inline-block text-sm font-semibold text-brand-primary hover:underline"
+            >
+              ورود مجدد
+            </Link>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  clearError();
+                  retreat();
+                }}
+                className="text-sm font-semibold text-brand-primary hover:underline"
+              >
+                بازگشت به تأیید و تلاش دوباره
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  clearError();
+                  startedForKey.current = null;
+                  setRetryToken((t) => t + 1);
+                }}
+                className="block mx-auto text-sm text-muted-foreground hover:text-foreground"
+              >
+                تلاش مجدد همین‌جا
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

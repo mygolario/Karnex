@@ -1,6 +1,6 @@
 import { NextResponse, after } from 'next/server';
 import { checkAILimit } from '@/lib/ai-limit-middleware';
-import { callCopilotChat, MODEL_GEMINI_31_FLASH_LITE, MODEL_GEMINI_35_FLASH } from '@/lib/openrouter';
+import { callCopilotChat, MODEL_GEMINI_31_FLASH_LITE, MODEL_GEMINI_35_FLASH_LITE } from '@/lib/openrouter';
 import { recordAiUsage, extractUsage } from '@/lib/copilot/usage-tracking';
 import { buildCopilotContext, serializeMentionedContext } from '@/lib/copilot/context';
 import {
@@ -194,7 +194,7 @@ export async function POST(req: Request) {
         // Aggregate token usage across all model calls for this request.
         let totalPromptTokens = 0;
         let totalCompletionTokens = 0;
-        let lastModelUsed = tier === "fast" ? MODEL_GEMINI_31_FLASH_LITE : MODEL_GEMINI_35_FLASH;
+        let lastModelUsed = tier === "fast" ? MODEL_GEMINI_31_FLASH_LITE : MODEL_GEMINI_35_FLASH_LITE;
         let assistantContent = "";
         let finalToolResult: any = null;
 

@@ -8,7 +8,7 @@ Call sites pass `modelOverride: TIER_*` — do not hardcode OpenRouter model slu
 | Tier | Model | Use for |
 |------|--------|---------|
 | `TIER_FAST` | `google/gemini-3.1-flash-lite` | Memory, insights, name suggest, break-task, refine-text, enhance-bio, section cards, content ideas |
-| `TIER_DEFAULT` | `google/gemini-3.5-flash` | Canvas, chat, copilot tools, most content/ops narratives, multi-pass **draft** |
+| `TIER_DEFAULT` | `google/gemini-3.5-flash-lite` | Canvas, chat, copilot tools, most content/ops narratives, multi-pass **draft** |
 | `TIER_REASONING` | `anthropic/claude-sonnet-5` | Genesis core plan, pitch-deck assemble, validate-idea **refine** (and single-pass fallbacks) |
 | `TIER_GROUNDED` | `perplexity/sonar` | Market research (standard), pitch scorecard |
 | `TIER_GROUNDED_PRO` | `perplexity/sonar-pro` | Competitor discovery |

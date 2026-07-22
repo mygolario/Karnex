@@ -6,17 +6,19 @@
 import { getAiUsageContext } from "./ai-usage-context";
 
 // Google Gemini Models (Preferred Priority)
-// Primary: gemini-3.5-flash (fast, high quality, low cost, beginner-friendly Persian output)
+// Primary: gemini-3.5-flash-lite (fast, low cost, low latency, beginner-friendly Persian output)
 // Fallbacks kept for resilience
 export const TEXT_MODELS = [
-    "google/gemini-3.5-flash",        // Priority 1 (Fast, high quality, low cost)
+    "google/gemini-3.5-flash-lite",   // Priority 1 (Fast, low cost, low latency)
     "google/gemini-2.5-flash",        // Priority 2 (Stable fallback)
     "google/gemini-2.5-flash-lite"   // Priority 3 (Ultra-fast budget fallback)
 ];
 
 // === Named model IDs — single source of truth for model policy ===
 // Use these constants instead of string literals so a model swap is one edit.
+/** @deprecated Superseded by MODEL_GEMINI_35_FLASH_LITE as the TIER_DEFAULT backbone (cost/latency) — kept for cost-map/rollback only */
 export const MODEL_GEMINI_35_FLASH       = "google/gemini-3.5-flash";
+export const MODEL_GEMINI_35_FLASH_LITE  = "google/gemini-3.5-flash-lite";
 export const MODEL_GEMINI_25_FLASH       = "google/gemini-2.5-flash";
 export const MODEL_GEMINI_25_FLASH_LITE  = "google/gemini-2.5-flash-lite";
 export const MODEL_GEMINI_31_FLASH_LITE  = "google/gemini-3.1-flash-lite";
@@ -29,7 +31,7 @@ export const MODEL_GEMINI_FLASH_IMAGE    = "google/gemini-3.1-flash-image";
 
 // === Tier presets — semantic role → preferred model ===
 // Call sites must pass these (or MODEL_*) via modelOverride — never hardcode slugs.
-export const TIER_DEFAULT      = MODEL_GEMINI_35_FLASH;       // backbone: canvas, chat, copilot, drafts
+export const TIER_DEFAULT      = MODEL_GEMINI_35_FLASH_LITE;  // backbone: canvas, chat, copilot, drafts (cost/latency-optimized)
 export const TIER_FAST         = MODEL_GEMINI_31_FLASH_LITE;  // memory, insights, name/break-task/rewrites
 export const TIER_REASONING    = MODEL_CLAUDE_SONNET_5;       // high-stakes JSON: plan, pitch, validate refine
 export const TIER_GROUNDED     = MODEL_PERPLEXITY_SONAR;      // live-web market research / pitch scorecard
@@ -63,7 +65,7 @@ export function buildWebSearchPlugin(
 // Kept separate so the copilot can evolve independently of the generic TEXT_MODELS.
 // Falls back through the chain on transient failure (handled by callOpenRouter / inline calls).
 export const COPILOT_MODELS = [
-    "google/gemini-3.5-flash",        // Priority 1 (Fast tool-calling, high quality)
+    "google/gemini-3.5-flash-lite",   // Priority 1 (Fast tool-calling, low cost/latency)
     "google/gemini-2.5-flash",        // Priority 2 (Stable fallback)
     "google/gemini-2.5-flash-lite"   // Priority 3 (Ultra-fast budget fallback)
 ];

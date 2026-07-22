@@ -15,6 +15,7 @@ import prisma from "@/lib/prisma";
 // Adjust as real billing data becomes available.
 const COST_PER_1M_TOKENS: Record<string, { input: number; output: number }> = {
   "google/gemini-3.5-flash": { input: 1.5, output: 9 },
+  "google/gemini-3.5-flash-lite": { input: 0.30, output: 2.5 },
   "google/gemini-3.1-flash-lite": { input: 0.25, output: 1.5 },
   "google/gemini-2.5-flash": { input: 0.30, output: 2.5 },
   "google/gemini-2.5-flash-lite": { input: 0.10, output: 0.40 },
