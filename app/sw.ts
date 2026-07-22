@@ -60,7 +60,10 @@ const serwist = new Serwist({
         url.pathname.startsWith("/api/user-data") ||
         url.pathname.startsWith("/api/copilot") ||
         url.pathname.startsWith("/api/user") ||
-        url.pathname.startsWith("/api/ai-generate"),
+        url.pathname.startsWith("/api/ai-generate") ||
+        url.pathname.startsWith("/api/auth") ||
+        url.pathname.startsWith("/login") ||
+        url.pathname.startsWith("/signup"),
       handler: new NetworkOnly(),
     },
     {

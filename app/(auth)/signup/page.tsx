@@ -94,7 +94,12 @@ export default function SignupPage() {
         message.includes("already registered") ||
         message.includes("User already registered")
       ) {
-        setError("این ایمیل قبلاً ثبت شده است. لطفاً وارد شوید");
+        setError("این ایمیل قبلاً ثبت شده است. در حال انتقال به صفحه ورود...");
+        setTimeout(() => {
+          router.push(
+            `/login?email=${encodeURIComponent(email)}&message=already_registered`
+          );
+        }, 1500);
       } else {
         setError("خطا در ثبت‌نام: " + message);
       }

@@ -54,8 +54,15 @@ function LoginContent() {
   useEffect(() => {
     const message = searchParams.get("message");
     const errorParam = searchParams.get("error");
+    const emailParam = searchParams.get("email");
+    if (emailParam) {
+      setEmail(emailParam);
+    }
     if (message === "confirm_email") {
       setSuccess("ایمیل شما تأیید شد. حالا می‌توانید وارد شوید.");
+    }
+    if (message === "already_registered") {
+      setSuccess("این ایمیل قبلاً ثبت شده است. لطفاً رمز عبور خود را وارد کرده و وارد شوید.");
     }
     if (errorParam === "user_deleted") {
       setError("حساب کاربری شما غیرفعال یا حذف شده است.");
@@ -81,7 +88,11 @@ function LoginContent() {
 
       if (signInError) throw signInError;
 
-      await fetch("/api/auth/sync", { method: "POST" });
+      try {
+        await fetch("/api/auth/sync", { method: "POST" });
+      } catch (syncErr) {
+        console.warn("Auth sync non-blocking warning:", syncErr);
+      }
 
       const callbackUrl =
         searchParams.get("callbackUrl") || "/dashboard/overview";
