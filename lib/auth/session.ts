@@ -22,15 +22,21 @@ export async function auth(): Promise<AppSession | null> {
 
   if (!supabaseUser) return null;
 
-  const appUser = await syncSupabaseUser(supabaseUser);
+  try {
+    const appUser = await syncSupabaseUser(supabaseUser);
+    if (!appUser) return null;
 
-  return {
-    user: {
-      id: appUser.id,
-      email: appUser.email,
-      name: appUser.name,
-      image: appUser.image,
-      role: appUser.role,
-    },
-  };
+    return {
+      user: {
+        id: appUser.id,
+        email: appUser.email,
+        name: appUser.name,
+        image: appUser.image,
+        role: appUser.role,
+      },
+    };
+  } catch (error) {
+    console.error("Auth session sync error:", error);
+    return null;
+  }
 }

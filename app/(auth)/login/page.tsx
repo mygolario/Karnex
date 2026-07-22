@@ -53,8 +53,12 @@ function LoginContent() {
   // Surface callback messages (e.g. after email confirmation or signup)
   useEffect(() => {
     const message = searchParams.get("message");
+    const errorParam = searchParams.get("error");
     if (message === "confirm_email") {
       setSuccess("ایمیل شما تأیید شد. حالا می‌توانید وارد شوید.");
+    }
+    if (errorParam === "user_deleted") {
+      setError("حساب کاربری شما غیرفعال یا حذف شده است.");
     }
   }, [searchParams]);
 

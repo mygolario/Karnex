@@ -281,7 +281,7 @@ export async function softDeleteAdminUser(userId: string) {
 
   const target = await prisma.user.findUnique({
     where: { id: userId },
-    select: { role: true },
+    select: { role: true, supabaseUserId: true },
   });
   if (target?.role === "admin") {
     const adminCount = await prisma.user.count({
@@ -292,10 +292,18 @@ export async function softDeleteAdminUser(userId: string) {
     }
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { deletedAt: new Date() },
-  });
+  const { archiveAppUser } = await import("@/lib/auth/archive-user");
+  await archiveAppUser(userId);
+
+  if (target?.supabaseUserId && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const { getAdminSupabase } = await import("@/lib/supabase/admin");
+      const admin = await getAdminSupabase();
+      await admin.auth.admin.deleteUser(target.supabaseUserId);
+    } catch (error) {
+      console.error("[softDeleteAdminUser] Supabase auth delete failed:", error);
+    }
+  }
 
   await writeAdminAudit({
     actorId: gate.user.id,

@@ -56,11 +56,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [loadingProfile, setLoadingProfile] = useState(false);
 
+  const clearClientAuth = useCallback(async () => {
+    setUser(null);
+    setUserProfile(null);
+    if (isSupabaseBrowserConfigured()) {
+      try {
+        const supabase = createClient();
+        await supabase.auth.signOut({ scope: "local" });
+      } catch {
+        /* ignore */
+      }
+    }
+  }, []);
+
   const fetchProfile = useCallback(async () => {
     try {
       setLoadingProfile(true);
-      const res = await fetch("/api/user-data?type=profile");
-      if (!res.ok) return;
+      const res = await fetch("/api/user-data?type=profile", { cache: "no-store" });
+      if (!res.ok) {
+        // Expired/invalid session → logged-out UI. Soft-deleted users are 404.
+        if (res.status === 401 || res.status === 403) {
+          await clearClientAuth();
+          return;
+        }
+        if (res.status === 404) {
+          await clearClientAuth();
+          window.location.href = "/login?error=user_deleted";
+          return;
+        }
+        return;
+      }
       const data = await res.json();
       if (data.profile) {
         setUserProfile(data.profile as UserProfile);
@@ -87,7 +112,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoadingProfile(false);
     }
-  }, []);
+  }, [clearClientAuth]);
 
   useEffect(() => {
     if (!isSupabaseBrowserConfigured()) {
@@ -96,18 +121,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     const supabase = createClient();
+    let cancelled = false;
 
     const init = async () => {
-      const {
-        data: { user: su },
-      } = await supabase.auth.getUser();
-      if (su) {
-        await fetchProfile();
-      } else {
-        setUser(null);
-        setUserProfile(null);
+      // Validate with Auth server — do not trust cached session alone.
+      const { data, error } = await supabase.auth.getUser();
+
+      if (cancelled) return;
+
+      if (error || !data.user) {
+        // Drop stale local tokens that cause Dashboard UI + API 401 spam.
+        await clearClientAuth();
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      setUser(mapSupabaseUser(data.user));
+      await fetchProfile();
+      if (!cancelled) setLoading(false);
     };
 
     void init();
@@ -115,20 +146,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        setUser(mapSupabaseUser(session.user));
-        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-          await fetchProfile();
-        }
-      } else {
+      // INITIAL_SESSION is handled by getUser() above to avoid phantom login.
+      if (event === "INITIAL_SESSION") return;
+
+      if (event === "SIGNED_OUT") {
         setUser(null);
         setUserProfile(null);
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+
+      if (session?.user && (event === "SIGNED_IN" || event === "TOKEN_REFRESHED")) {
+        setUser(mapSupabaseUser(session.user));
+        await fetchProfile();
+        setLoading(false);
+        return;
+      }
+
+      if (!session?.user) {
+        setUser(null);
+        setUserProfile(null);
+        setLoading(false);
+      }
     });
 
-    return () => subscription.unsubscribe();
-  }, [fetchProfile]);
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
+  }, [fetchProfile, clearClientAuth]);
 
   const refreshProfile = useCallback(async () => {
     await fetchProfile();

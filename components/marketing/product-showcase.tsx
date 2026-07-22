@@ -88,7 +88,7 @@ export const ProductShowcase = () => {
           className="relative max-w-5xl mx-auto"
         >
           {/* Glow */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 to-secondary/15 blur-[60px] rounded-3xl" />
+          <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 to-secondary/15 blur-[60px] rounded-3xl pointer-events-none" />
 
           {/* Browser frame */}
           <div className="relative bg-card/80 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl overflow-hidden">
@@ -196,7 +196,7 @@ export const ProductShowcase = () => {
                     <motion.div
                       animate={{ scale: [1, 1.8], opacity: [0.5, 0] }}
                       transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-                      className={`absolute inset-0 w-10 h-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br ${spot.color}`}
+                      className={`absolute inset-0 w-10 h-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br ${spot.color} pointer-events-none`}
                     />
                     {/* Pin */}
                     <div className={`relative w-10 h-10 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gradient-to-br ${spot.color} flex items-center justify-center shadow-lg cursor-pointer`}>
@@ -223,19 +223,20 @@ export const ProductShowcase = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.5 }}
-            className="text-center mt-8"
+            className="text-center mt-8 relative z-10"
           >
-            <Link href="/signup">
-              <Button
-                size="lg"
-                rounded="lg"
-                variant="outline"
-                className="font-bold gap-2"
-              >
+            <Button
+              asChild
+              size="lg"
+              rounded="lg"
+              variant="outline"
+              className="font-bold gap-2 cursor-pointer"
+            >
+              <Link href="/signup">
                 همین داشبورد رو برای خودت بساز
                 <ArrowLeft className="w-5 h-5" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </motion.div>
         </motion.div>
       </div>

@@ -75,22 +75,21 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
     let lastReplayAt = 0;
 
     const handleOnline = async () => {
+      if (!user?.id) return;
       const now = Date.now();
       if (now - lastReplayAt < 3000) return;
       lastReplayAt = now;
 
-
-      console.log("PWA: Device is online. Replaying queued mutations...");
       const { replayOfflineQueue } = await import("@/lib/offline-sync");
       const success = await replayOfflineQueue();
       if (success) {
-        await storeRefresh(user?.id, { silent: true });
+        await storeRefresh(user.id, { silent: true });
       }
     };
 
     window.addEventListener("online", handleOnline);
 
-    if (navigator.onLine) {
+    if (navigator.onLine && user?.id) {
       void handleOnline();
     }
 

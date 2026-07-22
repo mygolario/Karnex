@@ -78,23 +78,33 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       set({ loading: true });
     }
     try {
-      const res = await fetch("/api/projects", { cache: "no-store" })
-        .then((r) => r.json())
-        .catch(() => null);
+      const response = await fetch("/api/projects", { cache: "no-store" });
+      if (response.status === 401 || response.status === 403) {
+        // Stale client session — treat as logged out; do not spam server actions.
+        set({ projects: [], activeProject: null, loading: false });
+        return;
+      }
+
+      const res = await response.json().catch(() => null);
 
       let summaries: BusinessPlan[] = [];
 
       if (res?.success && res.projects) {
         summaries = res.projects;
-      } else {
+      } else if (response.ok) {
         const { getUserProjectsAction } = await import("@/lib/project-actions");
         const actionRes = await getUserProjectsAction();
         if (actionRes.error) {
-          console.error("Error fetching projects:", actionRes.error);
+          if (actionRes.error !== "Unauthorized") {
+            console.error("Error fetching projects:", actionRes.error);
+          }
           set({ loading: false });
           return;
         }
         summaries = (actionRes.projects as BusinessPlan[]) || [];
+      } else {
+        set({ loading: false });
+        return;
       }
 
       set({ projects: summaries });

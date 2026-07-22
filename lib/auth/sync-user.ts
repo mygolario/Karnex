@@ -45,6 +45,21 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
     throw new Error("Supabase user is missing email");
   }
 
+  // Check if user is soft-deleted
+  const softDeletedUser = await prisma.user.findFirst({
+    where: {
+      OR: [
+        { supabaseUserId: supabaseUser.id },
+        { email: supabaseUser.email },
+      ],
+      deletedAt: { not: null },
+    },
+  });
+
+  if (softDeletedUser) {
+    throw new Error("USER_DELETED");
+  }
+
   const bySupabaseId = await prisma.user.findFirst({
     where: { supabaseUserId: supabaseUser.id, deletedAt: null },
   });
