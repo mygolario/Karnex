@@ -80,7 +80,7 @@ export function StepContext() {
       </div>
 
       <motion.h2
-        key={fieldId}
+        key={`heading-${fieldId}`}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-2xl md:text-3xl font-bold mb-2"

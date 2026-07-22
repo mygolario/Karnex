@@ -158,7 +158,7 @@ export function StepInterview() {
       </div>
 
       <motion.h2
-        key={fieldId}
+        key={`heading-${fieldId}`}
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-2xl md:text-3xl font-bold mb-2"
@@ -202,7 +202,7 @@ export function StepInterview() {
 
       {field.kind === "text" && (
         <Textarea
-          key={fieldId}
+          key={`input-${fieldId}`}
           value={value === UNKNOWN_ANSWER ? "" : value}
           onChange={(e) => setAnswer(fieldId, e.target.value)}
           placeholder={field.placeholder}
