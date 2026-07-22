@@ -10,7 +10,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./tests/setup.ts'],
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: ['node_modules', '.next', 'out', '.firebase'],
+    exclude: ['node_modules', '.next', 'out', '.firebase', 'tests/e2e/**'],
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: ['node_modules/', '.next/', 'out/', '.firebase/']
@@ -18,7 +18,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './')
+      '@': path.resolve(__dirname, './'),
+      'server-only': path.resolve(__dirname, './tests/mocks/server-only.ts')
     }
   }
 })

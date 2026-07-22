@@ -32,7 +32,10 @@ export function parseNum(val: unknown): number {
   if (typeof val === "symbol") return 0;
   if (typeof val === "number") return val;
   if (!val) return 0;
-  const cleaned = convertPersianArabicDigits(val).replace(/,/g, "");
+  const cleaned = convertPersianArabicDigits(val)
+    .replace(/,/g, "")
+    .replace(/،/g, "")
+    .replace(/٫/g, ".");
   const cleanStr = cleaned.replace(/[^0-9.-]/g, "");
   const parsed = parseFloat(cleanStr);
   return Number.isNaN(parsed) ? 0 : parsed;

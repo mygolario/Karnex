@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { rateLimiter } from '@/lib/rate-limiter'
+import { clearRateLimits } from '@/lib/rate-limiter-memory'
 import { NextRequest } from 'next/server'
 
 // Create a mock NextRequest
@@ -12,6 +13,7 @@ function createMockRequest(ip: string = '127.0.0.1'): NextRequest {
 describe('Rate Limiter', () => {
   beforeEach(() => {
     // Clear rate limit map before each test
+    clearRateLimits()
     vi.useFakeTimers()
   })
 

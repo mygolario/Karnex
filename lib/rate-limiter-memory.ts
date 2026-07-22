@@ -2,6 +2,10 @@ import type { NextRequest } from "next/server";
 
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
+export function clearRateLimits(): void {
+  rateLimitMap.clear();
+}
+
 export const RATE_LIMIT = {
   windowMs: 60 * 1000,
   maxRequests: 30,

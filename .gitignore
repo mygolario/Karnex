@@ -68,3 +68,10 @@ supabase/.temp/
 .vercel
 .env*
 .agents/
+
+# Playwright E2E test reports & logs
+/e2e-report/
+/test-results/
+test-output.txt
+vitest-output.txt
+
