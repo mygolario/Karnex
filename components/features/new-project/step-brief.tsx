@@ -85,7 +85,7 @@ export function StepBrief() {
       const isText = field?.kind === "text";
       const display = !raw.trim()
         ? ""
-        : isText || key === "geo_detail"
+        : isText
           ? raw.trim()
           : resolveOptionLabel(key, raw);
       return { key, label, isText, display, raw };
