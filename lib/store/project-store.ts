@@ -161,6 +161,21 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }
 
       const newId = res.id;
+      try {
+        const { trackProductEvent } = await import("@/lib/analytics/product");
+        trackProductEvent("project_created", {
+          project_id: newId,
+          project_type:
+            typeof planData?.projectType === "string"
+              ? planData.projectType
+              : typeof planData?.type === "string"
+                ? planData.type
+                : undefined,
+        });
+      } catch {
+        // analytics must never break project creation
+      }
+
       const full = await fetchProjectDetail(newId);
 
       if (full) {

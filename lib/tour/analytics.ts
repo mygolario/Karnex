@@ -1,84 +1,12 @@
-type TourAnalyticsPayload = Record<string, string | number | boolean | undefined>;
+import {
+  trackProductEvent,
+  type ProductAnalyticsPayload,
+} from "@/lib/analytics/product";
 
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: TourAnalyticsPayload) => void;
-    };
-  }
-}
+type TourAnalyticsPayload = ProductAnalyticsPayload;
 
-interface QueuedEvent {
-  event: string;
-  properties?: TourAnalyticsPayload;
-}
-
-const MAX_QUEUE = 50;
-const RETRY_INTERVAL_MS = 1000;
-const MAX_WAIT_MS = 20000;
-
-let queue: QueuedEvent[] = [];
-let flushing = false;
-let startedWaitingAt: number | null = null;
-
-function flushQueue() {
-  if (typeof window === "undefined" || !window.posthog) return;
-  const pending = queue;
-  queue = [];
-  for (const item of pending) {
-    try {
-      window.posthog.capture(item.event, item.properties);
-    } catch {
-      // swallow — analytics must never break the product UX
-    }
-  }
-}
-
-function scheduleFlush() {
-  if (flushing || typeof window === "undefined") return;
-  flushing = true;
-  startedWaitingAt = startedWaitingAt ?? Date.now();
-
-  const tick = () => {
-    if (window.posthog) {
-      flushQueue();
-      flushing = false;
-      startedWaitingAt = null;
-      return;
-    }
-    if (Date.now() - (startedWaitingAt ?? 0) > MAX_WAIT_MS) {
-      // Give up waiting; drop the queue so it doesn't grow unbounded.
-      queue = [];
-      flushing = false;
-      startedWaitingAt = null;
-      return;
-    }
-    setTimeout(tick, RETRY_INTERVAL_MS);
-  };
-
-  setTimeout(tick, RETRY_INTERVAL_MS);
-}
-
-/**
- * Guaranteed-delivery event capture: queues events if PostHog hasn't
- * finished loading yet (common on first paint) and flushes once it's ready,
- * instead of silently dropping them like a plain `window.posthog?.capture`.
- */
 function capture(event: string, properties?: TourAnalyticsPayload) {
-  if (typeof window === "undefined") return;
-
-  if (window.posthog) {
-    try {
-      window.posthog.capture(event, properties);
-      return;
-    } catch {
-      // fall through to queue as a last resort
-    }
-  }
-
-  queue.push({ event, properties });
-  if (queue.length > MAX_QUEUE) queue.shift();
-  scheduleFlush();
+  trackProductEvent(event, properties);
 }
 
 export function trackTourStarted(tourId: string, source: string) {
@@ -95,6 +23,13 @@ export function trackTourSkipped(tourId: string, stepIndex: number) {
 
 export function trackTourCompleted(tourId: string, totalSteps: number) {
   capture("tour_completed", { tour_id: tourId, total_steps: totalSteps });
+  // Dashboard tour completion = primary activation signal for the week-1 funnel
+  if (tourId === "dashboard") {
+    capture("activation_completed", {
+      source: "dashboard_tour",
+      total_steps: totalSteps,
+    });
+  }
 }
 
 export function trackChecklistItemCompleted(itemId: string, tourId: string) {

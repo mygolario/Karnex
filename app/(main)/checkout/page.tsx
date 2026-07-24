@@ -8,6 +8,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Loader2, ShieldCheck } from "lucide-react";
 import { getPlanById } from "@/lib/payment/pricing";
 import { formatPricePersian } from "@/lib/payment/gateways/zarinpal";
+import { trackProductEvent } from "@/lib/analytics/product";
 
 function CheckoutContent() {
   const router = useRouter();
@@ -61,6 +62,10 @@ function CheckoutContent() {
       }
 
       if (data.url) {
+        trackProductEvent("checkout_started", {
+          plan: planId ?? undefined,
+          billing_cycle: cycle,
+        });
         // Redirect to Zibal gateway
         window.location.href = data.url;
       } else {

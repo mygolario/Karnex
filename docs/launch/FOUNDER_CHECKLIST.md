@@ -27,6 +27,10 @@
 
 ## بعد از لانچ (هفته اول)
 
+- [x] PostHog EU وصل شد — داشبورد: [Week 1 Launch Funnel](https://eu.posthog.com/project/107791/dashboard/847356) (`NEXT_PUBLIC_POSTHOG_KEY` روی Vercel Production/Preview)
+- [ ] همهٔ لینک‌های سوشال را با UTM بگذار (قالب‌ها در همان playbook)
+- [ ] هر روز فیدبک داخل‌اپ + `support@karnex.ir` را بخوان
 - [ ] نگاه به هزینه OpenRouter در برابر درآمد
 - [ ] رفع ۵ باگ پرتکرار — ویژگی جدید نساز
 - [ ] جایگزینی نظرات ساختگی با نظرات واقعی بتا
+- [ ] یک‌بار در هفته فانل PostHog را مرور کن (signup → project → activation → paid)

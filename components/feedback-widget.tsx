@@ -6,6 +6,7 @@ import { MessageSquarePlus, Star, Send, X, Check, Loader2, Heart } from "lucide-
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/auth-context";
 import { saveFeedback } from "@/lib/db";
+import { trackProductEvent } from "@/lib/analytics/product";
 
 export function FeedbackWidget() {
   const { user } = useAuth();
@@ -53,6 +54,12 @@ export function FeedbackWidget() {
       };
 
       await saveFeedback(feedbackData);
+
+      trackProductEvent("feedback_submitted", {
+        rating,
+        category,
+        page: feedbackData.page,
+      });
       
       setSubmitted(true);
       setTimeout(() => {

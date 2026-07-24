@@ -41,7 +41,20 @@ export default async function ReceiptPage({ params }: ReceiptPageProps) {
 
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4" dir="rtl">
-      <PaymentSuccessHandler />
+      <PaymentSuccessHandler
+        planId={transaction.planId}
+        amount={transaction.amount}
+        transactionId={transaction.id}
+        billingCycle={
+          transaction.metadata &&
+          typeof transaction.metadata === "object" &&
+          !Array.isArray(transaction.metadata) &&
+          typeof (transaction.metadata as Record<string, unknown>).billingCycle ===
+            "string"
+            ? ((transaction.metadata as Record<string, unknown>).billingCycle as string)
+            : null
+        }
+      />
       <div className="max-w-md w-full space-y-6 animate-in fade-in zoom-in duration-500">
         
         <div className="text-center space-y-4">

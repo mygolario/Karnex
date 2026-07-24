@@ -23,7 +23,7 @@ export async function auth(): Promise<AppSession | null> {
   if (!supabaseUser) return null;
 
   try {
-    const appUser = await syncSupabaseUser(supabaseUser);
+    const { user: appUser } = await syncSupabaseUser(supabaseUser);
     if (!appUser) return null;
 
     return {

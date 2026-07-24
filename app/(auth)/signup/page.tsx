@@ -17,6 +17,7 @@ import { AuthInput } from "@/components/auth/auth-input";
 import { PasswordField } from "@/components/auth/password-field";
 import { PasswordStrengthMeter } from "@/components/auth/password-strength-meter";
 import { FormAlert } from "@/components/auth/form-alert";
+import { markSignupCompletedOnce } from "@/lib/analytics/product";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -79,7 +80,17 @@ export default function SignupPage() {
       if (signUpError) throw signUpError;
 
       if (data.session) {
-        await fetch("/api/auth/sync", { method: "POST" });
+        const syncRes = await fetch("/api/auth/sync", { method: "POST" });
+        let isNew = true;
+        try {
+          const syncJson = (await syncRes.json()) as { isNew?: boolean };
+          if (typeof syncJson.isNew === "boolean") isNew = syncJson.isNew;
+        } catch {
+          // assume new on signup path
+        }
+        if (isNew) {
+          markSignupCompletedOnce({ method: "email" });
+        }
         setSignedUp(true);
         setTimeout(() => router.push("/new-project"), 2500);
       } else {

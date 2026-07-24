@@ -12,6 +12,6 @@ export async function POST() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const appUser = await syncSupabaseUser(user);
-  return NextResponse.json({ userId: appUser.id });
+  const { user: appUser, isNew } = await syncSupabaseUser(user);
+  return NextResponse.json({ userId: appUser.id, isNew });
 }

@@ -3,7 +3,7 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { archiveAppUser } from "@/lib/auth/archive-user";
 import { creditsSeedFromEmailQuota } from "@/lib/auth/email-ai-quota";
 import { isEmailInAdminAllowlist } from "@/lib/admin/require-admin";
-import type { Prisma } from "../../prisma/client";
+import type { Prisma, User } from "../../prisma/client";
 
 /** Bootstrap: ADMIN_EMAILS → Prisma role=admin (runtime gates use role only). */
 async function ensureAdminRoleFromAllowlist<
@@ -40,7 +40,14 @@ function avatarUrl(supabaseUser: SupabaseUser): string | undefined {
   return undefined;
 }
 
-export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
+export type SyncUserResult = {
+  user: User;
+  isNew: boolean;
+};
+
+export async function syncSupabaseUser(
+  supabaseUser: SupabaseUser
+): Promise<SyncUserResult> {
   if (!supabaseUser.email) {
     throw new Error("Supabase user is missing email");
   }
@@ -63,7 +70,12 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
   const bySupabaseId = await prisma.user.findFirst({
     where: { supabaseUserId: supabaseUser.id, deletedAt: null },
   });
-  if (bySupabaseId) return ensureAdminRoleFromAllowlist(bySupabaseId);
+  if (bySupabaseId) {
+    return {
+      user: await ensureAdminRoleFromAllowlist(bySupabaseId),
+      isNew: false,
+    };
+  }
 
   const byEmail = await prisma.user.findFirst({
     where: { email: supabaseUser.email, deletedAt: null },
@@ -83,12 +95,18 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
             : byEmail.emailVerified,
         },
       });
-      return ensureAdminRoleFromAllowlist(linked);
+      return {
+        user: await ensureAdminRoleFromAllowlist(linked),
+        isNew: false,
+      };
     }
 
     // Same Supabase auth identity — normal re-login.
     if (byEmail.supabaseUserId === supabaseUser.id) {
-      return ensureAdminRoleFromAllowlist(byEmail);
+      return {
+        user: await ensureAdminRoleFromAllowlist(byEmail),
+        isNew: false,
+      };
     }
 
     // New Supabase auth user re-used an email from a previous auth identity.
@@ -134,5 +152,8 @@ export async function syncSupabaseUser(supabaseUser: SupabaseUser) {
     console.error("Failed to send welcome email on user sync:", emailErr);
   }
 
-  return ensureAdminRoleFromAllowlist(newUser);
+  return {
+    user: await ensureAdminRoleFromAllowlist(newUser),
+    isNew: true,
+  };
 }

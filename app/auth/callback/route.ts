@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { syncSupabaseUser } from "@/lib/auth/sync-user";
+import { attachNewSignupCookie } from "@/lib/analytics/signup-cookie";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -15,10 +16,14 @@ export async function GET(request: Request) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+      let isNew = false;
       if (user) {
-        await syncSupabaseUser(user);
+        const result = await syncSupabaseUser(user);
+        isNew = result.isNew;
       }
-      return NextResponse.redirect(`${origin}${next}`);
+      const response = NextResponse.redirect(`${origin}${next}`);
+      if (isNew) attachNewSignupCookie(response);
+      return response;
     }
   }
 
