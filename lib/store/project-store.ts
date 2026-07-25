@@ -176,16 +176,36 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         // analytics must never break project creation
       }
 
-      const full = await fetchProjectDetail(newId);
+      // Activate immediately from the plan we just persisted — don't block
+      // onboarding on a follow-up GET that can stall on large JSON payloads.
+      const optimistic = {
+        ...(planData as BusinessPlan),
+        id: newId,
+        projectName:
+          (typeof planData?.projectName === "string" && planData.projectName) ||
+          "New Project",
+        createdAt:
+          typeof (planData as BusinessPlan)?.createdAt === "string"
+            ? (planData as BusinessPlan).createdAt!
+            : new Date().toISOString(),
+      } as BusinessPlan;
+      set((state) => ({
+        projects: [optimistic, ...state.projects.filter((p) => p.id !== newId)],
+        activeProject: optimistic,
+      }));
 
-      if (full) {
-        set((state) => ({
-          projects: [full, ...state.projects.filter((p) => p.id !== newId)],
-          activeProject: full,
-        }));
-      } else {
-        await get().refreshProjects(userId);
-      }
+      void fetchProjectDetail(newId)
+        .then((full) => {
+          if (!full) return;
+          set((state) => ({
+            projects: [full, ...state.projects.filter((p) => p.id !== newId)],
+            activeProject:
+              state.activeProject?.id === newId ? full : state.activeProject,
+          }));
+        })
+        .catch(() => {
+          /* best-effort hydrate */
+        });
 
       return newId;
     } catch (err) {

@@ -404,9 +404,13 @@ export async function generateCorePlanAction(data: any): Promise<{
     );
 
     // Ground the plan with authoritative Iranian regulatory content (e‌namad,
-    // samandehi, tax, nic, ...). Best-effort: empty string if RAG is unavailable.
+    // samandehi, tax, nic, ...). Best-effort: empty string if RAG is unavailable
+    // or slow — never block genesis on embedding latency.
     const kbQuery = `${idea} ${audience ?? ""} ${projectType ?? ""}`.trim();
-    const kbContext = await getKbContextBlock(kbQuery, { k: 4 });
+    const kbContext = await Promise.race([
+      getKbContextBlock(kbQuery, { k: 3 }),
+      new Promise<string>((resolve) => setTimeout(() => resolve(""), 2500)),
+    ]);
 
     const userProjectName =
       typeof projectName === "string" ? projectName.trim() : "";
@@ -432,47 +436,52 @@ export async function generateCorePlanAction(data: any): Promise<{
       return await runWithAiUsage(
         { userId: session.user.id, feature: "generatePlan" },
         async () => {
+          // Flash draft first (policy: canvas on TIER_DEFAULT) — much faster than
+          // Claude-only. Claude refine only when the BMC quality gate fails.
           const corePlan = await callAIWithValidation(
             userWithKb,
             {
               systemPrompt: system,
-              maxTokens: 12000,
-              temperature: 0.6,
-              timeoutMs: 90000,
-              modelOverride: TIER_REASONING,
+              maxTokens: 8000,
+              temperature: 0.55,
+              timeoutMs: 55000,
+              maxAttempts: 2,
+              modelOverride: TIER_DEFAULT,
+              singleModel: true,
             },
             BusinessPlanCoreSchema,
-            2
+            1
           );
 
-          // Soft quality gate: if BMC is thin, one focused repair pass.
-          if (!isMeaningfulCanvas(getCanvasFromPlan(corePlan))) {
-            const repairPrompt = `${userWithKb}
+          if (isMeaningfulCanvas(getCanvasFromPlan(corePlan))) {
+            return { success: true as const, plan: finalizeCorePlan(corePlan) };
+          }
+
+          const repairPrompt = `${userWithKb}
 
 ⚠️ SYSTEM DIRECTION: بوم کسب‌وکار ناقص بود. businessModelCanvas را با هر ۹ فیلد اجباری دوباره بساز
 (keyPartners, keyActivities, keyResources, uniqueValue, customerRelations, channels, customerSegments, costStructure, revenueStream).
 هر فیلد باید رشته فارسی غیرخالی یا آرایه ۳ موردی باشد. بقیه فیلدهای JSON قبلی را حفظ کن. roadmap باید [] بماند.`;
 
-            const repaired = await callAIWithValidation(
-              repairPrompt,
-              {
-                systemPrompt: system,
-                maxTokens: 12000,
-                temperature: 0.5,
-                timeoutMs: 90000,
-                modelOverride: TIER_REASONING,
-              },
-              BusinessPlanCoreSchema,
-              1
-            );
+          const repaired = await callAIWithValidation(
+            repairPrompt,
+            {
+              systemPrompt: system,
+              maxTokens: 8000,
+              temperature: 0.45,
+              timeoutMs: 70000,
+              maxAttempts: 2,
+              modelOverride: TIER_REASONING,
+              singleModel: true,
+            },
+            BusinessPlanCoreSchema,
+            1
+          );
 
-            if (!isMeaningfulCanvas(getCanvasFromPlan(repaired))) {
-              throw new Error(CORE_PLAN_FAILED_FA);
-            }
-            return { success: true as const, plan: finalizeCorePlan(repaired) };
+          if (!isMeaningfulCanvas(getCanvasFromPlan(repaired))) {
+            throw new Error(CORE_PLAN_FAILED_FA);
           }
-
-          return { success: true as const, plan: finalizeCorePlan(corePlan) };
+          return { success: true as const, plan: finalizeCorePlan(repaired) };
         }
       );
     } catch (parseError: any) {
@@ -547,10 +556,12 @@ export async function generateRoadmapChunkAction(data: {
           user,
           {
             systemPrompt: system,
-            maxTokens: 8000,
-            temperature: 0.55,
-            timeoutMs: 75000,
+            maxTokens: 6000,
+            temperature: 0.5,
+            timeoutMs: 50000,
+            maxAttempts: 2,
             modelOverride: TIER_DEFAULT,
+            singleModel: true,
           },
           RoadmapChunkSchema,
           1,

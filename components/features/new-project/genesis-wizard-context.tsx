@@ -641,20 +641,9 @@ export function GenesisWizardProvider({
         rawCorePlan.projectName
       );
 
-      const createPromise = createNewProject(completePlan);
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(
-          () =>
-            reject(
-              new Error(
-                "زمان ساخت پروژه تمام شد. لطفاً اتصال اینترنت را بررسی کنید و دوباره تلاش کنید."
-              )
-            ),
-          30000
-        )
-      );
-
-      await Promise.race([createPromise, timeoutPromise]);
+      // Persist without a client race timeout — a short race caused false
+      // "زمان ساخت پروژه تمام شد" errors after canvas/roadmap already succeeded.
+      await createNewProject(completePlan);
       setBuildChecklist((prev) => prev.map((c) => ({ ...c, done: true })));
       clearDraft();
       try {
@@ -680,6 +669,9 @@ export function GenesisWizardProvider({
         }
         if (raw.includes("Failed to create") || raw.includes("Not authenticated")) {
           return "ساخت پروژه ناموفق بود. لطفاً دوباره وارد شوید و تلاش کنید.";
+        }
+        if (raw.includes("زمان ساخت پروژه تمام شد")) {
+          return "ذخیره پروژه طول کشید. اگر پروژه در داشبورد ظاهر شد همان را باز کنید؛ وگرنه دوباره تلاش کنید.";
         }
         return raw || "خطا در تولید استراتژی. لطفاً دوباره تلاش کنید.";
       };

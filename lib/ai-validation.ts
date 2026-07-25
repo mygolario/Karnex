@@ -436,6 +436,7 @@ export async function callAIWithValidation<T>(
     maxTokens?: number;
     temperature?: number;
     timeoutMs?: number;
+    maxAttempts?: number;
     modelOverride?: string;
     singleModel?: boolean;
   },

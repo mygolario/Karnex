@@ -64,7 +64,7 @@ export function StepBuild() {
         </h2>
         <p className="text-muted-foreground text-sm">
           {generatingPhase ||
-            `حدود ۱ تا ۳ دقیقه · ${toPersianDigits(creditEstimate.total)} اعتبار`}
+            `معمولاً کمتر از ۲ دقیقه · ${toPersianDigits(creditEstimate.total)} اعتبار`}
         </p>
       </motion.div>
 
