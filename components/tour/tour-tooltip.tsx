@@ -5,7 +5,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn, toPersianDigits } from "@/lib/utils";
-import { ArrowLeft, ArrowRight, X, Check, List, Lightbulb } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  X,
+  Check,
+  List,
+  Lightbulb,
+  ChevronDown,
+} from "lucide-react";
 import type { TourDefinition, TourStep } from "@/lib/tour/types";
 import { ACCENT_CLASSES } from "@/lib/tour/registry";
 import { tourI18n } from "@/lib/tour/i18n";
@@ -43,10 +51,21 @@ export function TourTooltip({
   const accent = ACCENT_CLASSES[tour.accent] ?? ACCENT_CLASSES.primary;
   const isLast = stepIndex === totalSteps - 1;
   const isInteractive = step.type === "interactive";
-  const hasMedia = !!step.media;
+  const sheet = position.isMobileSheet;
   const [showStepMap, setShowStepMap] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const reducedMotion = prefersReducedMotion();
+
+  // Secondary content is collapsed on the sheet so the card stays short enough
+  // to leave the spotlighted element visible above it.
+  const hasDetails = Boolean(step.media || step.proTip);
+  const detailsVisible = !sheet || showDetails;
+
+  useEffect(() => {
+    setShowDetails(false);
+    setShowStepMap(false);
+  }, [step.id]);
 
   useEffect(() => {
     const el = cardRef.current;
@@ -57,17 +76,12 @@ export function TourTooltip({
     focusable?.focus();
   }, [step.id]);
 
-  const cardWidth = position.isMobileSheet
-    ? "w-[calc(100vw-2rem)]"
-    : hasMedia
-      ? "w-[420px]"
-      : "w-[360px]";
-
   return (
     <AnimatePresence mode="wait">
       <motion.div
         ref={cardRef}
         key={step.id}
+        data-tour-tooltip
         role="dialog"
         aria-modal="true"
         aria-labelledby={`tour-step-title-${step.id}`}
@@ -79,12 +93,17 @@ export function TourTooltip({
         className={cn(
           "fixed pointer-events-auto z-[10001] rounded-3xl overflow-hidden",
           "bg-card/95 backdrop-blur-xl border border-border/70 shadow-2xl shadow-black/10 dark:shadow-black/40",
-          cardWidth,
-          position.isMobileSheet && "start-4 end-4 mx-auto"
+          sheet
+            ? // Tracks the tab bar and the keyboard instead of being pinned to
+              // a `window.innerHeight` figure computed once.
+              "start-3 end-3 bottom-[calc(var(--mobile-bottom-nav-offset)+0.75rem+var(--keyboard-inset))] max-h-[60dvh] overflow-y-auto"
+            : step.media
+              ? "w-[420px]"
+              : "w-[360px]"
         )}
         style={
-          position.isMobileSheet
-            ? { top: position.top, transform: position.transform }
+          sheet
+            ? undefined
             : { top: position.top, left: position.left, transform: position.transform }
         }
         dir="rtl"
@@ -92,18 +111,21 @@ export function TourTooltip({
         {/* Accent strip */}
         <div className={cn("h-1 w-full bg-gradient-to-l", accent.gradient)} />
 
-        <div className="p-5">
+        <div className={cn(sheet ? "p-4" : "p-5")}>
           {/* Header row */}
-          <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex items-start justify-between gap-3 mb-2">
             <div className="flex items-start gap-3 min-w-0">
-              <TourMascot mood={step.mood ?? "tip"} size="sm" />
+              {!sheet && <TourMascot mood={step.mood ?? "tip"} size="sm" />}
               <div className="min-w-0">
                 <p className={cn("text-[10px] font-bold mb-0.5", accent.text)}>
                   {tour.title}
                 </p>
                 <h3
                   id={`tour-step-title-${step.id}`}
-                  className="text-lg font-bold text-foreground leading-snug"
+                  className={cn(
+                    "font-bold text-foreground leading-snug",
+                    sheet ? "text-base" : "text-lg"
+                  )}
                 >
                   {step.title}
                 </h3>
@@ -111,15 +133,14 @@ export function TourTooltip({
             </div>
             <button
               onClick={onSkipTour}
-              className="text-muted-foreground hover:text-foreground shrink-0 p-1 rounded-lg hover:bg-muted/50"
+              className="text-muted-foreground hover:text-foreground shrink-0 p-2 -m-1 rounded-lg hover:bg-muted/50"
               aria-label={tourI18n.skipTour}
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Media */}
-          {step.media && (
+          {step.media && detailsVisible && (
             <div className="mb-3 rounded-xl overflow-hidden border border-border/50 bg-muted/30">
               {step.media.type === "video" ? (
                 <video
@@ -148,13 +169,27 @@ export function TourTooltip({
             {step.description}
           </p>
 
-          {step.proTip && (
+          {step.proTip && detailsVisible && (
             <div className="flex gap-2 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 mb-3">
               <Lightbulb size={16} className="text-amber-500 shrink-0 mt-0.5" />
               <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
                 {step.proTip}
               </p>
             </div>
+          )}
+
+          {sheet && hasDetails && (
+            <button
+              type="button"
+              onClick={() => setShowDetails((v) => !v)}
+              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground mb-3"
+            >
+              <ChevronDown
+                size={14}
+                className={cn("transition-transform", showDetails && "rotate-180")}
+              />
+              {showDetails ? tourI18n.hideDetails : tourI18n.showDetails}
+            </button>
           )}
 
           {isInteractive && isInteractiveWaiting && (
@@ -164,7 +199,7 @@ export function TourTooltip({
           )}
 
           {/* Segmented progress */}
-          <div className="flex gap-1 mb-4">
+          <div className="flex gap-1 mb-3">
             {Array.from({ length: totalSteps }).map((_, i) => (
               <button
                 key={i}
@@ -181,33 +216,42 @@ export function TourTooltip({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between gap-2">
+          <div
+            className={cn(
+              "flex gap-2",
+              sheet ? "flex-col" : "items-center justify-between"
+            )}
+          >
             <div className="flex items-center gap-2">
               <span className="text-xs text-muted-foreground">
                 {toPersianDigits(tourI18n.stepOf(stepIndex + 1, totalSteps))}
               </span>
-              <button
-                type="button"
-                onClick={() => setShowStepMap((v) => !v)}
-                className="p-1 rounded-md hover:bg-muted/50 text-muted-foreground"
-                title="مسیر کامل"
-              >
-                <List size={14} />
-              </button>
-              <span className="hidden sm:inline text-[10px] text-muted-foreground/70">
-                {tourI18n.keyboardHint}
-              </span>
+              {!sheet && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setShowStepMap((v) => !v)}
+                    className="p-1 rounded-md hover:bg-muted/50 text-muted-foreground"
+                    title="مسیر کامل"
+                  >
+                    <List size={14} />
+                  </button>
+                  <span className="text-[10px] text-muted-foreground/70">
+                    {tourI18n.keyboardHint}
+                  </span>
+                </>
+              )}
             </div>
 
-            <div className="flex gap-2">
+            <div className={cn("flex gap-2", sheet && "w-full")}>
               {stepIndex > 0 && (
-                <Button size="sm" variant="ghost" onClick={onPrev}>
+                <Button size="sm" variant="ghost" onClick={onPrev} className={cn(sheet && "flex-1")}>
                   <ArrowRight className="w-3 h-3 ms-1" />
                   {tourI18n.prev}
                 </Button>
               )}
               {!isInteractive && (
-                <Button size="sm" variant="ghost" onClick={onSkip}>
+                <Button size="sm" variant="ghost" onClick={onSkip} className={cn(sheet && "flex-1")}>
                   {tourI18n.skip}
                 </Button>
               )}
@@ -215,7 +259,11 @@ export function TourTooltip({
                 size="sm"
                 onClick={onNext}
                 disabled={isInteractive && isInteractiveWaiting}
-                className={cn("text-white shadow-glow bg-gradient-to-l", accent.gradient)}
+                className={cn(
+                  "text-white shadow-glow bg-gradient-to-l",
+                  accent.gradient,
+                  sheet && "flex-[2]"
+                )}
               >
                 {isLast ? (
                   <>
@@ -249,8 +297,7 @@ export function TourTooltip({
                     i === stepIndex && accent.bg
                   )}
                 >
-                  {toPersianDigits(i + 1)}. {/* step titles would need passing - skip for now */}
-                  {i === stepIndex ? " (فعلی)" : ""}
+                  {toPersianDigits(i + 1)}.{i === stepIndex ? " (فعلی)" : ""}
                 </button>
               ))}
             </div>

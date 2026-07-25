@@ -8,7 +8,6 @@ import {
   RoadmapJourney,
   RoadmapList,
   RoadmapToolbar,
-  StepSlideOver,
   TodayFocusBar,
   GamificationHud,
   RoadmapMissionControl,
@@ -52,6 +51,11 @@ const RoadmapGantt = dynamic(
 const RoadmapCalendar = dynamic(
   () => import("@/components/dashboard/roadmap/roadmap-calendar").then((m) => m.RoadmapCalendar),
   { loading: () => <div className="min-h-[400px] flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div> }
+);
+// The slide-over is 800+ lines that only render after a step is tapped.
+const StepSlideOver = dynamic(
+  () => import("@/components/dashboard/roadmap/step-slide-over").then((m) => m.StepSlideOver),
+  { ssr: false }
 );
 
 export default function RoadmapPage() {

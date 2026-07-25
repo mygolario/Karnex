@@ -83,7 +83,7 @@ export function CanvasWizard() {
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 100 }}
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
-        className="fixed bottom-0 start-0 end-0 z-50 p-4 md:p-6"
+        className="fixed bottom-0 start-0 end-0 z-50 p-4 pb-[calc(var(--mobile-bottom-nav-offset)+1rem)] md:p-6"
       >
         <div className="max-w-3xl mx-auto bg-card border border-border shadow-2xl rounded-2xl overflow-hidden flex flex-col md:flex-row ring-1 ring-primary/20">
           <div className={cn("p-6 md:w-1/3 bg-gradient-to-br border-b md:border-b-0 md:border-l flex flex-col justify-between", variant.gradient, variant.darkGradient)}>

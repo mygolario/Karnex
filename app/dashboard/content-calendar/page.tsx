@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { useProject } from "@/contexts/project-context";
 import { motion, AnimatePresence } from "framer-motion";
 import { ContentPost, HashtagSet, RecurringTemplate, ContentStreak } from "@/lib/db";
@@ -25,9 +26,18 @@ import { StreakBadge } from "./components/streak-badge";
 import { CalendarView } from "./components/calendar-view";
 import { KanbanView } from "./components/kanban-view";
 import { ListView } from "./components/list-view";
-import { PostPanel } from "./components/post-panel";
 import { AIStrategyModal } from "./components/ai-strategy-modal";
-import { RecurringManager } from "./components/recurring-manager";
+
+// Both are sheets that only mount once the user opens them, and the post editor
+// alone is larger than the rest of the route combined.
+const PostPanel = dynamic(
+  () => import("./components/post-panel").then((m) => m.PostPanel),
+  { ssr: false }
+);
+const RecurringManager = dynamic(
+  () => import("./components/recurring-manager").then((m) => m.RecurringManager),
+  { ssr: false }
+);
 
 type ViewMode = "calendar" | "kanban" | "list";
 

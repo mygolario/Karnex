@@ -90,38 +90,37 @@ export function DashboardHeader() {
   const isPaidPlan = planId === "pro" || planId === "plus" || planId === "ultra";
 
   return (
-    <header className="sticky top-0 z-40 h-16 px-4 md:px-6 flex items-center justify-between bg-background/80 backdrop-blur-xl border-b border-border/50">
+    <header className="sticky top-0 z-40 h-14 md:h-16 px-3 md:px-6 flex items-center justify-between bg-background/80 backdrop-blur-xl border-b border-border/50 safe-top">
       {/* Left: Mobile Nav + Breadcrumbs */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
         <MobileNav />
-        <div className="flex items-center gap-2 text-sm">
+        <div className="flex items-center gap-2 text-sm min-w-0">
           <span className="text-muted-foreground hidden md:inline">داشبورد</span>
           <ChevronLeft className="w-4 h-4 text-muted-foreground/50 hidden md:inline" />
-          <span className="font-bold text-foreground">{currentLabel}</span>
+          <span className="font-bold text-foreground truncate">{currentLabel}</span>
         </div>
       </div>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-2">
-        {/* Command Menu (desktop) */}
-        <div className="hidden md:block">
-          <CommandMenu />
-        </div>
+      <div className="flex items-center gap-0.5 md:gap-2 shrink-0">
+        {/* Renders its own responsive trigger: icon button below md, search bar above. */}
+        <CommandMenu />
 
         {/* Notification Bell */}
         <NotificationBell />
 
-        {/* Theme Toggle */}
-        <ThemeToggle />
-
-        {/* Tour Launcher */}
-        <TourLauncher />
+        {/* Theme toggle and tour launcher would crowd a 375px header;
+            both are reachable from the "more" sheet. */}
+        <div className="hidden md:flex items-center gap-2">
+          <ThemeToggle />
+          <TourLauncher />
+        </div>
 
         {/* User Avatar & Dropdown */}
         <div className="relative" ref={userMenuRef}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2 p-1.5 pe-3 rounded-xl hover:bg-muted/80 transition-all duration-200 group"
+            className="flex items-center gap-2 p-1.5 md:pe-3 rounded-xl hover:bg-muted/80 transition-all duration-200 group"
           >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-sm font-bold shadow-lg shadow-primary/20">
               {(userProfile?.avatar_url || user?.image) ? (

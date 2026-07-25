@@ -227,7 +227,7 @@ export function StepSlideOver({
     <>
       <Sheet open={isOpen} onOpenChange={(o) => !o && onClose()}>
         <SheetContent
-          side="left"
+          side="start"
           className="w-full sm:max-w-2xl p-0 flex flex-col overflow-hidden"
         >
           {/* ─── Header ─────────────────────────────────────────── */}

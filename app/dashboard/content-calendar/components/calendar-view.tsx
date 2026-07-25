@@ -15,7 +15,17 @@ import {
 } from "date-fns-jalali";
 import { ChevronLeft, ChevronRight, Plus, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PLATFORM_MAP, JALALI_DAY_NAMES } from "./constants";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  PLATFORM_MAP,
+  JALALI_DAY_NAMES,
+  JALALI_DAY_NAMES_SHORT,
+} from "./constants";
 import { cn } from "@/lib/utils";
 import { isBefore, startOfDay } from "date-fns";
 import {
@@ -61,7 +71,7 @@ function PostChip({
       onClick={onClick}
       whileHover={{ scale: 1.04, zIndex: 10 }}
       className={cn(
-        "relative flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] border cursor-pointer transition-all shadow-sm",
+        "relative flex min-w-0 items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] border cursor-pointer transition-all shadow-sm",
         platform.chipClass,
         isOverdue && "ring-1 ring-red-500/50",
         isDragging && "opacity-80 shadow-xl scale-105"
@@ -71,7 +81,7 @@ function PostChip({
         <AlertCircle className="w-2.5 h-2.5 text-red-400 shrink-0" />
       )}
       {!isOverdue && <platform.Icon className="w-3 h-3 shrink-0" />}
-      <span className="truncate font-medium max-w-[100px]">{event.title}</span>
+      <span className="truncate font-medium">{event.title}</span>
       {event.priority === "high" && (
         <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
       )}
@@ -87,6 +97,7 @@ function CalendarDayCell({
   isOverdueCell,
   onAdd,
   onEdit,
+  onOpenDay,
 }: {
   dayNumber: number;
   cellDate: Date;
@@ -95,6 +106,7 @@ function CalendarDayCell({
   isOverdueCell: boolean;
   onAdd: (date: Date) => void;
   onEdit: (event: ContentPost) => void;
+  onOpenDay: (date: Date) => void;
 }) {
   const [isOver, setIsOver] = useState(false);
 
@@ -105,7 +117,7 @@ function CalendarDayCell({
       onDragLeave={() => setIsOver(false)}
       onDrop={() => setIsOver(false)}
       className={cn(
-        "min-h-[120px] p-1.5 border-t border-r border-white/5 transition-all duration-150 flex flex-col gap-1 group relative",
+        "min-h-[62px] p-1 md:min-h-[120px] md:p-1.5 border-t border-r border-white/5 transition-all duration-150 flex flex-col gap-1 group relative",
         isTodayDate
           ? "bg-gradient-to-br from-pink-500/10 to-violet-500/5"
           : "bg-transparent hover:bg-white/3",
@@ -117,7 +129,7 @@ function CalendarDayCell({
       <div className="flex items-center justify-between">
         <button
           onClick={() => onAdd(cellDate)}
-          className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-white/10"
+          className="hidden md:block opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded hover:bg-white/10"
         >
           <Plus className="w-3 h-3 text-muted-foreground" />
         </button>
@@ -133,8 +145,9 @@ function CalendarDayCell({
         </span>
       </div>
 
-      {/* Post chips */}
-      <div className="flex flex-col gap-1 overflow-hidden">
+      {/* Post chips — a 53px-wide cell can't hold a readable chip, so phones get
+          platform dots and tap through to the day's agenda instead. */}
+      <div className="hidden md:flex flex-col gap-1 overflow-hidden">
         {dayEvents.slice(0, 3).map((event) => (
           <PostChip key={event.id} event={event} onClick={() => onEdit(event)} />
         ))}
@@ -144,7 +157,83 @@ function CalendarDayCell({
           </span>
         )}
       </div>
+
+      <button
+        type="button"
+        onClick={() => onOpenDay(cellDate)}
+        aria-label={`${dayEvents.length} مورد در روز ${dayNumber}`}
+        className="md:hidden absolute inset-0 flex items-end justify-center gap-0.5 pb-1.5"
+      >
+        {dayEvents.slice(0, 4).map((event) => {
+          const platform = PLATFORM_MAP[event.platform];
+          return (
+            <span
+              key={event.id}
+              className={cn("w-1.5 h-1.5 rounded-full", platform?.dot ?? "bg-muted-foreground")}
+            />
+          );
+        })}
+      </button>
     </div>
+  );
+}
+
+function DayAgendaSheet({
+  date,
+  events,
+  onClose,
+  onAdd,
+  onEdit,
+}: {
+  date: Date | null;
+  events: ContentPost[];
+  onClose: () => void;
+  onAdd: (date: Date) => void;
+  onEdit: (event: ContentPost) => void;
+}) {
+  return (
+    <Sheet open={date !== null} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent side="bottom" className="md:hidden max-h-[75dvh] overflow-y-auto">
+        {date && (
+          <>
+            <SheetHeader className="text-start">
+              <SheetTitle>{format(date, "d MMMM yyyy")}</SheetTitle>
+            </SheetHeader>
+
+            <div className="mt-4 space-y-2">
+              {events.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-6 text-center">
+                  برای این روز محتوایی برنامه‌ریزی نشده است.
+                </p>
+              ) : (
+                events.map((event) => (
+                  <PostChip
+                    key={event.id}
+                    event={event}
+                    onClick={() => {
+                      onEdit(event);
+                      onClose();
+                    }}
+                  />
+                ))
+              )}
+
+              <Button
+                variant="outline"
+                className="w-full mt-2"
+                onClick={() => {
+                  onAdd(date);
+                  onClose();
+                }}
+              >
+                <Plus className="w-4 h-4 me-1.5" />
+                افزودن محتوا
+              </Button>
+            </div>
+          </>
+        )}
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -158,6 +247,7 @@ export function CalendarView({
   onReschedule,
 }: CalendarViewProps) {
   const [activeDragEvent, setActiveDragEvent] = useState<ContentPost | null>(null);
+  const [agendaDate, setAgendaDate] = useState<Date | null>(null);
   const today = startOfDay(new Date());
 
   const sensors = useSensors(
@@ -250,12 +340,13 @@ export function CalendarView({
       <div className="rounded-2xl border border-white/10 overflow-hidden backdrop-blur-sm bg-white/2 shadow-2xl">
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-white/10">
-          {JALALI_DAY_NAMES.map((day) => (
+          {JALALI_DAY_NAMES.map((day, i) => (
             <div
               key={day}
-              className="p-3 text-center text-xs font-semibold text-muted-foreground bg-white/3"
+              className="py-2 md:p-3 text-center text-[11px] md:text-xs font-semibold text-muted-foreground bg-white/3"
             >
-              {day}
+              <span className="md:hidden">{JALALI_DAY_NAMES_SHORT[i]}</span>
+              <span className="hidden md:inline">{day}</span>
             </div>
           ))}
         </div>
@@ -264,7 +355,7 @@ export function CalendarView({
         <div className="grid grid-cols-7">
           {/* Padding cells */}
           {paddingDays.map((_, i) => (
-            <div key={`pad-${i}`} className="min-h-[120px] bg-white/1 border-t border-r border-white/5" />
+            <div key={`pad-${i}`} className="min-h-[62px] md:min-h-[120px] bg-white/1 border-t border-r border-white/5" />
           ))}
 
           {/* Actual day cells */}
@@ -288,11 +379,24 @@ export function CalendarView({
                 isOverdueCell={isOverdueCell}
                 onAdd={onAddClick}
                 onEdit={onEditClick}
+                onOpenDay={setAgendaDate}
               />
             );
           })}
         </div>
       </div>
+
+      <DayAgendaSheet
+        date={agendaDate}
+        events={
+          agendaDate
+            ? filteredEvents.filter((e) => isSameDay(new Date(e.date), agendaDate))
+            : []
+        }
+        onClose={() => setAgendaDate(null)}
+        onAdd={onAddClick}
+        onEdit={onEditClick}
+      />
 
       {/* Drag overlay */}
       <DragOverlay>

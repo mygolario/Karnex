@@ -1,3 +1,4 @@
+import { MOBILE_BREAKPOINT } from "@/hooks/use-is-mobile";
 import type { TourStep, TourPosition } from "./types";
 
 const CARD_WIDTH_COMPACT = 360;
@@ -5,6 +6,9 @@ const CARD_WIDTH_FEATURE = 420;
 const CARD_HEIGHT_EST = 240;
 const GAP = 20;
 const SCREEN_PAD = 16;
+
+/** Rough height of the mobile sheet, used to keep the spotlight clear of it. */
+const MOBILE_SHEET_CLEARANCE = 280;
 
 export interface TooltipPosition {
   top: number;
@@ -19,9 +23,43 @@ export function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+/**
+ * The *visual* viewport, which shrinks when the on-screen keyboard opens.
+ * `window.innerHeight` keeps reporting the full layout viewport, which is why
+ * the tour card used to end up underneath the keyboard and the bottom nav.
+ */
+function viewport() {
+  const visual = window.visualViewport;
+  return {
+    width: visual?.width ?? window.innerWidth,
+    height: visual?.height ?? window.innerHeight,
+  };
+}
+
 export function isMobileViewport(): boolean {
   if (typeof window === "undefined") return false;
-  return window.innerWidth < 768;
+  return viewport().width < MOBILE_BREAKPOINT;
+}
+
+/**
+ * Scrolls a spotlight target into the band of the screen that the mobile sheet
+ * does not cover. `scrollIntoView({ block: "center" })` centres on the full
+ * viewport and so can leave the target hidden behind the card.
+ */
+export function scrollTargetIntoView(element: Element): void {
+  if (!isMobileViewport()) {
+    element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+    return;
+  }
+
+  const { height } = viewport();
+  const usable = Math.max(0, height - MOBILE_SHEET_CLEARANCE);
+  const rect = element.getBoundingClientRect();
+  const desiredTop = SCREEN_PAD + Math.max(0, (usable - rect.height) / 2);
+  const delta = rect.top - desiredTop;
+
+  if (Math.abs(delta) < 8) return;
+  window.scrollBy({ top: delta, behavior: "smooth" });
 }
 
 export function computeTooltipPosition(
@@ -31,11 +69,15 @@ export function computeTooltipPosition(
   hasMedia = false,
   isCentered = false
 ): TooltipPosition {
-  if (isMobileViewport() && !isCentered) {
+  const { width: viewportWidth, height: viewportHeight } = viewport();
+
+  // Below `md` the card is a bottom sheet positioned purely in CSS, so it can
+  // track `--mobile-bottom-nav-offset` and `--keyboard-inset` live.
+  if (isMobileViewport()) {
     return {
-      top: window.innerHeight - 16,
-      left: SCREEN_PAD,
-      transform: "translateY(-100%)",
+      top: 0,
+      left: 0,
+      transform: "",
       placement: "bottom",
       isMobileSheet: true,
     };
@@ -43,8 +85,8 @@ export function computeTooltipPosition(
 
   if (isCentered) {
     return {
-      top: window.innerHeight / 2,
-      left: window.innerWidth / 2,
+      top: viewportHeight / 2,
+      left: viewportWidth / 2,
       transform: "translate(-50%, -50%)",
       placement: "bottom",
       isMobileSheet: false,
@@ -55,8 +97,8 @@ export function computeTooltipPosition(
   const gap = GAP + offset;
   let pos = position === "auto" ? "bottom" : position;
 
-  if ((pos === "top" || pos === "bottom") && targetRect.height > window.innerHeight * 0.75) {
-    pos = targetRect.left > window.innerWidth / 2 ? "left" : "right";
+  if ((pos === "top" || pos === "bottom") && targetRect.height > viewportHeight * 0.75) {
+    pos = targetRect.left > viewportWidth / 2 ? "left" : "right";
   }
 
   let top = 0;
@@ -90,8 +132,8 @@ export function computeTooltipPosition(
   const visualLeft = left;
   const visualRight = left + cardWidth;
   if (visualLeft < SCREEN_PAD) left = SCREEN_PAD;
-  else if (visualRight > window.innerWidth - SCREEN_PAD) {
-    left = window.innerWidth - SCREEN_PAD - cardWidth;
+  else if (visualRight > viewportWidth - SCREEN_PAD) {
+    left = viewportWidth - SCREEN_PAD - cardWidth;
   }
 
   let visualTop = top;
@@ -112,13 +154,13 @@ export function computeTooltipPosition(
     } else if (pos === "left" || pos === "right") {
       top = SCREEN_PAD + CARD_HEIGHT_EST / 2;
     }
-  } else if (visualBottom > window.innerHeight - SCREEN_PAD) {
+  } else if (visualBottom > viewportHeight - SCREEN_PAD) {
     if (pos === "bottom") {
       top = targetRect.top - gap;
       transform = "translate(0, -100%)";
       pos = "top";
     } else if (pos === "left" || pos === "right") {
-      top = window.innerHeight - SCREEN_PAD - CARD_HEIGHT_EST / 2;
+      top = viewportHeight - SCREEN_PAD - CARD_HEIGHT_EST / 2;
     }
   }
 

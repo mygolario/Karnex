@@ -239,7 +239,7 @@ export const JalaliDatePicker = React.forwardRef<HTMLButtonElement, JalaliDatePi
             <div className="grid grid-cols-7 gap-1">
               {calendarGrid.map((day, index) => {
                 if (day === null) {
-                  return <div key={`empty-${index}`} className="h-8" />;
+                  return <div key={`empty-${index}`} className="h-10 md:h-8" />;
                 }
 
                 const isSelected =
@@ -259,7 +259,7 @@ export const JalaliDatePicker = React.forwardRef<HTMLButtonElement, JalaliDatePi
                     type="button"
                     onClick={() => handleSelectDay(day)}
                     className={cn(
-                      "h-8 text-xs font-semibold rounded-btn transition-all duration-200 flex items-center justify-center hover:bg-brand-primary/10 hover:text-brand-primary",
+                      "h-10 md:h-8 text-sm md:text-xs font-semibold rounded-btn transition-all duration-200 flex items-center justify-center hover:bg-brand-primary/10 hover:text-brand-primary",
                       isTodayVal &&
                         "border border-brand-primary text-brand-primary font-bold",
                       isSelected

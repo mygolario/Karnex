@@ -136,7 +136,7 @@ export function StatsBar({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="جستجوی محتوا..."
-            className="pr-9 h-8 text-sm bg-white/5 border-white/10 focus:border-white/20 placeholder:text-muted-foreground/60 text-right"
+            className="pr-9 h-11 md:h-8 text-base md:text-sm bg-white/5 border-white/10 focus:border-white/20 placeholder:text-muted-foreground/60 text-right"
           />
         </div>
 

@@ -225,7 +225,7 @@ export default function AccountPage() {
         <div className="lg:col-span-3">
           <Card
             variant="glass"
-            className="p-3 lg:sticky lg:top-24 max-h-none lg:max-h-[calc(100vh-7rem)] overflow-y-auto"
+            className="p-3 lg:sticky lg:top-24 max-h-none lg:max-h-[calc(100dvh-7rem)] overflow-y-auto"
           >
             {/* Rail header */}
             <div className="px-2 py-3 mb-2 border-b border-border/40">
@@ -236,7 +236,7 @@ export default function AccountPage() {
             </div>
 
             {/* Mobile: horizontal section chips */}
-            <nav className="lg:hidden flex gap-2 overflow-x-auto mobile-scroll-x pb-2 -mx-1 px-1">
+            <nav className="lg:hidden flex gap-2 scroll-x-touch pb-2 -mx-1 px-1">
               {grouped.flatMap(({ items }) => items).map((item) => {
                 const isActive = active === item.id;
                 return (

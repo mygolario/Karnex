@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Cookie } from "lucide-react";
+import { useInterruptionSlot } from "@/lib/ui/interruption-queue";
 
 const AUTH_PATHS = ["/login", "/signup", "/reset-password"];
 
@@ -40,11 +41,13 @@ export function CookieBanner() {
     setShow(false);
   };
 
-  if (!show || onAuthPage) return null;
+  const hasSlot = useInterruptionSlot("cookie-banner", show && !onAuthPage);
+
+  if (!hasSlot) return null;
 
   return (
     <div
-      className="fixed bottom-4 end-4 z-50 max-w-sm w-[calc(100%-2rem)] sm:w-full animate-in slide-in-from-bottom duration-500"
+      className="fixed bottom-[calc(var(--mobile-bottom-nav-offset)+0.5rem)] md:bottom-4 end-4 z-50 max-w-sm w-[calc(100%-2rem)] sm:w-full animate-in slide-in-from-bottom duration-500"
       role="dialog"
       aria-modal="false"
       aria-labelledby="cookie-banner-title"

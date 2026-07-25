@@ -91,8 +91,8 @@ export function RecurringManager({ templates, onChange }: RecurringManagerProps)
       </SheetTrigger>
 
       <SheetContent
-        side="left"
-        className="w-full sm:w-[420px] bg-background/95 backdrop-blur-2xl border-l border-white/10"
+        side="start"
+        className="w-full sm:w-[420px] bg-background/95 backdrop-blur-2xl border-e border-white/10"
       >
         <SheetHeader className="mb-6">
           <SheetTitle className="text-right flex items-center gap-2 justify-end">

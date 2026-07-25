@@ -8,10 +8,7 @@ import { TourProvider } from "@/components/tour/tour-provider";
 import { TourRoot } from "@/components/tour/tour-root";
 import { TourReengagementNudge } from "@/components/tour/tour-reengagement-nudge";
 import { TourRepersonalizePrompt } from "@/components/tour/tour-repersonalize-prompt";
-import { MobileProvider } from "@/contexts/mobile-context";
-import { useIsMobile } from "@/hooks/use-is-mobile";
-import { DesktopDashboardShell } from "@/components/dashboard/desktop-dashboard-shell";
-import { MobileDashboardShell } from "@/components/mobile/mobile-dashboard-shell";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { PwaInstallBanner } from "@/components/pwa/pwa-install-banner";
 import { PwaOnboardingModal } from "@/components/pwa/pwa-onboarding-modal";
 import { PwaWelcomeToast } from "@/components/pwa/pwa-welcome-toast";
@@ -23,7 +20,6 @@ import { Loader2 } from "lucide-react";
 export function DashboardClientLayout({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -36,7 +32,7 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
   if (loading || !user) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center bg-background"
+        className="min-h-dvh flex items-center justify-center bg-background"
         aria-busy="true"
         aria-live="polite"
         role="status"
@@ -48,29 +44,23 @@ export function DashboardClientLayout({ children }: { children: React.ReactNode 
   }
 
   return (
-    <MobileProvider>
-      <MentorProvider>
-        <TourProvider>
-          <TourRoot />
-          <TourReengagementNudge />
-          <TourRepersonalizePrompt />
-          <RoadmapBackgroundGenerator />
-          {isMobile ? (
-            <MobileDashboardShell>{children}</MobileDashboardShell>
-          ) : (
-            <DesktopDashboardShell>{children}</DesktopDashboardShell>
-          )}
-          <PwaInstallBanner />
-          <PwaOnboardingModal />
-          <Suspense fallback={null}>
-            <PwaWelcomeToast />
-          </Suspense>
-          <Suspense fallback={null}>
-            <GenesisFirstRunCoach />
-          </Suspense>
-          <FeedbackWidget />
-        </TourProvider>
-      </MentorProvider>
-    </MobileProvider>
+    <MentorProvider>
+      <TourProvider>
+        <TourRoot />
+        <TourReengagementNudge />
+        <TourRepersonalizePrompt />
+        <RoadmapBackgroundGenerator />
+        <DashboardShell>{children}</DashboardShell>
+        <PwaInstallBanner />
+        <PwaOnboardingModal />
+        <Suspense fallback={null}>
+          <PwaWelcomeToast />
+        </Suspense>
+        <Suspense fallback={null}>
+          <GenesisFirstRunCoach />
+        </Suspense>
+        <FeedbackWidget />
+      </TourProvider>
+    </MentorProvider>
   );
 }

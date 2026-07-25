@@ -46,7 +46,7 @@ export function GenesisStepper() {
 
   return (
     <div className="w-full max-w-2xl mx-auto px-4">
-      <div className="hidden sm:flex items-center justify-between">
+      <div className="hidden md:flex items-center justify-between">
         {STEPPER_PHASES.map((phase, idx) => {
           const stepNum = phaseIndex(phase);
           const complete = isComplete(phase);
@@ -110,7 +110,7 @@ export function GenesisStepper() {
         })}
       </div>
 
-      <div className="sm:hidden">
+      <div className="md:hidden">
         <div className="flex justify-between items-center text-xs text-muted-foreground mb-2">
           <span>
             قدم {toPersianDigits(Math.min(currentIdx + 1, STEPPER_PHASES.length))} از{" "}

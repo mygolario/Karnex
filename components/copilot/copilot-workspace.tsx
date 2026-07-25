@@ -107,8 +107,10 @@ export function CopilotWorkspace() {
 
   return (
     <div className={cn(
+      // Subtracting `--keyboard-inset` shrinks the chat instead of letting the
+      // on-screen keyboard cover the composer.
       "flex overflow-hidden bg-background",
-      isMobile ? "h-[calc(100dvh-3.5rem)]" : "h-[calc(100vh-4rem)]"
+      "h-[calc(100dvh-3.5rem-var(--keyboard-inset))] md:h-[calc(100dvh-4rem)]"
     )}>
       {/* Left Rail — Desktop */}
       <div
@@ -254,8 +256,8 @@ export function CopilotWorkspace() {
           )}
         </div>
 
-        {/* Composer — sticky with safe area on mobile */}
-        <div className={cn(isMobile && "safe-bottom")}>
+        {/* Composer — safe area is a no-op on desktop, so no JS branch needed */}
+        <div className="safe-bottom">
           <CopilotComposer />
         </div>
       </div>

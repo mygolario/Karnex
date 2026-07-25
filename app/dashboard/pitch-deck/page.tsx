@@ -10,7 +10,6 @@ import { EmptyProjectState } from "@/components/dashboard/empty-project-state";
 import { Loader2 } from "lucide-react";
 import { useImmersivePage } from "@/hooks/use-immersive-page";
 import { useIsMobile } from "@/hooks/use-is-mobile";
-import { cn } from "@/lib/utils";
 
 export default function PitchDeckPage() {
   const { activeProject: plan, loading } = useProject();
@@ -53,13 +52,7 @@ export default function PitchDeckPage() {
   }
 
   return (
-    <div
-      className={cn(
-        isMobile
-          ? "h-[calc(100dvh-3.5rem)]"
-          : "h-[calc(100vh-4rem)]"
-      )}
-    >
+    <div className="h-[calc(100dvh-3.5rem)] md:h-[calc(100dvh-4rem)]">
       <PitchDeckBuilder />
     </div>
   );

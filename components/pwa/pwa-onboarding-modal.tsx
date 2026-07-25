@@ -12,10 +12,12 @@ import {
 } from "@/components/ui/dialog";
 import { useMobileContextOptional } from "@/contexts/mobile-context";
 import { PwaInstallButton } from "@/components/pwa/pwa-install-button";
+import { useInterruptionSlot } from "@/lib/ui/interruption-queue";
 
 export function PwaOnboardingModal() {
   const mobile = useMobileContextOptional();
   const [open, setOpen] = useState(false);
+  const hasSlot = useInterruptionSlot("pwa-modal", open);
 
   useEffect(() => {
     if (!mobile?.isMobile || mobile.isInstalled || mobile.onboardingSeen) return;
@@ -31,7 +33,7 @@ export function PwaOnboardingModal() {
   if (!mobile?.isMobile) return null;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!v) handleClose(); else setOpen(v); }}>
+    <Dialog open={hasSlot} onOpenChange={(v) => { if (!v) handleClose(); else setOpen(v); }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

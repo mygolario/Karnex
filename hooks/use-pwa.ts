@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type BeforeInstallPromptEvent = Event & {
   prompt: () => Promise<void>;
@@ -74,15 +74,29 @@ export function usePwa() {
     setOnboardingSeen(true);
   }, []);
 
-  return {
-    isInstallable,
-    isInstalled,
-    isIOS,
-    bannerDismissed,
-    onboardingSeen,
-    promptInstall,
-    dismissBanner,
-    markOnboardingSeen,
-    canShowInstallBanner: !isInstalled && !bannerDismissed && (isInstallable || isIOS),
-  };
+  // Memoised so `MobileProvider` (now mounted at the app root) keeps a stable
+  // context identity instead of invalidating every consumer on each render.
+  return useMemo(
+    () => ({
+      isInstallable,
+      isInstalled,
+      isIOS,
+      bannerDismissed,
+      onboardingSeen,
+      promptInstall,
+      dismissBanner,
+      markOnboardingSeen,
+      canShowInstallBanner: !isInstalled && !bannerDismissed && (isInstallable || isIOS),
+    }),
+    [
+      isInstallable,
+      isInstalled,
+      isIOS,
+      bannerDismissed,
+      onboardingSeen,
+      promptInstall,
+      dismissBanner,
+      markOnboardingSeen,
+    ]
+  );
 }

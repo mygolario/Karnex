@@ -187,3 +187,6 @@ export const STATUS_MAP = Object.fromEntries(STATUSES.map((s) => [s.id, s]));
 // Jalali Day Names
 // ─────────────────────────────────────────
 export const JALALI_DAY_NAMES = ["شنبه", "یک‌شنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه"];
+
+/** Single-glyph day headers — seven full names never fit a phone-width grid. */
+export const JALALI_DAY_NAMES_SHORT = ["ش", "ی", "د", "س", "چ", "پ", "ج"];

@@ -689,6 +689,16 @@
     box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
   }
 
+  /* The SMB CRUD forms use this class instead of the `Input` primitive, so the
+     mobile guarantees have to be restated here: 16px or iOS Safari zooms the
+     page on focus, and 44px so the field is a comfortable tap target. */
+  @media (max-width: 767px) {
+    .input-premium {
+      font-size: 1rem;
+      min-height: 44px;
+    }
+  }
+
   /* === Section Container === */
   .section-container {
     width: 100%;
@@ -1601,8 +1611,20 @@
 
 /* === Mobile / PWA Utilities === */
 :root {
-  /* Mobile bottom tab bar height (h-16) + safe area — use for FABs/CTAs/nudges */
-  --mobile-bottom-nav-offset: calc(4rem + env(safe-area-inset-bottom, 0px));
+  /* Clearance any fixed bottom overlay (FAB / CTA / nudge / banner) must leave.
+     Defaults to the safe area alone — marketing, auth and the Genesis wizard
+     have no tab bar. The dashboard shell renders `[data-bottom-nav]`, which
+     adds the h-16 tab bar on top, but only while the bar is actually visible. */
+  --mobile-bottom-nav-offset: env(safe-area-inset-bottom, 0px);
+
+  /* Height of the on-screen keyboard, published by `useKeyboardInsetVariable`. */
+  --keyboard-inset: 0px;
+}
+
+@media (max-width: 767px) {
+  :root:has([data-bottom-nav]) {
+    --mobile-bottom-nav-offset: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
 }
 
 @layer utilities {
@@ -1631,17 +1653,32 @@
     height: 100dvh;
   }
 
+  /* Redefine Tailwind's screen-height utilities in terms of the *dynamic*
+     viewport. `100vh` on mobile is the viewport with the browser chrome
+     retracted, so a `min-h-screen` hero always overflows by the height of the
+     address bar. The `100vh` line stays first as a fallback for old engines. */
+  .min-h-screen {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .h-screen {
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  .max-h-screen {
+    max-height: 100vh;
+    max-height: 100dvh;
+  }
+
   /* Fixed overlays that must sit above the mobile bottom nav */
   .mobile-above-nav {
     bottom: var(--mobile-bottom-nav-offset);
   }
 
-  .mobile-page {
-    @apply px-4 py-3;
-  }
-
   .mobile-immersive {
-    @apply p-0 m-0 max-w-none;
+    @apply m-0 max-w-none;
   }
 
   .mobile-scroll-x {
@@ -1649,25 +1686,43 @@
     -webkit-overflow-scrolling: touch;
   }
 
+  /* Momentum horizontal scroll without snapping — for tab/chip strips, where
+     snap points would fight the user mid-swipe. Scrollbar hidden because the
+     strip is short enough that a visible bar reads as a rendering bug. */
+  .scroll-x-touch {
+    @apply overflow-x-auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .scroll-x-touch::-webkit-scrollbar {
+    display: none;
+  }
+
   .mobile-touch-target {
     min-height: 44px;
     min-width: 44px;
   }
 
-  /* Dashboard mobile page patterns */
-  .mobile-page .overflow-x-auto,
-  .mobile-page table {
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .mobile-page .grid-cols-3,
-  .mobile-page .grid-cols-4,
-  .mobile-page .grid-cols-5,
-  .mobile-page .grid-cols-6 {
-    @apply grid-cols-2;
-  }
-
+  /* Dashboard mobile page patterns.
+     Everything below is scoped to the mobile viewport so it can never
+     out-specify a deliberate `md:` class on a larger screen. */
   @media (max-width: 767px) {
+    .mobile-page .overflow-x-auto,
+    .mobile-page table {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Temporary scaffolding: collapses desktop-width grids that have no mobile
+       fallback of their own. Delete each selector as the owning pages gain real
+       responsive classes. */
+    .mobile-page .grid-cols-3,
+    .mobile-page .grid-cols-4,
+    .mobile-page .grid-cols-5,
+    .mobile-page .grid-cols-6 {
+      @apply grid-cols-2;
+    }
+
     .mobile-page [class*="max-w-7xl"],
     .mobile-page [class*="max-w-[1600px]"],
     .mobile-page [class*="max-w-5xl"] {

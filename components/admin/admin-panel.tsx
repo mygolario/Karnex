@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { ResponsiveTable } from "@/components/ui/responsive-table";
 import { useToast } from "@/components/ui/toast";
 import { getPlanById } from "@/lib/payment/pricing";
 import { toPersianDigits } from "@/lib/utils";
@@ -442,7 +443,7 @@ function UsersTab(props: {
           </Button>
         </div>
       </div>
-      <div className="overflow-x-auto">
+      <ResponsiveTable minWidth={860}>
         <table className="w-full text-right text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
@@ -549,7 +550,7 @@ function UsersTab(props: {
             )}
           </tbody>
         </table>
-      </div>
+      </ResponsiveTable>
     </Card>
   );
 }
@@ -603,7 +604,7 @@ function PaymentsTab(props: {
             </Button>
           </div>
         </div>
-        <div className="overflow-x-auto">
+        <ResponsiveTable minWidth={720}>
           <table className="w-full text-sm text-right">
             <thead className="bg-muted/50 text-muted-foreground">
               <tr>
@@ -638,7 +639,7 @@ function PaymentsTab(props: {
               ))}
             </tbody>
           </table>
-        </div>
+        </ResponsiveTable>
       </Card>
     </div>
   );

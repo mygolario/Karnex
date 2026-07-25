@@ -4,11 +4,16 @@ import Link from "next/link";
 import { X, Smartphone, Download } from "lucide-react";
 import { useMobileContextOptional } from "@/contexts/mobile-context";
 import { PwaInstallButton } from "@/components/pwa/pwa-install-button";
+import { useInterruptionSlot } from "@/lib/ui/interruption-queue";
 
 export function PwaInstallBanner() {
   const mobile = useMobileContextOptional();
+  const hasSlot = useInterruptionSlot(
+    "pwa-banner",
+    Boolean(mobile?.isMobile && mobile.canShowInstallBanner)
+  );
 
-  if (!mobile?.isMobile || !mobile.canShowInstallBanner) {
+  if (!hasSlot || !mobile) {
     return null;
   }
 

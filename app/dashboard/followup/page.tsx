@@ -8,6 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  ResponsiveTable,
+  ResponsiveTableCard,
+} from "@/components/ui/responsive-table";
 import { 
   Users, MessageCircle, Send, Sparkles, Loader2,
   Calendar, Gift, Star, Bell, Phone, Mail,
@@ -268,7 +272,45 @@ export default function CRMDashboard() {
                </div>
             </div>
 
-            <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+            <ResponsiveTable
+               className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm"
+               cards={
+                  filteredCustomers.length === 0 ? (
+                     <p className="p-8 text-center text-muted-foreground">مشتری یافت نشد.</p>
+                  ) : (
+                     filteredCustomers.map((c) => (
+                        <ResponsiveTableCard
+                           key={c.id}
+                           title={`${c.firstName} ${c.lastName}`}
+                           actions={
+                              <Button
+                                 variant="ghost"
+                                 size="icon"
+                                 onClick={() => handleDeleteCustomer(c.id)}
+                                 className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                              >
+                                 <Trash2 size={16} />
+                              </Button>
+                           }
+                           rows={[
+                              {
+                                 label: "تماس",
+                                 value: <span className="font-mono" dir="ltr">{c.phone}</span>,
+                              },
+                              {
+                                 label: "خرید کل",
+                                 value: <span className="font-mono">{c.totalSpend.toLocaleString()}</span>,
+                              },
+                              {
+                                 label: "وضعیت",
+                                 value: c.tags.length ? c.tags.join("، ") : "—",
+                              },
+                           ]}
+                        />
+                     ))
+                  )
+               }
+            >
                <table className="w-full text-sm">
                   <thead className="bg-muted/50 border-b border-border text-muted-foreground">
                      <tr>
@@ -301,7 +343,7 @@ export default function CRMDashboard() {
                      )}
                   </tbody>
                </table>
-            </div>
+            </ResponsiveTable>
          </TabsContent>
 
          {/* TAB: CAMPAIGNS */}

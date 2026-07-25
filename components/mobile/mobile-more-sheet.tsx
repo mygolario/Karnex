@@ -6,11 +6,13 @@ import {
   Presentation, Calendar, Video, DollarSign,
   Settings, HelpCircle, Headphones, Shield,
   Activity, Wallet, Star, LucideIcon,
-  Receipt, Target, FlaskConical,
+  Receipt, Target, FlaskConical, Compass,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useProject } from "@/contexts/project-context";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { useTourStore } from "@/lib/tour/store";
+import { tourI18n } from "@/lib/tour/i18n";
 import { cn } from "@/lib/utils";
 import { isLaunchNavRoute } from "@/lib/launch/config";
 import type { ProjectType } from "@/app/new-project/genesis-constants";
@@ -31,6 +33,7 @@ export function MobileMoreSheet({ open, onOpenChange }: MobileMoreSheetProps) {
   const pathname = usePathname();
   const { activeProject: plan } = useProject();
   const { isAdmin } = useAdmin();
+  const startTour = useTourStore((s) => s.startTour);
 
   const isStartup = plan?.projectType === "startup";
   const isTraditional = plan?.projectType === "traditional";
@@ -96,7 +99,7 @@ export function MobileMoreSheet({ open, onOpenChange }: MobileMoreSheetProps) {
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="rounded-t-3xl max-h-[80vh] overflow-y-auto">
+      <SheetContent side="bottom" className="rounded-t-3xl max-h-[80dvh] overflow-y-auto">
         <SheetHeader className="text-start mb-4">
           <SheetTitle>بیشتر</SheetTitle>
         </SheetHeader>
@@ -113,6 +116,21 @@ export function MobileMoreSheet({ open, onOpenChange }: MobileMoreSheetProps) {
             عمومی
           </p>
           <div className="space-y-1">{generalRoutes.map(renderLink)}</div>
+
+          {/* Tours never start on their own, so the sheet carries the launcher
+              that lives in the header on desktop. */}
+          <button
+            type="button"
+            onClick={() => {
+              onOpenChange(false);
+              startTour("dashboard", 0, true);
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-muted/80 text-foreground transition-colors"
+          >
+            <Compass size={20} className="text-muted-foreground" />
+            <span className="font-medium text-sm">{tourI18n.tourLauncher}</span>
+          </button>
+
           <div className="mt-4 px-4 py-3 flex items-center justify-between rounded-xl border border-border/60 bg-muted/30">
             <span className="text-sm font-medium text-foreground">ظاهر</span>
             <ThemeToggle />

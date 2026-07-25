@@ -13,7 +13,7 @@ import Link from "next/link";
 
 export const HeroSection = () => {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden pt-28 pb-16">
+    <section className="relative min-h-[85dvh] md:min-h-screen flex items-center overflow-hidden pt-24 md:pt-28 pb-12 md:pb-16">
       {/* ═══ Background ═══ */}
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/30" />
@@ -74,23 +74,23 @@ export const HeroSection = () => {
             </p>
 
             {/* Dual CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8 animate-fade-in-up [animation-delay:300ms] opacity-0">
-              <Link href="/signup">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start mb-8 animate-fade-in-up [animation-delay:300ms] opacity-0">
+              <Link href="/signup" className="w-full sm:w-auto">
                 <Button
                   size="xl"
                   rounded="lg"
-                  className="bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-2xl shadow-primary/25 hover:shadow-primary/40 hover:scale-105 transition-all font-bold gap-2"
+                  className="w-full sm:w-auto bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-white shadow-2xl shadow-primary/25 hover:shadow-primary/40 hover:scale-105 transition-all font-bold gap-2"
                 >
                   <Sparkles className="w-5 h-5" />
                   شروع رایگان
                 </Button>
               </Link>
-              <Link href="/#how-it-works">
+              <Link href="/#how-it-works" className="w-full sm:w-auto">
                 <Button
                   size="xl"
                   variant="outline"
                   rounded="lg"
-                  className="font-bold gap-2 h-[3.5rem]"
+                  className="w-full sm:w-auto font-bold gap-2 h-[3.5rem]"
                 >
                   <Play className="w-5 h-5" />
                   چطور کار می‌کند؟
@@ -207,7 +207,7 @@ export const HeroSection = () => {
         </div>
 
         {/* Startup core tools — mobile */}
-        <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto mt-16 lg:hidden animate-fade-in-up [animation-delay:500ms] opacity-0">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 max-w-2xl mx-auto mt-10 md:mt-16 lg:hidden animate-fade-in-up [animation-delay:500ms] opacity-0">
           {[
             { icon: Map, title: "نقشه راه", color: "bg-primary" },
             { icon: Bot, title: "کوپایلوت", color: "bg-ai" },

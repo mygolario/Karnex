@@ -96,7 +96,7 @@ export function ClickExplainer({ guide, children, buttonText = "چطور انج�
         >
           {/* Modal Content */}
           <div 
-            className="bg-card rounded-2xl shadow-2xl max-w-lg w-full max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-200"
+            className="bg-card rounded-2xl shadow-2xl max-w-lg w-full max-h-[85dvh] overflow-hidden animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -137,7 +137,7 @@ export function ClickExplainer({ guide, children, buttonText = "چطور انج�
             </div>
 
             {/* Body */}
-            <div className="p-5 overflow-y-auto max-h-[60vh] space-y-5">
+            <div className="p-5 overflow-y-auto max-h-[60dvh] space-y-5">
               {/* Description */}
               <p className="text-muted-foreground leading-7">{guide.description}</p>
 

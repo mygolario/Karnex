@@ -20,12 +20,12 @@ export function MobileNav() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button variant="ghost" size="icon" className="md:hidden ms-2">
+        <Button variant="ghost" size="icon" className="md:hidden">
           <Menu className="h-5 w-5" />
           <span className="sr-only">Toggle Menu</span>
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="p-0 border-e border-border bg-card w-[300px]">
+      <SheetContent side="start" className="p-0 border-e border-border bg-card w-[300px]">
         <DashboardSidebar variant="mobile" />
       </SheetContent>
     </Sheet>

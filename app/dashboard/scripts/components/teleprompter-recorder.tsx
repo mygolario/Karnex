@@ -161,9 +161,10 @@ export function TeleprompterRecorder({
   return (
     <div className="fixed inset-0 z-[100] bg-black text-white flex flex-col overflow-hidden font-sans select-none">
       
-      {/* Top Toolbar */}
-      <div className="h-20 shrink-0 bg-zinc-950/90 border-b border-white/10 flex items-center justify-between px-6 z-20 backdrop-blur">
-        <div className="flex items-center gap-4">
+      {/* Top Toolbar — four control clusters can't share one row on a phone, so
+          below `md` the title and the controls stack and the controls scroll. */}
+      <div className="shrink-0 bg-zinc-950/90 border-b border-white/10 flex flex-col md:flex-row md:h-20 md:items-center md:justify-between gap-2 md:gap-0 px-3 md:px-6 py-2 md:py-0 safe-top z-20 backdrop-blur">
+        <div className="flex items-center gap-2 md:gap-4 shrink-0">
           <Button 
             variant="ghost" 
             className="text-zinc-400 hover:text-white hover:bg-white/10 gap-1.5"
@@ -182,8 +183,8 @@ export function TeleprompterRecorder({
         </div>
 
         {/* Speed, Font, Mirror controls */}
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4 md:gap-6 scroll-x-touch md:overflow-visible pb-1 md:pb-0">
+          <div className="flex items-center gap-2 shrink-0">
             <span className="text-xs font-medium text-zinc-400">سرعت</span>
             <Slider 
               value={[scrollSpeed]} 
@@ -196,7 +197,7 @@ export function TeleprompterRecorder({
             <span className="text-xs text-zinc-500 font-mono w-4">{scrollSpeed}</span>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <span className="text-xs font-medium text-zinc-400">سایز متن</span>
             <Slider 
               value={[fontSize]} 
@@ -209,13 +210,13 @@ export function TeleprompterRecorder({
             <span className="text-xs text-zinc-500 font-mono w-6">{fontSize}px</span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 shrink-0">
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-medium text-zinc-400">حالت آینه</span>
               <Switch checked={isMirrored} onCheckedChange={setIsMirrored} />
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 shrink-0">
               <span className="text-xs font-medium text-zinc-400">شفافیت پس‌زمینه</span>
               <Slider
                 value={[bgOpacity]}
@@ -347,7 +348,7 @@ export function TeleprompterRecorder({
 
         {/* Picture-in-Picture (PiP) Floating Camera View */}
         {isCameraOn && layoutMode === "pip" && (
-          <div className="absolute bottom-6 right-6 w-80 h-48 border border-white/20 rounded-2xl overflow-hidden shadow-2xl z-30 bg-zinc-950">
+          <div className="absolute bottom-4 end-4 md:bottom-6 md:end-6 w-36 h-24 md:w-80 md:h-48 border border-white/20 rounded-2xl overflow-hidden shadow-2xl z-30 bg-zinc-950">
             <video 
               ref={videoRef}
               autoPlay 
@@ -359,8 +360,8 @@ export function TeleprompterRecorder({
               )}
             />
             {isRecording && (
-              <Badge className="absolute top-3 left-3 bg-red-600 text-white border-0 gap-1.5 animate-pulse">
-                <Disc size={12} fill="currentColor animate-spin" />
+              <Badge className="absolute top-2 start-2 md:top-3 bg-red-600 text-white border-0 gap-1.5 animate-pulse text-[10px] px-1.5 py-0.5">
+                <Disc size={10} fill="currentColor animate-spin" />
                 REC
               </Badge>
             )}
@@ -369,7 +370,15 @@ export function TeleprompterRecorder({
       </div>
 
       {/* Footer Controls */}
-      <div className="h-24 shrink-0 bg-zinc-950/95 border-t border-white/10 flex items-center justify-center gap-6 z-20">
+      <div className="relative shrink-0 bg-zinc-950/95 border-t border-white/10 flex flex-col md:flex-row md:h-24 items-center justify-center gap-3 md:gap-6 py-3 md:py-0 safe-bottom z-20">
+        {isRecording && (
+          <div className="md:hidden text-red-500 flex items-center gap-2 text-xs font-bold bg-red-500/10 px-3 py-1.5 border border-red-500/20 rounded-full animate-pulse">
+            <Disc size={14} fill="currentColor" />
+            درحال ضبط ویدیو...
+          </div>
+        )}
+
+        <div className="flex items-center gap-6">
         <Button
           variant="outline"
           size="icon"
@@ -391,9 +400,10 @@ export function TeleprompterRecorder({
         >
           {isPlaying ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" className="ml-1" />}
         </Button>
+        </div>
 
         {isRecording && (
-          <div className="absolute left-6 text-red-500 flex items-center gap-2 text-sm font-bold bg-red-500/10 px-4 py-2 border border-red-500/20 rounded-full animate-pulse">
+          <div className="hidden md:flex absolute start-6 text-red-500 items-center gap-2 text-sm font-bold bg-red-500/10 px-4 py-2 border border-red-500/20 rounded-full animate-pulse">
             <Disc size={16} fill="currentColor" />
             درحال ضبط ویدیو...
           </div>

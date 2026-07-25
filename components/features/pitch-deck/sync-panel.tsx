@@ -50,7 +50,7 @@ export function SyncPanel({ proposals, onApply, onClose }: SyncPanelProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm" dir="rtl">
-      <div className="max-h-[80vh] w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+      <div className="max-h-[80dvh] w-full max-w-lg overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
         <div className="flex items-center justify-between border-b border-border p-4">
           <div className="flex items-center gap-2">
             <RefreshCw size={16} className="text-primary" />
@@ -60,7 +60,7 @@ export function SyncPanel({ proposals, onApply, onClose }: SyncPanelProps) {
             <X size={16} />
           </Button>
         </div>
-        <div className="max-h-[50vh] space-y-2 overflow-y-auto p-4">
+        <div className="max-h-[50dvh] space-y-2 overflow-y-auto p-4">
           <p className="mb-3 text-xs text-muted-foreground">
             تغییرات پیشنهادی را انتخاب کنید. هیچ اسلایدی بدون تأیید شما بازنویسی نمی‌شود.
           </p>

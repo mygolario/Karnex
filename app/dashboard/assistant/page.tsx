@@ -290,7 +290,7 @@ export default function AssistantPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-10rem)] md:h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-4">
+    <div className="h-[calc(100dvh-10rem)] md:h-[calc(100dvh-8rem)] flex flex-col lg:flex-row gap-4">
       
       <Celebration type={celebrationType || "confetti"} trigger={celebrationType !== null} onComplete={() => setCelebrationType(null)} />
       <XpFloat amount={xpGain.amount} trigger={xpGain.trigger} position={{ x: 50, y: 30 }} onComplete={() => setXpGain({ amount: 0, trigger: false })} />

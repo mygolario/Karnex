@@ -5,15 +5,13 @@ import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useTourStore } from "@/lib/tour/store";
-import { getAllToursWithDynamic, TOUR_VERSION } from "@/lib/tour/registry";
-import { getGlobalAutoStartCandidate } from "@/lib/tour/trigger-queue";
+import { getAllToursWithDynamic } from "@/lib/tour/registry";
 import { useTourGamification } from "@/hooks/use-tour-gamification";
 
 interface TourProviderProps {
   children: React.ReactNode;
 }
 
-const GLOBAL_AUTOSTART_DELAY_MS = 2000;
 const REENGAGEMENT_DELAY_MS = 45000;
 
 export function TourProvider({ children }: TourProviderProps) {
@@ -27,7 +25,6 @@ export function TourProvider({ children }: TourProviderProps) {
     startTour,
     setStepContext,
     setXpCallback,
-    markWhatsNewSeen,
     showWelcome,
     recordEnvironmentSnapshot,
     setReengagementCandidate,
@@ -74,32 +71,8 @@ export function TourProvider({ children }: TourProviderProps) {
     recordEnvironmentSnapshot(activeProject?.projectType, tier);
   }, [initialized, activeProject?.projectType, tier, recordEnvironmentSnapshot]);
 
-  // Auto-start dashboard / what's-new tour for the shell (runs once per mount)
-  const autoStartFired = useRef(false);
-  useEffect(() => {
-    if (!initialized || authLoading || showWelcome) return;
-    if (autoStartFired.current) return;
-    autoStartFired.current = true;
-
-    const timer = setTimeout(() => {
-      const state = useTourStore.getState();
-      // Don't interrupt an in-progress page tour (roadmap/canvas/copilot).
-      if (state.isOpen || state.showWelcome) return;
-      const candidate = getGlobalAutoStartCandidate({
-        initialized: state.initialized,
-        showWelcome: state.showWelcome,
-        persisted: state.persisted,
-      });
-      if (!candidate) return;
-      startTour(candidate.tourId, 0, candidate.force);
-      if (candidate.tourId === "whats-new") {
-        markWhatsNewSeen(TOUR_VERSION);
-      }
-    }, GLOBAL_AUTOSTART_DELAY_MS);
-
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialized, authLoading, showWelcome]);
+  // Tours never auto-start. They are launched explicitly from the help menu or a
+  // page's tour button, so arriving on a page is never interrupted by one.
 
   // Gentle, session-scoped re-engagement nudge: if the user skipped exactly the tours
   // relevant to their setup and hasn't been reminded yet this session, surface a single

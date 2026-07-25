@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { ChunkLoadRecovery } from "@/components/shared/chunk-load-recovery";
+import { KeyboardInset } from "@/components/shared/keyboard-inset";
 
 const CookieBanner = dynamic(
   () => import("@/components/shared/cookie-banner").then((m) => m.CookieBanner),
@@ -29,6 +30,7 @@ export function ClientHelpers() {
   return (
     <>
       <ChunkLoadRecovery />
+      <KeyboardInset />
       <UtmCapture />
       <PostHogProvider />
       <WebVitalsReporter />
