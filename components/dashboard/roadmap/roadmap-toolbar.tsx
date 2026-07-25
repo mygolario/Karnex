@@ -90,7 +90,7 @@ export function RoadmapToolbar({
       {/* Top row: view switcher pill tabs + search + sprint toggle + export */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         {/* View switcher — styled as labeled pill tabs */}
-        <div className="flex items-center gap-1 bg-muted/60 rounded-xl p-1 overflow-x-auto shrink-0">
+        <div className="flex items-center gap-1 bg-muted/60 rounded-xl p-1 scroll-x-touch shrink-0">
           {views.map((v) => {
             const Icon = VIEW_ICONS[v];
             const isActive = view === v;
@@ -132,7 +132,7 @@ export function RoadmapToolbar({
             placeholder="جستجوی گام..."
             value={filter.search}
             onChange={(e) => onFilterChange({ search: e.target.value })}
-            className="ps-9 h-9"
+            className="ps-9 h-11 md:h-9"
           />
           {filter.search && (
             <button
@@ -152,7 +152,7 @@ export function RoadmapToolbar({
               onFilterChange({ status: v as StepStatus | "all" })
             }
           >
-            <SelectTrigger className="w-[130px] h-9">
+            <SelectTrigger className="flex-1 min-w-[120px] md:flex-none md:w-[130px] h-11 md:h-9">
               <Filter size={14} className="ms-1 text-muted-foreground" />
               <SelectValue placeholder="وضعیت" />
             </SelectTrigger>
@@ -172,7 +172,7 @@ export function RoadmapToolbar({
             value={filter.priority}
             onValueChange={(v) => onFilterChange({ priority: v })}
           >
-            <SelectTrigger className="w-[120px] h-9">
+            <SelectTrigger className="flex-1 min-w-[110px] md:flex-none md:w-[120px] h-11 md:h-9">
               <SelectValue placeholder="اولویت" />
             </SelectTrigger>
             <SelectContent>
@@ -187,7 +187,7 @@ export function RoadmapToolbar({
             value={filter.category}
             onValueChange={(v) => onFilterChange({ category: v })}
           >
-            <SelectTrigger className="w-[130px] h-9">
+            <SelectTrigger className="flex-1 min-w-[120px] md:flex-none md:w-[130px] h-11 md:h-9">
               <SelectValue placeholder="دسته" />
             </SelectTrigger>
             <SelectContent>
@@ -206,7 +206,7 @@ export function RoadmapToolbar({
           <Button
             variant={sprintMode ? "gradient" : "outline"}
             size="sm"
-            className="h-9 shrink-0 gap-1.5"
+            className="h-11 md:h-9 shrink-0 gap-1.5 flex-1 sm:flex-none"
             onClick={onToggleSprintMode}
           >
             <Zap size={14} />
@@ -217,7 +217,7 @@ export function RoadmapToolbar({
         {/* Export dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9 shrink-0 gap-1.5">
+            <Button variant="outline" size="sm" className="h-11 md:h-9 shrink-0 gap-1.5 w-full sm:w-auto">
               <Download size={14} />
               خروجی
             </Button>

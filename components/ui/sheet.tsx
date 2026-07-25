@@ -35,16 +35,19 @@ const sheetVariants = cva(
   {
     variants: {
       side: {
-        top: "inset-x-0 top-0 border-b data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
+        top: "inset-x-0 top-0 border-b safe-top data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
         bottom:
-          "inset-x-0 bottom-0 border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "inset-y-0 start-0 h-full w-3/4 border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
-        right:
-          "inset-y-0 end-0 h-full w-3/4 border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
+          "inset-x-0 bottom-0 border-t max-h-[90dvh] pb-[max(1.5rem,env(safe-area-inset-bottom))] data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+        // Positions are logical (`start`/`end`) but the slide animations are
+        // physical. The app is hard-coded `dir="rtl"`, so the start edge is the
+        // physical right edge — pairing `start-0` with a right-side slide.
+        start:
+          "inset-y-0 start-0 h-full w-3/4 border-e data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right sm:max-w-sm",
+        end: "inset-y-0 end-0 h-full w-3/4 border-s data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left sm:max-w-sm",
       },
     },
     defaultVariants: {
-      side: "right",
+      side: "end",
     },
   }
 )
@@ -56,7 +59,7 @@ interface SheetContentProps
 const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
->(({ side = "right", className, children, ...props }, ref) => (
+>(({ side = "end", className, children, ...props }, ref) => (
   <SheetPortal>
     <SheetOverlay />
     <SheetPrimitive.Content

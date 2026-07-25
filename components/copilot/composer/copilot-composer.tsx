@@ -31,6 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { LimitReachedModal } from "@/components/shared/limit-reached-modal";
+import { MOBILE_BREAKPOINT } from "@/hooks/use-is-mobile";
 
 const CREATOR_SLASH = new Set(["/script", "/calendar", "/idea"]);
 
@@ -390,8 +391,15 @@ export function CopilotComposer() {
   const handleInputResize = () => {
     const el = textareaRef.current;
     if (!el) return;
+    // Mirror the `max-h-[30dvh] md:max-h-[200px]` cap: with the keyboard open a
+    // 200px composer would swallow what's left of a phone viewport.
+    const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
+    const cap =
+      window.innerWidth < MOBILE_BREAKPOINT
+        ? Math.round(viewportHeight * 0.3)
+        : 200;
     el.style.height = "auto";
-    el.style.height = Math.min(el.scrollHeight, 200) + "px";
+    el.style.height = Math.min(el.scrollHeight, cap) + "px";
   };
 
   // === Send message ===
@@ -742,7 +750,7 @@ export function CopilotComposer() {
               }}
               onKeyDown={handleKeyDown}
               placeholder="سوال خود را بپرسید... از / برای دستورهای سریع و از @ برای اشاره استفاده کنید"
-              className="w-full min-h-[52px] max-h-[200px] resize-none bg-transparent p-4 pb-12 outline-none text-sm text-foreground placeholder:text-muted-foreground/60 copilot-scroll rounded-2xl"
+              className="w-full min-h-[52px] max-h-[30dvh] md:max-h-[200px] resize-none bg-transparent p-4 pb-12 outline-none text-base md:text-sm text-foreground placeholder:text-muted-foreground/60 copilot-scroll rounded-2xl"
               dir="rtl"
               rows={1}
             />

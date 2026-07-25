@@ -8,8 +8,10 @@ import { JsonLd } from '@/components/shared/json-ld';
 import { NetworkStatus } from '@/components/shared/network-status';
 import { GoogleAnalytics, PerformanceMonitoring } from '@/components/shared/analytics';
 import { ToastProvider } from '@/components/ui/toast';
+import { Toaster } from '@/components/ui/sonner';
 import { ClientHelpers } from '@/components/shared/client-helpers';
 import { LaunchConfigProvider } from '@/components/launch-config-provider';
+import { MobileProvider } from '@/contexts/mobile-context';
 
 export const metadata: Metadata = {
   title: {
@@ -76,10 +78,6 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: '#ec4899' },
-    { media: '(prefers-color-scheme: dark)', color: '#0f172a' },
-  ],
 };
 
 export const viewport: Viewport = {
@@ -144,9 +142,12 @@ export default function RootLayout({
                 <PerformanceMonitoring />
                 <ProjectProvider>
                   <LaunchConfigProvider>
+                  <MobileProvider>
                   <NetworkStatus />
                   <ClientHelpers />
                   {children}
+                  <Toaster />
+                  </MobileProvider>
                   </LaunchConfigProvider>
                 </ProjectProvider>
               </ToastProvider>

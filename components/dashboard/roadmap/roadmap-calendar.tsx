@@ -94,6 +94,16 @@ export function RoadmapCalendar({
 
   const todayStr = format(new Date(), "yyyy/MM/dd");
 
+  /** Scheduled steps of the visible month, flattened into a date-ordered list.
+   *  A 7-column month grid leaves ~50px per cell on a phone, so below `md` the
+   *  same data is shown as an agenda instead. */
+  const monthAgenda = useMemo(() => {
+    const monthPrefix = `${currentYear}/${String(getMonth(currentMonth) + 1).padStart(2, "0")}/`;
+    return Object.entries(stepsByDate)
+      .filter(([dateStr]) => dateStr.startsWith(monthPrefix))
+      .sort(([a], [b]) => a.localeCompare(b));
+  }, [stepsByDate, currentYear, currentMonth]);
+
   const stepsWithoutDates = useMemo(() => {
     const arr: CalendarStep[] = [];
     for (const phase of roadmap) {
@@ -125,7 +135,7 @@ export function RoadmapCalendar({
               onChange={(e) =>
                 setCurrentMonth(setMonth(currentMonth, parseInt(e.target.value)))
               }
-              className="bg-transparent text-sm font-bold border-0 hover:bg-muted/50 rounded px-2 py-1 cursor-pointer"
+              className="bg-transparent text-base md:text-sm font-bold border-0 hover:bg-muted/50 rounded px-2 py-1 cursor-pointer"
             >
               {MONTHS.map((name, i) => (
                 <option key={i} value={i}>{name}</option>
@@ -136,7 +146,7 @@ export function RoadmapCalendar({
               onChange={(e) =>
                 setCurrentMonth(setYear(currentMonth, parseInt(e.target.value)))
               }
-              className="bg-transparent text-sm font-bold border-0 hover:bg-muted/50 rounded px-2 py-1 cursor-pointer"
+              className="bg-transparent text-base md:text-sm font-bold border-0 hover:bg-muted/50 rounded px-2 py-1 cursor-pointer"
             >
               {yearsList.map((y) => (
                 <option key={y} value={y}>{toPersianDigits(y)}</option>
@@ -160,8 +170,60 @@ export function RoadmapCalendar({
         </Button>
       </div>
 
+      {/* Mobile agenda */}
+      <Card padding="sm" className="md:hidden">
+        {monthAgenda.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-6">
+            در این ماه گامی زمان‌بندی نشده است.
+          </p>
+        ) : (
+          <div className="divide-y divide-border/50">
+            {monthAgenda.map(([dateStr, daySteps]) => {
+              const dayNum = Number(dateStr.split("/")[2]);
+              const isToday = dateStr === todayStr;
+              return (
+                <div key={dateStr} className="flex gap-3 py-3 first:pt-1 last:pb-1">
+                  <div
+                    className={cn(
+                      "shrink-0 w-10 text-center",
+                      isToday ? "text-primary" : "text-muted-foreground"
+                    )}
+                  >
+                    <div className="text-lg font-black leading-none">
+                      {toPersianDigits(dayNum)}
+                    </div>
+                    <div className="text-[10px] mt-0.5">
+                      {MONTHS[getMonth(currentMonth)]}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-1.5">
+                    {daySteps.map(({ step, phase, status }) => {
+                      const cfg = STATUS_CONFIG[status];
+                      const catCfg = getCategoryConfig(step.category);
+                      return (
+                        <button
+                          key={step.title}
+                          onClick={() => onOpenStepDetail(step, phase)}
+                          className={cn(
+                            "w-full text-start text-xs px-3 py-2.5 min-h-11 rounded-lg transition-all",
+                            cfg.badgeClass
+                          )}
+                        >
+                          {catCfg && <span className="me-1">{catCfg.label}</span>}
+                          {step.title}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+
       {/* Calendar grid */}
-      <Card padding="sm">
+      <Card padding="sm" className="hidden md:block">
         {/* Weekday headers */}
         <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-bold text-muted-foreground mb-2">
           {WEEKDAYS.map((day) => (
@@ -252,7 +314,7 @@ export function RoadmapCalendar({
                   key={step.title}
                   onClick={() => onOpenStepDetail(step, phase)}
                   className={cn(
-                    "text-xs px-2.5 py-1 rounded-full transition-all hover:scale-105",
+                    "text-xs px-3 py-2.5 min-h-11 md:min-h-0 md:py-1 rounded-full transition-all hover:scale-105",
                     cfg.badgeClass
                   )}
                 >

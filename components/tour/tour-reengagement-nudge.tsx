@@ -12,6 +12,7 @@ import {
   trackReengagementNudgeShown,
 } from "@/lib/tour/analytics";
 import { useEffect, useRef } from "react";
+import { useInterruptionSlot } from "@/lib/ui/interruption-queue";
 
 /**
  * A single, gentle, dismissible suggestion to resume a previously-skipped tour.
@@ -19,7 +20,9 @@ import { useEffect, useRef } from "react";
  */
 export function TourReengagementNudge() {
   const { reengagementCandidate, dismissReengagement, startTour } = useTourStore();
-  const tour = reengagementCandidate ? getTourWithDynamic(reengagementCandidate) : null;
+  const candidate = reengagementCandidate ? getTourWithDynamic(reengagementCandidate) : null;
+  const hasSlot = useInterruptionSlot("tour-nudge", Boolean(candidate));
+  const tour = hasSlot ? candidate : null;
   const trackedRef = useRef<string | null>(null);
 
   useEffect(() => {

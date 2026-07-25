@@ -620,7 +620,7 @@ export function CompetitorWorkspace() {
       ) : (
         <>
           {/* Desktop mode tabs */}
-          <div className="hidden sm:flex flex-wrap gap-1 border-b pb-2">
+          <div className="hidden md:flex flex-wrap gap-1 border-b pb-2">
             {STUDIO_MODES.map((m) => (
               <button
                 key={m.id}
@@ -697,7 +697,7 @@ export function CompetitorWorkspace() {
           </AnimatePresence>
 
           {/* Mobile bottom mode switcher */}
-          <div className="sm:hidden fixed bottom-0 inset-x-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="md:hidden fixed bottom-[var(--mobile-bottom-nav-offset)] inset-x-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
             <div className="flex overflow-x-auto gap-1 px-2 py-2">
               {STUDIO_MODES.map((m) => (
                 <button

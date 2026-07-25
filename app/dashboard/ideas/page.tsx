@@ -121,7 +121,7 @@ export default function IdeasPage() {
           <h2 className="text-2xl font-bold">درباره چه موضوعی محتوا می‌خوای؟</h2>
           <div className="relative">
              <Input 
-               className="h-14 text-lg pr-12 pl-32 rounded-2xl shadow-sm border-2 focus-visible:ring-0 focus-visible:border-primary transition-all"
+               className="h-14 text-base md:text-lg pr-12 pl-4 sm:pl-32 rounded-2xl shadow-sm border-2 focus-visible:ring-0 focus-visible:border-primary transition-all"
                placeholder="مثال: هوش مصنوعی، آشپزی، گیمینگ..."
                value={topic}
                onChange={(e) => setTopic(e.target.value)}
@@ -129,7 +129,7 @@ export default function IdeasPage() {
              />
              <Search className="absolute right-4 top-4 text-muted-foreground" />
              <Button 
-               className="absolute left-2 top-2 h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+               className="w-full mt-2 sm:mt-0 sm:absolute sm:left-2 sm:top-2 sm:w-auto h-11 sm:h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
                onClick={handleGenerateIdeas}
                disabled={isGenerating}
              >

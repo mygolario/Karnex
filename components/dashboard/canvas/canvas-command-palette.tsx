@@ -79,7 +79,7 @@ export function CanvasCommandPalette() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh] px-4" onClick={() => setOpen(false)}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-[8dvh] md:pt-[15dvh] px-4" onClick={() => setOpen(false)}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
       <CommandPrimitive
         className="relative w-full max-w-lg bg-popover border border-border rounded-2xl shadow-2xl overflow-hidden"

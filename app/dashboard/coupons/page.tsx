@@ -160,9 +160,9 @@ export default function CouponsPage() {
       )}
 
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <Card className="w-full max-w-md p-6 space-y-4 relative">
-            <button type="button" className="absolute top-4 left-4" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 safe-top safe-bottom">
+          <Card className="w-full max-w-md p-5 md:p-6 space-y-4 relative max-h-[85dvh] overflow-y-auto">
+            <button type="button" className="absolute top-3 end-3 p-2 mobile-touch-target flex items-center justify-center" onClick={() => setShowModal(false)}>
               <X size={18} />
             </button>
             <h2 className="text-lg font-bold">کوپن جدید</h2>

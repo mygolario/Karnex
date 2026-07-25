@@ -87,7 +87,7 @@ export function TodayFocusBar({
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="sticky bottom-4 z-30"
+          className="sticky bottom-[calc(var(--mobile-bottom-nav-offset)+1rem)] md:bottom-4 z-30"
         >
           <Card
             variant="elevated"

@@ -29,7 +29,7 @@ export function GenesisWizardShell({ children }: GenesisWizardShellProps) {
         <div className="absolute top-[40%] start-[30%] w-[28vw] h-[28vw] rounded-full blur-[100px] opacity-20 bg-brand-accent/20" />
       </div>
 
-      <header className="relative z-50 p-6 md:p-8 flex justify-between items-center max-w-7xl mx-auto w-full">
+      <header className="relative z-50 px-4 py-4 md:p-8 safe-top flex justify-between items-center max-w-7xl mx-auto w-full">
         <Link href="/" className="flex items-center gap-3 group">
           <div className="relative w-10 h-10 group-hover:scale-105 transition-transform">
             <Image
@@ -59,7 +59,7 @@ export function GenesisWizardShell({ children }: GenesisWizardShellProps) {
       </header>
 
       {activeStep > 0 && currentPhase !== "build" && (
-        <div className="relative z-10 pb-6">
+        <div className="relative z-10 pb-4 md:pb-6">
           <GenesisStepper />
         </div>
       )}
@@ -72,14 +72,14 @@ export function GenesisWizardShell({ children }: GenesisWizardShellProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             onClick={clearError}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-destructive/10 border border-destructive/50 text-destructive px-6 py-3 rounded-xl backdrop-blur-md z-50 font-medium cursor-pointer max-w-[90vw] text-center"
+            className="fixed bottom-[calc(var(--mobile-bottom-nav-offset)+1.5rem)] left-1/2 -translate-x-1/2 bg-destructive/10 border border-destructive/50 text-destructive px-5 py-3 rounded-xl backdrop-blur-md z-50 font-medium cursor-pointer max-w-[calc(100vw-2rem)] text-center"
           >
             {error}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <main className="relative z-10 w-full mx-auto pb-12 flex flex-col min-h-[calc(100vh-220px)]">
+      <main className="relative z-10 w-full mx-auto pb-8 md:pb-12 safe-bottom flex flex-col min-h-[calc(100dvh-160px)] md:min-h-[calc(100dvh-220px)]">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeStep}

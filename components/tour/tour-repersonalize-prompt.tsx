@@ -9,6 +9,7 @@ import {
   trackRepersonalizationAccepted,
   trackRepersonalizationDismissed,
 } from "@/lib/tour/analytics";
+import { useInterruptionSlot } from "@/lib/ui/interruption-queue";
 
 /**
  * Opt-in prompt shown when the user's project type or subscription plan changes
@@ -16,10 +17,11 @@ import {
  */
 export function TourRepersonalizePrompt() {
   const { repersonalizePrompt, acceptRepersonalize, dismissRepersonalize } = useTourStore();
+  const hasSlot = useInterruptionSlot("tour-repersonalize", Boolean(repersonalizePrompt));
 
   return (
     <AnimatePresence>
-      {repersonalizePrompt && (
+      {hasSlot && repersonalizePrompt && (
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}

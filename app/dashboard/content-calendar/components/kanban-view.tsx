@@ -167,7 +167,7 @@ export function KanbanView({
             </div>
 
             {/* Cards */}
-            <div className="flex-1 p-2.5 space-y-2.5 overflow-y-auto max-h-[65vh]">
+            <div className="flex-1 p-2.5 space-y-2.5 overflow-y-auto max-h-[65dvh]">
               {colEvents.map((event) => (
                 <KanbanCard
                   key={event.id}

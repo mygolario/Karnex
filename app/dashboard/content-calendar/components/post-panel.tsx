@@ -338,8 +338,8 @@ export function PostPanel({
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent
-        side="left"
-        className="w-full sm:w-[500px] lg:w-[560px] bg-background/95 backdrop-blur-2xl border-l border-white/10 p-0 overflow-y-auto flex flex-col"
+        side="start"
+        className="w-full sm:w-[500px] lg:w-[560px] bg-background/95 backdrop-blur-2xl border-e border-white/10 p-0 overflow-y-auto flex flex-col"
       >
         {/* Header */}
         <SheetHeader className="px-6 pt-6 pb-4 border-b border-white/10 shrink-0">

@@ -6,7 +6,8 @@ import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-btn text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  // `touch-manipulation` drops the 300ms tap delay and double-tap-to-zoom.
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-btn text-sm font-semibold touch-manipulation transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -38,13 +39,15 @@ const buttonVariants = cva(
         soft:
           "bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 dark:bg-brand-primary/20 dark:hover:bg-brand-primary/30",
       },
+      // Sizes step up below `md` so the common controls clear the 44px touch
+      // target; the denser desktop sizing is preserved from `md` up.
       size: {
         default: "h-11 px-5 py-2.5",
-        sm: "h-9 px-4 text-xs",
+        sm: "h-10 md:h-9 px-4 text-xs",
         lg: "h-12 px-8 text-base",
         xl: "h-14 px-10 text-lg",
-        icon: "h-10 w-10",
-        "icon-sm": "h-8 w-8",
+        icon: "h-11 w-11 md:h-10 md:w-10",
+        "icon-sm": "h-9 w-9 md:h-8 md:w-8",
         "icon-lg": "h-12 w-12",
       },
       rounded: {

@@ -37,6 +37,8 @@ export const tourI18n = {
   whatsNew: "تازه‌ها",
   tourLauncher: "راهنمای تعاملی",
   resumeTour: "ادامه تور",
+  showDetails: "جزئیات بیشتر",
+  hideDetails: "بستن جزئیات",
 
   // Onboarding questionnaire
   onboardingStepOf: (current: number, total: number) => `مرحله ${current} از ${total}`,

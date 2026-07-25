@@ -78,7 +78,7 @@ export function AnalyzerButton({ plan }: AnalyzerButtonProps) {
 
       {isOpen && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
-          <Card variant="default" className="max-w-xl w-full max-h-[90vh] overflow-y-auto relative animate-in zoom-in-95" padding="xl">
+          <Card variant="default" className="max-w-xl w-full max-h-[90dvh] overflow-y-auto relative animate-in zoom-in-95" padding="xl">
             <button 
               onClick={() => setIsOpen(false)}
               className="absolute start-4 top-4 text-muted-foreground hover:text-foreground"

@@ -26,9 +26,9 @@ export function AuthShell({ mode, mobileTitle = "کارنکس", children }: Auth
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
-        className="w-full lg:w-1/2 flex items-center justify-center p-6 sm:p-12 relative z-10"
+        className="w-full lg:w-1/2 flex items-center justify-center px-4 py-8 sm:p-12 safe-top safe-bottom relative z-10"
       >
-        <div className="w-full max-w-md space-y-8">
+        <div className="w-full max-w-md space-y-6 sm:space-y-8">
           {/* Mobile header */}
           <div className="lg:hidden text-center">
             <div className="w-16 h-16 mx-auto bg-brand-primary/10 rounded-2xl flex items-center justify-center mb-4">

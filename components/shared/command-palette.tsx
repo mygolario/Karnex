@@ -221,7 +221,7 @@ export function CommandPalette() {
             initial="hidden"
             animate="visible"
             exit="hidden"
-            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-[15vh]"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center px-4 pt-[8dvh] md:pt-[15dvh]"
             onClick={() => setIsOpen(false)}
           >
             <motion.div
@@ -250,7 +250,7 @@ export function CommandPalette() {
               </div>
 
               {/* Results */}
-              <div className="max-h-[50vh] overflow-y-auto p-2">
+              <div className="max-h-[50dvh] overflow-y-auto p-2">
                 {filteredCommands.length === 0 ? (
                   <div className="p-8 text-center">
                     <div className="w-16 h-16 bg-muted/50 rounded-2xl flex items-center justify-center mx-auto mb-4">

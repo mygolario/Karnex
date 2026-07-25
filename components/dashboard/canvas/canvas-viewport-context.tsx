@@ -16,6 +16,7 @@ interface CanvasViewportController {
   zoomIn: () => void;
   zoomOut: () => void;
   zoomReset: () => void;
+  zoomToFit: () => void;
 }
 
 const CanvasViewportContext = createContext<CanvasViewportController | null>(null);
@@ -39,8 +40,31 @@ export function CanvasViewportProvider({ children }: { children: React.ReactNode
     transformRef.current?.centerView(1, CANVAS_ZOOM.ANIMATION_MS);
   }, []);
 
+  /**
+   * Scale the board down until its full width fits the viewport. The board has a
+   * `min-w-[1250px]` grid, so on a phone the default 100% zoom shows roughly a
+   * quarter of it with no indication that the rest exists.
+   */
+  const zoomToFit = useCallback(() => {
+    const instance = transformRef.current?.instance;
+    const wrapper = instance?.wrapperComponent;
+    const content = instance?.contentComponent;
+    if (!transformRef.current || !wrapper || !content) return;
+
+    const contentWidth = content.offsetWidth;
+    if (!contentWidth) return;
+
+    const scale = Math.min(
+      Math.max(wrapper.clientWidth / contentWidth, CANVAS_ZOOM.MIN),
+      1
+    );
+    transformRef.current.centerView(scale, CANVAS_ZOOM.ANIMATION_MS);
+  }, []);
+
   return (
-    <CanvasViewportContext.Provider value={{ registerTransform, zoomIn, zoomOut, zoomReset }}>
+    <CanvasViewportContext.Provider
+      value={{ registerTransform, zoomIn, zoomOut, zoomReset, zoomToFit }}
+    >
       {children}
     </CanvasViewportContext.Provider>
   );

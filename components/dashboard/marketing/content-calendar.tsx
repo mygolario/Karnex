@@ -93,8 +93,10 @@ export function ContentCalendar({ onAddContent }: ContentCalendarProps) {
                 </div>
             </div>
 
-            {/* Week view */}
-            <div className="grid grid-cols-7 gap-2">
+            {/* Week view — seven 100px cells don't fit a phone, so the week
+                scrolls horizontally instead of squashing to unreadable slivers. */}
+            <div className="scroll-x-touch -mx-1 px-1">
+            <div className="grid grid-cols-7 gap-2 min-w-[560px] md:min-w-0">
                 {weekData.map((dayData, idx) => (
                     <motion.div
                         key={idx}
@@ -157,6 +159,7 @@ export function ContentCalendar({ onAddContent }: ContentCalendarProps) {
                         </div>
                     </motion.div>
                 ))}
+            </div>
             </div>
 
             {/* Selected day details */}

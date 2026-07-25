@@ -194,7 +194,7 @@ export function ContentGeneratorButton({ strategy, projectName, audience }: Cont
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-card border border-border rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative shadow-2xl"
+            className="bg-card border border-border rounded-3xl max-w-2xl w-full max-h-[90dvh] overflow-y-auto relative shadow-2xl"
             onClick={(e) => e.stopPropagation()}
             onMouseMove={(e) => e.stopPropagation()}
           >

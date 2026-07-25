@@ -138,7 +138,7 @@ export function CanvasRightPanel() {
                 key={tab.id}
                 onClick={() => setRightPanelTab(tab.id)}
                 className={cn(
-                  "p-1.5 rounded-lg transition-all",
+                  "p-2.5 md:p-1.5 rounded-lg transition-all",
                   rightPanelTab === tab.id
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"

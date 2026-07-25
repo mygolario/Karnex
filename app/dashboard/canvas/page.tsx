@@ -1,11 +1,11 @@
 "use client";
 
 import { useRef, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useProject } from "@/contexts/project-context";
 import { CanvasProvider } from "@/components/dashboard/canvas/canvas-provider";
 import { CanvasTopBar } from "@/components/dashboard/canvas/canvas-topbar";
 import { CanvasToolbar } from "@/components/dashboard/canvas/canvas-toolbar";
-import { CanvasBoard } from "@/components/dashboard/canvas/canvas-board";
 import { CanvasRightPanel } from "@/components/dashboard/canvas/canvas-right-panel";
 import { CanvasMinimap } from "@/components/dashboard/canvas/canvas-minimap";
 import { CanvasCommandPalette } from "@/components/dashboard/canvas/canvas-command-palette";
@@ -18,8 +18,22 @@ import { CanvasViewportProvider, useCanvasViewport } from "@/components/dashboar
 import { PageTourHelp } from "@/components/tour/page-tour-help";
 import { useImmersivePage } from "@/hooks/use-immersive-page";
 import { useIsMobile } from "@/hooks/use-is-mobile";
-import { cn } from "@/lib/utils";
 import { EmptyProjectState } from "@/components/dashboard/empty-project-state";
+
+// The board pulls in dnd-kit and react-zoom-pan-pinch — a large chunk that
+// nothing else on the route needs before the canvas itself is on screen.
+const CanvasBoard = dynamic(
+  () =>
+    import("@/components/dashboard/canvas/canvas-board").then((m) => m.CanvasBoard),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-primary" />
+      </div>
+    ),
+  }
+);
 
 export default function CanvasPage() {
   const { activeProject: plan, loading } = useProject();
@@ -50,21 +64,18 @@ export default function CanvasPage() {
   );
 }
 
-function ZoomControls({ mobile }: { mobile?: boolean }) {
-  const { zoomIn, zoomOut, zoomReset } = useCanvasViewport();
+function ZoomControls() {
+  const { zoomIn, zoomOut, zoomReset, zoomToFit } = useCanvasViewport();
   const viewport = useCanvasStore((s) => s.viewport);
   const scrollZoomEnabled = useCanvasStore((s) => s.scrollZoomEnabled);
   const setScrollZoomEnabled = useCanvasStore((s) => s.setScrollZoomEnabled);
 
   return (
-    <div className={cn(
-      "absolute z-20 flex gap-1 bg-background/90 backdrop-blur-xl border border-border rounded-xl p-1 shadow-lg canvas-export-exclude",
-      mobile ? "bottom-3 end-3 flex-row items-center" : "bottom-3 start-3 flex-col"
-    )}>
+    <div className="absolute z-20 flex gap-1 bg-background/90 backdrop-blur-xl border border-border rounded-xl p-1 shadow-lg canvas-export-exclude bottom-3 end-3 flex-row items-center md:start-3 md:end-auto md:flex-col md:items-stretch">
       <Button
         variant={scrollZoomEnabled ? "secondary" : "ghost"}
         size="icon"
-        className="h-11 w-11"
+        className="h-11 w-11 hidden md:inline-flex"
         onClick={() => setScrollZoomEnabled(!scrollZoomEnabled)}
         title={scrollZoomEnabled ? "غیرفعال کردن زوم با اسکرول" : "فعال کردن زوم با اسکرول"}
       >
@@ -79,7 +90,22 @@ function ZoomControls({ mobile }: { mobile?: boolean }) {
       <Button variant="ghost" size="icon" className="h-11 w-11" onClick={zoomOut} title="کوچک‌نمایی (-)">
         <ZoomOut size={15} />
       </Button>
-      <Button variant="ghost" size="icon" className="h-11 w-11" onClick={zoomReset} title="بازنشانی نما (0)">
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-11 w-11 md:hidden"
+        onClick={zoomToFit}
+        title="نمایش کل بوم"
+      >
+        <Maximize2 size={15} />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-11 w-11 hidden md:inline-flex"
+        onClick={zoomReset}
+        title="بازنشانی نما (0)"
+      >
         <Maximize2 size={15} />
       </Button>
     </div>
@@ -97,7 +123,7 @@ function MobilePanelToggle() {
     <Button
       variant="default"
       size="sm"
-      className="absolute bottom-3 start-3 z-20 shadow-lg mobile-touch-target"
+      className="md:hidden absolute bottom-3 start-3 z-20 shadow-lg mobile-touch-target"
       onClick={() => setRightPanelOpen(true)}
     >
       <PanelRightOpen size={16} className="me-1" />
@@ -110,6 +136,7 @@ function CanvasPageContent() {
   const boardRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const viewMode = useCanvasStore((s) => s.viewMode);
+  const { zoomToFit } = useCanvasViewport();
   useImmersivePage(isMobile);
 
   useEffect(() => {
@@ -118,12 +145,16 @@ function CanvasPageContent() {
     }
   }, [viewMode]);
 
+  // Land on the whole board rather than the top-right corner of a 1250px grid.
+  useEffect(() => {
+    if (!isMobile) return;
+    const timer = window.setTimeout(zoomToFit, 350);
+    return () => window.clearTimeout(timer);
+  }, [isMobile, zoomToFit]);
+
   return (
     <div
-      className={cn(
-        "flex flex-col",
-        isMobile ? "h-[calc(100dvh-3.5rem)]" : "h-[calc(100vh-3.5rem)] -mx-0"
-      )}
+      className="flex flex-col h-[calc(100dvh-3.5rem)] md:h-[calc(100dvh-4rem)]"
       data-tour-id="canvas-page"
     >
       <CanvasTopBar />
@@ -138,8 +169,8 @@ function CanvasPageContent() {
           <div className="hidden md:block">
             <CanvasMinimap />
           </div>
-          <ZoomControls mobile={isMobile} />
-          {isMobile && <MobilePanelToggle />}
+          <ZoomControls />
+          <MobilePanelToggle />
 
           <div className="absolute top-3 end-3 z-10 canvas-export-exclude">
             <PageTourHelp tourId="canvas" />
@@ -149,11 +180,9 @@ function CanvasPageContent() {
         <CanvasRightPanel />
       </div>
 
-      {isMobile && (
-        <div className="md:hidden border-t border-border bg-card/95 backdrop-blur-xl px-2 py-1.5 safe-bottom">
-          <CanvasToolbar mobile />
-        </div>
-      )}
+      <div className="md:hidden border-t border-border bg-card/95 backdrop-blur-xl px-2 py-1.5 safe-bottom">
+        <CanvasToolbar mobile />
+      </div>
 
       <CanvasCommandPalette />
       <CanvasExportDialog />

@@ -62,8 +62,9 @@ export function AudioVideoScript({ scenes, onChange }: AudioVideoScriptProps) {
       </div>
 
       <div className="border rounded-xl overflow-hidden bg-card divide-y">
-        {/* Table Header */}
-        <div className="grid grid-cols-12 bg-muted/50 p-3 text-xs font-bold text-muted-foreground gap-4">
+        {/* Table Header — the A/V table only reads as a table once both columns
+            fit side by side, so below `md` each scene becomes a stacked card. */}
+        <div className="hidden md:grid grid-cols-12 bg-muted/50 p-3 text-xs font-bold text-muted-foreground gap-4">
           <div className="col-span-1 text-center">ترتیب</div>
           <div className="col-span-5 flex items-center gap-1.5">
             <Film size={14} />
@@ -83,9 +84,12 @@ export function AudioVideoScript({ scenes, onChange }: AudioVideoScriptProps) {
           </div>
         ) : (
           scenes.map((scene, index) => (
-            <div key={scene.id} className="grid grid-cols-12 p-3 gap-4 items-start hover:bg-muted/10 transition-colors">
+            <div
+              key={scene.id}
+              className="grid grid-cols-[auto_1fr] md:grid-cols-12 p-3 gap-3 md:gap-4 items-start hover:bg-muted/10 transition-colors"
+            >
               {/* Reordering Controls */}
-              <div className="col-span-1 flex flex-col items-center gap-1">
+              <div className="md:col-span-1 flex flex-col items-center gap-1">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -110,7 +114,11 @@ export function AudioVideoScript({ scenes, onChange }: AudioVideoScriptProps) {
               </div>
 
               {/* Visual Description */}
-              <div className="col-span-5">
+              <div className="md:col-span-5 min-w-0">
+                <label className="md:hidden flex items-center gap-1.5 text-xs font-bold text-muted-foreground mb-1.5">
+                  <Film size={14} />
+                  بخش بصری (تصویر / B-Roll)
+                </label>
                 <Textarea
                   placeholder="مثال: [نمای بسته از محصول با نورپردازی ملایم]"
                   className="min-h-[80px] bg-background/40 border-slate-200 focus-visible:ring-red-500 font-sans text-sm resize-none"
@@ -121,7 +129,11 @@ export function AudioVideoScript({ scenes, onChange }: AudioVideoScriptProps) {
               </div>
 
               {/* Audio / Voiceover */}
-              <div className="col-span-5">
+              <div className="col-start-2 md:col-start-auto md:col-span-5 min-w-0">
+                <label className="md:hidden flex items-center gap-1.5 text-xs font-bold text-muted-foreground mb-1.5">
+                  <Mic size={14} />
+                  بخش صوتی (دیالوگ / گوینده)
+                </label>
                 <Textarea
                   placeholder="مثال: این محصول جدیدیه که می‌تونه زندگی فریلنسرها رو متحول کنه..."
                   className="min-h-[80px] bg-background/40 border-slate-200 focus-visible:ring-red-500 font-sans text-sm resize-none"
@@ -132,7 +144,7 @@ export function AudioVideoScript({ scenes, onChange }: AudioVideoScriptProps) {
               </div>
 
               {/* Action Operations */}
-              <div className="col-span-1 flex justify-center pt-2">
+              <div className="col-start-2 md:col-start-auto md:col-span-1 flex justify-end md:justify-center pt-1 md:pt-2">
                 <Button
                   variant="ghost"
                   size="icon"

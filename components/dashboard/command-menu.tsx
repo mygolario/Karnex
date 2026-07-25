@@ -27,11 +27,7 @@ import { useTourStore } from "@/lib/tour/store";
 import { getToursForProjectType } from "@/lib/tour/registry";
 import { useAdmin } from "@/hooks/use-admin";
 
-interface CommandMenuProps {
-  mobile?: boolean;
-}
-
-export function CommandMenu({ mobile = false }: CommandMenuProps) {
+export function CommandMenu() {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
   const { user, signOut } = useAuth();
@@ -65,15 +61,14 @@ export function CommandMenu({ mobile = false }: CommandMenuProps) {
 
   return (
     <>
-      {mobile ? (
-        <button
-          onClick={() => setOpen(true)}
-          className="flex items-center justify-center h-10 w-10 rounded-xl hover:bg-muted/80 transition-colors mobile-touch-target"
-          aria-label="جستجو"
-        >
-          <Search size={20} className="text-muted-foreground" />
-        </button>
-      ) : (
+      <button
+        onClick={() => setOpen(true)}
+        className="md:hidden flex items-center justify-center h-10 w-10 rounded-xl hover:bg-muted/80 transition-colors mobile-touch-target"
+        aria-label="جستجو"
+      >
+        <Search size={20} className="text-muted-foreground" />
+      </button>
+
       <button 
          onClick={() => setOpen(true)}
          className="hidden md:flex items-center justify-between w-64 px-4 py-2.5 bg-muted/40 hover:bg-muted/60 dark:bg-white/5 dark:hover:bg-white/10 hover:shadow-lg hover:scale-[1.02] border border-border/50 rounded-2xl text-sm text-muted-foreground cursor-pointer transition-all duration-300 group backdrop-blur-sm"
@@ -88,20 +83,16 @@ export function CommandMenu({ mobile = false }: CommandMenuProps) {
             </kbd>
         </div>
       </button>
-      )}
 
+      {/* Full-screen sheet on phones, centred dialog from `md` up. */}
       <Command.Dialog
         open={open}
         onOpenChange={setOpen}
         label="Global Command Menu"
-        className={
-          mobile
-            ? "fixed inset-x-0 top-0 bottom-0 w-full max-w-none h-dvh bg-popover/98 backdrop-blur-xl border-0 shadow-2xl rounded-none overflow-hidden z-[9999] animate-in slide-in-from-bottom duration-200"
-            : "fixed top-1/2 start-1/2 translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-popover/95 backdrop-blur-xl border border-border shadow-2xl rounded-xl overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-100"
-        }
+        className="fixed inset-x-0 top-0 bottom-0 w-full max-w-none h-dvh flex flex-col bg-popover/98 backdrop-blur-xl border-0 shadow-2xl rounded-none overflow-hidden z-[9999] animate-in slide-in-from-bottom duration-200 md:inset-auto md:top-1/2 md:start-1/2 md:translate-x-1/2 md:-translate-y-1/2 md:h-auto md:block md:max-w-lg md:bg-popover/95 md:border md:border-border md:rounded-xl md:slide-in-from-bottom-0 md:fade-in md:zoom-in-95 md:duration-100"
       >
         <DialogPrimitive.Title className="sr-only">Command Menu</DialogPrimitive.Title>
-        <div className="flex items-center border-b border-border/50 px-3" cmdk-input-wrapper="">
+        <div className="flex items-center border-b border-border/50 px-3 safe-top md:pt-0" cmdk-input-wrapper="">
           <Search className="me-2 h-4 w-4 shrink-0 opacity-50" />
           <Command.Input 
              placeholder="چه کاری می‌خواهید انجام دهید؟"
@@ -109,7 +100,7 @@ export function CommandMenu({ mobile = false }: CommandMenuProps) {
           />
         </div>
         
-        <Command.List className={mobile ? "flex-1 max-h-none overflow-y-auto overflow-x-hidden p-2 dir-rtl" : "max-h-[300px] overflow-y-auto overflow-x-hidden p-2 dir-rtl"}>
+        <Command.List className="flex-1 max-h-none md:flex-none md:max-h-[300px] overflow-y-auto overflow-x-hidden p-2 dir-rtl">
           <Command.Empty className="py-6 text-center text-sm text-muted-foreground">
              نتیجه‌ای یافت نشد.
           </Command.Empty>

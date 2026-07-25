@@ -884,7 +884,7 @@ export function ValidationStudio() {
       <AIStudioLayout inputPanel={inputPanel} outputPanel={outputPanel} />
 
       {stickyNext && (
-        <div className="fixed bottom-0 inset-x-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 p-3 safe-bottom md:hidden">
+        <div className="fixed bottom-[var(--mobile-bottom-nav-offset)] inset-x-0 z-40 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 p-3 md:hidden">
           <Button className="w-full gap-2 min-h-11" onClick={stickyNext.onClick}>
             {stickyNext.label}
           </Button>

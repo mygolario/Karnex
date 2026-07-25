@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useInterruptionSlot } from "@/lib/ui/interruption-queue";
 
 const STORAGE_KEY = "karnex_genesis_first_run_coach";
 const DISMISSED_KEY = "karnex_genesis_first_run_dismissed";
@@ -23,6 +24,7 @@ export function GenesisFirstRunCoach() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const hasSlot = useInterruptionSlot("genesis-coach", open);
 
   useEffect(() => {
     try {
@@ -64,7 +66,7 @@ export function GenesisFirstRunCoach() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && dismiss()}>
+    <Dialog open={hasSlot} onOpenChange={(v) => !v && dismiss()}>
       <DialogContent className="sm:max-w-md" dir="rtl">
         <button
           type="button"

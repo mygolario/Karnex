@@ -494,14 +494,23 @@ export default function MediaKitPage() {
                 ))}
             </div>
 
-            <div className="border rounded-2xl overflow-hidden shadow-2xl bg-white text-slate-900 min-h-[1000px] print:shadow-none print:border-none print:rounded-none">
-                {/* Template Rendering */}
-                {template === "modern" && <ModernTemplate data={data} />}
-                {template === "minimal" && <MinimalTemplate data={data} />}
-                {template === "bold" && <BoldTemplate data={data} />}
-                
-                <div className="bg-slate-50 py-4 text-center text-slate-400 text-xs print:hidden">
-                    Preview Mode - Click Download PDF to save
+            <p className="md:hidden text-xs text-muted-foreground mb-2 print:hidden">
+                پیش‌نمایش در ابعاد چاپ نمایش داده می‌شود؛ برای دیدن کل صفحه به چپ و راست بکشید.
+            </p>
+
+            {/* The templates are print artifacts laid out at page width — scaling
+                them down would misrepresent the PDF, so on mobile the preview
+                scrolls horizontally at its true size instead. */}
+            <div className="border rounded-2xl overflow-x-auto scroll-x-touch shadow-2xl bg-white text-slate-900 min-h-[1000px] print:overflow-visible print:shadow-none print:border-none print:rounded-none">
+                <div className="w-[1024px] md:w-auto">
+                    {/* Template Rendering */}
+                    {template === "modern" && <ModernTemplate data={data} />}
+                    {template === "minimal" && <MinimalTemplate data={data} />}
+                    {template === "bold" && <BoldTemplate data={data} />}
+
+                    <div className="bg-slate-50 py-4 text-center text-slate-400 text-xs print:hidden">
+                        Preview Mode - Click Download PDF to save
+                    </div>
                 </div>
             </div>
         </TabsContent>

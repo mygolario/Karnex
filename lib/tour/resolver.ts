@@ -1,3 +1,4 @@
+import { scrollTargetIntoView } from "./positioning";
 import type { ResolvedTarget } from "./types";
 
 const DEFAULT_TIMEOUT_MS = 8000;
@@ -44,7 +45,7 @@ export function waitForTarget(
   return new Promise((resolve, reject) => {
     const immediate = resolveTargetSync(target, centered);
     if (immediate) {
-      immediate.element.scrollIntoView?.({ behavior: "smooth", block: "center", inline: "nearest" });
+      if (!centered) scrollTargetIntoView(immediate.element);
       resolve(immediate);
       return;
     }
@@ -62,7 +63,7 @@ export function waitForTarget(
       const result = resolveTargetSync(target, centered);
       if (result) {
         cleanup();
-        result.element.scrollIntoView?.({ behavior: "smooth", block: "center", inline: "nearest" });
+        if (!centered) scrollTargetIntoView(result.element);
         resolve(result);
         return true;
       }

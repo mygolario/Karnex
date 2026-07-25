@@ -3,7 +3,9 @@ import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const inputVariants = cva(
-  "flex w-full rounded-input border transition-all duration-200 bg-transparent text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 outline-none",
+  // Font size is >=16px below `md`: anything smaller makes iOS Safari zoom the
+  // viewport when the field takes focus.
+  "flex w-full rounded-input border transition-all duration-200 bg-transparent text-base md:text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 outline-none",
   {
     variants: {
       variant: {
@@ -16,7 +18,7 @@ const inputVariants = cva(
       },
       inputSize: {
         default: "h-11 px-4 py-2",
-        sm: "h-9 px-3 py-1 text-xs",
+        sm: "h-9 px-3 py-1 text-base md:text-xs",
         lg: "h-14 px-6 py-3 text-base",
       },
     },
