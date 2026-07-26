@@ -23,7 +23,9 @@ import type {
 export interface UserProfile {
   id: string; 
   email: string;
-  role?: 'user' | 'admin'; 
+  role?: 'user' | 'admin';
+  /** Test / internal account — excluded from organic analytics */
+  is_test_user?: boolean;
   full_name?: string; 
   first_name?: string;
   last_name?: string;

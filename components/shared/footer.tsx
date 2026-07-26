@@ -30,6 +30,7 @@ export function Footer() {
     ],
     support: [
       { label: "راهنما", href: "/help" },
+      { label: "راهنمای استارتاپ", href: "/guides" },
       { label: "پشتیبانی", href: "/contact#support" },
       { label: "ارتقا به تیم", href: "/pricing" },
     ],

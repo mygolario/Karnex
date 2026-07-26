@@ -31,6 +31,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.75,
     },
     {
+      url: `${baseUrl}/guides`,
+      lastModified: new Date("2026-07-26"),
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/guides/business-model-canvas`,
+      lastModified: new Date("2026-07-26"),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/guides/startup-business-plan`,
+      lastModified: new Date("2026-07-26"),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${baseUrl}/guides/pitch-deck`,
+      lastModified: new Date("2026-07-26"),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/contact`,
       lastModified,
       changeFrequency: "yearly",

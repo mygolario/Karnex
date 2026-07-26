@@ -25,6 +25,8 @@ model User {
   updatedAt      DateTime  @updatedAt
   deletedAt      DateTime? // For soft deletes
   lastSeenAt     DateTime? // Product activity heartbeat (admin intelligence)
+  /// Founder test / internal accounts — excluded from organic admin scoreboard + PostHog is_internal
+  isTestUser     Boolean   @default(false)
 
   // Profile fields (mapped from existing UserProfile)
   firstName   String?
@@ -78,6 +80,7 @@ model User {
   notifications Notification[]
 
   @@index([lastSeenAt])
+  @@index([isTestUser])
 }
 
 model Account {

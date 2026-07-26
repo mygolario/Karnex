@@ -43,7 +43,18 @@
 
 **نکته consent:** بدون Accept کوکی، PostHog لود نمی‌شود (مثل GA). ادمین Prisma همچنان کاربر را نشان می‌دهد.
 
-**فیلتر داخلی:** در PostHog → Project settings → Filter out internal and test users — ایمیل‌های خودت / `is_internal = true` (روی identify ادمین‌ها ست می‌شود) را اضافه کن تا فانل آلوده نشود.
+**فیلتر داخلی:** در PostHog → Project settings → Filter out internal and test users — شرط `is_internal = true` را بگذار. Identify برای **ادمین** و کاربرانی که در ادمین تیک «تست» دارند `is_internal: true` و `user_kind: organic|test|internal` می‌فرستد. ایمیل‌های تست خودت را هم در لیست فیلتر اضافه کن.
+
+**اسکوربورد ارگانیک (ادمین):** نمای کلی → «اسکوربورد ارگانیک» فقط غیرتست و غیرادمین را می‌شمارد. همهٔ حساب‌های تست را در کاربران → تیک **تست** بزن.
+
+### اسناد عملیاتی مرتبط
+
+| سند | کاربرد |
+|-----|--------|
+| [USER_INTERVIEW_SCRIPT.md](./USER_INTERVIEW_SCRIPT.md) | مصاحبه ۱۵ دقیقه‌ای کاربران ارگانیک |
+| [GROWTH_CHANNEL.md](./GROWTH_CHANNEL.md) | اینستا/تردز + UTM + راهنماهای SEO |
+| [SOFT_RAISE_PLAYBOOK.md](./SOFT_RAISE_PLAYBOOK.md) | پل سرمایه اگر runway &lt; ۸ هفته |
+| [TEAM_GATE.md](./TEAM_GATE.md) | کی (و کی نه) هم‌بنیان‌گذار/استخدام |
 
 ## لینک‌های UTM (کپی–پیست)
 
@@ -70,6 +81,13 @@ https://www.karnex.ir/?utm_source=linkedin&utm_medium=post&utm_campaign=launch_w
 https://www.karnex.ir/?utm_source=telegram&utm_medium=channel&utm_campaign=launch_week1&utm_content=announce
 ```
 
+### Threads
+
+```
+https://www.karnex.ir/?utm_source=threads&utm_medium=post&utm_campaign=launch_week1&utm_content=founder_build
+https://www.karnex.ir/?utm_source=threads&utm_medium=reply&utm_campaign=launch_week1&utm_content=problem_thread
+```
+
 ### برند / جستجو (برای ردیابی کمپین دستی)
 
 ```
@@ -90,9 +108,11 @@ https://www.karnex.ir/?utm_source=google&utm_medium=organic&utm_campaign=brand&u
 
 ## هفتگی (۶۰ دقیقه)
 
-- [ ] فانل PostHog: visitor → signup → project → activation → paid
+- [ ] **اسکوربورد ارگانیک ادمین** (نه عدد «همه کاربران»): ثبت‌نام، فعال، پرداخت، درآمد
+- [ ] فانل PostHog با فیلتر `is_internal = true` خاموش از نتایج: visitor → signup → project → activation → paid
 - [ ] کانال‌ها از UTM: کدام `utm_source` / `utm_content` بیشترین signup داشته؟
-- [ ] هزینه OpenRouter در برابر درآمد
+- [ ] حداقل ۱ مصاحبه / پیام پیگیری به کاربران ارگانیک جدید ([اسکریپت](./USER_INTERVIEW_SCRIPT.md))
+- [ ] هزینه OpenRouter در برابر درآمد ارگانیک
 - [ ] فقط باگ و اصطکاک UX — **نه** قابلیت/ستون جدید
 - [ ] نظرات ساختگی را با نظر واقعی جایگزین کن (وقتی داشتی)
 

@@ -19,9 +19,11 @@ import {
 } from "@/lib/analytics/posthog-links";
 import {
   deriveFunnelStage,
+  type AdminFunnelStage,
   type AdminUserDetail,
   type AdminUserRow,
 } from "@/lib/admin/user-intelligence";
+import { ORGANIC_USER_WHERE } from "@/lib/admin/organic-where";
 
 function parseCredits(credits: unknown): { aiTokens: number; projectsUsed: number } {
   if (credits && typeof credits === "object" && !Array.isArray(credits)) {
@@ -39,6 +41,10 @@ export async function getAdminUsers(params?: {
   page?: number;
   pageSize?: number;
   includeDeleted?: boolean;
+  /** When true, only organic (non-test, non-admin) users */
+  organicOnly?: boolean;
+  /** When true, only accounts marked as test */
+  testOnly?: boolean;
 }) {
   const gate = await requireAdminResult();
   if (!gate.ok) return { error: gate.error };
@@ -49,6 +55,8 @@ export async function getAdminUsers(params?: {
 
   const where: Prisma.UserWhereInput = {
     ...(params?.includeDeleted ? {} : { deletedAt: null }),
+    ...(params?.organicOnly ? ORGANIC_USER_WHERE : {}),
+    ...(params?.testOnly ? { isTestUser: true } : {}),
     ...(search
       ? {
           OR: [
@@ -73,6 +81,7 @@ export async function getAdminUsers(params?: {
           name: true,
           image: true,
           role: true,
+          isTestUser: true,
           credits: true,
           createdAt: true,
           updatedAt: true,
@@ -102,6 +111,7 @@ export async function getAdminUsers(params?: {
         full_name: u.name,
         avatar_url: u.image,
         role: u.role,
+        is_test_user: u.isTestUser,
         subscription: { planId, status: planStatus },
         credits: parseCredits(u.credits),
         created_at: u.createdAt.toISOString(),
@@ -161,6 +171,26 @@ export async function setAdminUserRole(userId: string, role: "user" | "admin") {
     targetType: "User",
     targetId: userId,
     meta: { role },
+  });
+
+  return { success: true };
+}
+
+export async function setAdminUserTestFlag(userId: string, isTestUser: boolean) {
+  const gate = await requireAdminResult();
+  if (!gate.ok) return { error: gate.error };
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isTestUser: Boolean(isTestUser) },
+  });
+
+  await writeAdminAudit({
+    actorId: gate.user.id,
+    action: "set_test_user",
+    targetType: "User",
+    targetId: userId,
+    meta: { isTestUser: Boolean(isTestUser) },
   });
 
   return { success: true };
@@ -604,6 +634,12 @@ export async function getAdminAnalytics() {
       revenueAgg,
       completedTxCount,
       feedbackCount,
+      organicUsers,
+      organicSignups30d,
+      organicPaidSubs,
+      organicRevenueAgg,
+      organicCompletedTxCount,
+      organicFunnelUsers,
     ] = await Promise.all([
       prisma.user.count({ where: { deletedAt: null } }),
       prisma.subscription.count({
@@ -622,6 +658,32 @@ export async function getAdminAnalytics() {
       }),
       prisma.transaction.count({ where: { status: "completed" } }),
       prisma.feedback.count(),
+      prisma.user.count({ where: ORGANIC_USER_WHERE }),
+      prisma.user.count({
+        where: { ...ORGANIC_USER_WHERE, createdAt: { gte: thirtyDaysAgo } },
+      }),
+      prisma.subscription.count({
+        where: {
+          status: "active",
+          planId: { not: "free" },
+          user: ORGANIC_USER_WHERE,
+        },
+      }),
+      prisma.transaction.aggregate({
+        where: { status: "completed", user: ORGANIC_USER_WHERE },
+        _sum: { amount: true },
+      }),
+      prisma.transaction.count({
+        where: { status: "completed", user: ORGANIC_USER_WHERE },
+      }),
+      prisma.user.findMany({
+        where: ORGANIC_USER_WHERE,
+        select: {
+          subscriptions: { select: { planId: true, status: true } },
+          tourProgress: { select: { completedTours: true } },
+          _count: { select: { projects: true } },
+        },
+      }),
     ]);
 
     const planBreakdown = await prisma.subscription.groupBy({
@@ -629,6 +691,32 @@ export async function getAdminAnalytics() {
       where: { status: "active" },
       _count: { planId: true },
     });
+
+    const organicPlanBreakdown = await prisma.subscription.groupBy({
+      by: ["planId"],
+      where: { status: "active", user: ORGANIC_USER_WHERE },
+      _count: { planId: true },
+    });
+
+    const funnelStageCounts: Record<AdminFunnelStage, number> = {
+      signed_up: 0,
+      has_project: 0,
+      activated: 0,
+      paid: 0,
+    };
+    for (const u of organicFunnelUsers) {
+      const activeSub =
+        u.subscriptions.find((s) => s.status === "active") ??
+        u.subscriptions[0] ??
+        null;
+      const stage = deriveFunnelStage({
+        projectCount: u._count.projects,
+        planId: activeSub?.planId ?? "free",
+        planStatus: activeSub?.status ?? "active",
+        completedTours: u.tourProgress?.completedTours,
+      });
+      funnelStageCounts[stage] += 1;
+    }
 
     return {
       success: true,
@@ -644,6 +732,18 @@ export async function getAdminAnalytics() {
           planId: p.planId,
           count: p._count.planId,
         })),
+        organic: {
+          users: organicUsers,
+          signups30d: organicSignups30d,
+          activePaidSubs: organicPaidSubs,
+          totalRevenue: organicRevenueAgg._sum.amount ?? 0,
+          completedTxCount: organicCompletedTxCount,
+          funnelStages: funnelStageCounts,
+          planBreakdown: organicPlanBreakdown.map((p) => ({
+            planId: p.planId,
+            count: p._count.planId,
+          })),
+        },
       },
     };
   } catch (error) {
@@ -670,6 +770,7 @@ export async function getAdminUserDetail(userId: string) {
         name: true,
         image: true,
         role: true,
+        isTestUser: true,
         credits: true,
         createdAt: true,
         updatedAt: true,
@@ -747,6 +848,7 @@ export async function getAdminUserDetail(userId: string) {
       full_name: user.name,
       avatar_url: user.image,
       role: user.role,
+      is_test_user: user.isTestUser,
       subscription: { planId, status: planStatus },
       credits: parseCredits(user.credits),
       created_at: user.createdAt.toISOString(),

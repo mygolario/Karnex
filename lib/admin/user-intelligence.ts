@@ -19,6 +19,7 @@ export type AdminUserRow = {
   full_name: string | null;
   avatar_url: string | null;
   role: string | null;
+  is_test_user: boolean;
   subscription: { planId: string; status: string };
   credits: { aiTokens: number; projectsUsed: number };
   created_at: string;

@@ -123,7 +123,7 @@ export function PostHogProvider() {
         typeof userProfile?.credits?.projectsUsed === "number"
           ? userProfile.credits.projectsUsed
           : undefined;
-      const traitsKey = `${user.id}|${user.email ?? ""}|${user.role ?? ""}|${plan ?? ""}|${projectCount ?? ""}`;
+      const traitsKey = `${user.id}|${user.email ?? ""}|${user.role ?? ""}|${userProfile?.is_test_user ? "1" : "0"}|${plan ?? ""}|${projectCount ?? ""}`;
 
       if (
         identifiedId.current !== user.id ||
@@ -135,8 +135,15 @@ export function PostHogProvider() {
           role: user.role ?? undefined,
           plan,
           project_count: projectCount,
-          // Founder filter in PostHog: role = admin OR email in internal list
-          is_internal: user.role === "admin",
+          // PostHog: Filter out internal and test users where is_internal = true
+          is_internal:
+            user.role === "admin" || Boolean(userProfile?.is_test_user),
+          user_kind:
+            user.role === "admin"
+              ? "internal"
+              : userProfile?.is_test_user
+                ? "test"
+                : "organic",
         });
         identifiedId.current = user.id;
         lastTraitsKey.current = traitsKey;
@@ -153,6 +160,7 @@ export function PostHogProvider() {
     user?.email,
     user?.name,
     user?.role,
+    userProfile?.is_test_user,
     userProfile?.subscription?.planId,
     userProfile?.credits?.projectsUsed,
   ]);

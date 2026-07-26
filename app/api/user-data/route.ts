@@ -38,6 +38,7 @@ export async function GET(request: Request) {
         id: user.id,
         email: user.email || "",
         role: (user.role as UserProfile["role"]) || "user",
+        is_test_user: Boolean(user.isTestUser),
         full_name: user.name || "",
         first_name: user.firstName || "",
         last_name: user.lastName || "",

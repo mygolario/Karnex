@@ -57,6 +57,20 @@ type Analytics = {
   completedTxCount: number;
   feedbackCount: number;
   planBreakdown: { planId: string; count: number }[];
+  organic: {
+    users: number;
+    signups30d: number;
+    activePaidSubs: number;
+    totalRevenue: number;
+    completedTxCount: number;
+    funnelStages: {
+      signed_up: number;
+      has_project: number;
+      activated: number;
+      paid: number;
+    };
+    planBreakdown: { planId: string; count: number }[];
+  };
 };
 
 type TxRow = {
@@ -108,6 +122,9 @@ export function AdminPanel() {
   const [users, setUsers] = useState<AdminUserRow[]>([]);
   const [userSearch, setUserSearch] = useState("");
   const [includeDeleted, setIncludeDeleted] = useState(false);
+  const [userAudience, setUserAudience] = useState<"all" | "organic" | "test">(
+    "all",
+  );
   const [transactions, setTransactions] = useState<TxRow[]>([]);
   const [txStatus, setTxStatus] = useState("");
   const [recoverTrackId, setRecoverTrackId] = useState("");
@@ -132,11 +149,13 @@ export function AdminPanel() {
     const res = await getAdminUsers({
       search: userSearch || undefined,
       includeDeleted,
+      organicOnly: userAudience === "organic",
+      testOnly: userAudience === "test",
       pageSize: 100,
     });
     if (res.error) throw new Error(res.error);
     setUsers(res.users || []);
-  }, [userSearch, includeDeleted]);
+  }, [userSearch, includeDeleted, userAudience]);
 
   const loadPayments = useCallback(async () => {
     const { getAdminTransactions } = await import("@/lib/admin-actions");
@@ -250,19 +269,88 @@ export function AdminPanel() {
       ) : null}
 
       {tab === "overview" && analytics && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="کاربران فعال" value={toPersianDigits(analytics.totalUsers)} icon={<Users className="text-blue-500" />} />
-          <StatCard title="اشتراک پولی" value={toPersianDigits(analytics.activePaidSubs)} icon={<DollarSign className="text-green-500" />} />
-          <StatCard
-            title="درآمد تکمیل‌شده"
-            value={formatMoney(analytics.totalRevenue)}
-            sub="تومان"
-            icon={<DollarSign className="text-amber-500" />}
-          />
-          <StatCard title="تیکت‌های باز" value={toPersianDigits(analytics.openTickets)} icon={<MessageSquare className="text-red-500" />} />
-          <StatCard title="ثبت‌نام ۳۰ روز" value={toPersianDigits(analytics.signups30d)} icon={<Activity className="text-primary" />} />
-          <StatCard title="تراکنش موفق" value={toPersianDigits(analytics.completedTxCount)} icon={<BarChart3 className="text-primary" />} />
-          <StatCard title="بازخوردها" value={toPersianDigits(analytics.feedbackCount)} icon={<Activity className="text-teal-500" />} />
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-sm font-bold text-muted-foreground mb-3">
+              همه کاربران (شامل تست)
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard title="کاربران فعال" value={toPersianDigits(analytics.totalUsers)} icon={<Users className="text-blue-500" />} />
+              <StatCard title="اشتراک پولی" value={toPersianDigits(analytics.activePaidSubs)} icon={<DollarSign className="text-green-500" />} />
+              <StatCard
+                title="درآمد تکمیل‌شده"
+                value={formatMoney(analytics.totalRevenue)}
+                sub="تومان"
+                icon={<DollarSign className="text-amber-500" />}
+              />
+              <StatCard title="تیکت‌های باز" value={toPersianDigits(analytics.openTickets)} icon={<MessageSquare className="text-red-500" />} />
+              <StatCard title="ثبت‌نام ۳۰ روز" value={toPersianDigits(analytics.signups30d)} icon={<Activity className="text-primary" />} />
+              <StatCard title="تراکنش موفق" value={toPersianDigits(analytics.completedTxCount)} icon={<BarChart3 className="text-primary" />} />
+              <StatCard title="بازخوردها" value={toPersianDigits(analytics.feedbackCount)} icon={<Activity className="text-teal-500" />} />
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-bold mb-1">
+              اسکوربورد ارگانیک
+            </h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              بدون حساب تست و بدون ادمین — معیار واقعی لانچ
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard
+                title="کاربران ارگانیک"
+                value={toPersianDigits(analytics.organic.users)}
+                icon={<Users className="text-blue-500" />}
+              />
+              <StatCard
+                title="ثبت‌نام ارگانیک ۳۰ روز"
+                value={toPersianDigits(analytics.organic.signups30d)}
+                icon={<Activity className="text-primary" />}
+              />
+              <StatCard
+                title="پرداخت ارگانیک"
+                value={toPersianDigits(analytics.organic.activePaidSubs)}
+                icon={<DollarSign className="text-green-500" />}
+              />
+              <StatCard
+                title="درآمد ارگانیک"
+                value={formatMoney(analytics.organic.totalRevenue)}
+                sub="تومان"
+                icon={<DollarSign className="text-amber-500" />}
+              />
+              <StatCard
+                title="تراکنش ارگانیک"
+                value={toPersianDigits(analytics.organic.completedTxCount)}
+                icon={<BarChart3 className="text-primary" />}
+              />
+            </div>
+            <Card className="mt-4 p-4">
+              <h4 className="font-bold text-sm mb-3">فانل ارگانیک</h4>
+              <ul className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                {(
+                  [
+                    "signed_up",
+                    "has_project",
+                    "activated",
+                    "paid",
+                  ] as const
+                ).map((stage) => (
+                  <li
+                    key={stage}
+                    className="flex flex-col gap-1 rounded-lg border border-border/60 p-3"
+                  >
+                    <span className="text-xs text-muted-foreground">
+                      {ADMIN_FUNNEL_STAGE_LABELS[stage]}
+                    </span>
+                    <span className="font-bold text-lg">
+                      {toPersianDigits(analytics.organic.funnelStages[stage])}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          </div>
         </div>
       )}
 
@@ -273,6 +361,8 @@ export function AdminPanel() {
           onSearchChange={setUserSearch}
           includeDeleted={includeDeleted}
           onIncludeDeletedChange={setIncludeDeleted}
+          audience={userAudience}
+          onAudienceChange={setUserAudience}
           onSearch={() => void loadUsers()}
           busy={busy}
           onSelectUser={(u) => {
@@ -290,6 +380,13 @@ export function AdminPanel() {
             runAction(async () => {
               const { setAdminUserRole } = await import("@/lib/admin-actions");
               const res = await setAdminUserRole(userId, role);
+              if (res.error) throw new Error(res.error);
+            })
+          }
+          onSetTestFlag={(userId, isTestUser) =>
+            runAction(async () => {
+              const { setAdminUserTestFlag } = await import("@/lib/admin-actions");
+              const res = await setAdminUserTestFlag(userId, isTestUser);
               if (res.error) throw new Error(res.error);
             })
           }
@@ -424,11 +521,14 @@ function UsersTab(props: {
   onSearchChange: (v: string) => void;
   includeDeleted: boolean;
   onIncludeDeletedChange: (v: boolean) => void;
+  audience: "all" | "organic" | "test";
+  onAudienceChange: (v: "all" | "organic" | "test") => void;
   onSearch: () => void;
   busy: boolean;
   onSelectUser: (u: AdminUserRow) => void;
   onSetPlan: (id: string, planId: string) => void;
   onSetRole: (id: string, role: "user" | "admin") => void;
+  onSetTestFlag: (id: string, isTestUser: boolean) => void;
   onSetCredits: (id: string, n: number) => void;
   onSoftDelete: (id: string) => void;
   onRestore: (id: string) => void;
@@ -438,6 +538,19 @@ function UsersTab(props: {
       <div className="p-4 border-b border-border flex flex-wrap gap-3 items-center justify-between">
         <h3 className="font-bold">لیست کاربران</h3>
         <div className="flex flex-wrap gap-2 items-center">
+          <select
+            className="input-premium text-xs py-1.5"
+            value={props.audience}
+            onChange={(e) => {
+              props.onAudienceChange(
+                e.target.value as "all" | "organic" | "test",
+              );
+            }}
+          >
+            <option value="all">همه</option>
+            <option value="organic">فقط ارگانیک</option>
+            <option value="test">فقط تست</option>
+          </select>
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
             <input
               type="checkbox"
@@ -461,7 +574,7 @@ function UsersTab(props: {
           </Button>
         </div>
       </div>
-      <ResponsiveTable minWidth={980}>
+      <ResponsiveTable minWidth={1040}>
         <table className="w-full text-right text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
@@ -469,6 +582,7 @@ function UsersTab(props: {
               <th className="p-3">مرحله فانل</th>
               <th className="p-3">آخرین فعالیت</th>
               <th className="p-3">نقش</th>
+              <th className="p-3">تست</th>
               <th className="p-3">طرح</th>
               <th className="p-3">اعتبار AI</th>
               <th className="p-3">پروژه</th>
@@ -490,6 +604,11 @@ function UsersTab(props: {
                       {u.email}
                     </div>
                   </button>
+                  {u.is_test_user && (
+                    <Badge variant="outline" className="mt-1">
+                      تست
+                    </Badge>
+                  )}
                   {u.deleted_at && (
                     <Badge variant="outline" className="mt-1 text-destructive">
                       حذف‌شده
@@ -518,6 +637,19 @@ function UsersTab(props: {
                     <option value="user">user</option>
                     <option value="admin">admin</option>
                   </select>
+                </td>
+                <td className="p-3">
+                  <label className="flex items-center gap-2 text-xs">
+                    <input
+                      type="checkbox"
+                      disabled={props.busy}
+                      checked={u.is_test_user}
+                      onChange={(e) =>
+                        props.onSetTestFlag(u.id, e.target.checked)
+                      }
+                    />
+                    تست
+                  </label>
                 </td>
                 <td className="p-3">
                   <select
@@ -589,7 +721,7 @@ function UsersTab(props: {
             ))}
             {props.users.length === 0 && (
               <tr>
-                <td colSpan={9} className="p-8 text-center text-muted-foreground">
+                <td colSpan={10} className="p-8 text-center text-muted-foreground">
                   کاربری یافت نشد
                 </td>
               </tr>
@@ -898,12 +1030,42 @@ function AnalyticsTab({ analytics }: { analytics: Analytics }) {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <StatCard title="کاربران" value={toPersianDigits(analytics.totalUsers)} icon={<Users className="text-blue-500" />} />
-        <StatCard title="درآمد" value={formatMoney(analytics.totalRevenue)} sub="تومان" icon={<DollarSign className="text-amber-500" />} />
-        <StatCard title="ثبت‌نام ۳۰ روز" value={toPersianDigits(analytics.signups30d)} icon={<Activity className="text-primary" />} />
+        <StatCard title="کاربران (همه)" value={toPersianDigits(analytics.totalUsers)} icon={<Users className="text-blue-500" />} />
+        <StatCard title="ارگانیک" value={toPersianDigits(analytics.organic.users)} icon={<Users className="text-blue-500" />} />
+        <StatCard title="درآمد ارگانیک" value={formatMoney(analytics.organic.totalRevenue)} sub="تومان" icon={<DollarSign className="text-amber-500" />} />
+        <StatCard title="ثبت‌نام ارگانیک ۳۰ روز" value={toPersianDigits(analytics.organic.signups30d)} icon={<Activity className="text-primary" />} />
+        <StatCard title="پرداخت ارگانیک" value={toPersianDigits(analytics.organic.activePaidSubs)} icon={<DollarSign className="text-green-500" />} />
+        <StatCard title="ثبت‌نام همه ۳۰ روز" value={toPersianDigits(analytics.signups30d)} icon={<Activity className="text-primary" />} />
       </div>
       <Card className="p-4">
-        <h3 className="font-bold mb-3">توزیع طرح‌های فعال</h3>
+        <h3 className="font-bold mb-3">فانل ارگانیک</h3>
+        <ul className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm mb-4">
+          {(
+            ["signed_up", "has_project", "activated", "paid"] as const
+          ).map((stage) => (
+            <li key={stage} className="flex justify-between border-b border-border/50 pb-2">
+              <span>{ADMIN_FUNNEL_STAGE_LABELS[stage]}</span>
+              <span className="font-bold">
+                {toPersianDigits(analytics.organic.funnelStages[stage])}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <h3 className="font-bold mb-3">توزیع طرح فعال (ارگانیک)</h3>
+        <ul className="space-y-2">
+          {analytics.organic.planBreakdown.map((p) => (
+            <li key={p.planId} className="flex justify-between text-sm">
+              <span>{planLabel(p.planId)}</span>
+              <span className="font-bold">{toPersianDigits(p.count)}</span>
+            </li>
+          ))}
+          {analytics.organic.planBreakdown.length === 0 && (
+            <li className="text-muted-foreground text-sm">داده‌ای نیست</li>
+          )}
+        </ul>
+      </Card>
+      <Card className="p-4">
+        <h3 className="font-bold mb-3">توزیع طرح‌های فعال (همه)</h3>
         <ul className="space-y-2">
           {analytics.planBreakdown.map((p) => (
             <li key={p.planId} className="flex justify-between text-sm">

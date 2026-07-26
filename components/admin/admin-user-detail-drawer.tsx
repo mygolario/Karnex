@@ -120,6 +120,9 @@ export function AdminUserDetailDrawer(props: {
                   {formatDate(detail.created_at)}
                 </InfoCell>
                 <InfoCell label="نقش">{detail.role || "user"}</InfoCell>
+                <InfoCell label="حساب تست">
+                  {detail.is_test_user ? "بله (از اسکوربورد ارگانیک حذف می‌شود)" : "خیر — ارگانیک"}
+                </InfoCell>
                 <InfoCell label="اعتبار AI">
                   {toPersianDigits(detail.credits.aiTokens)}
                 </InfoCell>

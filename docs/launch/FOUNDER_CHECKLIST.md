@@ -28,9 +28,15 @@
 ## بعد از لانچ (هفته اول)
 
 - [x] PostHog EU وصل شد — داشبورد: [Week 1 Launch Funnel](https://eu.posthog.com/project/107791/dashboard/847356) (`NEXT_PUBLIC_POSTHOG_KEY` روی Vercel Production/Preview)
-- [ ] همهٔ لینک‌های سوشال را با UTM بگذار (قالب‌ها در همان playbook)
+- [ ] ادمین → همهٔ حساب‌های تست را تیک **تست** بزن؛ فقط اسکوربورد **ارگانیک** را گزارش کن
+- [ ] PostHog → Filter out internal/test: `is_internal = true`
+- [ ] همهٔ لینک‌های سوشال را با UTM بگذار ([GROWTH_CHANNEL.md](./GROWTH_CHANNEL.md) + playbook)
+- [ ] ۴ کاربر ارگانیک را با [USER_INTERVIEW_SCRIPT.md](./USER_INTERVIEW_SCRIPT.md) مصاحبه کن
+- [ ] اگر runway &lt; ۸ هفته: [SOFT_RAISE_PLAYBOOK.md](./SOFT_RAISE_PLAYBOOK.md)
+- [ ] قبل از استخدام: [TEAM_GATE.md](./TEAM_GATE.md)
 - [ ] هر روز فیدبک داخل‌اپ + `support@karnex.ir` را بخوان
-- [ ] نگاه به هزینه OpenRouter در برابر درآمد
+- [ ] نگاه به هزینه OpenRouter در برابر درآمد **ارگانیک**
 - [ ] رفع ۵ باگ پرتکرار — ویژگی جدید نساز
 - [ ] جایگزینی نظرات ساختگی با نظرات واقعی بتا
 - [ ] یک‌بار در هفته فانل PostHog را مرور کن (signup → project → activation → paid)
+- [ ] راهنماهای SEO را در GSC چک کن: `/guides/*`

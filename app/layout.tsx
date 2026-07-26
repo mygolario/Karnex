@@ -15,15 +15,18 @@ import { MobileProvider } from '@/contexts/mobile-context';
 
 export const metadata: Metadata = {
   title: {
-    default: 'کارنکس | دستیار هوشمند کارآفرینی',
+    default: 'کارنکس | هم‌بنیان‌گذار هوشمند استارتاپ',
     template: '%s | کارنکس',
   },
   description: 'هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی — بوم کسب‌وکار، نقشه راه، پیچ‌دک و دستیار AI.',
   keywords: [
     'کارآفرینی',
     'استارتاپ',
+    'هم‌بنیان‌گذار هوشمند',
     'دستیار کارنکس',
     'بوم کسب‌وکار',
+    'بیزینس پلن استارتاپ',
+    'پیچ دک',
     'بیزینس مدل',
     'ایده پردازی',
     'راه اندازی کسب و کار',
@@ -49,18 +52,18 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: 'کارنکس | دستیار هوشمند کارآفرینی',
-    description: 'با دستیار کارنکس، ایده خود را به یک بیزینس تبدیل کنید. بوم کسب‌وکار، نقشه راه و استراتژی بازاریابی رایگان.',
+    title: 'کارنکس | هم‌بنیان‌گذار هوشمند استارتاپ',
+    description: 'هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی — از ایده تا بوم، نقشه راه و پیچ‌دک.',
     url: 'https://www.karnex.ir',
     siteName: 'Karnex',
     locale: 'fa_IR',
     type: 'website',
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'کارنکس - دستیار هوشمند کارآفرینی' }],
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'کارنکس - هم‌بنیان‌گذار هوشمند استارتاپ' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'کارنکس | دستیار هوشمند کارآفرینی',
-    description: 'با دستیار کارنکس، ایده خود را به یک بیزینس تبدیل کنید.',
+    title: 'کارنکس | هم‌بنیان‌گذار هوشمند استارتاپ',
+    description: 'هم‌بنیان‌گذار هوشمند برای استارتاپ‌های ایرانی — از ایده تا بوم، نقشه راه و پیچ‌دک.',
     creator: '@karnex_ir',
     images: ['/opengraph-image.png'],
   },
