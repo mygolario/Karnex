@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { syncSupabaseUser } from "@/lib/auth/sync-user";
 import { attachNewSignupCookie } from "@/lib/analytics/signup-cookie";
+import { recordAuthLoginEvent } from "@/lib/auth/record-login";
 import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
@@ -20,6 +21,9 @@ export async function GET(request: Request) {
       if (user) {
         const result = await syncSupabaseUser(user);
         isNew = result.isNew;
+        const provider =
+          (user.app_metadata?.provider as string | undefined) || "oauth";
+        await recordAuthLoginEvent(result.user.id, provider);
       }
       const response = NextResponse.redirect(`${origin}${next}`);
       if (isNew) attachNewSignupCookie(response);

@@ -11,6 +11,9 @@ import {
 } from "@/lib/analytics/product";
 import { captureUtmFromUrl, getStoredUtm } from "@/lib/analytics/utm";
 
+const HEARTBEAT_KEY = "karnex_last_seen_heartbeat";
+const HEARTBEAT_INTERVAL_MS = 5 * 60 * 1000;
+
 function getInitialConsent(): boolean | null {
   if (typeof window === "undefined") return null;
   const value = localStorage.getItem("cookieConsent");
@@ -19,14 +22,27 @@ function getInitialConsent(): boolean | null {
   return null;
 }
 
+function maybeSendHeartbeat() {
+  if (typeof window === "undefined") return;
+  try {
+    const last = Number(sessionStorage.getItem(HEARTBEAT_KEY) || "0");
+    if (Date.now() - last < HEARTBEAT_INTERVAL_MS) return;
+    sessionStorage.setItem(HEARTBEAT_KEY, String(Date.now()));
+  } catch {
+    // still attempt once
+  }
+  void fetch("/api/analytics/heartbeat", { method: "POST" }).catch(() => {});
+}
+
 /**
  * Loads PostHog when key is set and cookie consent is accepted.
  * Captures first-touch UTMs, identifies logged-in users, consumes signup cookie.
  */
 export function PostHogProvider() {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const initialized = useRef(false);
   const identifiedId = useRef<string | null>(null);
+  const lastTraitsKey = useRef<string | null>(null);
 
   useEffect(() => {
     const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
@@ -57,6 +73,11 @@ export function PostHogProvider() {
           capture_pageview: true,
           capture_pageleave: true,
           persistence: "localStorage+cookie",
+          session_recording: {
+            maskAllInputs: true,
+            maskTextSelector: "[data-ph-mask], .ph-mask, input[type='password']",
+            blockSelector: "[data-ph-no-capture], .ph-no-capture",
+          },
         });
         // Expose for tour queue + product analytics
         window.posthog = posthog;
@@ -97,19 +118,44 @@ export function PostHogProvider() {
     if (!window.posthog) return;
 
     if (user?.id) {
-      if (identifiedId.current === user.id) return;
-      identifyProductUser(user.id, {
-        email: user.email ?? undefined,
-        name: user.name ?? undefined,
-        role: user.role ?? undefined,
-      });
-      identifiedId.current = user.id;
-      consumeSignupCookieAndTrack();
+      const plan = userProfile?.subscription?.planId ?? undefined;
+      const projectCount =
+        typeof userProfile?.credits?.projectsUsed === "number"
+          ? userProfile.credits.projectsUsed
+          : undefined;
+      const traitsKey = `${user.id}|${user.email ?? ""}|${user.role ?? ""}|${plan ?? ""}|${projectCount ?? ""}`;
+
+      if (
+        identifiedId.current !== user.id ||
+        lastTraitsKey.current !== traitsKey
+      ) {
+        identifyProductUser(user.id, {
+          email: user.email ?? undefined,
+          name: user.name ?? undefined,
+          role: user.role ?? undefined,
+          plan,
+          project_count: projectCount,
+          // Founder filter in PostHog: role = admin OR email in internal list
+          is_internal: user.role === "admin",
+        });
+        identifiedId.current = user.id;
+        lastTraitsKey.current = traitsKey;
+        consumeSignupCookieAndTrack();
+      }
+      maybeSendHeartbeat();
     } else if (identifiedId.current) {
       resetProductUser();
       identifiedId.current = null;
+      lastTraitsKey.current = null;
     }
-  }, [user?.id, user?.email, user?.name, user?.role]);
+  }, [
+    user?.id,
+    user?.email,
+    user?.name,
+    user?.role,
+    userProfile?.subscription?.planId,
+    userProfile?.credits?.projectsUsed,
+  ]);
 
   return null;
 }

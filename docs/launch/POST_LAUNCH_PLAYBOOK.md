@@ -26,8 +26,24 @@
    3. `activation_completed` (اتمام تور داشبورد)
    4. `checkout_started`
    5. `payment_completed`
+5. Insights روی همان داشبورد: [Daily signups](https://eu.posthog.com/project/107791/insights/p42xKJ3U) · [Weekly retention after signup](https://eu.posthog.com/project/107791/insights/X24mBAL9) · [Pageview paths](https://eu.posthog.com/project/107791/insights/qRlvomXt) · [Daily rageclicks](https://eu.posthog.com/project/107791/insights/RbM3WlKn). Alert ایمیل روی signup (≥۱ در روز) و spike rageclick تنظیم شده.
 
 ---
+
+## چک ۵ دقیقه‌ای هر کاربر جدید (تأییدشده)
+
+**وضعیت فعلی:** PostHog در حال دریافت `$pageview`، تور، `signup_completed`، `project_created` و **Session Replay** است. نیازی نیست فقط برای «تست لوله» فانل را دستی راه بروی — کاربران واقعی در حال جریان‌اند.
+
+1. ادمین کارنکس → **کاربران** → روی نام کاربر کلیک کن (کشوی جزئیات: مرحله فانل، آخرین فعالیت، پروژه‌ها، تیکت، پرداخت، لاگ).
+2. از همان کشو → **PostHog شخص** را باز کن، یا مستقیم [Persons](https://eu.posthog.com/project/107791/persons) را با ایمیل جستجو کن.
+3. در صفحهٔ شخص: تب **Activity** (رویدادها) + تب **Recordings**.
+4. جمع فانل: [Week 1 Launch Funnel](https://eu.posthog.com/project/107791/dashboard/847356).
+5. زنده: [Live / Explore](https://eu.posthog.com/project/107791/activity/explore) در حالی که کاربر (با Accept کوکی) در سایت است.
+6. Replay همه: [Replay](https://eu.posthog.com/project/107791/replay).
+
+**نکته consent:** بدون Accept کوکی، PostHog لود نمی‌شود (مثل GA). ادمین Prisma همچنان کاربر را نشان می‌دهد.
+
+**فیلتر داخلی:** در PostHog → Project settings → Filter out internal and test users — ایمیل‌های خودت / `is_internal = true` (روی identify ادمین‌ها ست می‌شود) را اضافه کن تا فانل آلوده نشود.
 
 ## لینک‌های UTM (کپی–پیست)
 
@@ -69,7 +85,8 @@ https://www.karnex.ir/?utm_source=google&utm_medium=organic&utm_campaign=brand&u
 - [ ] ایمیل `support@karnex.ir` + تیکت‌های ادمین
 - [ ] Sentry / Vercel Logs — فقط ۵ خطای پرتکرار را یادداشت کن
 - [ ] ادمین → فیدبک‌های جدید را بخوان؛ به ۲–۳ نفر اول شخصاً پیام بده
-- [ ] ثبت‌نام‌های جدید را در ادمین چک کن
+- [ ] ثبت‌نام‌های جدید را در ادمین چک کن (کشوی کاربر + PostHog Person / Replay)
+- [ ] [Persons](https://eu.posthog.com/project/107791/persons) — آخرین فعالیت کاربران جدید
 
 ## هفتگی (۶۰ دقیقه)
 

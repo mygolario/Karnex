@@ -178,15 +178,16 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
       // Activate immediately from the plan we just persisted — don't block
       // onboarding on a follow-up GET that can stall on large JSON payloads.
+      const plan = planData as unknown as BusinessPlan;
       const optimistic = {
-        ...(planData as BusinessPlan),
+        ...plan,
         id: newId,
         projectName:
           (typeof planData?.projectName === "string" && planData.projectName) ||
           "New Project",
         createdAt:
-          typeof (planData as BusinessPlan)?.createdAt === "string"
-            ? (planData as BusinessPlan).createdAt!
+          typeof plan?.createdAt === "string"
+            ? plan.createdAt
             : new Date().toISOString(),
       } as BusinessPlan;
       set((state) => ({

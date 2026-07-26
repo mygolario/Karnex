@@ -13,6 +13,10 @@ import {
 import type { LaunchOverrides } from "@/lib/launch/config";
 import type { ProjectType } from "@/app/new-project/genesis-constants";
 import type { Prisma } from "../prisma/client";
+import {
+  posthogPersonSearchUrl,
+  posthogReplayHomeUrl,
+} from "@/lib/analytics/posthog-links";
 
 function parseCredits(credits: unknown): { aiTokens: number; projectsUsed: number } {
   if (credits && typeof credits === "object" && !Array.isArray(credits)) {
@@ -25,6 +29,19 @@ function parseCredits(credits: unknown): { aiTokens: number; projectsUsed: numbe
   return { aiTokens: 0, projectsUsed: 0 };
 }
 
+export type AdminFunnelStage =
+  | "signed_up"
+  | "has_project"
+  | "activated"
+  | "paid";
+
+export const ADMIN_FUNNEL_STAGE_LABELS: Record<AdminFunnelStage, string> = {
+  signed_up: "ثبت‌نام",
+  has_project: "پروژه",
+  activated: "فعال",
+  paid: "پرداخت",
+};
+
 export type AdminUserRow = {
   id: string;
   email: string | null;
@@ -36,8 +53,31 @@ export type AdminUserRow = {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  last_seen_at: string | null;
   projectCount: number;
+  funnel_stage: AdminFunnelStage;
 };
+
+function asStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((v): v is string => typeof v === "string");
+}
+
+function deriveFunnelStage(input: {
+  projectCount: number;
+  planId: string;
+  planStatus: string;
+  completedTours: unknown;
+}): AdminFunnelStage {
+  const paid =
+    input.planId !== "free" &&
+    (input.planStatus === "active" || input.planStatus === "trialing");
+  if (paid) return "paid";
+  const tours = asStringArray(input.completedTours);
+  if (tours.includes("dashboard")) return "activated";
+  if (input.projectCount > 0) return "has_project";
+  return "signed_up";
+}
 
 export async function getAdminUsers(params?: {
   search?: string;
@@ -82,8 +122,12 @@ export async function getAdminUsers(params?: {
           createdAt: true,
           updatedAt: true,
           deletedAt: true,
+          lastSeenAt: true,
           subscriptions: {
             select: { planId: true, status: true },
+          },
+          tourProgress: {
+            select: { completedTours: true },
           },
           _count: { select: { projects: true } },
         },
@@ -95,20 +139,27 @@ export async function getAdminUsers(params?: {
         u.subscriptions.find((s) => s.status === "active") ??
         u.subscriptions[0] ??
         null;
+      const planId = activeSub?.planId ?? "free";
+      const planStatus = activeSub?.status ?? "active";
       return {
         id: u.id,
         email: u.email,
         full_name: u.name,
         avatar_url: u.image,
         role: u.role,
-        subscription: activeSub
-          ? { planId: activeSub.planId, status: activeSub.status }
-          : { planId: "free", status: "active" },
+        subscription: { planId, status: planStatus },
         credits: parseCredits(u.credits),
         created_at: u.createdAt.toISOString(),
         updated_at: u.updatedAt.toISOString(),
         deleted_at: u.deletedAt?.toISOString() ?? null,
+        last_seen_at: u.lastSeenAt?.toISOString() ?? null,
         projectCount: u._count.projects,
+        funnel_stage: deriveFunnelStage({
+          projectCount: u._count.projects,
+          planId,
+          planStatus,
+          completedTours: u.tourProgress?.completedTours,
+        }),
       };
     });
 
@@ -650,3 +701,193 @@ export async function getAdminAnalytics() {
 export async function getAdminUsersLegacy() {
   return getAdminUsers();
 }
+
+export type AdminUserDetail = AdminUserRow & {
+  projects: { id: string; projectName: string; updatedAt: string }[];
+  transactions: {
+    id: string;
+    planId: string | null;
+    amount: number;
+    status: string;
+    createdAt: string;
+  }[];
+  tickets: {
+    id: string;
+    subject: string;
+    status: string;
+    priority: string;
+    createdAt: string;
+  }[];
+  feedback: { id: string; message: string; createdAt: string }[];
+  auditLogs: {
+    id: string;
+    action: string;
+    actorEmail: string | null;
+    createdAt: string;
+    meta: unknown;
+  }[];
+  loginEvents: {
+    id: string;
+    status: string;
+    method: string | null;
+    ip: string | null;
+    createdAt: string;
+  }[];
+  posthogPersonUrl: string | null;
+  posthogReplayUrl: string;
+};
+
+export async function getAdminUserDetail(userId: string) {
+  const gate = await requireAdminResult();
+  if (!gate.ok) return { error: gate.error };
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        image: true,
+        role: true,
+        credits: true,
+        createdAt: true,
+        updatedAt: true,
+        deletedAt: true,
+        lastSeenAt: true,
+        subscriptions: { select: { planId: true, status: true } },
+        tourProgress: { select: { completedTours: true } },
+        projects: {
+          where: { deletedAt: null },
+          orderBy: { updatedAt: "desc" },
+          take: 20,
+          select: { id: true, projectName: true, updatedAt: true },
+        },
+        transactions: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          select: {
+            id: true,
+            planId: true,
+            amount: true,
+            status: true,
+            createdAt: true,
+          },
+        },
+        supportTickets: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          select: {
+            id: true,
+            subject: true,
+            status: true,
+            priority: true,
+            createdAt: true,
+          },
+        },
+        feedbacks: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          select: { id: true, message: true, createdAt: true },
+        },
+        loginEvents: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+          select: {
+            id: true,
+            status: true,
+            method: true,
+            ip: true,
+            createdAt: true,
+          },
+        },
+        _count: { select: { projects: true } },
+      },
+    });
+
+    if (!user) return { error: "User not found" };
+
+    const auditLogs = await prisma.adminAuditLog.findMany({
+      where: { targetType: "User", targetId: userId },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      include: { actor: { select: { email: true } } },
+    });
+
+    const activeSub =
+      user.subscriptions.find((s) => s.status === "active") ??
+      user.subscriptions[0] ??
+      null;
+    const planId = activeSub?.planId ?? "free";
+    const planStatus = activeSub?.status ?? "active";
+
+    const detail: AdminUserDetail = {
+      id: user.id,
+      email: user.email,
+      full_name: user.name,
+      avatar_url: user.image,
+      role: user.role,
+      subscription: { planId, status: planStatus },
+      credits: parseCredits(user.credits),
+      created_at: user.createdAt.toISOString(),
+      updated_at: user.updatedAt.toISOString(),
+      deleted_at: user.deletedAt?.toISOString() ?? null,
+      last_seen_at: user.lastSeenAt?.toISOString() ?? null,
+      projectCount: user._count.projects,
+      funnel_stage: deriveFunnelStage({
+        projectCount: user._count.projects,
+        planId,
+        planStatus,
+        completedTours: user.tourProgress?.completedTours,
+      }),
+      projects: user.projects.map((p) => ({
+        id: p.id,
+        projectName: p.projectName,
+        updatedAt: p.updatedAt.toISOString(),
+      })),
+      transactions: user.transactions.map((t) => ({
+        id: t.id,
+        planId: t.planId,
+        amount: t.amount,
+        status: t.status,
+        createdAt: t.createdAt.toISOString(),
+      })),
+      tickets: user.supportTickets.map((t) => ({
+        id: t.id,
+        subject: t.subject,
+        status: t.status,
+        priority: t.priority,
+        createdAt: t.createdAt.toISOString(),
+      })),
+      feedback: user.feedbacks.map((f) => ({
+        id: f.id,
+        message: f.message,
+        createdAt: f.createdAt.toISOString(),
+      })),
+      auditLogs: auditLogs.map((a) => ({
+        id: a.id,
+        action: a.action,
+        actorEmail: a.actor?.email ?? null,
+        createdAt: a.createdAt.toISOString(),
+        meta: a.meta,
+      })),
+      loginEvents: user.loginEvents.map((e) => ({
+        id: e.id,
+        status: e.status,
+        method: e.method,
+        ip: e.ip,
+        createdAt: e.createdAt.toISOString(),
+      })),
+      posthogPersonUrl: user.email
+        ? posthogPersonSearchUrl(user.email)
+        : null,
+      posthogReplayUrl: posthogReplayHomeUrl(),
+    };
+
+    return { success: true, user: detail };
+  } catch (error) {
+    console.error("Error fetching admin user detail:", error);
+    return { error: "Failed to fetch user detail" };
+  }
+}
+

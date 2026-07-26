@@ -17,6 +17,8 @@ declare global {
         distinctId: string,
         properties?: Record<string, string | number | boolean | null | undefined>
       ) => void;
+      alias?: (distinctId: string, alias?: string) => void;
+      get_distinct_id?: () => string;
       register?: (properties: Record<string, string | number | boolean | undefined>) => void;
       reset?: () => void;
     };
@@ -139,7 +141,10 @@ export function trackProductEvent(
   trackVercel(event, enriched);
 }
 
-/** Identify the logged-in user in PostHog (no-op if SDK not loaded). */
+/**
+ * Identify the logged-in user in PostHog and alias the prior anonymous id
+ * so we get one person profile per app user (no email duplicates).
+ */
 export function identifyProductUser(
   distinctId: string,
   traits?: Record<string, string | number | boolean | null | undefined>
@@ -147,6 +152,24 @@ export function identifyProductUser(
   if (typeof window === "undefined" || !window.posthog?.identify) return;
   try {
     const utm = getStoredUtm();
+    const previousId =
+      typeof window.posthog.get_distinct_id === "function"
+        ? window.posthog.get_distinct_id()
+        : undefined;
+
+    // Alias anonymous → authenticated before identify when ids differ.
+    if (
+      previousId &&
+      previousId !== distinctId &&
+      typeof window.posthog.alias === "function"
+    ) {
+      try {
+        window.posthog.alias(distinctId, previousId);
+      } catch {
+        // alias is best-effort; identify still proceeds
+      }
+    }
+
     window.posthog.identify(distinctId, {
       ...utm,
       ...traits,

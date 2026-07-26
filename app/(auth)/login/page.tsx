@@ -89,7 +89,11 @@ function LoginContent() {
       if (signInError) throw signInError;
 
       try {
-        await fetch("/api/auth/sync", { method: "POST" });
+        await fetch("/api/auth/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ recordLogin: true, method: "password" }),
+        });
       } catch (syncErr) {
         console.warn("Auth sync non-blocking warning:", syncErr);
       }

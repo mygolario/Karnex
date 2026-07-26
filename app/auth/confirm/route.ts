@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { syncSupabaseUser } from "@/lib/auth/sync-user";
 import { attachNewSignupCookie } from "@/lib/analytics/signup-cookie";
+import { recordAuthLoginEvent } from "@/lib/auth/record-login";
 import { NextResponse } from "next/server";
 
 /** Handles email confirmation and password recovery links from Supabase */
@@ -31,6 +32,12 @@ export async function GET(request: Request) {
       if (user) {
         const result = await syncSupabaseUser(user);
         isNew = result.isNew;
+        if (type !== "recovery") {
+          await recordAuthLoginEvent(
+            result.user.id,
+            type === "signup" ? "email_confirm" : type || "otp"
+          );
+        }
       }
 
       if (type === "recovery") {

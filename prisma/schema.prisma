@@ -24,6 +24,7 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   deletedAt     DateTime? // For soft deletes
+  lastSeenAt    DateTime? // Product activity heartbeat (admin intelligence)
 
   // Profile fields (mapped from existing UserProfile)
   firstName   String?
@@ -75,6 +76,8 @@ model User {
   // Product Tour Relations
   tourProgress TourProgress?
   notifications      Notification[]
+
+  @@index([lastSeenAt])
 }
 
 model Account {

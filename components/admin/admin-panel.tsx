@@ -24,8 +24,10 @@ import { useToast } from "@/components/ui/toast";
 import { getPlanById } from "@/lib/payment/pricing";
 import { toPersianDigits } from "@/lib/utils";
 import type { AdminUserRow } from "@/lib/admin-actions";
+import { ADMIN_FUNNEL_STAGE_LABELS } from "@/lib/admin-actions";
 import type { EffectiveLaunchConfig, LaunchOverrides } from "@/lib/launch/config";
 import type { ProjectType } from "@/app/new-project/genesis-constants";
+import { AdminUserDetailDrawer } from "@/components/admin/admin-user-detail-drawer";
 
 type TabId =
   | "overview"
@@ -115,6 +117,8 @@ export function AdminPanel() {
   const [launchConfig, setLaunchConfig] = useState<EffectiveLaunchConfig | null>(null);
   const [launchOverrides, setLaunchOverridesState] = useState<LaunchOverrides>({});
   const [busy, setBusy] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<AdminUserRow | null>(null);
+  const [userDrawerOpen, setUserDrawerOpen] = useState(false);
 
   const loadOverview = useCallback(async () => {
     const { getAdminAnalytics } = await import("@/lib/admin-actions");
@@ -271,6 +275,10 @@ export function AdminPanel() {
           onIncludeDeletedChange={setIncludeDeleted}
           onSearch={() => void loadUsers()}
           busy={busy}
+          onSelectUser={(u) => {
+            setSelectedUser(u);
+            setUserDrawerOpen(true);
+          }}
           onSetPlan={(userId, planId) =>
             runAction(async () => {
               const { setAdminUserPlan } = await import("@/lib/admin-actions");
@@ -372,6 +380,15 @@ export function AdminPanel() {
       )}
 
       {tab === "analytics" && analytics && <AnalyticsTab analytics={analytics} />}
+
+      <AdminUserDetailDrawer
+        user={selectedUser}
+        open={userDrawerOpen}
+        onOpenChange={(open) => {
+          setUserDrawerOpen(open);
+          if (!open) setSelectedUser(null);
+        }}
+      />
     </div>
   );
 }
@@ -409,6 +426,7 @@ function UsersTab(props: {
   onIncludeDeletedChange: (v: boolean) => void;
   onSearch: () => void;
   busy: boolean;
+  onSelectUser: (u: AdminUserRow) => void;
   onSetPlan: (id: string, planId: string) => void;
   onSetRole: (id: string, role: "user" | "admin") => void;
   onSetCredits: (id: string, n: number) => void;
@@ -443,11 +461,13 @@ function UsersTab(props: {
           </Button>
         </div>
       </div>
-      <ResponsiveTable minWidth={860}>
+      <ResponsiveTable minWidth={980}>
         <table className="w-full text-right text-sm">
           <thead className="bg-muted/50 text-muted-foreground">
             <tr>
               <th className="p-3">کاربر</th>
+              <th className="p-3">مرحله فانل</th>
+              <th className="p-3">آخرین فعالیت</th>
               <th className="p-3">نقش</th>
               <th className="p-3">طرح</th>
               <th className="p-3">اعتبار AI</th>
@@ -460,15 +480,31 @@ function UsersTab(props: {
             {props.users.map((u) => (
               <tr key={u.id} className="hover:bg-muted/20">
                 <td className="p-3">
-                  <div className="font-bold">{u.full_name || "بدون نام"}</div>
-                  <div className="text-xs text-muted-foreground" dir="ltr">
-                    {u.email}
-                  </div>
+                  <button
+                    type="button"
+                    className="text-start hover:underline"
+                    onClick={() => props.onSelectUser(u)}
+                  >
+                    <div className="font-bold">{u.full_name || "بدون نام"}</div>
+                    <div className="text-xs text-muted-foreground" dir="ltr">
+                      {u.email}
+                    </div>
+                  </button>
                   {u.deleted_at && (
                     <Badge variant="outline" className="mt-1 text-destructive">
                       حذف‌شده
                     </Badge>
                   )}
+                </td>
+                <td className="p-3">
+                  <Badge variant="secondary">
+                    {ADMIN_FUNNEL_STAGE_LABELS[u.funnel_stage]}
+                  </Badge>
+                </td>
+                <td className="p-3 text-muted-foreground text-xs" dir="ltr">
+                  {u.last_seen_at
+                    ? new Date(u.last_seen_at).toLocaleString("fa-IR")
+                    : "—"}
                 </td>
                 <td className="p-3">
                   <select
@@ -516,34 +552,44 @@ function UsersTab(props: {
                   {new Date(u.created_at).toLocaleDateString("fa-IR")}
                 </td>
                 <td className="p-3">
-                  {u.deleted_at ? (
+                  <div className="flex flex-wrap gap-1">
                     <Button
                       size="sm"
                       variant="outline"
-                      disabled={props.busy}
-                      onClick={() => props.onRestore(u.id)}
+                      onClick={() => props.onSelectUser(u)}
                     >
-                      بازگردانی
+                      جزئیات
                     </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={props.busy}
-                      className="text-destructive"
-                      onClick={() => {
-                        if (confirm("حذف نرم این کاربر؟")) props.onSoftDelete(u.id);
-                      }}
-                    >
-                      حذف
-                    </Button>
-                  )}
+                    {u.deleted_at ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={props.busy}
+                        onClick={() => props.onRestore(u.id)}
+                      >
+                        بازگردانی
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={props.busy}
+                        className="text-destructive"
+                        onClick={() => {
+                          if (confirm("حذف نرم این کاربر؟"))
+                            props.onSoftDelete(u.id);
+                        }}
+                      >
+                        حذف
+                      </Button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
             {props.users.length === 0 && (
               <tr>
-                <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                <td colSpan={9} className="p-8 text-center text-muted-foreground">
                   کاربری یافت نشد
                 </td>
               </tr>
