@@ -14,10 +14,10 @@ import { Button } from "@/components/ui/button";
 import { toPersianDigits } from "@/lib/utils";
 import {
   ADMIN_FUNNEL_STAGE_LABELS,
-  getAdminUserDetail,
   type AdminUserDetail,
   type AdminUserRow,
-} from "@/lib/admin-actions";
+} from "@/lib/admin/user-intelligence";
+import { getAdminUserDetail } from "@/lib/admin-actions";
 import { getPlanById } from "@/lib/payment/pricing";
 
 function formatDate(iso: string | null | undefined) {
