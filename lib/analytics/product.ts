@@ -1,13 +1,10 @@
-import { track as vercelTrack } from "@vercel/analytics";
-import { SIGNUP_COOKIE } from "@/lib/analytics/constants";
-import { getStoredUtm, withUtmProps } from "@/lib/analytics/utm";
+import { track as vercelTrack } from '@vercel/analytics';
+import { SIGNUP_COOKIE } from '@/lib/analytics/constants';
+import { getStoredUtm, withUtmProps } from '@/lib/analytics/utm';
 
 export { SIGNUP_COOKIE };
 
-export type ProductAnalyticsPayload = Record<
-  string,
-  string | number | boolean | undefined
->;
+export type ProductAnalyticsPayload = Record<string, string | number | boolean | undefined>;
 
 declare global {
   interface Window {
@@ -32,12 +29,12 @@ interface QueuedEvent {
 
 /** Conversion events also mirrored to Vercel Analytics custom Events panel. */
 const VERCEL_EVENT_ALLOWLIST = new Set([
-  "signup_completed",
-  "project_created",
-  "activation_completed",
-  "checkout_started",
-  "payment_completed",
-  "feedback_submitted",
+  'signup_completed',
+  'project_created',
+  'activation_completed',
+  'checkout_started',
+  'payment_completed',
+  'feedback_submitted',
 ]);
 
 const MAX_QUEUE = 50;
@@ -49,7 +46,7 @@ let flushing = false;
 let startedWaitingAt: number | null = null;
 
 function flushQueue() {
-  if (typeof window === "undefined" || !window.posthog) return;
+  if (typeof window === 'undefined' || !window.posthog) return;
   const pending = queue;
   queue = [];
   for (const item of pending) {
@@ -62,7 +59,7 @@ function flushQueue() {
 }
 
 function scheduleFlush() {
-  if (flushing || typeof window === "undefined") return;
+  if (flushing || typeof window === 'undefined') return;
   flushing = true;
   startedWaitingAt = startedWaitingAt ?? Date.now();
 
@@ -89,7 +86,7 @@ function scheduleFlush() {
  * Guaranteed-delivery PostHog capture: queues until the SDK is ready.
  */
 function capturePostHog(event: string, properties?: ProductAnalyticsPayload) {
-  if (typeof window === "undefined") return;
+  if (typeof window === 'undefined') return;
 
   if (window.posthog) {
     try {
@@ -125,15 +122,11 @@ function trackVercel(event: string, properties?: ProductAnalyticsPayload) {
  * Product analytics: PostHog (+ queue) and Vercel track for conversion allowlist.
  * Always attaches first-touch UTM props when available.
  */
-export function trackProductEvent(
-  event: string,
-  properties?: ProductAnalyticsPayload
-) {
-  if (typeof window === "undefined") return;
+export function trackProductEvent(event: string, properties?: ProductAnalyticsPayload) {
+  if (typeof window === 'undefined') return;
 
   const enriched = withUtmProps({
-    path:
-      typeof window !== "undefined" ? window.location.pathname : undefined,
+    path: typeof window !== 'undefined' ? window.location.pathname : undefined,
     ...properties,
   });
 
@@ -149,20 +142,16 @@ export function identifyProductUser(
   distinctId: string,
   traits?: Record<string, string | number | boolean | null | undefined>
 ) {
-  if (typeof window === "undefined" || !window.posthog?.identify) return;
+  if (typeof window === 'undefined' || !window.posthog?.identify) return;
   try {
     const utm = getStoredUtm();
     const previousId =
-      typeof window.posthog.get_distinct_id === "function"
+      typeof window.posthog.get_distinct_id === 'function'
         ? window.posthog.get_distinct_id()
         : undefined;
 
     // Alias anonymous → authenticated before identify when ids differ.
-    if (
-      previousId &&
-      previousId !== distinctId &&
-      typeof window.posthog.alias === "function"
-    ) {
+    if (previousId && previousId !== distinctId && typeof window.posthog.alias === 'function') {
       try {
         window.posthog.alias(distinctId, previousId);
       } catch {
@@ -181,7 +170,7 @@ export function identifyProductUser(
 
 /** Clear PostHog identity on sign-out. */
 export function resetProductUser() {
-  if (typeof window === "undefined" || !window.posthog?.reset) return;
+  if (typeof window === 'undefined' || !window.posthog?.reset) return;
   try {
     window.posthog.reset();
   } catch {
@@ -193,7 +182,7 @@ export function resetProductUser() {
 export function registerProductSuperProperties(
   properties: Record<string, string | number | boolean | undefined>
 ) {
-  if (typeof window === "undefined" || !window.posthog?.register) return;
+  if (typeof window === 'undefined' || !window.posthog?.register) return;
   try {
     const clean: Record<string, string | number | boolean> = {};
     for (const [key, value] of Object.entries(properties)) {
@@ -208,29 +197,25 @@ export function registerProductSuperProperties(
 }
 
 /** Session flag so signup_completed fires once per browser signup. */
-const SIGNUP_FLAG = "karnex_signup_tracked";
+const SIGNUP_FLAG = 'karnex_signup_tracked';
 
-export function markSignupCompletedOnce(
-  properties?: ProductAnalyticsPayload
-): boolean {
-  if (typeof window === "undefined") return false;
+export function markSignupCompletedOnce(properties?: ProductAnalyticsPayload): boolean {
+  if (typeof window === 'undefined') return false;
   try {
-    if (sessionStorage.getItem(SIGNUP_FLAG) === "1") return false;
-    sessionStorage.setItem(SIGNUP_FLAG, "1");
+    if (sessionStorage.getItem(SIGNUP_FLAG) === '1') return false;
+    sessionStorage.setItem(SIGNUP_FLAG, '1');
   } catch {
     // still fire once this call
   }
-  trackProductEvent("signup_completed", properties);
+  trackProductEvent('signup_completed', properties);
   return true;
 }
 
 export function consumeSignupCookieAndTrack(): boolean {
-  if (typeof document === "undefined") return false;
-  const match = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(`${SIGNUP_COOKIE}=`));
+  if (typeof document === 'undefined') return false;
+  const match = document.cookie.split('; ').find((row) => row.startsWith(`${SIGNUP_COOKIE}=`));
   if (!match) return false;
   // Clear cookie
   document.cookie = `${SIGNUP_COOKIE}=; path=/; max-age=0; SameSite=Lax`;
-  return markSignupCompletedOnce({ method: "oauth_or_confirm" });
+  return markSignupCompletedOnce({ method: 'oauth_or_confirm' });
 }

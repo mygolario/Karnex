@@ -1,12 +1,46 @@
-import { FlatCompat } from "@eslint/eslintrc";
-
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-});
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import nextPlugin from "@next/eslint-plugin-next";
+import prettierPlugin from "eslint-plugin-prettier";
 
 const eslintConfig = [
-  ...compat.extends("next/core-web-vitals"),
-  ...compat.extends("next/typescript"),
+  // Base recommended configs
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  
+  // Next.js flat config (recommended for Next 15+ with ESLint 9)
+  {
+    plugins: {
+      "@next/next": nextPlugin,
+      prettier: prettierPlugin,
+    },
+    rules: {
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs["core-web-vitals"].rules,
+      "prettier/prettier": "error",
+    },
+  },
+  
+  // TypeScript specific rules
+  {
+    files: ["**/*.{ts,tsx}"],
+    rules: {
+      ...tseslint.configs.recommendedTypeChecked[0].rules,
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }
+      ],
+      "@typescript-eslint/consistent-type-imports": "error",
+    },
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  
+  // Custom RTL Tailwind rule
   {
     files: ["**/*.{js,jsx,ts,tsx}"],
     plugins: {
@@ -41,12 +75,16 @@ const eslintConfig = [
       "custom-rtl/no-physical-tailwind": "error"
     }
   },
+  
+  // Ignores
   {
     ignores: [
       ".next/**",
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "*.config.{js,ts,mjs}",
+      "*.config.{js,ts,mjs}",
     ]
   }
 ];

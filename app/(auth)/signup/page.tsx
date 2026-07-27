@@ -1,32 +1,31 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { getOAuthRedirectUrl } from "@/lib/auth/oauth-redirect";
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
+import { getOAuthRedirectUrl } from '@/lib/auth/oauth-redirect';
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Mail, User, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Mail, User, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-import { AuthShell } from "@/components/auth/auth-shell";
-import { GoogleButton } from "@/components/auth/google-button";
-import { AuthInput } from "@/components/auth/auth-input";
-import { PasswordField } from "@/components/auth/password-field";
-import { PasswordStrengthMeter } from "@/components/auth/password-strength-meter";
-import { FormAlert } from "@/components/auth/form-alert";
-import { markSignupCompletedOnce } from "@/lib/analytics/product";
+import { AuthShell } from '@/components/auth/auth-shell';
+import { GoogleButton } from '@/components/auth/google-button';
+import { AuthInput } from '@/components/auth/auth-input';
+import { PasswordField } from '@/components/auth/password-field';
+import { PasswordStrengthMeter } from '@/components/auth/password-strength-meter';
+import { FormAlert } from '@/components/auth/form-alert';
 
 export default function SignupPage() {
   const router = useRouter();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [touched, setTouched] = useState({
     name: false,
@@ -37,7 +36,7 @@ export default function SignupPage() {
   const [signedUp, setSignedUp] = useState(false);
 
   useEffect(() => {
-    if (error) setError("");
+    if (error) setError('');
   }, [email, password, confirmPassword, name]);
 
   const validations = {
@@ -49,18 +48,18 @@ export default function SignupPage() {
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setError('');
 
     if (!validations.name) {
-      setError("لطفاً نام کامل خود را وارد کنید");
+      setError('لطفاً نام کامل خود را وارد کنید');
       return;
     }
     if (password !== confirmPassword) {
-      setError("رمز عبور و تکرار آن مطابقت ندارند");
+      setError('رمز عبور و تکرار آن مطابقت ندارند');
       return;
     }
     if (password.length < 8) {
-      setError("رمز عبور باید حداقل ۸ کاراکتر باشد");
+      setError('رمز عبور باید حداقل ۸ کاراکتر باشد');
       return;
     }
 
@@ -80,39 +79,29 @@ export default function SignupPage() {
       if (signUpError) throw signUpError;
 
       if (data.session) {
-        const syncRes = await fetch("/api/auth/sync", { method: "POST" });
-        let isNew = true;
-        try {
-          const syncJson = (await syncRes.json()) as { isNew?: boolean };
-          if (typeof syncJson.isNew === "boolean") isNew = syncJson.isNew;
-        } catch {
-          // assume new on signup path
-        }
-        if (isNew) {
-          markSignupCompletedOnce({ method: "email" });
-        }
+        await fetch('/api/auth/sync', { method: 'POST' });
+        // /api/auth/sync sets the signup cookie server-side when isNew, and
+        // PostHogProvider consumes it on the next page once consent + SDK are
+        // ready. Don't fire markSignupCompletedOnce here — it can race the
+        // cookie banner and drop the event if PostHog isn't loaded yet.
         setSignedUp(true);
-        setTimeout(() => router.push("/new-project"), 2500);
+
+        setTimeout(() => router.push('/new-project'), 2500);
       } else {
         setSignedUp(true);
-        setError("");
-        setTimeout(() => router.push("/login?message=confirm_email"), 2500);
+        setError('');
+        setTimeout(() => router.push('/login?message=confirm_email'), 2500);
       }
     } catch (err: unknown) {
-      console.error("Signup Error:", err);
-      const message = err instanceof Error ? err.message : "خطای ناشناخته";
-      if (
-        message.includes("already registered") ||
-        message.includes("User already registered")
-      ) {
-        setError("این ایمیل قبلاً ثبت شده است. در حال انتقال به صفحه ورود...");
+      console.error('Signup Error:', err);
+      const message = err instanceof Error ? err.message : 'خطای ناشناخته';
+      if (message.includes('already registered') || message.includes('User already registered')) {
+        setError('این ایمیل قبلاً ثبت شده است. در حال انتقال به صفحه ورود...');
         setTimeout(() => {
-          router.push(
-            `/login?email=${encodeURIComponent(email)}&message=already_registered`
-          );
+          router.push(`/login?email=${encodeURIComponent(email)}&message=already_registered`);
         }, 1500);
       } else {
-        setError("خطا در ثبت‌نام: " + message);
+        setError('خطا در ثبت‌نام: ' + message);
       }
     } finally {
       setLoading(false);
@@ -120,21 +109,18 @@ export default function SignupPage() {
   };
 
   const handleGoogleSignup = async () => {
-    setError("");
+    setError('');
     setLoading(true);
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: getOAuthRedirectUrl("/new-project") },
+      provider: 'google',
+      options: { redirectTo: getOAuthRedirectUrl('/new-project') },
     });
   };
 
   if (signedUp) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center bg-background"
-        dir="rtl"
-      >
+      <div className="min-h-screen flex items-center justify-center bg-background" dir="rtl">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -161,16 +147,9 @@ export default function SignupPage() {
         <p className="text-muted-foreground">همین حالا سفر کارآفرینی خود را آغاز کنید</p>
       </div>
 
-      <Card
-        variant="glass"
-        className="frosted-glass shadow-2xl overflow-hidden p-6 sm:p-8"
-      >
+      <Card variant="glass" className="frosted-glass shadow-2xl overflow-hidden p-6 sm:p-8">
         <div className="space-y-6">
-          <GoogleButton
-            label="ثبت‌نام با گوگل"
-            onClick={handleGoogleSignup}
-            disabled={loading}
-          />
+          <GoogleButton label="ثبت‌نام با گوگل" onClick={handleGoogleSignup} disabled={loading} />
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">
@@ -249,20 +228,20 @@ export default function SignupPage() {
           </form>
 
           <div className="text-xs text-center text-muted-foreground leading-relaxed">
-            با ثبت‌نام، با{" "}
+            با ثبت‌نام، با{' '}
             <Link href="/terms" className="text-brand-primary hover:underline">
               شرایط استفاده
-            </Link>{" "}
-            و{" "}
+            </Link>{' '}
+            و{' '}
             <Link href="/privacy" className="text-brand-primary hover:underline">
               حریم خصوصی
-            </Link>{" "}
+            </Link>{' '}
             کارنکس موافقت می‌کنید.
           </div>
         </div>
 
         <div className="mt-6 text-center text-sm text-muted-foreground border-t border-border/50 pt-4">
-          حساب کاربری دارید؟{" "}
+          حساب کاربری دارید؟{' '}
           <Link
             href="/login"
             className="text-brand-primary font-bold hover:underline transition-all"
