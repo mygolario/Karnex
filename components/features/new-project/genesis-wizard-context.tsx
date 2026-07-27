@@ -42,6 +42,10 @@ import {
 const DRAFT_KEY = "karnex_project_draft";
 const FIRST_RUN_COACH_KEY = "karnex_genesis_first_run_coach";
 
+/** Shown when the roadmap is essentially empty (no steps in any phase). */
+const ROADMAP_EMPTY_FA =
+  "نقشه راه تولیدشده ناقص بود. بوم و برند ساخته شد، پروژه ذخیره می‌شود تا بتوانی نقشه راه را بعداً کامل کنی.";
+
 function sanitizePillar(pillar: ProjectType | null): ProjectType | null {
   if (!pillar) return null;
   if (isPillarComingSoon(pillar) || !isPillarAvailableAtLaunch(pillar)) {
@@ -526,6 +530,7 @@ export function GenesisWizardProvider({
         getCanvasFromPlan,
         isMeaningfulCanvas,
         isMeaningfulRoadmap,
+        isEmptyRoadmapShell,
       } = await import("@/lib/roadmap/quality");
 
       const coreResult = await generateCorePlanAction({
@@ -575,7 +580,11 @@ export function GenesisWizardProvider({
         canvasSummary: buildCanvasSummaryForRoadmap(corePlan),
       };
 
-      const [chunk1, chunk2] = await Promise.all([
+      // Use allSettled so a single chunk failure doesn't kill the
+      // other chunk's result. Both chunks run in parallel and each
+      // is independent — partial success is useful (we can retry the
+      // failed chunk and merge with the kept one).
+      const [chunk1Result, chunk2Result] = await Promise.allSettled([
         generateRoadmapChunkAction({
           projectType: safePillar,
           idea,
@@ -594,26 +603,89 @@ export function GenesisWizardProvider({
         }),
       ]);
 
-      if (chunk1.error || !chunk1.roadmap) {
+      const chunk1 =
+        chunk1Result.status === "fulfilled"
+          ? chunk1Result.value
+          : {
+              error:
+                chunk1Result.reason instanceof Error
+                  ? chunk1Result.reason.message
+                  : "ساخت نقشه راه (هفته‌های ۱–۸) ناموفق بود.",
+            };
+      const chunk2 =
+        chunk2Result.status === "fulfilled"
+          ? chunk2Result.value
+          : {
+              error:
+                chunk2Result.reason instanceof Error
+                  ? chunk2Result.reason.message
+                  : "ساخت نقشه راه (هفته‌های ۹–۱۶) ناموفق بود.",
+            };
+
+      const chunk1Ok = !chunk1.error && Array.isArray(chunk1.roadmap);
+      const chunk2Ok = !chunk2.error && Array.isArray(chunk2.roadmap);
+
+      // Both chunks failed (or returned no roadmap) — abort cleanly with
+      // a tagged error so the client error handler can distinguish
+      // roadmap errors from canvas/save errors. Otherwise the user sees
+      // a generic "save timeout" message even though the canvas was
+      // successfully built.
+      if (!chunk1Ok && !chunk2Ok) {
         throw new Error(
-          chunk1.message ||
-            chunk1.error ||
-            "ساخت نقشه راه (هفته‌های ۱–۸) ناموفق بود. لطفاً دوباره تلاش کنید."
-        );
-      }
-      if (chunk2.error || !chunk2.roadmap) {
-        throw new Error(
-          chunk2.message ||
-            chunk2.error ||
-            "ساخت نقشه راه (هفته‌های ۹–۱۶) ناموفق بود. لطفاً دوباره تلاش کنید."
+          `ROADMAP_BOTH_FAILED::${chunk1.error || "unknown"}||${chunk2.error || "unknown"}`
         );
       }
 
-      const roadmap = [...chunk1.roadmap, ...chunk2.roadmap];
-      if (!isMeaningfulRoadmap(roadmap)) {
-        throw new Error(
-          "نقشه راه تولیدشده ناقص بود. لطفاً دوباره تلاش کنید."
-        );
+      // Pad missing weeks with empty shells so the saved plan still has
+      // 16 weeks. The repair route (`needsRoadmapRepair`) will retry just
+      // the empty weeks when the dashboard loads.
+      const padWeeks = (start: number, end: number) => {
+        const shells: Array<Record<string, unknown>> = [];
+        for (let week = start; week <= end; week++) {
+          shells.push({
+            phase: `هفته ${week}: فاز جدید`,
+            weekNumber: week,
+            theme: "",
+            icon: "",
+            steps: [],
+          });
+        }
+        return shells;
+      };
+
+      let roadmap: Array<Record<string, unknown>> = [];
+      if (chunk1Ok && chunk2Ok) {
+        roadmap = [...(chunk1.roadmap ?? []), ...(chunk2.roadmap ?? [])];
+      } else if (chunk1Ok) {
+        // Chunk 2 failed — keep chunk 1, pad weeks 9-16 with shells.
+        // Tag so dashboard repair knows to retry just weeks 9-16.
+        roadmap = [
+          ...(chunk1.roadmap ?? []),
+          ...padWeeks(9, 16),
+        ];
+        if (typeof window !== "undefined") {
+          console.warn(
+            "[genesis] roadmap chunk 2 (weeks 9-16) failed, padded with shells:",
+            chunk2.error
+          );
+        }
+      } else {
+        // Chunk 1 failed — pad weeks 1-8, keep chunk 2.
+        roadmap = [
+          ...padWeeks(1, 8),
+          ...(chunk2.roadmap ?? []),
+        ];
+        if (typeof window !== "undefined") {
+          console.warn(
+            "[genesis] roadmap chunk 1 (weeks 1-8) failed, padded with shells:",
+            chunk1.error
+          );
+        }
+      }
+
+      // Only block if the merged output is completely empty.
+      if (isEmptyRoadmapShell(roadmap)) {
+        throw new Error(`ROADMAP_EMPTY::${ROADMAP_EMPTY_FA}`);
       }
 
       setBuildChecklist((prev) =>
@@ -625,11 +697,17 @@ export function GenesisWizardProvider({
       setIsGenerating(false);
       setIsCreating(true);
 
+      // If either chunk failed, mark roadmapStatus as "generating" so the
+      // dashboard's repair route knows to retry just the empty weeks.
+      // Otherwise the user sees a half-empty roadmap forever.
+      const roadmapStatus: "ready" | "generating" =
+        chunk1Ok && chunk2Ok ? "ready" : "generating";
+
       const completePlan = alignPlanToUserProjectName(
         {
           ...corePlan,
           roadmap,
-          roadmapStatus: "ready" as const,
+          roadmapStatus,
           projectName,
           projectType: safePillar,
           ideaInput: idea,
@@ -660,6 +738,16 @@ export function GenesisWizardProvider({
           : undefined;
 
       const localizeClientError = (raw: string) => {
+        // Tagged roadmap errors come FIRST — they were prefixed with
+        // ROADMAP_BOTH_FAILED / ROADMAP_EMPTY by the generate block above.
+        // Don't let them fall into the generic mapping below.
+        if (raw.startsWith("ROADMAP_BOTH_FAILED::")) {
+          return "ساخت نقشه راه ناموفق بود. لطفاً دوباره تلاش کنید — بوم و برند ساخته شده ولی نقشه راه ذخیره نشد.";
+        }
+        if (raw.startsWith("ROADMAP_EMPTY::")) {
+          // Strip the tag and show the clean message.
+          return raw.slice("ROADMAP_EMPTY::".length);
+        }
         if (
           raw.includes("Failed to generate") ||
           raw.includes("Check console") ||
@@ -670,9 +758,12 @@ export function GenesisWizardProvider({
         if (raw.includes("Failed to create") || raw.includes("Not authenticated")) {
           return "ساخت پروژه ناموفق بود. لطفاً دوباره وارد شوید و تلاش کنید.";
         }
-        if (raw.includes("زمان ساخت پروژه تمام شد")) {
-          return "ذخیره پروژه طول کشید. اگر پروژه در داشبورد ظاهر شد همان را باز کنید؛ وگرنه دوباره تلاش کنید.";
-        }
+        // NOTE: the "زمان ساخت پروژه تمام شد" branch is intentionally
+        // removed — that string used to leak from `localizeServerAiError`
+        // for any non-English server error, including roadmap failures,
+        // which made users think project saving timed out when it was
+        // actually the roadmap chunk that failed. The tagged roadmap
+        // paths above now handle those cases correctly.
         return raw || "خطا در تولید استراتژی. لطفاً دوباره تلاش کنید.";
       };
 

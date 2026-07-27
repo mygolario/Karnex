@@ -527,6 +527,19 @@ export async function generateRoadmapChunkAction(data: {
     return { error: "Invalid roadmap chunk range" };
   }
 
+  // Charge AI credits for the roadmap chunk. Each chunk costs 1 weighted
+  // credit ("light" weight in the cost map). Without this the two parallel
+  // chunks bypassed the monthly quota entirely — users could exhaust roadmap
+  // generation without ever hitting the limit, and there was no rollback
+  // path on failure (charges silently leaked).
+  const limit = await checkAILimit("generate-roadmap");
+  if (limit.errorResponse) {
+    return {
+      error: "AI_LIMIT_REACHED",
+      message: "سقف اعتبار AI این ماه تمام شده است.",
+    };
+  }
+
   const { formatGenesisAnswersForPrompt } = await import("@/lib/genesis/format");
   const formattedAnswers =
     genesisAnswers && typeof genesisAnswers === "object"
@@ -576,6 +589,7 @@ export async function generateRoadmapChunkAction(data: {
       `AI Validation / Parse Roadmap Chunk ${weekStart}-${weekEnd} Error:`,
       parseError
     );
+    await limit.rollback();
     return {
       error: localizeServerAiError(parseError?.message, ROADMAP_FAILED_FA),
       message: ROADMAP_FAILED_FA,

@@ -57,6 +57,10 @@ export function RoadmapBackgroundGenerator() {
         };
 
         // Sequential client-side calls → separate serverless budgets.
+        // Each chunk runs independently; on partial success we save the
+        // working chunk + keep status "generating" so a reload retries
+        // the missing half (mirrors the genesis-wizard partial-success
+        // pattern).
         const first = await generateRoadmapChunkAction({
           ...chunkArgs,
           weekStart: 1,
@@ -69,6 +73,11 @@ export function RoadmapBackgroundGenerator() {
           return;
         }
 
+        await updateActiveProject({
+          roadmap: first.roadmap,
+          roadmapStatus: "generating",
+        });
+
         const second = await generateRoadmapChunkAction({
           ...chunkArgs,
           weekStart: 9,
@@ -77,6 +86,9 @@ export function RoadmapBackgroundGenerator() {
         if (inFlightRef.current !== projectId) return;
 
         if (second.error || !second.roadmap) {
+          // Keep chunk 1 saved; mark as failed so the user can retry.
+          // (A retry will re-run both chunks from scratch — chunk 1
+          // results will be regenerated.)
           await updateActiveProject({ roadmapStatus: "failed" });
           return;
         }
