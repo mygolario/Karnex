@@ -2,7 +2,7 @@
 
 import { cn, toPersianDigits } from "@/lib/utils";
 import {
-  LayoutGrid, Map, Bot,
+  LayoutGrid, Map, Bot, Sparkles,
   Presentation, LayoutTemplate, FlaskConical, Swords, Goal, Rocket,
   Calendar, Video, DollarSign,
   Crown, LucideIcon, Shield,
@@ -250,15 +250,35 @@ export function DashboardSidebar({ className, variant = "desktop" }: SidebarProp
           </div>
         )}
 
-        {/* AI Assistant — Always Visible */}
+        {/* Executing cofounder — Always Visible */}
         <div className="mt-4">
           <p className="px-3 mb-2 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider">
-            دستیار هوشمند
+            هم‌بنیان‌گذار اجرایی
           </p>
+          <Link
+            href="/dashboard/workforce"
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden",
+              pathname.startsWith("/dashboard/workforce")
+                ? "bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+            )}
+          >
+            <Sparkles className="w-5 h-5 transition-transform group-hover:scale-110" />
+            <span>میز عامل‌ها</span>
+            <span className={cn(
+              "me-auto text-[10px] px-1.5 py-0.5 rounded-full font-bold",
+              pathname.startsWith("/dashboard/workforce")
+                ? "bg-white/20 text-white"
+                : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-300"
+            )}>
+              جدید
+            </span>
+          </Link>
           <Link
             href="/dashboard/copilot"
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden",
+              "mt-1 flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative overflow-hidden",
               pathname.startsWith("/dashboard/copilot")
                 ? "bg-gradient-to-r from-ai to-purple-600 text-white shadow-md shadow-ai/20"
                 : "text-muted-foreground hover:bg-muted hover:text-foreground"

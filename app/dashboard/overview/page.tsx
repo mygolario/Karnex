@@ -4,12 +4,13 @@ import { useEffect, useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { useAuth } from "@/contexts/auth-context";
 import { useProject } from "@/contexts/project-context";
-import { Rocket, Plus, Map, LayoutTemplate, Bot, Presentation, FlaskConical, Swords, Loader2 } from "lucide-react";
+import { Rocket, Plus, Map, LayoutTemplate, Bot, Presentation, FlaskConical, Swords, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FocusHero } from "@/components/dashboard/overview/focus-hero";
 import { SetupChecklist } from "@/components/tour/setup-checklist";
 import { UpcomingTasks } from "@/components/dashboard/overview/upcoming-tasks";
+import { MorningBrief } from "@/components/dashboard/overview/morning-brief";
 import { needsRoadmapRepair } from "@/lib/roadmap/quality";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +44,12 @@ const QUICK_LINKS = [
     label: "بوم کسب‌وکار",
     desc: "مدل کسب‌وکارت را بساز",
     icon: LayoutTemplate,
+  },
+  {
+    href: "/dashboard/workforce",
+    label: "میز عامل‌ها",
+    desc: "کار را بفرست، بعد تأیید کن",
+    icon: Sparkles,
   },
   {
     href: "/dashboard/copilot",
@@ -198,6 +205,10 @@ export default function DashboardOverviewPage() {
           </Link>
         </motion.div>
       )}
+
+      <motion.div variants={itemVariants}>
+        <MorningBrief projectId={plan?.id} />
+      </motion.div>
 
       <motion.div variants={itemVariants}>
         <FocusHero

@@ -149,6 +149,12 @@ export type AiActionLog = $Result.DefaultSelection<Prisma.$AiActionLogPayload>
  */
 export type AiInsight = $Result.DefaultSelection<Prisma.$AiInsightPayload>
 /**
+ * Model AgentRun
+ * Executing-cofounder workforce: one durable run of a named agent.
+ * Output stays pending until the founder applies or dismisses it.
+ */
+export type AgentRun = $Result.DefaultSelection<Prisma.$AgentRunPayload>
+/**
  * Model AiUsage
  * 
  */
@@ -694,6 +700,16 @@ export class PrismaClient<
     * ```
     */
   get aiInsight(): Prisma.AiInsightDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.agentRun`: Exposes CRUD operations for the **AgentRun** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more AgentRuns
+    * const agentRuns = await prisma.agentRun.findMany()
+    * ```
+    */
+  get agentRun(): Prisma.AgentRunDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.aiUsage`: Exposes CRUD operations for the **AiUsage** model.
@@ -1465,6 +1481,7 @@ export namespace Prisma {
     Artifact: 'Artifact',
     AiActionLog: 'AiActionLog',
     AiInsight: 'AiInsight',
+    AgentRun: 'AgentRun',
     AiUsage: 'AiUsage',
     EmailAiQuota: 'EmailAiQuota',
     CustomerBotChannel: 'CustomerBotChannel',
@@ -1511,7 +1528,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "subscription" | "transaction" | "mediaItem" | "systemLog" | "feedback" | "supportTicket" | "systemSetting" | "adminAuditLog" | "projectMember" | "canvas" | "card" | "comment" | "canvasVersion" | "userProfile" | "tourProgress" | "projectMemory" | "chatConversation" | "chatMessage" | "aiFeedback" | "artifact" | "aiActionLog" | "aiInsight" | "aiUsage" | "emailAiQuota" | "customerBotChannel" | "customerBotConversation" | "customerBotMessage" | "script" | "userSession" | "loginEvent" | "userApiKey" | "userIntegration" | "dataExportRequest" | "kbChunk" | "notification" | "product" | "stockTransaction" | "supplier" | "businessTransaction" | "staff" | "shift" | "attendanceEntry" | "loyaltyAccount" | "pointTransaction" | "order" | "orderItem" | "promotion" | "coupon" | "couponRedemption" | "review" | "referral" | "broadcast" | "appointment"
+      modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "subscription" | "transaction" | "mediaItem" | "systemLog" | "feedback" | "supportTicket" | "systemSetting" | "adminAuditLog" | "projectMember" | "canvas" | "card" | "comment" | "canvasVersion" | "userProfile" | "tourProgress" | "projectMemory" | "chatConversation" | "chatMessage" | "aiFeedback" | "artifact" | "aiActionLog" | "aiInsight" | "agentRun" | "aiUsage" | "emailAiQuota" | "customerBotChannel" | "customerBotConversation" | "customerBotMessage" | "script" | "userSession" | "loginEvent" | "userApiKey" | "userIntegration" | "dataExportRequest" | "kbChunk" | "notification" | "product" | "stockTransaction" | "supplier" | "businessTransaction" | "staff" | "shift" | "attendanceEntry" | "loyaltyAccount" | "pointTransaction" | "order" | "orderItem" | "promotion" | "coupon" | "couponRedemption" | "review" | "referral" | "broadcast" | "appointment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3510,6 +3527,80 @@ export namespace Prisma {
           count: {
             args: Prisma.AiInsightCountArgs<ExtArgs>
             result: $Utils.Optional<AiInsightCountAggregateOutputType> | number
+          }
+        }
+      }
+      AgentRun: {
+        payload: Prisma.$AgentRunPayload<ExtArgs>
+        fields: Prisma.AgentRunFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.AgentRunFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.AgentRunFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunPayload>
+          }
+          findFirst: {
+            args: Prisma.AgentRunFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.AgentRunFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunPayload>
+          }
+          findMany: {
+            args: Prisma.AgentRunFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunPayload>[]
+          }
+          create: {
+            args: Prisma.AgentRunCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunPayload>
+          }
+          createMany: {
+            args: Prisma.AgentRunCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.AgentRunCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunPayload>[]
+          }
+          delete: {
+            args: Prisma.AgentRunDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunPayload>
+          }
+          update: {
+            args: Prisma.AgentRunUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunPayload>
+          }
+          deleteMany: {
+            args: Prisma.AgentRunDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.AgentRunUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.AgentRunUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunPayload>[]
+          }
+          upsert: {
+            args: Prisma.AgentRunUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$AgentRunPayload>
+          }
+          aggregate: {
+            args: Prisma.AgentRunAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateAgentRun>
+          }
+          groupBy: {
+            args: Prisma.AgentRunGroupByArgs<ExtArgs>
+            result: $Utils.Optional<AgentRunGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.AgentRunCountArgs<ExtArgs>
+            result: $Utils.Optional<AgentRunCountAggregateOutputType> | number
           }
         }
       }
@@ -5942,6 +6033,7 @@ export namespace Prisma {
     artifact?: ArtifactOmit
     aiActionLog?: AiActionLogOmit
     aiInsight?: AiInsightOmit
+    agentRun?: AgentRunOmit
     aiUsage?: AiUsageOmit
     emailAiQuota?: EmailAiQuotaOmit
     customerBotChannel?: CustomerBotChannelOmit
@@ -6068,6 +6160,7 @@ export namespace Prisma {
     aiInsights: number
     aiUsages: number
     customerBotChannels: number
+    agentRuns: number
     userSessions: number
     userApiKeys: number
     userIntegrations: number
@@ -6092,6 +6185,7 @@ export namespace Prisma {
     aiInsights?: boolean | UserCountOutputTypeCountAiInsightsArgs
     aiUsages?: boolean | UserCountOutputTypeCountAiUsagesArgs
     customerBotChannels?: boolean | UserCountOutputTypeCountCustomerBotChannelsArgs
+    agentRuns?: boolean | UserCountOutputTypeCountAgentRunsArgs
     userSessions?: boolean | UserCountOutputTypeCountUserSessionsArgs
     userApiKeys?: boolean | UserCountOutputTypeCountUserApiKeysArgs
     userIntegrations?: boolean | UserCountOutputTypeCountUserIntegrationsArgs
@@ -6219,6 +6313,13 @@ export namespace Prisma {
   /**
    * UserCountOutputType without action
    */
+  export type UserCountOutputTypeCountAgentRunsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentRunWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountUserSessionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserSessionWhereInput
   }
@@ -6273,6 +6374,7 @@ export namespace Prisma {
     aiInsights: number
     aiUsages: number
     customerBotChannels: number
+    agentRuns: number
     products: number
     suppliers: number
     stockTransactions: number
@@ -6298,6 +6400,7 @@ export namespace Prisma {
     aiInsights?: boolean | ProjectCountOutputTypeCountAiInsightsArgs
     aiUsages?: boolean | ProjectCountOutputTypeCountAiUsagesArgs
     customerBotChannels?: boolean | ProjectCountOutputTypeCountCustomerBotChannelsArgs
+    agentRuns?: boolean | ProjectCountOutputTypeCountAgentRunsArgs
     products?: boolean | ProjectCountOutputTypeCountProductsArgs
     suppliers?: boolean | ProjectCountOutputTypeCountSuppliersArgs
     stockTransactions?: boolean | ProjectCountOutputTypeCountStockTransactionsArgs
@@ -6385,6 +6488,13 @@ export namespace Prisma {
    */
   export type ProjectCountOutputTypeCountCustomerBotChannelsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: CustomerBotChannelWhereInput
+  }
+
+  /**
+   * ProjectCountOutputType without action
+   */
+  export type ProjectCountOutputTypeCountAgentRunsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentRunWhereInput
   }
 
   /**
@@ -7150,6 +7260,7 @@ export namespace Prisma {
     aiInsights?: boolean | User$aiInsightsArgs<ExtArgs>
     aiUsages?: boolean | User$aiUsagesArgs<ExtArgs>
     customerBotChannels?: boolean | User$customerBotChannelsArgs<ExtArgs>
+    agentRuns?: boolean | User$agentRunsArgs<ExtArgs>
     userSessions?: boolean | User$userSessionsArgs<ExtArgs>
     userApiKeys?: boolean | User$userApiKeysArgs<ExtArgs>
     userIntegrations?: boolean | User$userIntegrationsArgs<ExtArgs>
@@ -7256,6 +7367,7 @@ export namespace Prisma {
     aiInsights?: boolean | User$aiInsightsArgs<ExtArgs>
     aiUsages?: boolean | User$aiUsagesArgs<ExtArgs>
     customerBotChannels?: boolean | User$customerBotChannelsArgs<ExtArgs>
+    agentRuns?: boolean | User$agentRunsArgs<ExtArgs>
     userSessions?: boolean | User$userSessionsArgs<ExtArgs>
     userApiKeys?: boolean | User$userApiKeysArgs<ExtArgs>
     userIntegrations?: boolean | User$userIntegrationsArgs<ExtArgs>
@@ -7287,6 +7399,7 @@ export namespace Prisma {
       aiInsights: Prisma.$AiInsightPayload<ExtArgs>[]
       aiUsages: Prisma.$AiUsagePayload<ExtArgs>[]
       customerBotChannels: Prisma.$CustomerBotChannelPayload<ExtArgs>[]
+      agentRuns: Prisma.$AgentRunPayload<ExtArgs>[]
       userSessions: Prisma.$UserSessionPayload<ExtArgs>[]
       userApiKeys: Prisma.$UserApiKeyPayload<ExtArgs>[]
       userIntegrations: Prisma.$UserIntegrationPayload<ExtArgs>[]
@@ -7732,6 +7845,7 @@ export namespace Prisma {
     aiInsights<T extends User$aiInsightsArgs<ExtArgs> = {}>(args?: Subset<T, User$aiInsightsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiInsightPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiUsages<T extends User$aiUsagesArgs<ExtArgs> = {}>(args?: Subset<T, User$aiUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     customerBotChannels<T extends User$customerBotChannelsArgs<ExtArgs> = {}>(args?: Subset<T, User$customerBotChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomerBotChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    agentRuns<T extends User$agentRunsArgs<ExtArgs> = {}>(args?: Subset<T, User$agentRunsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     userSessions<T extends User$userSessionsArgs<ExtArgs> = {}>(args?: Subset<T, User$userSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     userApiKeys<T extends User$userApiKeysArgs<ExtArgs> = {}>(args?: Subset<T, User$userApiKeysArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserApiKeyPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     userIntegrations<T extends User$userIntegrationsArgs<ExtArgs> = {}>(args?: Subset<T, User$userIntegrationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserIntegrationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -8555,6 +8669,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CustomerBotChannelScalarFieldEnum | CustomerBotChannelScalarFieldEnum[]
+  }
+
+  /**
+   * User.agentRuns
+   */
+  export type User$agentRunsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
+    where?: AgentRunWhereInput
+    orderBy?: AgentRunOrderByWithRelationInput | AgentRunOrderByWithRelationInput[]
+    cursor?: AgentRunWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgentRunScalarFieldEnum | AgentRunScalarFieldEnum[]
   }
 
   /**
@@ -12139,6 +12277,7 @@ export namespace Prisma {
     aiInsights?: boolean | Project$aiInsightsArgs<ExtArgs>
     aiUsages?: boolean | Project$aiUsagesArgs<ExtArgs>
     customerBotChannels?: boolean | Project$customerBotChannelsArgs<ExtArgs>
+    agentRuns?: boolean | Project$agentRunsArgs<ExtArgs>
     products?: boolean | Project$productsArgs<ExtArgs>
     suppliers?: boolean | Project$suppliersArgs<ExtArgs>
     stockTransactions?: boolean | Project$stockTransactionsArgs<ExtArgs>
@@ -12206,6 +12345,7 @@ export namespace Prisma {
     aiInsights?: boolean | Project$aiInsightsArgs<ExtArgs>
     aiUsages?: boolean | Project$aiUsagesArgs<ExtArgs>
     customerBotChannels?: boolean | Project$customerBotChannelsArgs<ExtArgs>
+    agentRuns?: boolean | Project$agentRunsArgs<ExtArgs>
     products?: boolean | Project$productsArgs<ExtArgs>
     suppliers?: boolean | Project$suppliersArgs<ExtArgs>
     stockTransactions?: boolean | Project$stockTransactionsArgs<ExtArgs>
@@ -12242,6 +12382,7 @@ export namespace Prisma {
       aiInsights: Prisma.$AiInsightPayload<ExtArgs>[]
       aiUsages: Prisma.$AiUsagePayload<ExtArgs>[]
       customerBotChannels: Prisma.$CustomerBotChannelPayload<ExtArgs>[]
+      agentRuns: Prisma.$AgentRunPayload<ExtArgs>[]
       products: Prisma.$ProductPayload<ExtArgs>[]
       suppliers: Prisma.$SupplierPayload<ExtArgs>[]
       stockTransactions: Prisma.$StockTransactionPayload<ExtArgs>[]
@@ -12671,6 +12812,7 @@ export namespace Prisma {
     aiInsights<T extends Project$aiInsightsArgs<ExtArgs> = {}>(args?: Subset<T, Project$aiInsightsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiInsightPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     aiUsages<T extends Project$aiUsagesArgs<ExtArgs> = {}>(args?: Subset<T, Project$aiUsagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AiUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     customerBotChannels<T extends Project$customerBotChannelsArgs<ExtArgs> = {}>(args?: Subset<T, Project$customerBotChannelsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CustomerBotChannelPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    agentRuns<T extends Project$agentRunsArgs<ExtArgs> = {}>(args?: Subset<T, Project$agentRunsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     products<T extends Project$productsArgs<ExtArgs> = {}>(args?: Subset<T, Project$productsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     suppliers<T extends Project$suppliersArgs<ExtArgs> = {}>(args?: Subset<T, Project$suppliersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SupplierPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     stockTransactions<T extends Project$stockTransactionsArgs<ExtArgs> = {}>(args?: Subset<T, Project$stockTransactionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StockTransactionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -13350,6 +13492,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: CustomerBotChannelScalarFieldEnum | CustomerBotChannelScalarFieldEnum[]
+  }
+
+  /**
+   * Project.agentRuns
+   */
+  export type Project$agentRunsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
+    where?: AgentRunWhereInput
+    orderBy?: AgentRunOrderByWithRelationInput | AgentRunOrderByWithRelationInput[]
+    cursor?: AgentRunWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AgentRunScalarFieldEnum | AgentRunScalarFieldEnum[]
   }
 
   /**
@@ -38719,6 +38885,1194 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: AiInsightInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model AgentRun
+   */
+
+  export type AggregateAgentRun = {
+    _count: AgentRunCountAggregateOutputType | null
+    _min: AgentRunMinAggregateOutputType | null
+    _max: AgentRunMaxAggregateOutputType | null
+  }
+
+  export type AgentRunMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    projectId: string | null
+    agentId: string | null
+    kind: string | null
+    status: string | null
+    title: string | null
+    summary: string | null
+    error: string | null
+    appliedAt: Date | null
+    dismissedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AgentRunMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    projectId: string | null
+    agentId: string | null
+    kind: string | null
+    status: string | null
+    title: string | null
+    summary: string | null
+    error: string | null
+    appliedAt: Date | null
+    dismissedAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type AgentRunCountAggregateOutputType = {
+    id: number
+    userId: number
+    projectId: number
+    agentId: number
+    kind: number
+    status: number
+    title: number
+    summary: number
+    output: number
+    error: number
+    appliedAt: number
+    dismissedAt: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type AgentRunMinAggregateInputType = {
+    id?: true
+    userId?: true
+    projectId?: true
+    agentId?: true
+    kind?: true
+    status?: true
+    title?: true
+    summary?: true
+    error?: true
+    appliedAt?: true
+    dismissedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AgentRunMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    projectId?: true
+    agentId?: true
+    kind?: true
+    status?: true
+    title?: true
+    summary?: true
+    error?: true
+    appliedAt?: true
+    dismissedAt?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type AgentRunCountAggregateInputType = {
+    id?: true
+    userId?: true
+    projectId?: true
+    agentId?: true
+    kind?: true
+    status?: true
+    title?: true
+    summary?: true
+    output?: true
+    error?: true
+    appliedAt?: true
+    dismissedAt?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type AgentRunAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgentRun to aggregate.
+     */
+    where?: AgentRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentRuns to fetch.
+     */
+    orderBy?: AgentRunOrderByWithRelationInput | AgentRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: AgentRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned AgentRuns
+    **/
+    _count?: true | AgentRunCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: AgentRunMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: AgentRunMaxAggregateInputType
+  }
+
+  export type GetAgentRunAggregateType<T extends AgentRunAggregateArgs> = {
+        [P in keyof T & keyof AggregateAgentRun]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateAgentRun[P]>
+      : GetScalarType<T[P], AggregateAgentRun[P]>
+  }
+
+
+
+
+  export type AgentRunGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AgentRunWhereInput
+    orderBy?: AgentRunOrderByWithAggregationInput | AgentRunOrderByWithAggregationInput[]
+    by: AgentRunScalarFieldEnum[] | AgentRunScalarFieldEnum
+    having?: AgentRunScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: AgentRunCountAggregateInputType | true
+    _min?: AgentRunMinAggregateInputType
+    _max?: AgentRunMaxAggregateInputType
+  }
+
+  export type AgentRunGroupByOutputType = {
+    id: string
+    userId: string
+    projectId: string
+    agentId: string
+    kind: string
+    status: string
+    title: string
+    summary: string | null
+    output: JsonValue
+    error: string | null
+    appliedAt: Date | null
+    dismissedAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    _count: AgentRunCountAggregateOutputType | null
+    _min: AgentRunMinAggregateOutputType | null
+    _max: AgentRunMaxAggregateOutputType | null
+  }
+
+  type GetAgentRunGroupByPayload<T extends AgentRunGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<AgentRunGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof AgentRunGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], AgentRunGroupByOutputType[P]>
+            : GetScalarType<T[P], AgentRunGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type AgentRunSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    projectId?: boolean
+    agentId?: boolean
+    kind?: boolean
+    status?: boolean
+    title?: boolean
+    summary?: boolean
+    output?: boolean
+    error?: boolean
+    appliedAt?: boolean
+    dismissedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentRun"]>
+
+  export type AgentRunSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    projectId?: boolean
+    agentId?: boolean
+    kind?: boolean
+    status?: boolean
+    title?: boolean
+    summary?: boolean
+    output?: boolean
+    error?: boolean
+    appliedAt?: boolean
+    dismissedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentRun"]>
+
+  export type AgentRunSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    projectId?: boolean
+    agentId?: boolean
+    kind?: boolean
+    status?: boolean
+    title?: boolean
+    summary?: boolean
+    output?: boolean
+    error?: boolean
+    appliedAt?: boolean
+    dismissedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["agentRun"]>
+
+  export type AgentRunSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    projectId?: boolean
+    agentId?: boolean
+    kind?: boolean
+    status?: boolean
+    title?: boolean
+    summary?: boolean
+    output?: boolean
+    error?: boolean
+    appliedAt?: boolean
+    dismissedAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type AgentRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "projectId" | "agentId" | "kind" | "status" | "title" | "summary" | "output" | "error" | "appliedAt" | "dismissedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["agentRun"]>
+  export type AgentRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+  export type AgentRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+  export type AgentRunIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+    project?: boolean | ProjectDefaultArgs<ExtArgs>
+  }
+
+  export type $AgentRunPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "AgentRun"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+      project: Prisma.$ProjectPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      projectId: string
+      /**
+       * research | execution | growth | capital | night_shift
+       */
+      agentId: string
+      /**
+       * dispatch | night_shift | cron
+       */
+      kind: string
+      /**
+       * running | needs_approval | applied | dismissed | failed
+       */
+      status: string
+      title: string
+      summary: string | null
+      output: Prisma.JsonValue
+      error: string | null
+      appliedAt: Date | null
+      dismissedAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["agentRun"]>
+    composites: {}
+  }
+
+  type AgentRunGetPayload<S extends boolean | null | undefined | AgentRunDefaultArgs> = $Result.GetResult<Prisma.$AgentRunPayload, S>
+
+  type AgentRunCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<AgentRunFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: AgentRunCountAggregateInputType | true
+    }
+
+  export interface AgentRunDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['AgentRun'], meta: { name: 'AgentRun' } }
+    /**
+     * Find zero or one AgentRun that matches the filter.
+     * @param {AgentRunFindUniqueArgs} args - Arguments to find a AgentRun
+     * @example
+     * // Get one AgentRun
+     * const agentRun = await prisma.agentRun.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends AgentRunFindUniqueArgs>(args: SelectSubset<T, AgentRunFindUniqueArgs<ExtArgs>>): Prisma__AgentRunClient<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one AgentRun that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AgentRunFindUniqueOrThrowArgs} args - Arguments to find a AgentRun
+     * @example
+     * // Get one AgentRun
+     * const agentRun = await prisma.agentRun.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends AgentRunFindUniqueOrThrowArgs>(args: SelectSubset<T, AgentRunFindUniqueOrThrowArgs<ExtArgs>>): Prisma__AgentRunClient<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgentRun that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunFindFirstArgs} args - Arguments to find a AgentRun
+     * @example
+     * // Get one AgentRun
+     * const agentRun = await prisma.agentRun.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends AgentRunFindFirstArgs>(args?: SelectSubset<T, AgentRunFindFirstArgs<ExtArgs>>): Prisma__AgentRunClient<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first AgentRun that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunFindFirstOrThrowArgs} args - Arguments to find a AgentRun
+     * @example
+     * // Get one AgentRun
+     * const agentRun = await prisma.agentRun.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends AgentRunFindFirstOrThrowArgs>(args?: SelectSubset<T, AgentRunFindFirstOrThrowArgs<ExtArgs>>): Prisma__AgentRunClient<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more AgentRuns that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all AgentRuns
+     * const agentRuns = await prisma.agentRun.findMany()
+     * 
+     * // Get first 10 AgentRuns
+     * const agentRuns = await prisma.agentRun.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const agentRunWithIdOnly = await prisma.agentRun.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends AgentRunFindManyArgs>(args?: SelectSubset<T, AgentRunFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a AgentRun.
+     * @param {AgentRunCreateArgs} args - Arguments to create a AgentRun.
+     * @example
+     * // Create one AgentRun
+     * const AgentRun = await prisma.agentRun.create({
+     *   data: {
+     *     // ... data to create a AgentRun
+     *   }
+     * })
+     * 
+     */
+    create<T extends AgentRunCreateArgs>(args: SelectSubset<T, AgentRunCreateArgs<ExtArgs>>): Prisma__AgentRunClient<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many AgentRuns.
+     * @param {AgentRunCreateManyArgs} args - Arguments to create many AgentRuns.
+     * @example
+     * // Create many AgentRuns
+     * const agentRun = await prisma.agentRun.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends AgentRunCreateManyArgs>(args?: SelectSubset<T, AgentRunCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many AgentRuns and returns the data saved in the database.
+     * @param {AgentRunCreateManyAndReturnArgs} args - Arguments to create many AgentRuns.
+     * @example
+     * // Create many AgentRuns
+     * const agentRun = await prisma.agentRun.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many AgentRuns and only return the `id`
+     * const agentRunWithIdOnly = await prisma.agentRun.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends AgentRunCreateManyAndReturnArgs>(args?: SelectSubset<T, AgentRunCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a AgentRun.
+     * @param {AgentRunDeleteArgs} args - Arguments to delete one AgentRun.
+     * @example
+     * // Delete one AgentRun
+     * const AgentRun = await prisma.agentRun.delete({
+     *   where: {
+     *     // ... filter to delete one AgentRun
+     *   }
+     * })
+     * 
+     */
+    delete<T extends AgentRunDeleteArgs>(args: SelectSubset<T, AgentRunDeleteArgs<ExtArgs>>): Prisma__AgentRunClient<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one AgentRun.
+     * @param {AgentRunUpdateArgs} args - Arguments to update one AgentRun.
+     * @example
+     * // Update one AgentRun
+     * const agentRun = await prisma.agentRun.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends AgentRunUpdateArgs>(args: SelectSubset<T, AgentRunUpdateArgs<ExtArgs>>): Prisma__AgentRunClient<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more AgentRuns.
+     * @param {AgentRunDeleteManyArgs} args - Arguments to filter AgentRuns to delete.
+     * @example
+     * // Delete a few AgentRuns
+     * const { count } = await prisma.agentRun.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends AgentRunDeleteManyArgs>(args?: SelectSubset<T, AgentRunDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgentRuns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many AgentRuns
+     * const agentRun = await prisma.agentRun.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends AgentRunUpdateManyArgs>(args: SelectSubset<T, AgentRunUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more AgentRuns and returns the data updated in the database.
+     * @param {AgentRunUpdateManyAndReturnArgs} args - Arguments to update many AgentRuns.
+     * @example
+     * // Update many AgentRuns
+     * const agentRun = await prisma.agentRun.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more AgentRuns and only return the `id`
+     * const agentRunWithIdOnly = await prisma.agentRun.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends AgentRunUpdateManyAndReturnArgs>(args: SelectSubset<T, AgentRunUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one AgentRun.
+     * @param {AgentRunUpsertArgs} args - Arguments to update or create a AgentRun.
+     * @example
+     * // Update or create a AgentRun
+     * const agentRun = await prisma.agentRun.upsert({
+     *   create: {
+     *     // ... data to create a AgentRun
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the AgentRun we want to update
+     *   }
+     * })
+     */
+    upsert<T extends AgentRunUpsertArgs>(args: SelectSubset<T, AgentRunUpsertArgs<ExtArgs>>): Prisma__AgentRunClient<$Result.GetResult<Prisma.$AgentRunPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of AgentRuns.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunCountArgs} args - Arguments to filter AgentRuns to count.
+     * @example
+     * // Count the number of AgentRuns
+     * const count = await prisma.agentRun.count({
+     *   where: {
+     *     // ... the filter for the AgentRuns we want to count
+     *   }
+     * })
+    **/
+    count<T extends AgentRunCountArgs>(
+      args?: Subset<T, AgentRunCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], AgentRunCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a AgentRun.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends AgentRunAggregateArgs>(args: Subset<T, AgentRunAggregateArgs>): Prisma.PrismaPromise<GetAgentRunAggregateType<T>>
+
+    /**
+     * Group by AgentRun.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AgentRunGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends AgentRunGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: AgentRunGroupByArgs['orderBy'] }
+        : { orderBy?: AgentRunGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, AgentRunGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetAgentRunGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the AgentRun model
+   */
+  readonly fields: AgentRunFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for AgentRun.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__AgentRunClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    project<T extends ProjectDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ProjectDefaultArgs<ExtArgs>>): Prisma__ProjectClient<$Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the AgentRun model
+   */
+  interface AgentRunFieldRefs {
+    readonly id: FieldRef<"AgentRun", 'String'>
+    readonly userId: FieldRef<"AgentRun", 'String'>
+    readonly projectId: FieldRef<"AgentRun", 'String'>
+    readonly agentId: FieldRef<"AgentRun", 'String'>
+    readonly kind: FieldRef<"AgentRun", 'String'>
+    readonly status: FieldRef<"AgentRun", 'String'>
+    readonly title: FieldRef<"AgentRun", 'String'>
+    readonly summary: FieldRef<"AgentRun", 'String'>
+    readonly output: FieldRef<"AgentRun", 'Json'>
+    readonly error: FieldRef<"AgentRun", 'String'>
+    readonly appliedAt: FieldRef<"AgentRun", 'DateTime'>
+    readonly dismissedAt: FieldRef<"AgentRun", 'DateTime'>
+    readonly createdAt: FieldRef<"AgentRun", 'DateTime'>
+    readonly updatedAt: FieldRef<"AgentRun", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * AgentRun findUnique
+   */
+  export type AgentRunFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentRun to fetch.
+     */
+    where: AgentRunWhereUniqueInput
+  }
+
+  /**
+   * AgentRun findUniqueOrThrow
+   */
+  export type AgentRunFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentRun to fetch.
+     */
+    where: AgentRunWhereUniqueInput
+  }
+
+  /**
+   * AgentRun findFirst
+   */
+  export type AgentRunFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentRun to fetch.
+     */
+    where?: AgentRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentRuns to fetch.
+     */
+    orderBy?: AgentRunOrderByWithRelationInput | AgentRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgentRuns.
+     */
+    cursor?: AgentRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgentRuns.
+     */
+    distinct?: AgentRunScalarFieldEnum | AgentRunScalarFieldEnum[]
+  }
+
+  /**
+   * AgentRun findFirstOrThrow
+   */
+  export type AgentRunFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentRun to fetch.
+     */
+    where?: AgentRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentRuns to fetch.
+     */
+    orderBy?: AgentRunOrderByWithRelationInput | AgentRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for AgentRuns.
+     */
+    cursor?: AgentRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentRuns.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of AgentRuns.
+     */
+    distinct?: AgentRunScalarFieldEnum | AgentRunScalarFieldEnum[]
+  }
+
+  /**
+   * AgentRun findMany
+   */
+  export type AgentRunFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
+    /**
+     * Filter, which AgentRuns to fetch.
+     */
+    where?: AgentRunWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of AgentRuns to fetch.
+     */
+    orderBy?: AgentRunOrderByWithRelationInput | AgentRunOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing AgentRuns.
+     */
+    cursor?: AgentRunWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` AgentRuns from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` AgentRuns.
+     */
+    skip?: number
+    distinct?: AgentRunScalarFieldEnum | AgentRunScalarFieldEnum[]
+  }
+
+  /**
+   * AgentRun create
+   */
+  export type AgentRunCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
+    /**
+     * The data needed to create a AgentRun.
+     */
+    data: XOR<AgentRunCreateInput, AgentRunUncheckedCreateInput>
+  }
+
+  /**
+   * AgentRun createMany
+   */
+  export type AgentRunCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many AgentRuns.
+     */
+    data: AgentRunCreateManyInput | AgentRunCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * AgentRun createManyAndReturn
+   */
+  export type AgentRunCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * The data used to create many AgentRuns.
+     */
+    data: AgentRunCreateManyInput | AgentRunCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgentRun update
+   */
+  export type AgentRunUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
+    /**
+     * The data needed to update a AgentRun.
+     */
+    data: XOR<AgentRunUpdateInput, AgentRunUncheckedUpdateInput>
+    /**
+     * Choose, which AgentRun to update.
+     */
+    where: AgentRunWhereUniqueInput
+  }
+
+  /**
+   * AgentRun updateMany
+   */
+  export type AgentRunUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update AgentRuns.
+     */
+    data: XOR<AgentRunUpdateManyMutationInput, AgentRunUncheckedUpdateManyInput>
+    /**
+     * Filter which AgentRuns to update
+     */
+    where?: AgentRunWhereInput
+    /**
+     * Limit how many AgentRuns to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgentRun updateManyAndReturn
+   */
+  export type AgentRunUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * The data used to update AgentRuns.
+     */
+    data: XOR<AgentRunUpdateManyMutationInput, AgentRunUncheckedUpdateManyInput>
+    /**
+     * Filter which AgentRuns to update
+     */
+    where?: AgentRunWhereInput
+    /**
+     * Limit how many AgentRuns to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * AgentRun upsert
+   */
+  export type AgentRunUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
+    /**
+     * The filter to search for the AgentRun to update in case it exists.
+     */
+    where: AgentRunWhereUniqueInput
+    /**
+     * In case the AgentRun found by the `where` argument doesn't exist, create a new AgentRun with this data.
+     */
+    create: XOR<AgentRunCreateInput, AgentRunUncheckedCreateInput>
+    /**
+     * In case the AgentRun was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<AgentRunUpdateInput, AgentRunUncheckedUpdateInput>
+  }
+
+  /**
+   * AgentRun delete
+   */
+  export type AgentRunDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
+    /**
+     * Filter which AgentRun to delete.
+     */
+    where: AgentRunWhereUniqueInput
+  }
+
+  /**
+   * AgentRun deleteMany
+   */
+  export type AgentRunDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which AgentRuns to delete
+     */
+    where?: AgentRunWhereInput
+    /**
+     * Limit how many AgentRuns to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * AgentRun without action
+   */
+  export type AgentRunDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AgentRun
+     */
+    select?: AgentRunSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the AgentRun
+     */
+    omit?: AgentRunOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AgentRunInclude<ExtArgs> | null
   }
 
 
@@ -74260,6 +75614,26 @@ export namespace Prisma {
   export type AiInsightScalarFieldEnum = (typeof AiInsightScalarFieldEnum)[keyof typeof AiInsightScalarFieldEnum]
 
 
+  export const AgentRunScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    projectId: 'projectId',
+    agentId: 'agentId',
+    kind: 'kind',
+    status: 'status',
+    title: 'title',
+    summary: 'summary',
+    output: 'output',
+    error: 'error',
+    appliedAt: 'appliedAt',
+    dismissedAt: 'dismissedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type AgentRunScalarFieldEnum = (typeof AgentRunScalarFieldEnum)[keyof typeof AgentRunScalarFieldEnum]
+
+
   export const AiUsageScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -74898,6 +76272,7 @@ export namespace Prisma {
     aiInsights?: AiInsightListRelationFilter
     aiUsages?: AiUsageListRelationFilter
     customerBotChannels?: CustomerBotChannelListRelationFilter
+    agentRuns?: AgentRunListRelationFilter
     userSessions?: UserSessionListRelationFilter
     userApiKeys?: UserApiKeyListRelationFilter
     userIntegrations?: UserIntegrationListRelationFilter
@@ -74947,6 +76322,7 @@ export namespace Prisma {
     aiInsights?: AiInsightOrderByRelationAggregateInput
     aiUsages?: AiUsageOrderByRelationAggregateInput
     customerBotChannels?: CustomerBotChannelOrderByRelationAggregateInput
+    agentRuns?: AgentRunOrderByRelationAggregateInput
     userSessions?: UserSessionOrderByRelationAggregateInput
     userApiKeys?: UserApiKeyOrderByRelationAggregateInput
     userIntegrations?: UserIntegrationOrderByRelationAggregateInput
@@ -74999,6 +76375,7 @@ export namespace Prisma {
     aiInsights?: AiInsightListRelationFilter
     aiUsages?: AiUsageListRelationFilter
     customerBotChannels?: CustomerBotChannelListRelationFilter
+    agentRuns?: AgentRunListRelationFilter
     userSessions?: UserSessionListRelationFilter
     userApiKeys?: UserApiKeyListRelationFilter
     userIntegrations?: UserIntegrationListRelationFilter
@@ -75276,6 +76653,7 @@ export namespace Prisma {
     aiInsights?: AiInsightListRelationFilter
     aiUsages?: AiUsageListRelationFilter
     customerBotChannels?: CustomerBotChannelListRelationFilter
+    agentRuns?: AgentRunListRelationFilter
     products?: ProductListRelationFilter
     suppliers?: SupplierListRelationFilter
     stockTransactions?: StockTransactionListRelationFilter
@@ -75312,6 +76690,7 @@ export namespace Prisma {
     aiInsights?: AiInsightOrderByRelationAggregateInput
     aiUsages?: AiUsageOrderByRelationAggregateInput
     customerBotChannels?: CustomerBotChannelOrderByRelationAggregateInput
+    agentRuns?: AgentRunOrderByRelationAggregateInput
     products?: ProductOrderByRelationAggregateInput
     suppliers?: SupplierOrderByRelationAggregateInput
     stockTransactions?: StockTransactionOrderByRelationAggregateInput
@@ -75351,6 +76730,7 @@ export namespace Prisma {
     aiInsights?: AiInsightListRelationFilter
     aiUsages?: AiUsageListRelationFilter
     customerBotChannels?: CustomerBotChannelListRelationFilter
+    agentRuns?: AgentRunListRelationFilter
     products?: ProductListRelationFilter
     suppliers?: SupplierListRelationFilter
     stockTransactions?: StockTransactionListRelationFilter
@@ -77192,6 +78572,109 @@ export namespace Prisma {
     snoozedUntil?: DateTimeNullableWithAggregatesFilter<"AiInsight"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"AiInsight"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"AiInsight"> | Date | string
+  }
+
+  export type AgentRunWhereInput = {
+    AND?: AgentRunWhereInput | AgentRunWhereInput[]
+    OR?: AgentRunWhereInput[]
+    NOT?: AgentRunWhereInput | AgentRunWhereInput[]
+    id?: StringFilter<"AgentRun"> | string
+    userId?: StringFilter<"AgentRun"> | string
+    projectId?: StringFilter<"AgentRun"> | string
+    agentId?: StringFilter<"AgentRun"> | string
+    kind?: StringFilter<"AgentRun"> | string
+    status?: StringFilter<"AgentRun"> | string
+    title?: StringFilter<"AgentRun"> | string
+    summary?: StringNullableFilter<"AgentRun"> | string | null
+    output?: JsonFilter<"AgentRun">
+    error?: StringNullableFilter<"AgentRun"> | string | null
+    appliedAt?: DateTimeNullableFilter<"AgentRun"> | Date | string | null
+    dismissedAt?: DateTimeNullableFilter<"AgentRun"> | Date | string | null
+    createdAt?: DateTimeFilter<"AgentRun"> | Date | string
+    updatedAt?: DateTimeFilter<"AgentRun"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+  }
+
+  export type AgentRunOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+    agentId?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    title?: SortOrder
+    summary?: SortOrderInput | SortOrder
+    output?: SortOrder
+    error?: SortOrderInput | SortOrder
+    appliedAt?: SortOrderInput | SortOrder
+    dismissedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    user?: UserOrderByWithRelationInput
+    project?: ProjectOrderByWithRelationInput
+  }
+
+  export type AgentRunWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: AgentRunWhereInput | AgentRunWhereInput[]
+    OR?: AgentRunWhereInput[]
+    NOT?: AgentRunWhereInput | AgentRunWhereInput[]
+    userId?: StringFilter<"AgentRun"> | string
+    projectId?: StringFilter<"AgentRun"> | string
+    agentId?: StringFilter<"AgentRun"> | string
+    kind?: StringFilter<"AgentRun"> | string
+    status?: StringFilter<"AgentRun"> | string
+    title?: StringFilter<"AgentRun"> | string
+    summary?: StringNullableFilter<"AgentRun"> | string | null
+    output?: JsonFilter<"AgentRun">
+    error?: StringNullableFilter<"AgentRun"> | string | null
+    appliedAt?: DateTimeNullableFilter<"AgentRun"> | Date | string | null
+    dismissedAt?: DateTimeNullableFilter<"AgentRun"> | Date | string | null
+    createdAt?: DateTimeFilter<"AgentRun"> | Date | string
+    updatedAt?: DateTimeFilter<"AgentRun"> | Date | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    project?: XOR<ProjectScalarRelationFilter, ProjectWhereInput>
+  }, "id">
+
+  export type AgentRunOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+    agentId?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    title?: SortOrder
+    summary?: SortOrderInput | SortOrder
+    output?: SortOrder
+    error?: SortOrderInput | SortOrder
+    appliedAt?: SortOrderInput | SortOrder
+    dismissedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: AgentRunCountOrderByAggregateInput
+    _max?: AgentRunMaxOrderByAggregateInput
+    _min?: AgentRunMinOrderByAggregateInput
+  }
+
+  export type AgentRunScalarWhereWithAggregatesInput = {
+    AND?: AgentRunScalarWhereWithAggregatesInput | AgentRunScalarWhereWithAggregatesInput[]
+    OR?: AgentRunScalarWhereWithAggregatesInput[]
+    NOT?: AgentRunScalarWhereWithAggregatesInput | AgentRunScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"AgentRun"> | string
+    userId?: StringWithAggregatesFilter<"AgentRun"> | string
+    projectId?: StringWithAggregatesFilter<"AgentRun"> | string
+    agentId?: StringWithAggregatesFilter<"AgentRun"> | string
+    kind?: StringWithAggregatesFilter<"AgentRun"> | string
+    status?: StringWithAggregatesFilter<"AgentRun"> | string
+    title?: StringWithAggregatesFilter<"AgentRun"> | string
+    summary?: StringNullableWithAggregatesFilter<"AgentRun"> | string | null
+    output?: JsonWithAggregatesFilter<"AgentRun">
+    error?: StringNullableWithAggregatesFilter<"AgentRun"> | string | null
+    appliedAt?: DateTimeNullableWithAggregatesFilter<"AgentRun"> | Date | string | null
+    dismissedAt?: DateTimeNullableWithAggregatesFilter<"AgentRun"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"AgentRun"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"AgentRun"> | Date | string
   }
 
   export type AiUsageWhereInput = {
@@ -79608,6 +81091,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -79657,6 +81141,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -79706,6 +81191,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -79755,6 +81241,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -80056,6 +81543,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -80091,6 +81579,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -80126,6 +81615,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -80161,6 +81651,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -82200,6 +83691,123 @@ export namespace Prisma {
     actionPayload?: NullableJsonNullValueInput | InputJsonValue
     status?: StringFieldUpdateOperationsInput | string
     snoozedUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentRunCreateInput = {
+    id?: string
+    agentId: string
+    kind?: string
+    status?: string
+    title: string
+    summary?: string | null
+    output: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    appliedAt?: Date | string | null
+    dismissedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutAgentRunsInput
+    project: ProjectCreateNestedOneWithoutAgentRunsInput
+  }
+
+  export type AgentRunUncheckedCreateInput = {
+    id?: string
+    userId: string
+    projectId: string
+    agentId: string
+    kind?: string
+    status?: string
+    title: string
+    summary?: string | null
+    output: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    appliedAt?: Date | string | null
+    dismissedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AgentRunUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    agentId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    output?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dismissedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAgentRunsNestedInput
+    project?: ProjectUpdateOneRequiredWithoutAgentRunsNestedInput
+  }
+
+  export type AgentRunUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    agentId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    output?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dismissedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentRunCreateManyInput = {
+    id?: string
+    userId: string
+    projectId: string
+    agentId: string
+    kind?: string
+    status?: string
+    title: string
+    summary?: string | null
+    output: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    appliedAt?: Date | string | null
+    dismissedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AgentRunUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    agentId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    output?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dismissedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentRunUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    agentId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    output?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dismissedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -84962,6 +86570,12 @@ export namespace Prisma {
     none?: CustomerBotChannelWhereInput
   }
 
+  export type AgentRunListRelationFilter = {
+    every?: AgentRunWhereInput
+    some?: AgentRunWhereInput
+    none?: AgentRunWhereInput
+  }
+
   export type UserSessionListRelationFilter = {
     every?: UserSessionWhereInput
     some?: UserSessionWhereInput
@@ -85065,6 +86679,10 @@ export namespace Prisma {
   }
 
   export type CustomerBotChannelOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type AgentRunOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -86657,6 +88275,55 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type AgentRunCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+    agentId?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    title?: SortOrder
+    summary?: SortOrder
+    output?: SortOrder
+    error?: SortOrder
+    appliedAt?: SortOrder
+    dismissedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AgentRunMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+    agentId?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    title?: SortOrder
+    summary?: SortOrder
+    error?: SortOrder
+    appliedAt?: SortOrder
+    dismissedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type AgentRunMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    projectId?: SortOrder
+    agentId?: SortOrder
+    kind?: SortOrder
+    status?: SortOrder
+    title?: SortOrder
+    summary?: SortOrder
+    error?: SortOrder
+    appliedAt?: SortOrder
+    dismissedAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type AiUsageCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -88135,6 +89802,13 @@ export namespace Prisma {
     connect?: CustomerBotChannelWhereUniqueInput | CustomerBotChannelWhereUniqueInput[]
   }
 
+  export type AgentRunCreateNestedManyWithoutUserInput = {
+    create?: XOR<AgentRunCreateWithoutUserInput, AgentRunUncheckedCreateWithoutUserInput> | AgentRunCreateWithoutUserInput[] | AgentRunUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentRunCreateOrConnectWithoutUserInput | AgentRunCreateOrConnectWithoutUserInput[]
+    createMany?: AgentRunCreateManyUserInputEnvelope
+    connect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+  }
+
   export type UserSessionCreateNestedManyWithoutUserInput = {
     create?: XOR<UserSessionCreateWithoutUserInput, UserSessionUncheckedCreateWithoutUserInput> | UserSessionCreateWithoutUserInput[] | UserSessionUncheckedCreateWithoutUserInput[]
     connectOrCreate?: UserSessionCreateOrConnectWithoutUserInput | UserSessionCreateOrConnectWithoutUserInput[]
@@ -88292,6 +89966,13 @@ export namespace Prisma {
     connectOrCreate?: CustomerBotChannelCreateOrConnectWithoutUserInput | CustomerBotChannelCreateOrConnectWithoutUserInput[]
     createMany?: CustomerBotChannelCreateManyUserInputEnvelope
     connect?: CustomerBotChannelWhereUniqueInput | CustomerBotChannelWhereUniqueInput[]
+  }
+
+  export type AgentRunUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<AgentRunCreateWithoutUserInput, AgentRunUncheckedCreateWithoutUserInput> | AgentRunCreateWithoutUserInput[] | AgentRunUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentRunCreateOrConnectWithoutUserInput | AgentRunCreateOrConnectWithoutUserInput[]
+    createMany?: AgentRunCreateManyUserInputEnvelope
+    connect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
   }
 
   export type UserSessionUncheckedCreateNestedManyWithoutUserInput = {
@@ -88580,6 +90261,20 @@ export namespace Prisma {
     update?: CustomerBotChannelUpdateWithWhereUniqueWithoutUserInput | CustomerBotChannelUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: CustomerBotChannelUpdateManyWithWhereWithoutUserInput | CustomerBotChannelUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: CustomerBotChannelScalarWhereInput | CustomerBotChannelScalarWhereInput[]
+  }
+
+  export type AgentRunUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AgentRunCreateWithoutUserInput, AgentRunUncheckedCreateWithoutUserInput> | AgentRunCreateWithoutUserInput[] | AgentRunUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentRunCreateOrConnectWithoutUserInput | AgentRunCreateOrConnectWithoutUserInput[]
+    upsert?: AgentRunUpsertWithWhereUniqueWithoutUserInput | AgentRunUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AgentRunCreateManyUserInputEnvelope
+    set?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    disconnect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    delete?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    connect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    update?: AgentRunUpdateWithWhereUniqueWithoutUserInput | AgentRunUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AgentRunUpdateManyWithWhereWithoutUserInput | AgentRunUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AgentRunScalarWhereInput | AgentRunScalarWhereInput[]
   }
 
   export type UserSessionUpdateManyWithoutUserNestedInput = {
@@ -88896,6 +90591,20 @@ export namespace Prisma {
     deleteMany?: CustomerBotChannelScalarWhereInput | CustomerBotChannelScalarWhereInput[]
   }
 
+  export type AgentRunUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<AgentRunCreateWithoutUserInput, AgentRunUncheckedCreateWithoutUserInput> | AgentRunCreateWithoutUserInput[] | AgentRunUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: AgentRunCreateOrConnectWithoutUserInput | AgentRunCreateOrConnectWithoutUserInput[]
+    upsert?: AgentRunUpsertWithWhereUniqueWithoutUserInput | AgentRunUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: AgentRunCreateManyUserInputEnvelope
+    set?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    disconnect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    delete?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    connect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    update?: AgentRunUpdateWithWhereUniqueWithoutUserInput | AgentRunUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: AgentRunUpdateManyWithWhereWithoutUserInput | AgentRunUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: AgentRunScalarWhereInput | AgentRunScalarWhereInput[]
+  }
+
   export type UserSessionUncheckedUpdateManyWithoutUserNestedInput = {
     create?: XOR<UserSessionCreateWithoutUserInput, UserSessionUncheckedCreateWithoutUserInput> | UserSessionCreateWithoutUserInput[] | UserSessionUncheckedCreateWithoutUserInput[]
     connectOrCreate?: UserSessionCreateOrConnectWithoutUserInput | UserSessionCreateOrConnectWithoutUserInput[]
@@ -89101,6 +90810,13 @@ export namespace Prisma {
     connect?: CustomerBotChannelWhereUniqueInput | CustomerBotChannelWhereUniqueInput[]
   }
 
+  export type AgentRunCreateNestedManyWithoutProjectInput = {
+    create?: XOR<AgentRunCreateWithoutProjectInput, AgentRunUncheckedCreateWithoutProjectInput> | AgentRunCreateWithoutProjectInput[] | AgentRunUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: AgentRunCreateOrConnectWithoutProjectInput | AgentRunCreateOrConnectWithoutProjectInput[]
+    createMany?: AgentRunCreateManyProjectInputEnvelope
+    connect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+  }
+
   export type ProductCreateNestedManyWithoutProjectInput = {
     create?: XOR<ProductCreateWithoutProjectInput, ProductUncheckedCreateWithoutProjectInput> | ProductCreateWithoutProjectInput[] | ProductUncheckedCreateWithoutProjectInput[]
     connectOrCreate?: ProductCreateOrConnectWithoutProjectInput | ProductCreateOrConnectWithoutProjectInput[]
@@ -89259,6 +90975,13 @@ export namespace Prisma {
     connectOrCreate?: CustomerBotChannelCreateOrConnectWithoutProjectInput | CustomerBotChannelCreateOrConnectWithoutProjectInput[]
     createMany?: CustomerBotChannelCreateManyProjectInputEnvelope
     connect?: CustomerBotChannelWhereUniqueInput | CustomerBotChannelWhereUniqueInput[]
+  }
+
+  export type AgentRunUncheckedCreateNestedManyWithoutProjectInput = {
+    create?: XOR<AgentRunCreateWithoutProjectInput, AgentRunUncheckedCreateWithoutProjectInput> | AgentRunCreateWithoutProjectInput[] | AgentRunUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: AgentRunCreateOrConnectWithoutProjectInput | AgentRunCreateOrConnectWithoutProjectInput[]
+    createMany?: AgentRunCreateManyProjectInputEnvelope
+    connect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
   }
 
   export type ProductUncheckedCreateNestedManyWithoutProjectInput = {
@@ -89494,6 +91217,20 @@ export namespace Prisma {
     update?: CustomerBotChannelUpdateWithWhereUniqueWithoutProjectInput | CustomerBotChannelUpdateWithWhereUniqueWithoutProjectInput[]
     updateMany?: CustomerBotChannelUpdateManyWithWhereWithoutProjectInput | CustomerBotChannelUpdateManyWithWhereWithoutProjectInput[]
     deleteMany?: CustomerBotChannelScalarWhereInput | CustomerBotChannelScalarWhereInput[]
+  }
+
+  export type AgentRunUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<AgentRunCreateWithoutProjectInput, AgentRunUncheckedCreateWithoutProjectInput> | AgentRunCreateWithoutProjectInput[] | AgentRunUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: AgentRunCreateOrConnectWithoutProjectInput | AgentRunCreateOrConnectWithoutProjectInput[]
+    upsert?: AgentRunUpsertWithWhereUniqueWithoutProjectInput | AgentRunUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: AgentRunCreateManyProjectInputEnvelope
+    set?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    disconnect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    delete?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    connect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    update?: AgentRunUpdateWithWhereUniqueWithoutProjectInput | AgentRunUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: AgentRunUpdateManyWithWhereWithoutProjectInput | AgentRunUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: AgentRunScalarWhereInput | AgentRunScalarWhereInput[]
   }
 
   export type ProductUpdateManyWithoutProjectNestedInput = {
@@ -89812,6 +91549,20 @@ export namespace Prisma {
     update?: CustomerBotChannelUpdateWithWhereUniqueWithoutProjectInput | CustomerBotChannelUpdateWithWhereUniqueWithoutProjectInput[]
     updateMany?: CustomerBotChannelUpdateManyWithWhereWithoutProjectInput | CustomerBotChannelUpdateManyWithWhereWithoutProjectInput[]
     deleteMany?: CustomerBotChannelScalarWhereInput | CustomerBotChannelScalarWhereInput[]
+  }
+
+  export type AgentRunUncheckedUpdateManyWithoutProjectNestedInput = {
+    create?: XOR<AgentRunCreateWithoutProjectInput, AgentRunUncheckedCreateWithoutProjectInput> | AgentRunCreateWithoutProjectInput[] | AgentRunUncheckedCreateWithoutProjectInput[]
+    connectOrCreate?: AgentRunCreateOrConnectWithoutProjectInput | AgentRunCreateOrConnectWithoutProjectInput[]
+    upsert?: AgentRunUpsertWithWhereUniqueWithoutProjectInput | AgentRunUpsertWithWhereUniqueWithoutProjectInput[]
+    createMany?: AgentRunCreateManyProjectInputEnvelope
+    set?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    disconnect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    delete?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    connect?: AgentRunWhereUniqueInput | AgentRunWhereUniqueInput[]
+    update?: AgentRunUpdateWithWhereUniqueWithoutProjectInput | AgentRunUpdateWithWhereUniqueWithoutProjectInput[]
+    updateMany?: AgentRunUpdateManyWithWhereWithoutProjectInput | AgentRunUpdateManyWithWhereWithoutProjectInput[]
+    deleteMany?: AgentRunScalarWhereInput | AgentRunScalarWhereInput[]
   }
 
   export type ProductUncheckedUpdateManyWithoutProjectNestedInput = {
@@ -90738,6 +92489,34 @@ export namespace Prisma {
     delete?: ProjectWhereInput | boolean
     connect?: ProjectWhereUniqueInput
     update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutAiInsightsInput, ProjectUpdateWithoutAiInsightsInput>, ProjectUncheckedUpdateWithoutAiInsightsInput>
+  }
+
+  export type UserCreateNestedOneWithoutAgentRunsInput = {
+    create?: XOR<UserCreateWithoutAgentRunsInput, UserUncheckedCreateWithoutAgentRunsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAgentRunsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type ProjectCreateNestedOneWithoutAgentRunsInput = {
+    create?: XOR<ProjectCreateWithoutAgentRunsInput, ProjectUncheckedCreateWithoutAgentRunsInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutAgentRunsInput
+    connect?: ProjectWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutAgentRunsNestedInput = {
+    create?: XOR<UserCreateWithoutAgentRunsInput, UserUncheckedCreateWithoutAgentRunsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutAgentRunsInput
+    upsert?: UserUpsertWithoutAgentRunsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAgentRunsInput, UserUpdateWithoutAgentRunsInput>, UserUncheckedUpdateWithoutAgentRunsInput>
+  }
+
+  export type ProjectUpdateOneRequiredWithoutAgentRunsNestedInput = {
+    create?: XOR<ProjectCreateWithoutAgentRunsInput, ProjectUncheckedCreateWithoutAgentRunsInput>
+    connectOrCreate?: ProjectCreateOrConnectWithoutAgentRunsInput
+    upsert?: ProjectUpsertWithoutAgentRunsInput
+    connect?: ProjectWhereUniqueInput
+    update?: XOR<XOR<ProjectUpdateToOneWithWhereWithoutAgentRunsInput, ProjectUpdateWithoutAgentRunsInput>, ProjectUncheckedUpdateWithoutAgentRunsInput>
   }
 
   export type UserCreateNestedOneWithoutAiUsagesInput = {
@@ -91886,6 +93665,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -91920,6 +93700,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -92397,6 +94178,48 @@ export namespace Prisma {
 
   export type CustomerBotChannelCreateManyUserInputEnvelope = {
     data: CustomerBotChannelCreateManyUserInput | CustomerBotChannelCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AgentRunCreateWithoutUserInput = {
+    id?: string
+    agentId: string
+    kind?: string
+    status?: string
+    title: string
+    summary?: string | null
+    output: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    appliedAt?: Date | string | null
+    dismissedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    project: ProjectCreateNestedOneWithoutAgentRunsInput
+  }
+
+  export type AgentRunUncheckedCreateWithoutUserInput = {
+    id?: string
+    projectId: string
+    agentId: string
+    kind?: string
+    status?: string
+    title: string
+    summary?: string | null
+    output: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    appliedAt?: Date | string | null
+    dismissedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AgentRunCreateOrConnectWithoutUserInput = {
+    where: AgentRunWhereUniqueInput
+    create: XOR<AgentRunCreateWithoutUserInput, AgentRunUncheckedCreateWithoutUserInput>
+  }
+
+  export type AgentRunCreateManyUserInputEnvelope = {
+    data: AgentRunCreateManyUserInput | AgentRunCreateManyUserInput[]
     skipDuplicates?: boolean
   }
 
@@ -93161,6 +94984,42 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"CustomerBotChannel"> | Date | string
   }
 
+  export type AgentRunUpsertWithWhereUniqueWithoutUserInput = {
+    where: AgentRunWhereUniqueInput
+    update: XOR<AgentRunUpdateWithoutUserInput, AgentRunUncheckedUpdateWithoutUserInput>
+    create: XOR<AgentRunCreateWithoutUserInput, AgentRunUncheckedCreateWithoutUserInput>
+  }
+
+  export type AgentRunUpdateWithWhereUniqueWithoutUserInput = {
+    where: AgentRunWhereUniqueInput
+    data: XOR<AgentRunUpdateWithoutUserInput, AgentRunUncheckedUpdateWithoutUserInput>
+  }
+
+  export type AgentRunUpdateManyWithWhereWithoutUserInput = {
+    where: AgentRunScalarWhereInput
+    data: XOR<AgentRunUpdateManyMutationInput, AgentRunUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type AgentRunScalarWhereInput = {
+    AND?: AgentRunScalarWhereInput | AgentRunScalarWhereInput[]
+    OR?: AgentRunScalarWhereInput[]
+    NOT?: AgentRunScalarWhereInput | AgentRunScalarWhereInput[]
+    id?: StringFilter<"AgentRun"> | string
+    userId?: StringFilter<"AgentRun"> | string
+    projectId?: StringFilter<"AgentRun"> | string
+    agentId?: StringFilter<"AgentRun"> | string
+    kind?: StringFilter<"AgentRun"> | string
+    status?: StringFilter<"AgentRun"> | string
+    title?: StringFilter<"AgentRun"> | string
+    summary?: StringNullableFilter<"AgentRun"> | string | null
+    output?: JsonFilter<"AgentRun">
+    error?: StringNullableFilter<"AgentRun"> | string | null
+    appliedAt?: DateTimeNullableFilter<"AgentRun"> | Date | string | null
+    dismissedAt?: DateTimeNullableFilter<"AgentRun"> | Date | string | null
+    createdAt?: DateTimeFilter<"AgentRun"> | Date | string
+    updatedAt?: DateTimeFilter<"AgentRun"> | Date | string
+  }
+
   export type UserSessionUpsertWithWhereUniqueWithoutUserInput = {
     where: UserSessionWhereUniqueInput
     update: XOR<UserSessionUpdateWithoutUserInput, UserSessionUncheckedUpdateWithoutUserInput>
@@ -93442,6 +95301,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -93490,6 +95350,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -93554,6 +95415,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -93602,6 +95464,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -93650,6 +95513,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -93698,6 +95562,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -93762,6 +95627,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -93810,6 +95676,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -93858,6 +95725,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -93906,6 +95774,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -94272,6 +96141,48 @@ export namespace Prisma {
 
   export type CustomerBotChannelCreateManyProjectInputEnvelope = {
     data: CustomerBotChannelCreateManyProjectInput | CustomerBotChannelCreateManyProjectInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type AgentRunCreateWithoutProjectInput = {
+    id?: string
+    agentId: string
+    kind?: string
+    status?: string
+    title: string
+    summary?: string | null
+    output: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    appliedAt?: Date | string | null
+    dismissedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutAgentRunsInput
+  }
+
+  export type AgentRunUncheckedCreateWithoutProjectInput = {
+    id?: string
+    userId: string
+    agentId: string
+    kind?: string
+    status?: string
+    title: string
+    summary?: string | null
+    output: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    appliedAt?: Date | string | null
+    dismissedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AgentRunCreateOrConnectWithoutProjectInput = {
+    where: AgentRunWhereUniqueInput
+    create: XOR<AgentRunCreateWithoutProjectInput, AgentRunUncheckedCreateWithoutProjectInput>
+  }
+
+  export type AgentRunCreateManyProjectInputEnvelope = {
+    data: AgentRunCreateManyProjectInput | AgentRunCreateManyProjectInput[]
     skipDuplicates?: boolean
   }
 
@@ -94767,6 +96678,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -94815,6 +96727,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -95046,6 +96959,22 @@ export namespace Prisma {
   export type CustomerBotChannelUpdateManyWithWhereWithoutProjectInput = {
     where: CustomerBotChannelScalarWhereInput
     data: XOR<CustomerBotChannelUpdateManyMutationInput, CustomerBotChannelUncheckedUpdateManyWithoutProjectInput>
+  }
+
+  export type AgentRunUpsertWithWhereUniqueWithoutProjectInput = {
+    where: AgentRunWhereUniqueInput
+    update: XOR<AgentRunUpdateWithoutProjectInput, AgentRunUncheckedUpdateWithoutProjectInput>
+    create: XOR<AgentRunCreateWithoutProjectInput, AgentRunUncheckedCreateWithoutProjectInput>
+  }
+
+  export type AgentRunUpdateWithWhereUniqueWithoutProjectInput = {
+    where: AgentRunWhereUniqueInput
+    data: XOR<AgentRunUpdateWithoutProjectInput, AgentRunUncheckedUpdateWithoutProjectInput>
+  }
+
+  export type AgentRunUpdateManyWithWhereWithoutProjectInput = {
+    where: AgentRunScalarWhereInput
+    data: XOR<AgentRunUpdateManyMutationInput, AgentRunUncheckedUpdateManyWithoutProjectInput>
   }
 
   export type ProductUpsertWithWhereUniqueWithoutProjectInput = {
@@ -95497,6 +97426,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -95545,6 +97475,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -95609,6 +97540,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -95657,6 +97589,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -95705,6 +97638,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -95753,6 +97687,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -95817,6 +97752,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -95865,6 +97801,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -95913,6 +97850,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -95961,6 +97899,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -96025,6 +97964,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -96073,6 +98013,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -96121,6 +98062,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -96169,6 +98111,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -96233,6 +98176,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -96281,6 +98225,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -96329,6 +98274,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -96377,6 +98323,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -96441,6 +98388,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -96489,6 +98437,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -96537,6 +98486,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -96585,6 +98535,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -96649,6 +98600,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -96697,6 +98649,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -96745,6 +98698,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -96793,6 +98747,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -96826,6 +98781,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -96860,6 +98816,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -96930,6 +98887,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -96978,6 +98936,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -97017,6 +98976,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -97051,6 +99011,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -97085,6 +99046,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -97119,6 +99081,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -97275,6 +99238,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -97309,6 +99273,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -97665,6 +99630,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -97713,6 +99679,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -97777,6 +99744,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -97825,6 +99793,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -97874,6 +99843,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -97922,6 +99892,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -97986,6 +99957,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -98034,6 +100006,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -98061,6 +100034,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -98095,6 +100069,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -98145,6 +100120,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -98179,6 +100155,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -98233,6 +100210,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -98281,6 +100259,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -98314,6 +100293,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -98348,6 +100328,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -98524,6 +100505,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -98572,6 +100554,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -98611,6 +100594,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -98645,6 +100629,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -99058,6 +101043,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -99092,6 +101078,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -99181,6 +101168,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -99215,6 +101203,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -99314,6 +101303,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -99362,6 +101352,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -99395,6 +101386,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -99429,6 +101421,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -99538,6 +101531,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -99586,6 +101580,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -99625,6 +101620,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -99659,6 +101655,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -99758,6 +101755,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -99806,6 +101804,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -99839,6 +101838,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -99873,6 +101873,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -99943,6 +101944,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -99991,6 +101993,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -100030,6 +102033,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -100062,6 +102066,375 @@ export namespace Prisma {
     chatConversations?: ChatConversationUncheckedUpdateManyWithoutProjectNestedInput
     artifacts?: ArtifactUncheckedUpdateManyWithoutProjectNestedInput
     aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutProjectNestedInput
+    aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
+    customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
+    products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
+    suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
+    stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
+    businessTransactions?: BusinessTransactionUncheckedUpdateManyWithoutProjectNestedInput
+    staffMembers?: StaffUncheckedUpdateManyWithoutProjectNestedInput
+    loyaltyAccounts?: LoyaltyAccountUncheckedUpdateManyWithoutProjectNestedInput
+    orders?: OrderUncheckedUpdateManyWithoutProjectNestedInput
+    promotions?: PromotionUncheckedUpdateManyWithoutProjectNestedInput
+    coupons?: CouponUncheckedUpdateManyWithoutProjectNestedInput
+    reviews?: ReviewUncheckedUpdateManyWithoutProjectNestedInput
+    referrals?: ReferralUncheckedUpdateManyWithoutProjectNestedInput
+    broadcasts?: BroadcastUncheckedUpdateManyWithoutProjectNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutProjectNestedInput
+  }
+
+  export type UserCreateWithoutAgentRunsInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    lastSeenAt?: Date | string | null
+    isTestUser?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountCreateNestedManyWithoutUserInput
+    sessions?: SessionCreateNestedManyWithoutUserInput
+    projects?: ProjectCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionCreateNestedManyWithoutUserInput
+    transactions?: TransactionCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackCreateNestedManyWithoutUserInput
+    supportTickets?: SupportTicketCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberCreateNestedManyWithoutUserInput
+    adminAuditLogs?: AdminAuditLogCreateNestedManyWithoutActorInput
+    userProfile?: UserProfileCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressCreateNestedOneWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutAgentRunsInput = {
+    id?: string
+    supabaseUserId?: string | null
+    name?: string | null
+    email?: string | null
+    emailVerified?: Date | string | null
+    image?: string | null
+    role?: string | null
+    password?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    lastSeenAt?: Date | string | null
+    isTestUser?: boolean
+    firstName?: string | null
+    lastName?: string | null
+    phoneNumber?: string | null
+    birthDate?: Date | string | null
+    bio?: string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: boolean
+    twoFactorSecret?: string | null
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput
+    projects?: ProjectUncheckedCreateNestedManyWithoutUserInput
+    mediaItems?: MediaItemUncheckedCreateNestedManyWithoutUserInput
+    subscriptions?: SubscriptionUncheckedCreateNestedManyWithoutUserInput
+    transactions?: TransactionUncheckedCreateNestedManyWithoutUserInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutUserInput
+    supportTickets?: SupportTicketUncheckedCreateNestedManyWithoutUserInput
+    projectMemberships?: ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+    adminAuditLogs?: AdminAuditLogUncheckedCreateNestedManyWithoutActorInput
+    userProfile?: UserProfileUncheckedCreateNestedOneWithoutUserInput
+    chatConversations?: ChatConversationUncheckedCreateNestedManyWithoutUserInput
+    aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutUserInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
+    aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
+    customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
+    userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
+    userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
+    dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
+    loginEvents?: LoginEventUncheckedCreateNestedManyWithoutUserInput
+    tourProgress?: TourProgressUncheckedCreateNestedOneWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutAgentRunsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutAgentRunsInput, UserUncheckedCreateWithoutAgentRunsInput>
+  }
+
+  export type ProjectCreateWithoutAgentRunsInput = {
+    id?: string
+    projectName: string
+    tagline?: string | null
+    description?: string | null
+    data: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    user: UserCreateNestedOneWithoutProjectsInput
+    members?: ProjectMemberCreateNestedManyWithoutProjectInput
+    canvases?: CanvasCreateNestedManyWithoutProjectInput
+    scripts?: ScriptCreateNestedManyWithoutProjectInput
+    projectMemory?: ProjectMemoryCreateNestedOneWithoutProjectInput
+    chatConversations?: ChatConversationCreateNestedManyWithoutProjectInput
+    artifacts?: ArtifactCreateNestedManyWithoutProjectInput
+    aiActionLogs?: AiActionLogCreateNestedManyWithoutProjectInput
+    aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
+    aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
+    customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    products?: ProductCreateNestedManyWithoutProjectInput
+    suppliers?: SupplierCreateNestedManyWithoutProjectInput
+    stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
+    businessTransactions?: BusinessTransactionCreateNestedManyWithoutProjectInput
+    staffMembers?: StaffCreateNestedManyWithoutProjectInput
+    loyaltyAccounts?: LoyaltyAccountCreateNestedManyWithoutProjectInput
+    orders?: OrderCreateNestedManyWithoutProjectInput
+    promotions?: PromotionCreateNestedManyWithoutProjectInput
+    coupons?: CouponCreateNestedManyWithoutProjectInput
+    reviews?: ReviewCreateNestedManyWithoutProjectInput
+    referrals?: ReferralCreateNestedManyWithoutProjectInput
+    broadcasts?: BroadcastCreateNestedManyWithoutProjectInput
+    appointments?: AppointmentCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectUncheckedCreateWithoutAgentRunsInput = {
+    id?: string
+    userId: string
+    projectName: string
+    tagline?: string | null
+    description?: string | null
+    data: JsonNullValueInput | InputJsonValue
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    deletedAt?: Date | string | null
+    members?: ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
+    canvases?: CanvasUncheckedCreateNestedManyWithoutProjectInput
+    scripts?: ScriptUncheckedCreateNestedManyWithoutProjectInput
+    projectMemory?: ProjectMemoryUncheckedCreateNestedOneWithoutProjectInput
+    chatConversations?: ChatConversationUncheckedCreateNestedManyWithoutProjectInput
+    artifacts?: ArtifactUncheckedCreateNestedManyWithoutProjectInput
+    aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutProjectInput
+    aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
+    aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
+    customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    products?: ProductUncheckedCreateNestedManyWithoutProjectInput
+    suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
+    stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
+    businessTransactions?: BusinessTransactionUncheckedCreateNestedManyWithoutProjectInput
+    staffMembers?: StaffUncheckedCreateNestedManyWithoutProjectInput
+    loyaltyAccounts?: LoyaltyAccountUncheckedCreateNestedManyWithoutProjectInput
+    orders?: OrderUncheckedCreateNestedManyWithoutProjectInput
+    promotions?: PromotionUncheckedCreateNestedManyWithoutProjectInput
+    coupons?: CouponUncheckedCreateNestedManyWithoutProjectInput
+    reviews?: ReviewUncheckedCreateNestedManyWithoutProjectInput
+    referrals?: ReferralUncheckedCreateNestedManyWithoutProjectInput
+    broadcasts?: BroadcastUncheckedCreateNestedManyWithoutProjectInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutProjectInput
+  }
+
+  export type ProjectCreateOrConnectWithoutAgentRunsInput = {
+    where: ProjectWhereUniqueInput
+    create: XOR<ProjectCreateWithoutAgentRunsInput, ProjectUncheckedCreateWithoutAgentRunsInput>
+  }
+
+  export type UserUpsertWithoutAgentRunsInput = {
+    update: XOR<UserUpdateWithoutAgentRunsInput, UserUncheckedUpdateWithoutAgentRunsInput>
+    create: XOR<UserCreateWithoutAgentRunsInput, UserUncheckedCreateWithoutAgentRunsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutAgentRunsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutAgentRunsInput, UserUncheckedUpdateWithoutAgentRunsInput>
+  }
+
+  export type UserUpdateWithoutAgentRunsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isTestUser?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUpdateManyWithoutUserNestedInput
+    sessions?: SessionUpdateManyWithoutUserNestedInput
+    projects?: ProjectUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutUserNestedInput
+    supportTickets?: SupportTicketUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUpdateManyWithoutUserNestedInput
+    adminAuditLogs?: AdminAuditLogUpdateManyWithoutActorNestedInput
+    userProfile?: UserProfileUpdateOneWithoutUserNestedInput
+    chatConversations?: ChatConversationUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutAgentRunsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    supabaseUserId?: NullableStringFieldUpdateOperationsInput | string | null
+    name?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    image?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: NullableStringFieldUpdateOperationsInput | string | null
+    password?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    isTestUser?: BoolFieldUpdateOperationsInput | boolean
+    firstName?: NullableStringFieldUpdateOperationsInput | string | null
+    lastName?: NullableStringFieldUpdateOperationsInput | string | null
+    phoneNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    birthDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    bio?: NullableStringFieldUpdateOperationsInput | string | null
+    profile?: NullableJsonNullValueInput | InputJsonValue
+    credits?: NullableJsonNullValueInput | InputJsonValue
+    settings?: NullableJsonNullValueInput | InputJsonValue
+    twoFactorEnabled?: BoolFieldUpdateOperationsInput | boolean
+    twoFactorSecret?: NullableStringFieldUpdateOperationsInput | string | null
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput
+    projects?: ProjectUncheckedUpdateManyWithoutUserNestedInput
+    mediaItems?: MediaItemUncheckedUpdateManyWithoutUserNestedInput
+    subscriptions?: SubscriptionUncheckedUpdateManyWithoutUserNestedInput
+    transactions?: TransactionUncheckedUpdateManyWithoutUserNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
+    supportTickets?: SupportTicketUncheckedUpdateManyWithoutUserNestedInput
+    projectMemberships?: ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+    adminAuditLogs?: AdminAuditLogUncheckedUpdateManyWithoutActorNestedInput
+    userProfile?: UserProfileUncheckedUpdateOneWithoutUserNestedInput
+    chatConversations?: ChatConversationUncheckedUpdateManyWithoutUserNestedInput
+    aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutUserNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
+    aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
+    customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
+    userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
+    userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
+    dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
+    loginEvents?: LoginEventUncheckedUpdateManyWithoutUserNestedInput
+    tourProgress?: TourProgressUncheckedUpdateOneWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type ProjectUpsertWithoutAgentRunsInput = {
+    update: XOR<ProjectUpdateWithoutAgentRunsInput, ProjectUncheckedUpdateWithoutAgentRunsInput>
+    create: XOR<ProjectCreateWithoutAgentRunsInput, ProjectUncheckedCreateWithoutAgentRunsInput>
+    where?: ProjectWhereInput
+  }
+
+  export type ProjectUpdateToOneWithWhereWithoutAgentRunsInput = {
+    where?: ProjectWhereInput
+    data: XOR<ProjectUpdateWithoutAgentRunsInput, ProjectUncheckedUpdateWithoutAgentRunsInput>
+  }
+
+  export type ProjectUpdateWithoutAgentRunsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectName?: StringFieldUpdateOperationsInput | string
+    tagline?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    user?: UserUpdateOneRequiredWithoutProjectsNestedInput
+    members?: ProjectMemberUpdateManyWithoutProjectNestedInput
+    canvases?: CanvasUpdateManyWithoutProjectNestedInput
+    scripts?: ScriptUpdateManyWithoutProjectNestedInput
+    projectMemory?: ProjectMemoryUpdateOneWithoutProjectNestedInput
+    chatConversations?: ChatConversationUpdateManyWithoutProjectNestedInput
+    artifacts?: ArtifactUpdateManyWithoutProjectNestedInput
+    aiActionLogs?: AiActionLogUpdateManyWithoutProjectNestedInput
+    aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
+    aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
+    customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    products?: ProductUpdateManyWithoutProjectNestedInput
+    suppliers?: SupplierUpdateManyWithoutProjectNestedInput
+    stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
+    businessTransactions?: BusinessTransactionUpdateManyWithoutProjectNestedInput
+    staffMembers?: StaffUpdateManyWithoutProjectNestedInput
+    loyaltyAccounts?: LoyaltyAccountUpdateManyWithoutProjectNestedInput
+    orders?: OrderUpdateManyWithoutProjectNestedInput
+    promotions?: PromotionUpdateManyWithoutProjectNestedInput
+    coupons?: CouponUpdateManyWithoutProjectNestedInput
+    reviews?: ReviewUpdateManyWithoutProjectNestedInput
+    referrals?: ReferralUpdateManyWithoutProjectNestedInput
+    broadcasts?: BroadcastUpdateManyWithoutProjectNestedInput
+    appointments?: AppointmentUpdateManyWithoutProjectNestedInput
+  }
+
+  export type ProjectUncheckedUpdateWithoutAgentRunsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    projectName?: StringFieldUpdateOperationsInput | string
+    tagline?: NullableStringFieldUpdateOperationsInput | string | null
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    data?: JsonNullValueInput | InputJsonValue
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    members?: ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
+    canvases?: CanvasUncheckedUpdateManyWithoutProjectNestedInput
+    scripts?: ScriptUncheckedUpdateManyWithoutProjectNestedInput
+    projectMemory?: ProjectMemoryUncheckedUpdateOneWithoutProjectNestedInput
+    chatConversations?: ChatConversationUncheckedUpdateManyWithoutProjectNestedInput
+    artifacts?: ArtifactUncheckedUpdateManyWithoutProjectNestedInput
+    aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutProjectNestedInput
+    aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
@@ -100118,6 +102491,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogCreateNestedManyWithoutUserInput
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -100166,6 +102540,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutUserInput
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -100199,6 +102574,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogCreateNestedManyWithoutProjectInput
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -100233,6 +102609,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutProjectInput
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -100303,6 +102680,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUpdateManyWithoutUserNestedInput
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -100351,6 +102729,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutUserNestedInput
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -100390,6 +102769,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUpdateManyWithoutProjectNestedInput
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -100424,6 +102804,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutProjectNestedInput
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -100478,6 +102859,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogCreateNestedManyWithoutUserInput
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -100526,6 +102908,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutUserInput
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -100559,6 +102942,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogCreateNestedManyWithoutProjectInput
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -100593,6 +102977,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedCreateNestedManyWithoutProjectInput
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -100699,6 +103084,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUpdateManyWithoutUserNestedInput
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -100747,6 +103133,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutUserNestedInput
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -100786,6 +103173,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUpdateManyWithoutProjectNestedInput
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -100820,6 +103208,7 @@ export namespace Prisma {
     aiActionLogs?: AiActionLogUncheckedUpdateManyWithoutProjectNestedInput
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -101078,6 +103467,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -101112,6 +103502,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -101162,6 +103553,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -101196,6 +103588,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -101251,6 +103644,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
@@ -101299,6 +103693,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
@@ -101363,6 +103758,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
@@ -101411,6 +103807,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
@@ -101459,6 +103856,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -101507,6 +103905,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -101571,6 +103970,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -101619,6 +104019,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -101667,6 +104068,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
@@ -101715,6 +104117,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
@@ -101779,6 +104182,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
@@ -101827,6 +104231,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
@@ -101875,6 +104280,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestCreateNestedManyWithoutUserInput
@@ -101923,6 +104329,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     dataExportRequests?: DataExportRequestUncheckedCreateNestedManyWithoutUserInput
@@ -101987,6 +104394,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUpdateManyWithoutUserNestedInput
@@ -102035,6 +104443,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     dataExportRequests?: DataExportRequestUncheckedUpdateManyWithoutUserNestedInput
@@ -102083,6 +104492,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -102131,6 +104541,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -102195,6 +104606,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -102243,6 +104655,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -102291,6 +104704,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunCreateNestedManyWithoutUserInput
     userSessions?: UserSessionCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationCreateNestedManyWithoutUserInput
@@ -102339,6 +104753,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutUserInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutUserInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutUserInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutUserInput
     userSessions?: UserSessionUncheckedCreateNestedManyWithoutUserInput
     userApiKeys?: UserApiKeyUncheckedCreateNestedManyWithoutUserInput
     userIntegrations?: UserIntegrationUncheckedCreateNestedManyWithoutUserInput
@@ -102403,6 +104818,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUpdateManyWithoutUserNestedInput
@@ -102451,6 +104867,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutUserNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutUserNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutUserNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutUserNestedInput
     userSessions?: UserSessionUncheckedUpdateManyWithoutUserNestedInput
     userApiKeys?: UserApiKeyUncheckedUpdateManyWithoutUserNestedInput
     userIntegrations?: UserIntegrationUncheckedUpdateManyWithoutUserNestedInput
@@ -102479,6 +104896,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
     businessTransactions?: BusinessTransactionCreateNestedManyWithoutProjectInput
@@ -102513,6 +104931,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
     businessTransactions?: BusinessTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -102593,6 +105012,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
     businessTransactions?: BusinessTransactionUpdateManyWithoutProjectNestedInput
@@ -102627,6 +105047,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
     businessTransactions?: BusinessTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -102677,6 +105098,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     businessTransactions?: BusinessTransactionCreateNestedManyWithoutProjectInput
@@ -102711,6 +105133,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     businessTransactions?: BusinessTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -102800,6 +105223,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     businessTransactions?: BusinessTransactionUpdateManyWithoutProjectNestedInput
@@ -102834,6 +105258,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     businessTransactions?: BusinessTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -102913,6 +105338,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
     businessTransactions?: BusinessTransactionCreateNestedManyWithoutProjectInput
@@ -102947,6 +105373,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
     businessTransactions?: BusinessTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -102997,6 +105424,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
     businessTransactions?: BusinessTransactionUpdateManyWithoutProjectNestedInput
@@ -103031,6 +105459,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
     businessTransactions?: BusinessTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -103065,6 +105494,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -103099,6 +105529,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -103149,6 +105580,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -103183,6 +105615,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -103217,6 +105650,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -103251,6 +105685,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -103357,6 +105792,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -103391,6 +105827,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -103619,6 +106056,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -103653,6 +106091,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -103729,6 +106168,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -103763,6 +106203,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -103889,6 +106330,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -103923,6 +106365,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -104001,6 +106444,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -104035,6 +106479,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -104158,6 +106603,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -104192,6 +106638,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -104242,6 +106689,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -104276,6 +106724,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -104310,6 +106759,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -104344,6 +106794,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -104418,6 +106869,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -104452,6 +106904,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -104581,6 +107034,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -104615,6 +107069,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -104665,6 +107120,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -104699,6 +107155,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -104733,6 +107190,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -104767,6 +107225,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -104817,6 +107276,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -104851,6 +107311,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -104885,6 +107346,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -104919,6 +107381,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -104969,6 +107432,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -105003,6 +107467,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -105037,6 +107502,7 @@ export namespace Prisma {
     aiInsights?: AiInsightCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunCreateNestedManyWithoutProjectInput
     products?: ProductCreateNestedManyWithoutProjectInput
     suppliers?: SupplierCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionCreateNestedManyWithoutProjectInput
@@ -105071,6 +107537,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedCreateNestedManyWithoutProjectInput
     aiUsages?: AiUsageUncheckedCreateNestedManyWithoutProjectInput
     customerBotChannels?: CustomerBotChannelUncheckedCreateNestedManyWithoutProjectInput
+    agentRuns?: AgentRunUncheckedCreateNestedManyWithoutProjectInput
     products?: ProductUncheckedCreateNestedManyWithoutProjectInput
     suppliers?: SupplierUncheckedCreateNestedManyWithoutProjectInput
     stockTransactions?: StockTransactionUncheckedCreateNestedManyWithoutProjectInput
@@ -105121,6 +107588,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -105155,6 +107623,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -105346,6 +107815,22 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type AgentRunCreateManyUserInput = {
+    id?: string
+    projectId: string
+    agentId: string
+    kind?: string
+    status?: string
+    title: string
+    summary?: string | null
+    output: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    appliedAt?: Date | string | null
+    dismissedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type UserSessionCreateManyUserInput = {
     id?: string
     token: string
@@ -105492,6 +107977,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUpdateManyWithoutProjectNestedInput
     products?: ProductUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUpdateManyWithoutProjectNestedInput
@@ -105526,6 +108012,7 @@ export namespace Prisma {
     aiInsights?: AiInsightUncheckedUpdateManyWithoutProjectNestedInput
     aiUsages?: AiUsageUncheckedUpdateManyWithoutProjectNestedInput
     customerBotChannels?: CustomerBotChannelUncheckedUpdateManyWithoutProjectNestedInput
+    agentRuns?: AgentRunUncheckedUpdateManyWithoutProjectNestedInput
     products?: ProductUncheckedUpdateManyWithoutProjectNestedInput
     suppliers?: SupplierUncheckedUpdateManyWithoutProjectNestedInput
     stockTransactions?: StockTransactionUncheckedUpdateManyWithoutProjectNestedInput
@@ -105998,6 +108485,54 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AgentRunUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    agentId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    output?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dismissedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    project?: ProjectUpdateOneRequiredWithoutAgentRunsNestedInput
+  }
+
+  export type AgentRunUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    agentId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    output?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dismissedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentRunUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    projectId?: StringFieldUpdateOperationsInput | string
+    agentId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    output?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dismissedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type UserSessionUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     token?: StringFieldUpdateOperationsInput | string
@@ -106308,6 +108843,22 @@ export namespace Prisma {
     credentials?: NullableJsonNullValueInput | InputJsonValue
     config?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AgentRunCreateManyProjectInput = {
+    id?: string
+    userId: string
+    agentId: string
+    kind?: string
+    status?: string
+    title: string
+    summary?: string | null
+    output: JsonNullValueInput | InputJsonValue
+    error?: string | null
+    appliedAt?: Date | string | null
+    dismissedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -106811,6 +109362,54 @@ export namespace Prisma {
     credentials?: NullableJsonNullValueInput | InputJsonValue
     config?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentRunUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    agentId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    output?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dismissedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAgentRunsNestedInput
+  }
+
+  export type AgentRunUncheckedUpdateWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    agentId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    output?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dismissedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AgentRunUncheckedUpdateManyWithoutProjectInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    agentId?: StringFieldUpdateOperationsInput | string
+    kind?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    summary?: NullableStringFieldUpdateOperationsInput | string | null
+    output?: JsonNullValueInput | InputJsonValue
+    error?: NullableStringFieldUpdateOperationsInput | string | null
+    appliedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    dismissedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
