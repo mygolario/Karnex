@@ -24,6 +24,7 @@ export const LAUNCH_CONFIG = {
       "/dashboard/overview",
       "/dashboard/roadmap",
       "/dashboard/canvas",
+      "/dashboard/workforce",
       "/dashboard/copilot",
       "/dashboard/account",
       "/dashboard/help",

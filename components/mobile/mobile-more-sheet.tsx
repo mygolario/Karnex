@@ -6,7 +6,7 @@ import {
   Presentation, Calendar, Video, DollarSign,
   Settings, HelpCircle, Headphones, Shield,
   Activity, Wallet, Star, LucideIcon,
-  Receipt, Target, FlaskConical, Compass,
+  Receipt, Target, FlaskConical, Compass, Sparkles,
 } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useProject } from "@/contexts/project-context";
@@ -67,6 +67,7 @@ export function MobileMoreSheet({ open, onOpenChange }: MobileMoreSheetProps) {
   ].filter((route) => isLaunchNavRoute(route.href, projectType));
 
   const generalRoutes: MoreRoute[] = [
+    { icon: Sparkles, label: "میز عامل‌ها", href: "/dashboard/workforce" },
     { icon: Headphones, label: "پشتیبانی", href: "/dashboard/support" },
     { icon: HelpCircle, label: "راهنما", href: "/dashboard/help" },
     { icon: Settings, label: "حساب کاربری", href: "/dashboard/account" },

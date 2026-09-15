@@ -166,6 +166,13 @@ export function CommandMenu() {
 
           <Command.Group heading="دستیار AI">
             <Command.Item
+                onSelect={() => runCommand(() => router.push('/dashboard/workforce'))}
+                className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+            >
+              <Sparkles className="ms-2 h-4 w-4 text-primary" />
+              <span>میز عامل‌ها</span>
+            </Command.Item>
+            <Command.Item
                 onSelect={() => askCopilot()}
                 className="relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground"
             >

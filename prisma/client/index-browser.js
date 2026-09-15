@@ -470,6 +470,23 @@ exports.Prisma.AiInsightScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.AgentRunScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  projectId: 'projectId',
+  agentId: 'agentId',
+  kind: 'kind',
+  status: 'status',
+  title: 'title',
+  summary: 'summary',
+  output: 'output',
+  error: 'error',
+  appliedAt: 'appliedAt',
+  dismissedAt: 'dismissedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.AiUsageScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -898,6 +915,7 @@ exports.Prisma.ModelName = {
   Artifact: 'Artifact',
   AiActionLog: 'AiActionLog',
   AiInsight: 'AiInsight',
+  AgentRun: 'AgentRun',
   AiUsage: 'AiUsage',
   EmailAiQuota: 'EmailAiQuota',
   CustomerBotChannel: 'CustomerBotChannel',

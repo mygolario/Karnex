@@ -67,6 +67,7 @@ model User {
   aiInsights         AiInsight[]
   aiUsages           AiUsage[]
   customerBotChannels CustomerBotChannel[]
+  agentRuns          AgentRun[]
 
   // Account Center Relations
   userSessions       UserSession[]
@@ -148,6 +149,7 @@ model Project {
   aiInsights           AiInsight[]
   aiUsages             AiUsage[]
   customerBotChannels  CustomerBotChannel[]
+  agentRuns            AgentRun[]
 
   // Traditional Pillar Revamp — operations + finance
   products             Product[]
@@ -604,6 +606,38 @@ model AiInsight {
   @@index([userId])
   @@index([projectId])
   @@index([status])
+}
+
+/// Executing-cofounder workforce: one durable run of a named agent.
+/// Output stays pending until the founder applies or dismisses it.
+model AgentRun {
+  id        String @id @default(cuid())
+  userId    String
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// research | execution | growth | capital | night_shift
+  agentId String
+  /// dispatch | night_shift | cron
+  kind    String @default("dispatch")
+  /// running | needs_approval | applied | dismissed | failed
+  status  String @default("running")
+
+  title   String
+  summary String? @db.Text
+  output  Json
+  error   String? @db.Text
+
+  appliedAt   DateTime?
+  dismissedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([projectId, createdAt])
+  @@index([userId, createdAt])
+  @@index([projectId, status])
+  @@index([agentId])
 }
 
 model AiUsage {

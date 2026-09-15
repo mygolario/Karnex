@@ -30,5 +30,10 @@ describe("getAiCreditCost market research", () => {
     expect(getAiCreditCost("health-diagnosis")).toBe(2);
     expect(getAiCreditCost("pnl-narrative")).toBe(2);
     expect(getAiCreditCost("monthly-review")).toBe(2);
+    expect(getAiCreditCost("agent-research")).toBe(2);
+  });
+
+  it("charges night shift as heavy", () => {
+    expect(getAiCreditCost("agent-night-shift")).toBe(5);
   });
 });

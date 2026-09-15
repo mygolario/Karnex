@@ -50,6 +50,9 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "analyze-competitors",
     "analyze_competitors",
     "analyzecompetitors",
+    "agent-night-shift",
+    "agent_night_shift",
+    "agent-night_shift",
   ]);
 
   const deep = new Set([
@@ -124,6 +127,14 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     "health-diagnosis",
     "pnl-narrative",
     "monthly-review",
+    "agent-research",
+    "agent_research",
+    "agent-execution",
+    "agent_execution",
+    "agent-growth",
+    "agent_growth",
+    "agent-capital",
+    "agent_capital",
   ]);
 
   if (heavy.has(key) || key.includes("generate-plan") || key.includes("pitch-deck")) {
@@ -146,6 +157,12 @@ export function getAiCreditCost(featureOrAction: string | undefined | null): num
     return AI_CREDIT_WEIGHTS.stt;
   }
   if (light.has(key)) return AI_CREDIT_WEIGHTS.light;
+  if (key.includes("night-shift") || key.includes("night_shift")) {
+    return AI_CREDIT_WEIGHTS.heavy;
+  }
+  if (key.startsWith("agent-") || key.startsWith("agent_")) {
+    return AI_CREDIT_WEIGHTS.standard;
+  }
   if (standard.has(key)) return AI_CREDIT_WEIGHTS.standard;
 
   return AI_CREDIT_WEIGHTS.default;

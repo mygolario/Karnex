@@ -8,6 +8,18 @@
     },
     "app/api/copilot/route.ts": {
       "maxDuration": 120
+    },
+    "app/api/workforce/dispatch/route.ts": {
+      "maxDuration": 90
+    },
+    "app/api/cron/night-shift/route.ts": {
+      "maxDuration": 120
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/night-shift",
+      "schedule": "30 20 * * *"
+    }
+  ]
 }
