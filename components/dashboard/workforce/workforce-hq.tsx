@@ -268,7 +268,7 @@ export function WorkforceHq() {
                 )}
                 style={{ animationDelay: `${i * 120}ms` }}
               >
-                عامل {label}
+                {`شیفت ${label}`}
               </div>
             ))}
           </div>
